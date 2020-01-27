@@ -11,6 +11,10 @@ body {
     font-family: "Times New Roman", Times, serif;
 }
 
+body {
+    
+}
+
 h1 {
 
 }
@@ -20,10 +24,10 @@ h1 {
    ========================================================================== */
 
 header {
-    background-image: url(../img/background.jpg);
+    background: url(../img/background.jpg);
     background-size: cover;
-    background-position: center;
-    height: 100%vh;
+    background-position: center center;
+    height: 100vh;
 }
 
 .intentionally-left-blank {
