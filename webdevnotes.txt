@@ -19,3 +19,7 @@ Social Media colors: https://www.lockedownseo.com/social-media-colors/
 |------ JavaScript ------|
 
 JQuery alternatives: http://youmightnotneedjquery.com/
+
+|------ VSCode Extensions ------|
+
+Autoprefixer
