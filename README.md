@@ -36,3 +36,6 @@ Future:
 * GraphQL
 * Express
 * MongoDB
+* ElectronJS
+* Material-UI
+* Gatsby.js
