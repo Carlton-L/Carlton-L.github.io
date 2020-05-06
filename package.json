@@ -1,7 +1,7 @@
 {
   "name": "carlton-l.github.io",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
@@ -10,7 +10,7 @@
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1"
   },
-  "homepage": "https://carlton-l.github.io",
+  "homepage": "https://Carlton-L.github.io/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
