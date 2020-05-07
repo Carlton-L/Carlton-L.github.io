@@ -66,3 +66,10 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+### npm run deploy fails
+
+control panel -> System -> Advanced system settings -> Environment variables -> edit path. Over there add the path of git-upload-pack.
+
+git-upload-pack is usually in C:\Program Files\Git\mingw64\bin or C:\Program Files\Git\mingw64\libexec\git-core. You can find it in \Git\mingw64.
+Add the git binary path (C:\Program Files\Git\bin for me) to the PATH variable.
