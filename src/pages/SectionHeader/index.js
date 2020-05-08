@@ -1,12 +1,20 @@
 import React from 'react';
-import { findRenderedComponentWithType } from 'react-dom/test-utils';
+import PageContainer from '../PageContainer';
+import ContentContainer from '../../components/ContentContainer';
 
 class SectionHeader extends React.Component {
     state = {};
 
     render() {
         return (
-            <h1 style={{fontSize: '50px', color: 'white', textTransform: 'uppercase', letterSpacing: '100px'}}>Carlton Lindsay</h1>
+            <PageContainer>
+                <ContentContainer h="center" v="bottom">
+                    <h1>Carlton Lindsay</h1>
+                </ContentContainer>
+                <ContentContainer h="center" v="top">
+                    <h3>Frontend Web Developer</h3>
+                </ContentContainer>
+            </PageContainer>
         )
     }
 }
