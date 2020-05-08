@@ -1,7 +1,9 @@
 import React from 'react';
 import PageContainer from '../PageContainer';
 import ContentContainer from '../../components/ContentContainer';
+import Project from './Project';
 
+// TODO: Make every other project's content flipped (image and caption)
 class SectionProjects extends React.Component {
     state = {};
 
@@ -12,9 +14,9 @@ class SectionProjects extends React.Component {
                     <h2>Projects</h2>
                 </ContentContainer>
                 <ContentContainer h="center">
-                    <ContentContainer h="center">
+                    <Project>
 
-                    </ContentContainer>
+                    </Project>
                 </ContentContainer>
             </PageContainer>
         )
