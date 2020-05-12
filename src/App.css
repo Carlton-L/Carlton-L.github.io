@@ -21,6 +21,10 @@ section {
     justify-content: center;
 }
 
+section:not(:first-child) {
+    height: 150vh;
+}
+
 h1 {
     font-size: 3.125rem;
     color: var(--font-color-primary);
