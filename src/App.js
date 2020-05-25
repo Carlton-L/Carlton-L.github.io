@@ -15,12 +15,14 @@ const App = () => {
             >
                 <SectionHeader />
             </section>
+            <section data-background-color='rgb(144, 12, 63)' className='js-color-stop color-stop-filler'></section>
             <section
                 data-background-color='rgb(144, 12, 63)'
                 className='js-color-stop'
             >
                 <SectionProjects />
             </section>
+            <section data-background-color='rgb(144, 12, 63)' className='js-color-stop color-stop-filler'></section>
             <section
                 data-background-color='rgb(199, 0, 57)'
                 className='js-color-stop'
