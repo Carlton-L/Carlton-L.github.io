@@ -11,7 +11,7 @@ class SectionProjects extends React.Component {
         return (
             <PageContainer>
                 <ContentContainer>
-                    <h2>Projects</h2>
+                    <h2 className="margin-bottom-medium">Projects</h2>
                 </ContentContainer>
                 <ContentContainer h="center">
                     <Project>

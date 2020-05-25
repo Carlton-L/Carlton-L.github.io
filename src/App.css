@@ -21,10 +21,6 @@ section {
     justify-content: center;
 }
 
-section:not(:first-child) {
-    height: 150vh;
-}
-
 h1 {
     font-size: 3.125rem;
     color: var(--font-color-primary);
@@ -58,7 +54,19 @@ h4 {
     color: white;
   }
 
-  p {
-      letter-spacing: .1rem;
-      font-weight: 300;
-  }
+p {
+    letter-spacing: .1rem;
+    font-weight: 300;
+}
+
+.margin-bottom-medium {
+    margin-bottom: 4.25rem;
+}
+
+.margin-bottom-small {
+    margin-bottom: 2.5rem;
+}
+
+.color-stop-filler {
+    min-height: 40vh;
+}

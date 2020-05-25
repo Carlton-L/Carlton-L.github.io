@@ -1,6 +1,8 @@
 import React from 'react';
 import './Project.css';
 
+// TODO: Crearte distinct project-left and project-right classes
+
 class Project extends React.Component {
     state={}
 
@@ -11,7 +13,7 @@ class Project extends React.Component {
                     <div className="text-container">
                         <h4>UPCOMING PROJECT</h4>
                         <p className="text-content">
-                            This project is in the works...
+                            This project<br></br> is in the works
                         </p>
                     </div>
                     <div className="image-container">
