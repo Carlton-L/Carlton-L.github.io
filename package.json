@@ -8,8 +8,7 @@
     "@testing-library/user-event": "^7.2.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
-    "react-scrolling-color-background": "^1.0.2"
+    "react-scripts": "3.4.1"
   },
   "homepage": "https://Carlton-L.github.io/",
   "scripts": {
