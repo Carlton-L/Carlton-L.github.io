@@ -197,23 +197,33 @@ p {
     }
 
     @-webkit-keyframes slideUp {
-        0%,
+        0% {
+            transform: translateY(0);
+        }
         15% {
             transform: translateY(0);
         }
-        20%,
+        20% {
+            transform: translateY(var(--slide-amount));
+        }
         35% {
             transform: translateY(var(--slide-amount));
         }
-        40%,
+        40% {
+            transform: translateY(calc(var(--slide-amount) * 2));
+        }
         55% {
             transform: translateY(calc(var(--slide-amount) * 2));
         }
-        60%,
+        60% {
+            transform: translateY(calc(var(--slide-amount) * 3));
+        }
         75% {
             transform: translateY(calc(var(--slide-amount) * 3));
         }
-        80%,
+        80% {
+            transform: translateY(calc(var(--slide-amount) * 4));
+        }
         95% {
             transform: translateY(calc(var(--slide-amount) * 4));
         }
