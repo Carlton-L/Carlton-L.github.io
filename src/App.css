@@ -100,28 +100,38 @@ p {
 }
 
 @-webkit-keyframes slideUp {
-    0%,
+    0% {
+        -webkit-transform: translateY(0);
+    }
     15% {
-        transform: translateY(0);
+        -webkit-transform: translateY(0);
     }
-    20%,
+    20% {
+        -webkit-transform: translateY(var(--slide-amount));
+    }
     35% {
-        transform: translateY(var(--slide-amount));
+        -webkit-transform: translateY(var(--slide-amount));
     }
-    40%,
+    40% {
+        -webkit-transform: translateY(calc(var(--slide-amount) * 2));
+    }
     55% {
-        transform: translateY(calc(var(--slide-amount) * 2));
+        -webkit-transform: translateY(calc(var(--slide-amount) * 2));
     }
-    60%,
+    60% {
+        -webkit-transform: translateY(calc(var(--slide-amount) * 3));
+    }
     75% {
-        transform: translateY(calc(var(--slide-amount) * 3));
+        -webkit-transform: translateY(calc(var(--slide-amount) * 3));
     }
-    80%,
+    80% {
+        -webkit-transform: translateY(calc(var(--slide-amount) * 4));
+    }
     95% {
-        transform: translateY(calc(var(--slide-amount) * 4));
+        -webkit-transform: translateY(calc(var(--slide-amount) * 4));
     }
     100% {
-        transform: translateY(calc(var(--slide-amount) * 5));
+        -webkit-transform: translateY(calc(var(--slide-amount) * 5));
     }
 }
 
@@ -194,68 +204,6 @@ p {
 
     p {
         font-size: 0.9rem;
-    }
-
-    @-webkit-keyframes slideUp {
-        0% {
-            transform: translateY(0);
-        }
-        15% {
-            transform: translateY(0);
-        }
-        20% {
-            transform: translateY(var(--slide-amount));
-        }
-        35% {
-            transform: translateY(var(--slide-amount));
-        }
-        40% {
-            transform: translateY(calc(var(--slide-amount) * 2));
-        }
-        55% {
-            transform: translateY(calc(var(--slide-amount) * 2));
-        }
-        60% {
-            transform: translateY(calc(var(--slide-amount) * 3));
-        }
-        75% {
-            transform: translateY(calc(var(--slide-amount) * 3));
-        }
-        80% {
-            transform: translateY(calc(var(--slide-amount) * 4));
-        }
-        95% {
-            transform: translateY(calc(var(--slide-amount) * 4));
-        }
-        100% {
-            transform: translateY(calc(var(--slide-amount) * 5));
-        }
-    }
-
-    @keyframes slideUp {
-        0%,
-        15% {
-            transform: translateY(0);
-        }
-        20%,
-        35% {
-            transform: translateY(var(--slide-amount));
-        }
-        40%,
-        55% {
-            transform: translateY(calc(var(--slide-amount) * 2));
-        }
-        60%,
-        75% {
-            transform: translateY(calc(var(--slide-amount) * 3));
-        }
-        80%,
-        95% {
-            transform: translateY(calc(var(--slide-amount) * 4));
-        }
-        100% {
-            transform: translateY(calc(var(--slide-amount) * 5));
-        }
     }
 }
 
