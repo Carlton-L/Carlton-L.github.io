@@ -1,11 +1,23 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider } from 'styled-components';
+import merge from 'lodash.merge';
+import get from 'lodash.get';
 import getUserColorScheme from '../hooks/getUserColorScheme';
+import getLocalStorage from '../hooks/getLocalStorage';
 import Seo from '../components/seo';
 import Header from '../components/header';
-import Footer from '../components/footer';
-import Themes from '../themes/themes';
+import baseTheme from '../themes/theme';
 import GlobalStyle from './globalStyle';
+
+// Modes listed here must match a mode in theme.js
+const modes = [
+  'dark',
+  'light'
+];
+
+const getTheme = (mode) => merge({}, baseTheme, {
+  colors: get(baseTheme.colors.modes, mode, baseTheme.colors),
+});
 
 const MainLayout = ({
   children,
@@ -15,19 +27,17 @@ const MainLayout = ({
   path = false,
   props,
 }) => {
-  const [currentTheme, setCurrentTheme] = useState(getUserColorScheme());
-  const getOppositeTheme = useCallback(
-    () => ((currentTheme === 'light') ? 'dark' : 'light'),
-    [currentTheme],
-  );
+  // Check localStorage for theme, otherwise use user's default color scheme (defaults to 'dark')
+  const [currentTheme, setCurrentTheme] = useState(getLocalStorage('theme') || getUserColorScheme());
+  const theme = getTheme(currentTheme);
+
   return (
     <>
       <Seo title={title} description={description} image={image} path={path} />
       <GlobalStyle />
-      <ThemeProvider theme={Themes[currentTheme]}>
-        <Header handleTheme={() => setCurrentTheme(getOppositeTheme())} />
+      <ThemeProvider theme={theme}>
+        <Header handleTheme={setCurrentTheme} themeOptions={modes} />
         {children}
-        <Footer />
       </ThemeProvider>
     </>
   );
