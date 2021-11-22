@@ -43,21 +43,3 @@ const theme = {
 };
 
 export default theme;
-
-/*
-const theme = {
-  colors: {
-    background: "",
-    paper: "",
-    primary: "",
-    secondary: "",
-    tertiary: "",
-    error: "",
-    warning; "",
-    info: "",
-    inactive: "",
-    textPrimary: "",
-    textSecondary: "",
-  }
-}
-*/
