@@ -41,3 +41,21 @@ const darkTheme = {
 };
 
 export default { light: lightTheme, dark: darkTheme };
+
+/*
+const theme = {
+  colors: {
+    background: "",
+    paper: "",
+    primary: "",
+    secondary: "",
+    tertiary: "",
+    error: "",
+    warning; "",
+    info: "",
+    inactive: "",
+    textPrimary: "",
+    textSecondary: "",
+  }
+}
+*/
