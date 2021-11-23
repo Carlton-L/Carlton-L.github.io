@@ -4,6 +4,8 @@ import { color, background } from 'styled-system';
 import { StaticImage } from 'gatsby-plugin-image';
 import { Link } from 'gatsby';
 
+import ThemeSwitch from './themeSwitch';
+
 const Wrapper = styled.header`
   ${color}
   width: 100%;
@@ -31,15 +33,20 @@ const ImageContainer = styled.div`
   width: 48px;
   border-radius: 10px;
   overflow: hidden;
+  // Safari border-radius fix
+  transform: translateZ(0);
 
   @media (min-width: 834px) {
     height: 54px;
     width: 54px;
   }
+
 `;
 
 const NavbarMobile = styled.nav`
   width: auto;
+  align-items: center;
+  display: flex;
 
   @media (min-width: 834px) {
     display: none;
@@ -47,44 +54,53 @@ const NavbarMobile = styled.nav`
 `;
 
 const NavbarDesktop = styled.nav`
-  width: 256px;
+  width: 375px;
   display: none;
   justify-content: space-between;
-
+  align-items: center;
+  
   @media (min-width: 834px) {
     display: flex;
   }
-`;
+  `;
 
 const NavbarItem = styled.div`
   color: inherit;
   text-decoration: none;
   height: 21px;
-  align-self: center;
 
   &:hover {
     text-decoration: underline;
   }
 `;
 
-const Header = ({ handleTheme, themeOptions }) => (
-  <Wrapper backgroundColor="paper" color="textSecondary">
+const Header = ({
+  currentTheme, handleTheme, themeOptions, backgroundColor, color
+}) => (
+  <Wrapper backgroundColor={backgroundColor} color={color}>
     <Content>
       <ImageContainer>
-        <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
+        <Link to="/">
+          <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
+        </Link>
       </ImageContainer>
       <NavbarMobile>
         <NavbarItem as={Link} to="">Projects</NavbarItem>
         <NavbarItem as={Link} to="">Résumé</NavbarItem>
-        {/* <ThemeSwitch themes={themeOptions} handleChange={handleTheme} /> */}
+        <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
       </NavbarMobile>
       <NavbarDesktop>
         <NavbarItem as={Link} to="">Projects</NavbarItem>
         <NavbarItem as={Link} to="">Résumé</NavbarItem>
-        {/* <ThemeSwitch themes={themeOptions} handleChange={handleTheme} /> */}
+        <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
       </NavbarDesktop>
     </Content>
   </Wrapper>
 );
+
+Header.defaultProps = {
+  backgroundColor: 'paper',
+  color: 'textSecondary'
+};
 
 export default Header;
