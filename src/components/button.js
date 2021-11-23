@@ -12,13 +12,17 @@ const Button = styled.button`
         borderWidth: '3px',
       },
       small: {
-        padding: '6px, 8px',
+        padding: '6px 8px',
         borderWidth: '0px',
       }
     }
   })}
-  borderRadius: 10px;
-  fontSize: 0.75rem;
+  border-radius: 10px;
+  border-style: solid;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  height: auto;
 `;
 
 Button.defaultProps = {
@@ -27,3 +31,5 @@ Button.defaultProps = {
   variant: 'normal',
   borderColor: 'primary',
 };
+
+export default Button;
