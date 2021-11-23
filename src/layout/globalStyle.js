@@ -15,9 +15,11 @@ ${reset}
   src: local('Menlo-Bold'),
   url(${MenloBold});
 }
+* {
+  box-sizing: border-box
+}
 html, body {
   font-family: Menlo, Menlo-Regular, Monaco, 'Courier New', monospace;
-  box-sizing: border-box
 }
 `;
 
