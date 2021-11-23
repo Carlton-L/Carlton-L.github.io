@@ -12,7 +12,8 @@ import GlobalStyle from './globalStyle';
 // Modes listed here must match a mode in theme.js
 const modes = [
   'dark',
-  'light'
+  'light',
+  'night'
 ];
 
 const getTheme = (mode) => merge({}, baseTheme, {
@@ -36,7 +37,7 @@ const MainLayout = ({
       <Seo title={title} description={description} image={image} path={path} />
       <GlobalStyle />
       <ThemeProvider theme={theme}>
-        <Header handleTheme={setCurrentTheme} themeOptions={modes} />
+        <Header currentTheme={currentTheme} handleTheme={setCurrentTheme} themeOptions={modes} />
         {children}
       </ThemeProvider>
     </>
