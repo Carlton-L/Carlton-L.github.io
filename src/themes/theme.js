@@ -37,6 +37,19 @@ const theme = {
         inactive: '#928374',
         textPrimary: '#3C3836',
         textSecondary: '#076678',
+      },
+      night: {
+        background: '#070621',
+        paper: '#051336',
+        primary: '#F44747',
+        secondary: '#78ffff',
+        tertiary: '#d778ff',
+        error: '#ff7882',
+        warning: '#ffe580',
+        info: '#6796E6',
+        inactive: '#333333',
+        textPrimary: '#ffffff',
+        textSecondary: '#80baff',
       }
     }
   }
