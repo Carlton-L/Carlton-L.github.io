@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ThemeProvider } from 'styled-components';
 import merge from 'lodash.merge';
 import get from 'lodash.get';
+import { AnimatePresence } from 'framer-motion';
 import getUserColorScheme from '../hooks/getUserColorScheme';
 import getLocalStorage from '../hooks/getLocalStorage';
 import Seo from '../components/seo';
@@ -38,7 +39,9 @@ const MainLayout = ({
       <GlobalStyle />
       <ThemeProvider theme={theme}>
         <Header currentTheme={currentTheme} handleTheme={setCurrentTheme} themeOptions={modes} />
-        {children}
+        <AnimatePresence>
+          {children}
+        </AnimatePresence>
       </ThemeProvider>
     </>
   );
