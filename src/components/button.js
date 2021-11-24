@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { color, border, variant } from 'styled-system';
 
