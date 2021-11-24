@@ -1,17 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import { color, background } from 'styled-system';
 import { StaticImage } from 'gatsby-plugin-image';
 import { Link } from 'gatsby';
 
 import ThemeSwitch from './themeSwitch';
 
-const Wrapper = styled.header`
+const Wrapper = styled(motion.header)`
   ${color}
   width: 100%;
+  // TODO: Make height a var
   height: 80px;
+
+  position: fixed;
+  top: 0;
+
+  min-width: 330px;
+
+  /*
+    // TODO: Auto-hide header
+    (If scrolled to top, above styles apply)
+    If scrolling up and not scrolled to top, stay visible
+    If scrolling down and not scrolled to top, translateY height * -1
+  */
   
   @media (min-width: 834px) {
+    // TODO: Make height a var
     height: 100px;
   }
   `;
@@ -31,6 +46,7 @@ const Content = styled.div`
 const ImageContainer = styled.div`
   height: 48px;
   width: 48px;
+  min-width: 48px;
   border-radius: 10px;
   overflow: hidden;
   // Safari border-radius fix
@@ -45,10 +61,16 @@ const ImageContainer = styled.div`
 
 const NavbarMobile = styled.nav`
   width: auto;
-  align-items: center;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-grow: 1;
+  transform: translateX(
+    ${(props) => (props.open ? '0px' : `${props.clientWidth - 40}px`)}
+  );
+  transition: transform 0.5s ease-out;
 
-  @media (min-width: 834px) {
+  @media (min-width: 535px) {
     display: none;
   }
 `;
@@ -59,10 +81,21 @@ const NavbarDesktop = styled.nav`
   justify-content: space-between;
   align-items: center;
   
-  @media (min-width: 834px) {
+  @media (min-width: 535px) {
     display: flex;
   }
   `;
+
+const NavbarButton = styled.div`
+  font-size: 48px;
+  color: inherit;
+  margin-left: 16px;
+  margin-right: 16px;
+  line-height: 0px;
+  transform: rotate(${(props) => (props.open ? '-180deg' : '0deg')});
+  transition: transform 0.5s ease-out;
+  cursor: pointer;
+`;
 
 const NavbarItem = styled.div`
   color: inherit;
@@ -76,27 +109,43 @@ const NavbarItem = styled.div`
 
 const Header = ({
   currentTheme, handleTheme, themeOptions, backgroundColor, color
-}) => (
-  <Wrapper backgroundColor={backgroundColor} color={color}>
-    <Content>
-      <ImageContainer>
-        <Link to="/">
-          <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
-        </Link>
-      </ImageContainer>
-      <NavbarMobile>
-        <NavbarItem as={Link} to="">Projects</NavbarItem>
-        <NavbarItem as={Link} to="">Résumé</NavbarItem>
-        <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
-      </NavbarMobile>
-      <NavbarDesktop>
-        <NavbarItem as={Link} to="">Projects</NavbarItem>
-        <NavbarItem as={Link} to="">Résumé</NavbarItem>
-        <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
-      </NavbarDesktop>
-    </Content>
-  </Wrapper>
-);
+}) => {
+  const [navbarWidth, setNavbarWidth] = useState();
+  useEffect(() => {
+    setNavbarWidth(document.getElementById('mobile-nav').offsetWidth);
+  }, []);
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleResize = () => {
+    setNavbarWidth(document.getElementById('mobile-nav').offsetWidth);
+  };
+
+  window.addEventListener('resize', handleResize);
+  return (
+    <Wrapper backgroundColor={backgroundColor} color={color} layout>
+      <Content>
+        <ImageContainer>
+          <Link to="/">
+            <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
+          </Link>
+        </ImageContainer>
+        <NavbarMobile id="mobile-nav" open={isOpen} clientWidth={navbarWidth}>
+          <NavbarButton open={isOpen} onClick={() => setIsOpen(!isOpen)}>
+            &#60;
+          </NavbarButton>
+          <NavbarItem as={Link} to="">Projects</NavbarItem>
+          <NavbarItem as={Link} to="">Résumé</NavbarItem>
+          <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
+        </NavbarMobile>
+        <NavbarDesktop>
+          <NavbarItem as={Link} to="">Projects</NavbarItem>
+          <NavbarItem as={Link} to="">Résumé</NavbarItem>
+          <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
+        </NavbarDesktop>
+      </Content>
+    </Wrapper>
+  );
+};
 
 Header.defaultProps = {
   backgroundColor: 'paper',
