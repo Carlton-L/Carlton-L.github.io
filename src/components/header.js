@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { color, background } from 'styled-system';
+import { color } from 'styled-system';
 import { StaticImage } from 'gatsby-plugin-image';
 import { Link } from 'gatsby';
 
@@ -104,10 +105,12 @@ const NavbarItem = styled.div`
 
   &:hover {
     text-decoration: underline;
+    transform: translateY(-3px);
   }
 `;
 
 const Header = ({
+  // eslint-disable-next-line no-shadow
   currentTheme, handleTheme, themeOptions, backgroundColor, color
 }) => {
   const [navbarWidth, setNavbarWidth] = useState();
@@ -133,18 +136,26 @@ const Header = ({
           <NavbarButton open={isOpen} onClick={() => setIsOpen(!isOpen)}>
             &#60;
           </NavbarButton>
-          <NavbarItem as={Link} to="">Projects</NavbarItem>
+          <NavbarItem as={Link} to="/projects">Projects</NavbarItem>
           <NavbarItem as={Link} to="">Résumé</NavbarItem>
           <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
         </NavbarMobile>
         <NavbarDesktop>
-          <NavbarItem as={Link} to="">Projects</NavbarItem>
+          <NavbarItem as={Link} to="/projects">Projects</NavbarItem>
           <NavbarItem as={Link} to="">Résumé</NavbarItem>
           <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
         </NavbarDesktop>
       </Content>
     </Wrapper>
   );
+};
+
+Header.propTypes = {
+  backgroundColor: PropTypes.string,
+  color: PropTypes.string,
+  currentTheme: PropTypes.string,
+  handleTheme: PropTypes.func,
+  themeOptions: PropTypes.array,
 };
 
 Header.defaultProps = {
