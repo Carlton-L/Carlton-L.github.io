@@ -8,7 +8,7 @@ const Button = styled.button`
   ${variant({
     variants: {
       normal: {
-        padding: '12px 18px',
+        padding: '9px 15px',
         borderWidth: '3px',
       },
       small: {
@@ -23,6 +23,11 @@ const Button = styled.button`
   cursor: pointer;
   font-family: inherit;
   height: auto;
+  margin: 6px;
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.background};
+  }
 `;
 
 Button.propTypes = {
