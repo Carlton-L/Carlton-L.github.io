@@ -47,7 +47,7 @@ const theme = {
         error: '#ff7882',
         warning: '#ffe580',
         info: '#6796E6',
-        inactive: '#333333',
+        inactive: '#384887',
         textPrimary: '#ffffff',
         textSecondary: '#80baff',
       }
