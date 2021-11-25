@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { color } from 'styled-system';
 import { StaticImage } from 'gatsby-plugin-image';
 import { Link } from 'gatsby';
@@ -45,7 +45,7 @@ const Content = styled.div`
   }
   `;
 
-const ImageContainer = styled.div`
+const ImageContainer = styled(motion.div)`
   height: 48px;
   width: 48px;
   min-width: 48px;
@@ -54,10 +54,6 @@ const ImageContainer = styled.div`
   // Safari border-radius fix
   transform: translateZ(0);
 
-  &:hover {
-    transform: scale(1.1) rotate(-10deg);
-  }
-
   @media (min-width: 834px) {
     height: 54px;
     width: 54px;
@@ -65,16 +61,11 @@ const ImageContainer = styled.div`
 
 `;
 
-const NavbarMobile = styled.nav`
-  width: auto;
+const NavbarMobile = styled(motion.nav)`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   flex-grow: 1;
-  transform: translateX(
-    ${(props) => (props.open ? '0px' : `${props.clientWidth - 40}px`)}
-  );
-  transition: transform 0.3s ease-out;
 
   @media (min-width: 535px) {
     display: none;
@@ -92,7 +83,7 @@ const NavbarDesktop = styled.nav`
   }
   `;
 
-const NavbarButton = styled.div`
+const NavbarButton = styled(motion.div)`
   font-size: 48px;
   color: inherit;
   margin-left: 16px;
@@ -100,50 +91,68 @@ const NavbarButton = styled.div`
   transform: rotate(${(props) => (props.open ? '-180deg' : '0deg')});
   transition: transform 0.5s ease-out;
   cursor: pointer;
-`;
+  `;
 
-const NavbarItem = styled.div`
+const NavbarItem = styled(motion.div)`
   color: inherit;
   text-decoration: none;
   height: 21px;
-
+  
   &:hover {
     text-decoration: underline;
     transform: translateY(-3px);
     color: ${(props) => props.theme.colors.textPrimary};
   }
+  `;
+
+const NavbarList = styled(motion.div)`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-grow: 1;
+  margin-left: 16px;
+  `;
+
+const CloseButton = styled(motion.div)`
+  cursor: pointer;
+  transform: translateY(-5px);
+  font-size: 48px;
 `;
 
 const Header = ({
   // eslint-disable-next-line no-shadow
   currentTheme, handleTheme, themeOptions, backgroundColor, color
 }) => {
-  const [navbarWidth, setNavbarWidth] = useState();
-  useEffect(() => {
-    setNavbarWidth(document.getElementById('mobile-nav').offsetWidth);
-  }, []);
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const handleResize = () => {
-    setNavbarWidth(document.getElementById('mobile-nav').offsetWidth);
-  };
-
-  window.addEventListener('resize', handleResize);
   return (
-    <Wrapper backgroundColor={backgroundColor} color={color} layout>
+    <Wrapper backgroundColor={backgroundColor} color={color}>
       <Content>
-        <ImageContainer>
-          <Link to="/">
-            <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
-          </Link>
-        </ImageContainer>
-        <NavbarMobile id="mobile-nav" open={isOpen} clientWidth={navbarWidth}>
-          <NavbarButton open={isOpen} onClick={() => setIsOpen(!isOpen)}>
-            &#60;
-          </NavbarButton>
-          <NavbarItem as={Link} to="/projects">Projects</NavbarItem>
-          <NavbarItem as={Link} to="">Résumé</NavbarItem>
-          <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
+        <AnimatePresence exitBeforeEnter>
+          {!isOpen && (
+          <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} whileHover={{ scale: 1.1, rotate: '10deg' }}>
+            <Link to="/" onClick={() => setIsOpen(false)}>
+              <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
+            </Link>
+          </ImageContainer>
+          )}
+        </AnimatePresence>
+        <NavbarMobile data-isOn={isOpen} id="mobile-nav" open={isOpen} layout>
+          <AnimatePresence exitBeforeEnter>
+            {!isOpen && (
+              <NavbarButton open={isOpen} onClick={() => setIsOpen(!isOpen)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                &#60;
+              </NavbarButton>
+            )}
+            {isOpen && (
+              <NavbarList id="someid" key="somekey" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} layout>
+                <CloseButton onClick={() => setIsOpen(false)}>x</CloseButton>
+                <NavbarItem as={Link} to="/projects" onClick={() => setIsOpen(false)}>Projects</NavbarItem>
+                <NavbarItem as={Link} to="" onClick={() => setIsOpen(false)}>Résumé</NavbarItem>
+                <ThemeSwitch currentTheme={currentTheme} themeOptions={themeOptions} handleTheme={handleTheme} />
+              </NavbarList>
+            )}
+          </AnimatePresence>
         </NavbarMobile>
         <NavbarDesktop>
           <NavbarItem as={Link} to="/projects">Projects</NavbarItem>
