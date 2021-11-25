@@ -46,6 +46,7 @@ const Content = styled.div`
     &:focus {
       text-decoration: underline;
       transform: translateY(-3px);
+      color: ${(props) => props.theme.colors.textPrimary};
     }
 `;
 
