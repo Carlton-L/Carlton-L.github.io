@@ -14,6 +14,7 @@ const Wrapper = styled(motion.header)`
   // TODO: Make height a var
   height: 80px;
 
+  z-index: 150;
   position: fixed;
   top: 0;
 
