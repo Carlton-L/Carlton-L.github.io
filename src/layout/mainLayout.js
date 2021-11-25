@@ -49,9 +49,7 @@ const MainLayout = ({
       <ThemeProvider theme={theme}>
         <Header currentTheme={currentTheme} handleTheme={setCurrentTheme} themeOptions={modes} />
         <Wrapper backgroundColor="background">
-          <AnimatePresence>
-            {children}
-          </AnimatePresence>
+          {children}
         </Wrapper>
         <Footer />
       </ThemeProvider>
