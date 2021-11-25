@@ -4,7 +4,7 @@ import styled, { ThemeProvider } from 'styled-components';
 import { color } from 'styled-system';
 import merge from 'lodash.merge';
 import get from 'lodash.get';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import getUserColorScheme from '../hooks/getUserColorScheme';
 import getLocalStorage from '../hooks/getLocalStorage';
@@ -25,7 +25,7 @@ const getTheme = (mode) => merge({}, baseTheme, {
   colors: get(baseTheme.colors.modes, mode, baseTheme.colors),
 });
 
-const Wrapper = styled.main`
+const Wrapper = styled(motion.main)`
   ${color}
   min-height: 100vh;
   width: 100vw;
