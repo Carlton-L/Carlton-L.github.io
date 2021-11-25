@@ -2,18 +2,26 @@ import { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
 import MenloRegular from '../fonts/Menlo-Regular.ttf';
 import MenloBold from '../fonts/Menlo-Bold.ttf';
+import BiennaleBlack from '../fonts/Biennale-Black.otf';
 
 const GlobalStyle = createGlobalStyle`
 ${reset}
 @font-face {
   font-family: Menlo-Regular;
+  font-weight: normal;
   src: local('Menlo-Regular'),
   url(${MenloRegular});
 }
 @font-face {
   font-family: Menlo-Bold;
+  font-weight: bold;
   src: local('Menlo-Bold'),
   url(${MenloBold});
+}
+@font-face {
+  font-family: Biennale-Black;
+  src: local('Biennale-Black'),
+  url(${BiennaleBlack});
 }
 html, body, div, a, p, button, span, header, footer, section, nav, svg {
   box-sizing: border-box;
