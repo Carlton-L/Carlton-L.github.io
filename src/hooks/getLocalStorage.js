@@ -1,6 +1,6 @@
 const getLocalStorage = (key) => {
   if (typeof window !== 'undefined') {
-    window.localStorage.getItem(key);
+    return window.localStorage.getItem(key);
   }
 };
 
