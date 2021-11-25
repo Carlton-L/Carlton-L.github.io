@@ -23,6 +23,12 @@ ${reset}
   src: local('Biennale-Black'),
   url(${BiennaleBlack});
 }
+html, body {
+  overflow: hidden;
+}
+body {
+  position: relative;
+}
 html, body, div, a, p, button, span, header, footer, section, nav, svg {
   box-sizing: border-box;
   transition: color 0.5s ease, background-color 0.5s ease, border-color 0.2s ease, transform 0.1s ease;
