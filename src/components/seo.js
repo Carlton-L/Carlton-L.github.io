@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { useStaticQuery, graphql } from 'gatsby';
 
@@ -44,6 +45,13 @@ const Seo = ({
       {image && <meta name="twitter:image" content={image} />}
     </Helmet>
   );
+};
+
+Seo.propTypes = {
+  title: PropTypes.string,
+  description: PropTypes.string,
+  image: PropTypes.string,
+  path: PropTypes.string,
 };
 
 export default Seo;
