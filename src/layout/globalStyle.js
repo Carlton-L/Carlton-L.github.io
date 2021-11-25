@@ -15,9 +15,12 @@ ${reset}
   src: local('Menlo-Bold'),
   url(${MenloBold});
 }
-*, html, body {
+html, body, div, a, p, button, span, header, footer, section, nav, svg {
   box-sizing: border-box;
-  transition: color 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
+  transition: color 0.5s ease, background-color 0.5s ease, border-color 0.2s ease, transform 0.1s ease;
+  -moz-transition: color 0.5s ease, background-color 0.5s ease, border-color 0.2s ease, transform 0.1s ease;
+  -webkit-transition: color 0.5s ease, background-color 0.5s ease, border-color 0.2s ease, transform 0.1s ease;
+  -o-transition: color 0.5s ease, background-color 0.5s ease, border-color 0.2s ease, transform 0.1s ease;
   font-family: Menlo, Menlo-Regular, Monaco, 'Courier New', monospace;
 }
 `;
