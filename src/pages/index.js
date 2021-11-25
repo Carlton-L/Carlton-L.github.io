@@ -1,10 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { color, layout, space } from 'styled-system';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import MainLayout from '../layout/mainLayout';
 import Button from '../components/button';
+import { socialLinks } from '../utils/config';
 
 const Page = styled(motion.div)`
   width: 100vw;
@@ -93,21 +94,46 @@ const Links = styled(motion.div)`
 `;
 
 const Social = styled(motion.div)`
+  ${color}
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
 
+  @media (min-width: 834px) {
+    display: none;
+  }
+`;
+
+const Icon = styled(motion.a)`
+  color: inherit;
+  padding: 10px;
+  &:hover,
+  &:focus {
+    transform: translateY(-3px);
+    color: ${(props) => props.theme.colors.textPrimary};
+  }
+
+  svg {
+    color: inherit;
+    width: 32px;
+    height: 32px;
+
+    path { fill: currentColor; }
+  }
 `;
 
 const IndexPage = () => (
   <MainLayout>
-    <Page initial={{ y: -100 }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 100 }}>
-      <Hero backgroundColor="paper" initial={{ }}>
-        <TitleContainer>
+    <Page initial={{ y: '-70vh' }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 50 }} exit={{ y: '-70vh' }}>
+      <Hero backgroundColor="paper">
+        <TitleContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
           <Subtitle color="warning">Hello, my name is</Subtitle>
           <Title color="textPrimary">
             Carlton
             Lindsay.
           </Title>
         </TitleContainer>
-        <IntroContainer>
+        <IntroContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
           <Intro color="textSecondary">
             {'/*'}
             {' '}
@@ -126,6 +152,11 @@ const IndexPage = () => (
               View Résumé
             </Button>
           </Links>
+          <Social color="inactive">
+            {
+              socialLinks.map(({ name, url, icon }, i) => <Icon href={url} aria-label={name} target="_blank" rel="noreferrer" key={i} dangerouslySetInnerHTML={{ __html: icon }} />)
+            }
+          </Social>
         </IntroContainer>
       </Hero>
     </Page>
