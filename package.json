@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/Carlton-L/Carlton-L.github.io#readme",
   "dependencies": {
-    "babel-plugin-styled-components": "^2.0.0",
     "babel-preset-react-app": "^10.0.0",
     "dotenv": "^10.0.0",
     "framer-motion": "^5.3.1",
@@ -45,6 +44,7 @@
     "styled-system": "^5.1.5"
   },
   "devDependencies": {
+    "babel-plugin-styled-components": "^2.0.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^19.0.0",
     "eslint-config-prettier": "^8.3.0",
