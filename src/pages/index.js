@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { color, layout, space } from 'styled-system';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'gatsby';
 
 import MainLayout from '../layout/mainLayout';
 import Button from '../components/button';
@@ -124,7 +125,7 @@ const Icon = styled(motion.a)`
 
 const IndexPage = () => (
   <MainLayout>
-    <Page initial={{ y: '-70vh' }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 50 }} exit={{ y: '-70vh' }}>
+    <Page key="indexpage" initial={{ y: '-70vh' }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 50 }} exit={{ y: '-70vh' }}>
       <Hero backgroundColor="paper">
         <TitleContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
           <Subtitle color="warning">Hello, my name is</Subtitle>
@@ -145,7 +146,7 @@ const IndexPage = () => (
             {'*/'}
           </Intro>
           <Links>
-            <Button color="warning" borderColor="primary">
+            <Button as={Link} to="/projects" color="warning" borderColor="primary">
               View Projects
             </Button>
             <Button color="warning" borderColor="secondary">
