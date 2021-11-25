@@ -1,5 +1,5 @@
 const setLocalStorage = (key, value) => {
-  window.localStorage.setItem(key, JSON.stringify(value));
+  window.localStorage.setItem(key, value);
 };
 
 export default setLocalStorage;
