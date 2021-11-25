@@ -41,6 +41,7 @@ const Icon = styled.a`
     &:hover,
     &:focus {
       transform: translateY(-3px);
+      color: ${(props) => props.theme.colors.textPrimary};
     }
     
     svg {
