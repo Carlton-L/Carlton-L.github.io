@@ -53,6 +53,10 @@ const ImageContainer = styled.div`
   // Safari border-radius fix
   transform: translateZ(0);
 
+  &:hover {
+    transform: scale(1.1) rotate(-10deg);
+  }
+
   @media (min-width: 834px) {
     height: 54px;
     width: 54px;
@@ -69,7 +73,7 @@ const NavbarMobile = styled.nav`
   transform: translateX(
     ${(props) => (props.open ? '0px' : `${props.clientWidth - 40}px`)}
   );
-  transition: transform 0.5s ease-out;
+  transition: transform 0.3s ease-out;
 
   @media (min-width: 535px) {
     display: none;
@@ -91,7 +95,6 @@ const NavbarButton = styled.div`
   font-size: 48px;
   color: inherit;
   margin-left: 16px;
-  margin-right: 16px;
   line-height: 0px;
   transform: rotate(${(props) => (props.open ? '-180deg' : '0deg')});
   transition: transform 0.5s ease-out;
@@ -106,6 +109,7 @@ const NavbarItem = styled.div`
   &:hover {
     text-decoration: underline;
     transform: translateY(-3px);
+    color: ${(props) => props.theme.colors.textPrimary};
   }
 `;
 
