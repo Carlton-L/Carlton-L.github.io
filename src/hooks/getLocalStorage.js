@@ -1,5 +1,3 @@
-const getLocalStorage = (key, value) => {
-  window.localStorage.getItem(key);
-};
+const getLocalStorage = (key) => window.localStorage.getItem(key);
 
 export default getLocalStorage;
