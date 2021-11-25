@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 
 import baseTheme from '../themes/theme';
 import setLocalStorage from '../hooks/setLocalStorage';
@@ -31,10 +30,3 @@ const ThemeSwitch = ({ currentTheme, themeOptions, handleTheme }) => {
 };
 
 export default ThemeSwitch;
-
-/*
-Know what the current theme is
-Know what the next theme is
-Get the index of the current theme, add 1, if it equals array.length(), set to 0, else set to current +1
-themeOptions.indexOf(currentTheme)+1 >== themeOptions.length() ? 0 : themeOptions.indexOf(currentTheme)+1
-*/
