@@ -31,18 +31,6 @@ const Wrapper = styled.section`
   width: 100vw;
 `;
 
-const Content = styled.div`
-  max-width: 1200px;
-  margin: auto;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  
-  @media (min-width: 834px) {
-    padding: 24px;
-  }
-  `;
-
 const MainLayout = ({
   children,
   title,
@@ -61,11 +49,9 @@ const MainLayout = ({
       <ThemeProvider theme={theme}>
         <Header currentTheme={currentTheme} handleTheme={setCurrentTheme} themeOptions={modes} />
         <Wrapper backgroundColor="background">
-          <Content>
-            <AnimatePresence>
-              {children}
-            </AnimatePresence>
-          </Content>
+          <AnimatePresence>
+            {children}
+          </AnimatePresence>
         </Wrapper>
         <Footer />
       </ThemeProvider>
