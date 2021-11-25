@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { color, border, variant } from 'styled-system';
 
@@ -23,6 +24,13 @@ const Button = styled.button`
   font-family: inherit;
   height: auto;
 `;
+
+Button.propTypes = {
+  backgroundColor: PropTypes.string,
+  color: PropTypes.string,
+  variant: PropTypes.string,
+  borderColor: PropTypes.string,
+};
 
 Button.defaultProps = {
   backgroundColor: 'paper',
