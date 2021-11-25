@@ -15,6 +15,11 @@ const ThemeSwitch = ({ currentTheme, themeOptions, handleTheme }) => {
   setLocalStorage(nextTheme);
   return (
     <Button
+      css={`
+      &:hover {
+        background-color: ${baseTheme.colors.modes[nextTheme].background};
+      }
+    `}
       color={baseTheme.colors.modes[nextTheme].textPrimary}
       backgroundColor={baseTheme.colors.modes[nextTheme].paper}
       onClick={() => {
