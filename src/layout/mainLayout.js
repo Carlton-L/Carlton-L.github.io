@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { ThemeProvider } from 'styled-components';
+import PropTypes from 'prop-types';
+import styled, { ThemeProvider } from 'styled-components';
+import { color } from 'styled-system';
 import merge from 'lodash.merge';
 import get from 'lodash.get';
 import { AnimatePresence } from 'framer-motion';
+
 import getUserColorScheme from '../hooks/getUserColorScheme';
 import getLocalStorage from '../hooks/getLocalStorage';
 import Seo from '../components/seo';
 import Header from '../components/header';
+import Footer from '../components/footer';
 import baseTheme from '../themes/theme';
 import GlobalStyle from './globalStyle';
 
@@ -21,13 +25,30 @@ const getTheme = (mode) => merge({}, baseTheme, {
   colors: get(baseTheme.colors.modes, mode, baseTheme.colors),
 });
 
+const Wrapper = styled.section`
+  ${color}
+  min-height: 100vh;
+  width: 100vw;
+`;
+
+const Content = styled.div`
+  max-width: 1200px;
+  margin: auto;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  
+  @media (min-width: 834px) {
+    padding: 24px;
+  }
+  `;
+
 const MainLayout = ({
   children,
-  title = false,
-  description = false,
-  image = false,
-  path = false,
-  props,
+  title,
+  description,
+  image,
+  path,
 }) => {
   // Check localStorage for theme, otherwise use user's default color scheme (defaults to 'dark')
   const [currentTheme, setCurrentTheme] = useState(getLocalStorage('theme') || getUserColorScheme());
@@ -39,12 +60,24 @@ const MainLayout = ({
       <GlobalStyle />
       <ThemeProvider theme={theme}>
         <Header currentTheme={currentTheme} handleTheme={setCurrentTheme} themeOptions={modes} />
-        <AnimatePresence>
-          {children}
-        </AnimatePresence>
+        <Wrapper backgroundColor="background">
+          <Content>
+            <AnimatePresence>
+              {children}
+            </AnimatePresence>
+          </Content>
+        </Wrapper>
+        <Footer />
       </ThemeProvider>
     </>
   );
+};
+
+MainLayout.propTypes = {
+  title: PropTypes.string,
+  description: PropTypes.string,
+  image: PropTypes.string,
+  path: PropTypes.string,
 };
 
 export default MainLayout;
