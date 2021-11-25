@@ -24,6 +24,7 @@ const Button = styled.button`
   font-family: inherit;
   height: auto;
   margin: 6px;
+  text-decoration: none;
 
   &:hover {
     background-color: ${(props) => props.theme.colors.background};
