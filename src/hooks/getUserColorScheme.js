@@ -1,8 +1,10 @@
 const getUserColorScheme = () => {
-  if (window.metchMedia && window.matchMedia('prefers-color-scheme: light').matches) {
-    return 'light';
+  if (typeof window !== 'undefined') {
+    if (window.metchMedia && window.matchMedia('prefers-color-scheme: light').matches) {
+      return 'light';
+    }
+    return 'dark';
   }
-  return 'dark';
 };
 
 export default getUserColorScheme;
