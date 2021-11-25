@@ -25,7 +25,7 @@ const getTheme = (mode) => merge({}, baseTheme, {
   colors: get(baseTheme.colors.modes, mode, baseTheme.colors),
 });
 
-const Wrapper = styled.section`
+const Wrapper = styled.main`
   ${color}
   min-height: 100vh;
   width: 100vw;
