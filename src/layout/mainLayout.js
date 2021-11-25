@@ -15,16 +15,19 @@ import baseTheme from '../themes/theme';
 import GlobalStyle from './globalStyle';
 
 // Modes listed here must match a mode in theme.js
+// TODO: automatically fetch mode names from theme.js
 const modes = [
   'dark',
   'light',
   'night'
 ];
 
+// Retrieve selected mode color theme
 const getTheme = (mode) => merge({}, baseTheme, {
   colors: get(baseTheme.colors.modes, mode, baseTheme.colors),
 });
 
+// Wraper must be a motion component for exit animations to work
 const Wrapper = styled(motion.main)`
   ${color}
   min-height: 100vh;
