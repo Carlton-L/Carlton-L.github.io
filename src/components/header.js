@@ -128,7 +128,7 @@ const Header = ({
   return (
     <Wrapper backgroundColor={backgroundColor} color={color}>
       <Content>
-        <AnimatePresence exitBeforeEnter>
+        <AnimatePresence exitBeforeEnter initial={false}>
           {!isOpen && (
           <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} whileHover={{ scale: 1.1, rotate: '10deg' }}>
             <Link to="/" onClick={() => setIsOpen(false)}>
@@ -138,7 +138,7 @@ const Header = ({
           )}
         </AnimatePresence>
         <NavbarMobile data-isOn={isOpen} id="mobile-nav" open={isOpen} layout>
-          <AnimatePresence exitBeforeEnter>
+          <AnimatePresence exitBeforeEnter initial={false}>
             {!isOpen && (
               <NavbarButton open={isOpen} onClick={() => setIsOpen(!isOpen)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 &#60;
