@@ -6,7 +6,7 @@ import Email from './email';
 import { email, socialLinks } from '../utils/config';
 
 const Wrapper = styled.footer`
-  // TODO: Make height a var
+  // TODO: Make footer height a var
   height: 400px;
   width: 100vw;
   position: fixed;
