@@ -12,8 +12,8 @@ const Wrapper = styled.footer`
   position: fixed;
   bottom: 0;
 
-  z-index: 150;
-
+  z-index: 0;
+  
   display: flex;
   justify-content: center;
   `;
@@ -24,6 +24,7 @@ const Content = styled.div`
   flex-grow: 1;
   justify-content: space-between;
   align-items: flex-end;
+  z-index: 0;
 
   @media (min-width: 1200px) {
     display: flex;
