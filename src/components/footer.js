@@ -26,7 +26,7 @@ const Content = styled.div`
   align-items: flex-end;
   z-index: 0;
 
-  @media (min-width: 1200px) {
+  @media (min-width: 834px) {
     display: flex;
   } 
 `;
