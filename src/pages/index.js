@@ -10,8 +10,11 @@ import { socialLinks } from '../utils/config';
 
 const Page = styled(motion.div)`
   width: 100%;
-  height: 100%;
-  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
 `;
 
 const Hero = styled(motion.section)`

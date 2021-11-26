@@ -32,6 +32,11 @@ const Wrapper = styled(motion.main)`
   ${color}
   min-height: 100vh;
   width: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
 `;
 
 const MainLayout = ({
