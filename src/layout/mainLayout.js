@@ -31,7 +31,7 @@ const getTheme = (mode) => merge({}, baseTheme, {
 const Wrapper = styled(motion.main)`
   ${color}
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
 `;
 
 const MainLayout = ({
