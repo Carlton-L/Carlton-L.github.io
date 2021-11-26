@@ -7,7 +7,8 @@ import Button from './button';
 import { email } from '../utils/config';
 
 const Wrapper = styled(motion.div)`
-
+  padding: 8px;
+  min-height: 300px;
 `;
 
 const Form = styled(motion.form)`
@@ -83,15 +84,15 @@ const ContactForm = () => {
     <Wrapper id="contactform" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.25 }}>
       <AnimatePresence exitBeforeEnter>
         {!isOpen && (
-        <Button key="contact" color="textPrimary" borderColor="tertiary" onClick={handleOpen} initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>Contact</Button>
+          <Button key="contact" color="textPrimary" borderColor="tertiary" onClick={handleOpen} initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>Contact</Button>
         )}
         {isOpen && !isSubmitted && (
-        <Form target="frame" key="form" action={`https://formsubmit.co/${email}`} method="POST" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>
-          <Text color="textPrimary">Get in touch</Text>
-          <EmailInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Email Address" name="email" required />
-          <MessageInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Your message" name="textarea" required />
-          <Button color="tertiary" variant="small" type="submit" onClick={handleSubmit}>Submit</Button>
-        </Form>
+          <Form target="frame" key="form" action={`https://formsubmit.co/${email}`} method="POST" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>
+            <Text color="textPrimary">Get in touch</Text>
+            <EmailInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Email Address" name="email" required />
+            <MessageInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Your message" name="textarea" required />
+            <Button color="tertiary" variant="small" type="submit" onClick={handleSubmit}>Submit</Button>
+          </Form>
         )}
         {isOpen && isSubmitted && (
           <Success color="info" backgroundColor="paper" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>Sent!</Success>
