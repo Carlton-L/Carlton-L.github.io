@@ -36,7 +36,7 @@ const EmailInput = styled(motion.input)`
 
 const MessageInput = styled(motion.textarea)`
   ${color}
-  min-width: 300px;
+  min-width: 250px;
   width: 100%;
   border-radius: 10px;
   font-size: 0.75rem;
@@ -47,7 +47,11 @@ const MessageInput = styled(motion.textarea)`
   
   &::placeholder {
     color: ${(props) => props.theme.colors.inactive};
-}
+  }
+
+  @media (min-width: 843px) {
+    min-width: 350px;
+  }
 `;
 
 const Success = styled(motion.div)`
@@ -59,20 +63,31 @@ const Success = styled(motion.div)`
   cursor: default;
 `;
 
+const Text = styled(motion.div)`
+  ${color}
+  margin: 8px 20px;
+`;
+
 const ContactForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const handleOpen = () => {
+    setIsOpen(true);
+    const objDiv = document.getElementById('contactform');
+    objDiv.scrollTop = objDiv.scrollHeight;
+  };
   const handleSubmit = () => {
     setIsSubmitted(true);
   };
   return (
-    <Wrapper initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.25 }}>
+    <Wrapper id="contactform" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.25 }}>
       <AnimatePresence exitBeforeEnter>
         {!isOpen && (
-        <Button key="contact" color="textPrimary" borderColor="tertiary" onClick={setIsOpen} initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>Contact</Button>
+        <Button key="contact" color="textPrimary" borderColor="tertiary" onClick={handleOpen} initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>Contact</Button>
         )}
         {isOpen && !isSubmitted && (
         <Form target="frame" key="form" action={`https://formsubmit.co/${email}`} method="POST" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>
+          <Text color="textPrimary">Get in touch</Text>
           <EmailInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Email Address" name="email" required />
           <MessageInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Your message" name="textarea" required />
           <Button color="tertiary" variant="small" type="submit" onClick={handleSubmit}>Submit</Button>
