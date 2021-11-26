@@ -30,6 +30,7 @@ const Hero = styled(motion.section)`
   min-height: 460px;
   
   @media (min-width: 834px) {
+    height: 40vh;
     padding-top: 100px;
     padding-bottom: 0px;
     flex-direction: row;
