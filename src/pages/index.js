@@ -6,6 +6,7 @@ import { Link } from 'gatsby';
 
 import MainLayout from '../layout/mainLayout';
 import Button from '../components/button';
+import ContactForm from '../components/contactForm';
 import { socialLinks } from '../utils/config';
 
 const Page = styled(motion.div)`
@@ -172,7 +173,7 @@ const IndexPage = () => (
         </IntroContainer>
       </Hero>
       <Content>
-        contact
+        <ContactForm />
       </Content>
     </Page>
   </MainLayout>
