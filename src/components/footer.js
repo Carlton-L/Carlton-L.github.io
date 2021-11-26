@@ -8,7 +8,7 @@ import { email, socialLinks } from '../utils/config';
 const Wrapper = styled.footer`
   // TODO: Make footer height a var
   height: 400px;
-  width: 100vw;
+  width: 100%;
   position: fixed;
   bottom: 0;
 
@@ -16,6 +16,7 @@ const Wrapper = styled.footer`
   
   display: flex;
   justify-content: center;
+  overflow: hidden;
   `;
 
 const Content = styled.div`

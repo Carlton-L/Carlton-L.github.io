@@ -9,8 +9,8 @@ import Button from '../components/button';
 import { socialLinks } from '../utils/config';
 
 const Page = styled(motion.div)`
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   z-index: 1;
 `;
 
@@ -22,6 +22,7 @@ const Hero = styled(motion.section)`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 60%;
   min-height: 460px;
   
   @media (min-width: 834px) {
@@ -29,6 +30,13 @@ const Hero = styled(motion.section)`
     padding-bottom: 0px;
     flex-direction: row;
   }
+`;
+
+const Content = styled(motion.section)`
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 `;
 
 const TitleContainer = styled(motion.div)`
@@ -160,6 +168,9 @@ const IndexPage = () => (
           </Social>
         </IntroContainer>
       </Hero>
+      <Content>
+        contact
+      </Content>
     </Page>
   </MainLayout>
 );

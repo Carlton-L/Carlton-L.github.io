@@ -23,9 +23,6 @@ ${reset}
   src: local('Biennale-Black'),
   url(${BiennaleBlack});
 }
-html, body {
-  overflow: hidden;
-}
 body {
   position: relative;
 }
