@@ -125,12 +125,13 @@ const Header = ({
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
+  // TODO: Auto-hide header on scroll down
   return (
     <Wrapper backgroundColor={backgroundColor} color={color}>
       <Content>
         <AnimatePresence exitBeforeEnter initial={false}>
           {!isOpen && (
-          <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} whileHover={{ scale: 1.1, rotate: '10deg' }}>
+          <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} whileHover={{ scale: 1.1 }}>
             <Link to="/" onClick={() => setIsOpen(false)}>
               <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
             </Link>
