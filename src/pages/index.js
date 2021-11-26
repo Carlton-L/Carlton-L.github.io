@@ -37,10 +37,13 @@ const Hero = styled(motion.section)`
 `;
 
 const Content = styled(motion.section)`
+display: flex;
+justify-content: center;
+align-items: flex-end;
+
+@media (min-width: 834px) {
   min-height: 400px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
+}
 `;
 
 const TitleContainer = styled(motion.div)`
