@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { color, border, variant } from 'styled-system';
+import { motion } from 'framer-motion';
 
-const Button = styled.button`
+const Button = styled(motion.button)`
   ${border}
   ${color}
   ${variant({
