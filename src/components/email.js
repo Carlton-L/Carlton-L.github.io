@@ -6,6 +6,7 @@ import { color } from 'styled-system';
 const Wrapper = styled.div`
   ${color}
   width: 40px;
+  pointer-events: auto;
 
   z-index: 150;
   display: none;

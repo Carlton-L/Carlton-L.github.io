@@ -11,6 +11,7 @@ const Wrapper = styled.footer`
   width: 100%;
   position: fixed;
   bottom: 0;
+  pointer-events: none;
 
   z-index: 0;
   
