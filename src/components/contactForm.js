@@ -8,8 +8,9 @@ import Button from './button';
 import { email } from '../utils/config';
 
 // Polyfill adds suport for smooth scrolling on Safari, Edge, and Opera
-smoothscroll.polyfill();
-
+if (typeof window !== 'undefined') {
+  smoothscroll.polyfill();
+}
 const Wrapper = styled(motion.div)`
   padding: 8px;
   min-height: 300px;
@@ -95,7 +96,7 @@ const ContactForm = () => {
     setIsOpen(true);
 
     // Scroll to bottom of page
-    if (window !== undefined) {
+    if (typeof window !== 'undefined') {
       window.scrollTo({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
     }
   };
