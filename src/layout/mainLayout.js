@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled, { ThemeProvider } from 'styled-components';
 import { color } from 'styled-system';
@@ -29,14 +29,14 @@ const getTheme = (mode) => merge({}, baseTheme, {
 
 // Wraper must be a motion component for exit animations to work
 const Wrapper = styled(motion.main)`
-  ${color}
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
+${color}
+min-height: 100vh;
+width: 100%;
+display: flex;
+flex: 1;
+flex-direction: column;
+justify-content: center;
+overflow: hidden;
 `;
 
 const MainLayout = ({
@@ -47,8 +47,12 @@ const MainLayout = ({
   path,
 }) => {
   // Check localStorage for theme, otherwise use user's default color scheme (defaults to 'dark')
-  const [currentTheme, setCurrentTheme] = useState(getLocalStorage('theme') || getUserColorScheme());
-  const theme = getTheme(currentTheme);
+  const [currentTheme, setCurrentTheme] = useState(getUserColorScheme());
+  // NOTE: useEffect must be used here due to React hydration and ssr
+  useEffect(() => {
+    setCurrentTheme(getLocalStorage('theme') || getUserColorScheme());
+  });
+  const theme = getTheme(currentTheme || getLocalStorage('theme'));
 
   return (
     <>

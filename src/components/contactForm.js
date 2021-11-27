@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import smoothscroll from 'smoothscroll-polyfill';
 
 import Button from './button';
-import { email } from '../utils/config';
 
 // Polyfill adds suport for smooth scrolling on Safari, Edge, and Opera
 if (typeof window !== 'undefined') {
@@ -112,7 +111,7 @@ const ContactForm = () => {
           </ButtonWrapper>
         )}
         {isOpen && !isSubmitted && (
-          <Form target="frame" key="form" action={`https://formsubmit.co/${email}`} method="POST" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>
+          <Form target="frame" key="form" action="https://formsubmit.co/86bcd5317871bc4dd8a1f66b79a3fbe1" method="POST" initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} exit={{ opacity: 0, y: 100 }}>
             <Text color="textPrimary">Get in touch</Text>
             <EmailInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Email Address" name="email" required />
             <MessageInput color="textPrimary" backgroundColor="paper" type="text" placeholder="Your message" name="textarea" required />
