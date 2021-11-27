@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import baseTheme from '../themes/theme';
 import setLocalStorage from '../hooks/setLocalStorage';
@@ -13,7 +13,12 @@ const getNextTheme = (currentTheme, themeOptions) => {
 };
 
 const ThemeSwitch = ({ currentTheme, themeOptions, handleTheme }) => {
-  const [nextTheme, setNextTheme] = useState(getNextTheme(currentTheme, themeOptions));
+  const [nextTheme, setNextTheme] = useState('dark');
+
+  // NOTE: useEffect must be used here due to React hydration and ssr
+  useEffect(() => {
+    setNextTheme(getNextTheme(currentTheme, themeOptions));
+  });
   // setLocalStorage(nextTheme);
   return (
     <Button
