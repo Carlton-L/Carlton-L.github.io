@@ -60,6 +60,19 @@ const Subtitle = styled(motion.h2)`
   max-width: 18.75rem;
 `;
 
+// TODO: Remove Placeholder and replace with markdown //
+
+const Placeholder = styled(motion.div)`
+  ${color}
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+  height: 100%;
+  padding: 20px;
+`;
+
+// -------------------------------------------------- //
+
 const ProjectsPage = () => (
   <MainLayout>
     <Page key="projectspage" initial={{ y: '-70vh' }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 50 }} exit={{ y: '-70vh' }}>
@@ -69,6 +82,9 @@ const ProjectsPage = () => (
           <Subtitle color="warning">What I&apos;ve been working on recently:</Subtitle>
         </TitleContainer>
       </Heading>
+      <Placeholder color="warning">
+        Under construction, check back soon!
+      </Placeholder>
     </Page>
   </MainLayout>
 );
