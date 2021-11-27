@@ -131,7 +131,7 @@ const Header = ({
       <Content>
         <AnimatePresence exitBeforeEnter initial={false}>
           {!isOpen && (
-          <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} whileHover={{ scale: 1.1 }}>
+          <ImageContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <Link to="/" onClick={() => setIsOpen(false)}>
               <StaticImage src="../images/Icon-Avatar.png" alt="logo" placeholder="blurred" layout="constrained" />
             </Link>
