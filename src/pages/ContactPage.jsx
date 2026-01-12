@@ -24,11 +24,12 @@ function ContactPage() {
             <h2 className="contact-availability-title">Availability</h2>
             <div className="availability-status">
               <span className="availability-dot" />
-              <span className="availability-label">Available for projects</span>
+              <span className="availability-label">Open to inquiries</span>
             </div>
             <p className="contact-availability-text">
-              Currently open to freelance projects, consulting, and full-time
-              opportunities. Response time is typically within 24-48 hours.
+              Currently at Futurity Systems, and always open to interesting
+              conversations — whether that's consulting, collaboration, or just
+              exchanging ideas.
             </p>
           </div>
         </div>

@@ -17,14 +17,8 @@ function Navigation() {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
-      // Navigate to home, then scroll after a short delay
-      navigate('/');
-      setTimeout(() => {
-        const element = document.getElementById('pinned-work');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+      // Navigate to home with state to trigger scroll
+      navigate('/', { state: { scrollTo: 'pinned-work' } });
     }
   };
 
