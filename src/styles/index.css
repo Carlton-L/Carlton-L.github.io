@@ -2,14 +2,14 @@
    CSS Variables
    ============================================ */
 :root {
-  --bg: #E8E8EA;
-  --light-contrast: #F5F5F6;
-  --dark-contrast: #E0E1E3;
-  --accent-1: #252FF1;
-  --accent-2: #F7C385;
-  --accent-3: #EE6D71;
+  --bg: #e8e8ea;
+  --light-contrast: #f5f5f6;
+  --dark-contrast: #e0e1e3;
+  --accent-1: #252ff1;
+  --accent-2: #f7c385;
+  --accent-3: #ee6d71;
   --text: #040407;
-  --text-light: #A9ADBA;
+  --text-light: #a9adba;
   --border-color: var(--dark-contrast);
   --plus-size: 20px;
   --nav-padding: 0.75rem;
@@ -35,6 +35,24 @@ body {
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
 }
 
 /* ============================================
@@ -131,10 +149,26 @@ nav {
   z-index: 5;
 }
 
-.plus-icon.top-left { top: 0; left: 0; transform: translate(-50%, -50%); }
-.plus-icon.top-right { top: 0; right: 0; transform: translate(50%, -50%); }
-.plus-icon.bottom-left { bottom: 0; left: 0; transform: translate(-50%, 50%); }
-.plus-icon.bottom-right { bottom: 0; right: 0; transform: translate(50%, 50%); }
+.plus-icon.top-left {
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+.plus-icon.top-right {
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+}
+.plus-icon.bottom-left {
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, 50%);
+}
+.plus-icon.bottom-right {
+  bottom: 0;
+  right: 0;
+  transform: translate(50%, 50%);
+}
 
 /* ============================================
    Tween Text Animation
@@ -305,10 +339,10 @@ nav {
 }
 
 /* Hide overlapping plus icons in horizontal grid */
-.plus-grid__item:nth-child(3n+1) .plus-icon.top-right,
-.plus-grid__item:nth-child(3n+1) .plus-icon.bottom-right,
-.plus-grid__item:nth-child(3n+2) .plus-icon.top-right,
-.plus-grid__item:nth-child(3n+2) .plus-icon.bottom-right {
+.plus-grid__item:nth-child(3n + 1) .plus-icon.top-right,
+.plus-grid__item:nth-child(3n + 1) .plus-icon.bottom-right,
+.plus-grid__item:nth-child(3n + 2) .plus-icon.top-right,
+.plus-grid__item:nth-child(3n + 2) .plus-icon.bottom-right {
   display: none;
 }
 
@@ -337,9 +371,15 @@ nav {
   margin-top: 0.5rem;
 }
 
-.accent-1 .category-card:hover .card-arrow { color: var(--accent-1); }
-.accent-2 .category-card:hover .card-arrow { color: var(--accent-2); }
-.accent-3 .category-card:hover .card-arrow { color: var(--accent-3); }
+.accent-1 .category-card:hover .card-arrow {
+  color: var(--accent-1);
+}
+.accent-2 .category-card:hover .card-arrow {
+  color: var(--accent-2);
+}
+.accent-3 .category-card:hover .card-arrow {
+  color: var(--accent-3);
+}
 
 .card-header {
   display: flex;
@@ -483,9 +523,15 @@ nav {
   transform: translate(4px, -4px);
 }
 
-.pinned-item.accent-1:hover .pinned-item__arrow { color: var(--accent-1); }
-.pinned-item.accent-2:hover .pinned-item__arrow { color: var(--accent-2); }
-.pinned-item.accent-3:hover .pinned-item__arrow { color: var(--accent-3); }
+.pinned-item.accent-1:hover .pinned-item__arrow {
+  color: var(--accent-1);
+}
+.pinned-item.accent-2:hover .pinned-item__arrow {
+  color: var(--accent-2);
+}
+.pinned-item.accent-3:hover .pinned-item__arrow {
+  color: var(--accent-3);
+}
 
 .pinned-item .plus-icon {
   background-color: var(--bg);
@@ -1089,10 +1135,10 @@ footer {
   }
 
   /* In single column, show right side plus icons again */
-  .plus-grid__item:nth-child(3n+1) .plus-icon.top-right,
-  .plus-grid__item:nth-child(3n+1) .plus-icon.bottom-right,
-  .plus-grid__item:nth-child(3n+2) .plus-icon.top-right,
-  .plus-grid__item:nth-child(3n+2) .plus-icon.bottom-right {
+  .plus-grid__item:nth-child(3n + 1) .plus-icon.top-right,
+  .plus-grid__item:nth-child(3n + 1) .plus-icon.bottom-right,
+  .plus-grid__item:nth-child(3n + 2) .plus-icon.top-right,
+  .plus-grid__item:nth-child(3n + 2) .plus-icon.bottom-right {
     display: flex;
   }
 

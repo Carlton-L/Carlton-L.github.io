@@ -1,9 +1,28 @@
 import { useEffect, useRef } from 'react';
 
-const COLORS = [
-  '#252FF1', '#1a1f7a', '#EE6D71', '#b84d50', '#F7C385', '#c49460',
-  '#2d3748', '#4a5568', '#1a202c', '#553c9a', '#2c5282', '#276749',
-  '#744210', '#702459'
+// Import all images from the hero-images folder
+const imageModules = import.meta.glob(
+  '/public/hero-images/*.(png|jpg|jpeg|gif|webp|svg)',
+  { eager: true, as: 'url' }
+);
+const IMAGES = Object.values(imageModules);
+
+// Fallback colors if no images are available
+const FALLBACK_COLORS = [
+  '#252FF1',
+  '#1a1f7a',
+  '#EE6D71',
+  '#b84d50',
+  '#F7C385',
+  '#c49460',
+  '#2d3748',
+  '#4a5568',
+  '#1a202c',
+  '#553c9a',
+  '#2c5282',
+  '#276749',
+  '#744210',
+  '#702459'
 ];
 
 const MAX_ITEMS = 16;
@@ -16,6 +35,7 @@ function HeroCanvas() {
   const canvasRef = useRef(null);
   const zoneRef = useRef(null);
   const itemsRef = useRef([]);
+  const imageIndexRef = useRef(0);
   const stateRef = useRef({
     lastX: null,
     lastY: null,
@@ -26,18 +46,36 @@ function HeroCanvas() {
     idleDistanceAccumulated: 0,
     isIdle: false,
     idleTimer: null,
-    idleAnimationFrame: null,
+    idleAnimationFrame: null
   });
 
-  const getRandomColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
-  const getIdleTimeout = () => window.innerWidth <= 900 ? IDLE_TIMEOUT_MOBILE : IDLE_TIMEOUT_DESKTOP;
+  const getNextImage = () => {
+    if (IMAGES.length === 0) return null;
+    const image = IMAGES[imageIndexRef.current];
+    imageIndexRef.current = (imageIndexRef.current + 1) % IMAGES.length;
+    return image;
+  };
+
+  const getRandomColor = () =>
+    FALLBACK_COLORS[Math.floor(Math.random() * FALLBACK_COLORS.length)];
+  const getIdleTimeout = () =>
+    window.innerWidth <= 900 ? IDLE_TIMEOUT_MOBILE : IDLE_TIMEOUT_DESKTOP;
 
   const createItem = (x, y) => {
     if (!canvasRef.current) return;
 
     const item = document.createElement('div');
     item.className = 'hero-canvas__item';
-    item.style.backgroundColor = getRandomColor();
+
+    const imageSrc = getNextImage();
+    if (imageSrc) {
+      item.style.backgroundImage = `url(${imageSrc})`;
+      item.style.backgroundSize = 'cover';
+      item.style.backgroundPosition = 'center';
+    } else {
+      item.style.backgroundColor = getRandomColor();
+    }
+
     item.style.left = `${x - 40}px`;
     item.style.top = `${y - 40}px`;
 
@@ -63,7 +101,8 @@ function HeroCanvas() {
     const state = stateRef.current;
     state.isIdle = false;
     if (state.idleTimer) clearTimeout(state.idleTimer);
-    if (state.idleAnimationFrame) cancelAnimationFrame(state.idleAnimationFrame);
+    if (state.idleAnimationFrame)
+      cancelAnimationFrame(state.idleAnimationFrame);
 
     state.idleTimer = setTimeout(startIdleAnimation, getIdleTimeout());
   };
@@ -213,7 +252,8 @@ function HeroCanvas() {
 
       const state = stateRef.current;
       if (state.idleTimer) clearTimeout(state.idleTimer);
-      if (state.idleAnimationFrame) cancelAnimationFrame(state.idleAnimationFrame);
+      if (state.idleAnimationFrame)
+        cancelAnimationFrame(state.idleAnimationFrame);
     };
   }, []);
 

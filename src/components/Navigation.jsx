@@ -1,10 +1,32 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { PlusIcons } from './PlusIcons';
 import TweenText from './TweenText';
 
 function Navigation() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isHome = location.pathname === '/';
+
+  const handleWorkClick = (e) => {
+    e.preventDefault();
+
+    if (isHome) {
+      // Already on home, just scroll
+      const element = document.getElementById('pinned-work');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Navigate to home, then scroll after a short delay
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('pinned-work');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  };
 
   return (
     <div className="container--full">
@@ -17,15 +39,9 @@ function Navigation() {
           <PlusIcons />
           <ul className="nav-links">
             <li>
-              {isHome ? (
-                <a href="#pinned-work" className="tween-text">
-                  <TweenText text="Work" />
-                </a>
-              ) : (
-                <Link to="/#pinned-work">
-                  <TweenText text="Work" />
-                </Link>
-              )}
+              <a href="#pinned-work" onClick={handleWorkClick}>
+                <TweenText text="Work" />
+              </a>
             </li>
             <li>
               <Link to="/about">
