@@ -1,0 +1,84 @@
+---
+/**
+ * Project Template (fallback)
+ *
+ * Generates pages for projects that DON'T have custom .astro files.
+ * Uses a consistent layout with the project data from content.js.
+ * For your top projects, create dedicated files like fast.astro instead.
+ */
+import Base from '../../layouts/Base.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+// Projects with custom pages — exclude them from template generation
+const customPages = ['fast', 'immersive-experience-builder'];
+
+export function getStaticPaths() {
+  return projects
+    .filter((p) => !customPages.includes(p.slug))
+    .map((p) => ({
+      params: { slug: p.slug },
+      props: { project: p },
+    }));
+}
+
+const { project } = Astro.props;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: project.title },
+    ]),
+  ],
+};
+---
+
+<Base
+  title={`${project.title} | Carlton Lindsay`}
+  description={project.description}
+  ogImage={project.image}
+  jsonLd={jsonLd}
+>
+  <article class="container--content pt-32 pb-16">
+    <!-- Header -->
+    <header class="mb-12">
+      <p class="font-mono text-xs uppercase tracking-widest text-text-muted mb-4">
+        {project.meta}
+      </p>
+      <h1 class="text-4xl md:text-5xl font-light tracking-tight mb-6">
+        {project.title}
+      </h1>
+      <p class="text-lg text-text-muted max-w-2xl leading-relaxed">
+        {project.description}
+      </p>
+      <div class="flex flex-wrap gap-2 mt-6">
+        {project.tags.map((tag) => (
+          <span class="font-mono text-xs px-3 py-1 rounded-full border border-border text-text-muted">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </header>
+
+    <!-- Cover image -->
+    <figure class="relative aspect-video rounded-[var(--radius-md)] overflow-hidden bg-bg-surface mb-12">
+      <img
+        src={project.image}
+        alt={`${project.title} project cover`}
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+    </figure>
+
+    <!-- Content placeholder — expand per project -->
+    <div class="max-w-2xl">
+      <p class="text-text-muted">
+        Full case study content coming soon.
+      </p>
+    </div>
+  </article>
+</Base>

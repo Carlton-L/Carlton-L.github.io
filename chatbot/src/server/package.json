@@ -1,0 +1,20 @@
+{
+  "name": "carlton-chatbot-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Self-hosted RAG chatbot API for carlton.dev — runs on Raspberry Pi 5",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "embed": "node embed-local.js",
+    "test": "node ../tests/run-accuracy-tests.js"
+  },
+  "dependencies": {
+    "fastify": "^5.0.0",
+    "@fastify/cors": "^10.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "better-sqlite3": "^11.0.0",
+    "sqlite-vec": "^0.1.0"
+  }
+}

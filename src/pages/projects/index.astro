@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import { projects } from '../../data/content.js';
+import { getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const jsonLd = getBreadcrumbJsonLd([
+  { name: 'Home', url: '/' },
+  { name: 'Projects' },
+]);
+---
+
+<Base
+  title="Projects — Carlton Lindsay"
+  description="Selected work in AI tools, spatial computing, robotics, and design technology."
+  jsonLd={jsonLd}
+>
+  <section class="container--content pt-32 pb-16">
+    <h1 class="text-4xl font-light tracking-tight mb-4">Projects</h1>
+    <p class="text-lg text-text-muted max-w-lg mb-12">
+      Selected work across software, hardware, and research.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {projects.map((project) => (
+        <a
+          href={`/projects/${project.slug}`}
+          class="group block rounded-[var(--radius-md)] border border-border overflow-hidden hover-inset transition-all"
+        >
+          <div class="aspect-video bg-bg-surface overflow-hidden">
+            <img
+              src={project.image}
+              alt={project.title}
+              class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+              loading="lazy"
+            />
+          </div>
+          <div class="p-6">
+            <p class="font-mono text-xs text-text-muted mb-2">{project.meta}</p>
+            <h2 class="text-lg font-medium mb-2">{project.title}</h2>
+            <p class="text-sm text-text-muted line-clamp-2">{project.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

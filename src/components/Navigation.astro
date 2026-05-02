@@ -1,0 +1,46 @@
+---
+/**
+ * Navigation
+ *
+ * Sticky header with site title + nav links.
+ * Pure Astro component — zero JS shipped.
+ * Uses View Transition names for smooth nav persistence across pages.
+ */
+const currentPath = Astro.url.pathname;
+
+const links = [
+  { href: '/', label: 'Work' },
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/lab', label: 'Lab' },
+  { href: '/contact', label: 'Contact' },
+];
+---
+
+<header
+  class="fixed top-0 left-0 right-0 z-50 h-[var(--nav-height)] border-b border-border"
+  style="background: var(--backdrop-blur); backdrop-filter: blur(12px);"
+  transition:persist
+>
+  <nav class="container--content h-full flex items-center justify-between">
+    <a href="/" class="font-mono text-sm font-medium tracking-wide text-text hover:text-accent-1 transition-colors">
+      Carlton Lindsay
+    </a>
+
+    <ul class="flex gap-6 list-none">
+      {links.map(({ href, label }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              'font-mono text-xs uppercase tracking-widest transition-colors',
+              currentPath === href ? 'text-text' : 'text-text-muted hover:text-text',
+            ]}
+          >
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>

@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import { aboutContent } from '../data/content.js';
+import { getPersonJsonLd, getBreadcrumbJsonLd } from '../lib/seo.js';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getPersonJsonLd(),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'About' },
+    ]),
+  ],
+};
+---
+
+<Base
+  title="About — Carlton Lindsay"
+  description={aboutContent.intro}
+  jsonLd={jsonLd}
+>
+  <section class="container--content pt-32 pb-16">
+    <h1 class="text-4xl font-light tracking-tight mb-4">About</h1>
+    <p class="text-lg text-text-muted max-w-2xl mb-12">{aboutContent.intro}</p>
+
+    <!-- Bio -->
+    <div class="max-w-2xl space-y-6 mb-16">
+      {aboutContent.bio.map((paragraph) => (
+        <p class="text-text-muted leading-relaxed">{paragraph}</p>
+      ))}
+    </div>
+
+    <!-- Experience -->
+    <h2 class="font-mono text-xs uppercase tracking-widest text-text-muted mb-6">
+      Experience
+    </h2>
+    <div class="space-y-4 mb-16 max-w-2xl">
+      {aboutContent.experience.map((entry) => (
+        <div class="flex justify-between items-baseline border-b border-border pb-4">
+          <div>
+            <p class="text-sm font-medium">{entry.role}</p>
+            <p class="text-sm text-text-muted">{entry.company}</p>
+          </div>
+          <p class="font-mono text-xs text-text-muted whitespace-nowrap">{entry.dates}</p>
+        </div>
+      ))}
+    </div>
+
+    <!-- Skills -->
+    <h2 class="font-mono text-xs uppercase tracking-widest text-text-muted mb-6">
+      Skills & Domains
+    </h2>
+    <div class="flex flex-wrap gap-2 max-w-2xl">
+      {aboutContent.skills.map((skill) => (
+        <span class="font-mono text-xs px-3 py-1.5 rounded-full border border-border text-text-muted">
+          {skill}
+        </span>
+      ))}
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,64 @@
+---
+/**
+ * Homepage
+ *
+ * Hero section with interactive Three.js canvas (React island),
+ * category grid, and pinned/featured projects.
+ */
+import Base from '../layouts/Base.astro';
+import { siteConfig, categories, pinnedItems } from '../data/content.js';
+import { getPersonJsonLd, getWebSiteJsonLd } from '../lib/seo.js';
+import HeroScene from '../components/react/HeroScene.jsx';
+import CategoryCard from '../components/CategoryCard.astro';
+import PinnedItem from '../components/PinnedItem.astro';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [getPersonJsonLd(), getWebSiteJsonLd()],
+};
+---
+
+<Base
+  title={siteConfig.title}
+  description={siteConfig.description}
+  jsonLd={jsonLd}
+>
+  <!-- Hero -->
+  <section class="relative h-[80vh] flex items-center justify-center overflow-hidden">
+    <!-- Three.js canvas — hydrates when visible, doesn't block page load -->
+    <div class="absolute inset-0 z-0">
+      <HeroScene client:visible />
+    </div>
+
+    <div class="relative z-10 text-center container--content">
+      <h1 class="text-4xl md:text-5xl font-light tracking-tight mb-4">
+        Carlton Lindsay
+      </h1>
+      <p class="font-mono text-sm text-text-muted max-w-lg mx-auto">
+        Design Technologist — building at the intersection of hardware,
+        interaction design, and emerging technologies.
+      </p>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="container--content py-[var(--space-2xl)]">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {categories.map((cat) => (
+        <CategoryCard category={cat} />
+      ))}
+    </div>
+  </section>
+
+  <!-- Pinned Work -->
+  <section class="container--content pb-[var(--space-2xl)]">
+    <h2 class="font-mono text-xs uppercase tracking-widest text-text-muted mb-8">
+      Featured Work
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {pinnedItems.map((project) => (
+        <PinnedItem project={project} />
+      ))}
+    </div>
+  </section>
+</Base>

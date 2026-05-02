@@ -1,0 +1,32 @@
+---
+/**
+ * CategoryCard
+ *
+ * Displays a portfolio category with accent color, project count, and link.
+ * Pure static — no JS shipped.
+ */
+const { category } = Astro.props;
+
+const accentVar = `var(--${category.accent})`;
+---
+
+<a
+  href={`/category/${category.slug}`}
+  class="group block p-6 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
+>
+  <span
+    class="font-mono text-xs block mb-2"
+    style={`color: ${accentVar}`}
+  >
+    {category.number}
+  </span>
+  <h3 class="text-lg font-medium mb-2 group-hover:translate-x-1 transition-transform">
+    {category.title}
+  </h3>
+  <p class="text-sm text-text-muted leading-relaxed mb-4">
+    {category.subtitle}
+  </p>
+  <span class="font-mono text-xs text-text-muted">
+    {category.count}
+  </span>
+</a>

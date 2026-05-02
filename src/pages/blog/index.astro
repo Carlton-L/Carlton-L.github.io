@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import { blogPosts } from '../../data/content.js';
+
+const sortedPosts = [...blogPosts].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+---
+
+<Base
+  title="Blog — Carlton Lindsay"
+  description="Writing about design technology, AI tools, creative engineering, and the space between hardware and software."
+>
+  <section class="container--content pt-32 pb-16">
+    <h1 class="text-4xl font-light tracking-tight mb-4">Blog</h1>
+    <p class="text-lg text-text-muted max-w-lg mb-12">
+      Notes on building things at the edges of what's possible.
+    </p>
+
+    {sortedPosts.length === 0 ? (
+      <p class="text-text-muted font-mono text-sm">
+        Posts coming soon.
+      </p>
+    ) : (
+      <div class="space-y-6 max-w-2xl">
+        {sortedPosts.map((post) => (
+          <a
+            href={`/blog/${post.slug}`}
+            class="group block p-6 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
+          >
+            <p class="font-mono text-xs text-text-muted mb-2">{post.date}</p>
+            <h2 class="text-lg font-medium mb-2 group-hover:text-accent-1 transition-colors">
+              {post.title}
+            </h2>
+            <p class="text-sm text-text-muted">{post.excerpt}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>

@@ -1,0 +1,55 @@
+---
+/**
+ * Lab — Interactive experiments and explorations
+ */
+import Base from '../../layouts/Base.astro';
+
+const experiments = [
+  // {
+  //   title: 'Phototropic Plants',
+  //   description: 'BEAM robotics simulation — drag a light source and watch emergent behavior.',
+  //   slug: 'phototropic-plants',
+  //   tags: ['Canvas', 'Simulation', 'Emergent Behavior'],
+  //   status: 'live',
+  // },
+];
+---
+
+<Base
+  title="Lab — Carlton Lindsay"
+  description="Interactive experiments, generative sketches, and technical explorations."
+>
+  <section class="container--content pt-32 pb-16">
+    <h1 class="text-4xl font-light tracking-tight mb-4">Lab</h1>
+    <p class="text-lg text-text-muted max-w-lg mb-12">
+      Interactive experiments and technical explorations — things I'm building, testing, or just curious about.
+    </p>
+
+    {experiments.length === 0 ? (
+      <p class="text-text-muted font-mono text-sm">
+        Experiments loading soon.
+      </p>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {experiments.map((exp) => (
+          <a
+            href={`/lab/${exp.slug}`}
+            class="group block p-6 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
+          >
+            <div class="flex items-center gap-2 mb-3">
+              <span class={`w-2 h-2 rounded-full ${exp.status === 'live' ? 'bg-green-400' : 'bg-yellow-400'}`} />
+              <span class="font-mono text-xs text-text-muted uppercase">{exp.status}</span>
+            </div>
+            <h2 class="text-lg font-medium mb-2">{exp.title}</h2>
+            <p class="text-sm text-text-muted mb-4">{exp.description}</p>
+            <div class="flex gap-2">
+              {exp.tags.map((tag) => (
+                <span class="font-mono text-xs text-text-muted">{tag}</span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Base>

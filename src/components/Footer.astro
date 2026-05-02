@@ -1,0 +1,31 @@
+---
+/**
+ * Footer
+ *
+ * Simple footer with contact links and copyright.
+ */
+import { contactLinks } from '../data/content.js';
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border py-8 mt-auto">
+  <div class="container--content flex flex-col md:flex-row justify-between items-center gap-4">
+    <p class="font-mono text-xs text-text-muted">
+      &copy; {year} Carlton Lindsay
+    </p>
+    <ul class="flex gap-6 list-none">
+      {contactLinks.map(({ label, href }) => (
+        <li>
+          <a
+            href={href}
+            class="font-mono text-xs text-text-muted hover:text-text transition-colors"
+            target={href.startsWith('http') ? '_blank' : undefined}
+            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</footer>

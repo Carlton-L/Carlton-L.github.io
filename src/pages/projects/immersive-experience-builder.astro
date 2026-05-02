@@ -1,0 +1,57 @@
+---
+/**
+ * Immersive Experience Builder — Custom Project Page
+ *
+ * Placeholder for the full custom page. Fill with bespoke content.
+ */
+import Base from '../../layouts/Base.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'immersive-experience-builder');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: project.title },
+    ]),
+  ],
+};
+---
+
+<Base
+  title={`${project.title} | Carlton Lindsay`}
+  description={project.description}
+  ogImage={project.image}
+  jsonLd={jsonLd}
+>
+  <header class="min-h-[60vh] flex items-end pb-16 relative">
+    <div class="container--content">
+      <p class="font-mono text-xs text-accent-1 uppercase tracking-widest mb-4">
+        {project.meta}
+      </p>
+      <h1 class="text-5xl md:text-6xl font-light tracking-tight mb-6">
+        Immersive Experience Builder
+      </h1>
+      <p class="text-xl text-text-muted max-w-2xl leading-relaxed">
+        {project.description}
+      </p>
+      <div class="flex gap-3 mt-6">
+        {project.tags.map((tag) => (
+          <span class="font-mono text-xs px-3 py-1 rounded-full border border-border text-text-muted">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <section class="container--content py-16">
+    <p class="text-text-muted max-w-2xl">
+      Full case study content coming soon.
+    </p>
+  </section>
+</Base>

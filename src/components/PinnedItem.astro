@@ -1,0 +1,31 @@
+---
+/**
+ * PinnedItem
+ *
+ * Featured project card on homepage. Links to the project page.
+ * Shows cover image, title, description, and tags.
+ */
+const { project } = Astro.props;
+---
+
+<a
+  href={`/projects/${project.slug}`}
+  class="group block rounded-[var(--radius-md)] border border-border overflow-hidden hover-inset transition-all"
+>
+  <!-- Cover image -->
+  <div class="aspect-video bg-bg-surface overflow-hidden">
+    <img
+      src={project.image}
+      alt={project.title}
+      class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+      loading="lazy"
+    />
+  </div>
+
+  <!-- Content -->
+  <div class="p-6">
+    <p class="font-mono text-xs text-text-muted mb-2">{project.meta}</p>
+    <h3 class="text-lg font-medium mb-2">{project.title}</h3>
+    <p class="text-sm text-text-muted line-clamp-2">{project.description}</p>
+  </div>
+</a>

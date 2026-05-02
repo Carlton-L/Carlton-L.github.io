@@ -1,0 +1,87 @@
+/* ============================================
+   Design Tokens
+
+   Source of truth for the design system.
+   These CSS custom properties are consumed by:
+   - Tailwind (via tailwind.config.mjs theme.extend.colors)
+   - Astro components (directly via var(--token))
+   - React islands (via getComputedStyle or Tailwind classes)
+
+   To generate tokens for other platforms (Figma, iOS, Android),
+   add Style Dictionary config that reads from this file.
+   ============================================ */
+
+/* --- Color Tokens --- */
+:root {
+  /* Surfaces */
+  --bg: #0a0a0c;
+  --bg-elevated: #111114;
+  --bg-surface: #18181b;
+
+  /* Accents (category-mapped) */
+  --accent-1: #4f5aff;        /* Apps & Systems — blue */
+  --accent-2: #f7c385;        /* Experiences — warm gold */
+  --accent-3: #ee6d71;        /* Research — coral */
+
+  /* Text */
+  --text: #e4e4e7;
+  --text-muted: #71717a;
+
+  /* Borders */
+  --border-color: #27272a;
+  --border-hover: #52525b;
+
+  /* Utility */
+  --backdrop-blur: rgba(10, 10, 12, 0.75);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+  --space-2xl: 8rem;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --text-5xl: 3.5rem;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  /* Layout */
+  --nav-height: 64px;
+  --content-max: 1200px;
+  --plus-size: 20px;
+}
+
+/* --- Light Theme --- */
+[data-theme='light'] {
+  --bg: #e8e8ea;
+  --bg-elevated: #f5f5f6;
+  --bg-surface: #e0e1e3;
+  --accent-1: #252ff1;
+  --accent-2: #f7c385;
+  --accent-3: #ee6d71;
+  --text: #040407;
+  --text-muted: #71717a;
+  --border-color: #d4d4d8;
+  --border-hover: #a1a1aa;
+  --backdrop-blur: rgba(232, 232, 234, 0.75);
+}

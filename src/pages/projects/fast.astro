@@ -1,0 +1,136 @@
+---
+/**
+ * FAST — Custom Project Page
+ *
+ * This is an example of a fully bespoke project page.
+ * Every section, layout decision, and interactive element is unique to this project.
+ * No template constraints — this file IS the page.
+ */
+import Base from '../../layouts/Base.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'fast');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: 'FAST' },
+    ]),
+  ],
+};
+---
+
+<Base
+  title="FAST — Futures as a Service | Carlton Lindsay"
+  description={project.description}
+  ogImage="/images/projects/fast/og.jpg"
+  jsonLd={jsonLd}
+>
+  <!-- Custom hero — unique to this project -->
+  <header class="min-h-[70vh] flex items-end pb-16 relative">
+    <div class="container--content">
+      <p class="font-mono text-xs text-accent-1 uppercase tracking-widest mb-4">
+        {project.meta}
+      </p>
+      <h1 class="text-5xl md:text-6xl font-light tracking-tight mb-6">
+        FAST
+      </h1>
+      <p class="text-xl text-text-muted max-w-2xl leading-relaxed">
+        {project.description}
+      </p>
+      <div class="flex gap-3 mt-6">
+        {project.tags.map((tag) => (
+          <span class="font-mono text-xs px-3 py-1 rounded-full border border-border text-text-muted">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <!-- Project content — completely custom structure -->
+  <section class="container--content py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <!-- Main content column -->
+      <div class="lg:col-span-8 space-y-12">
+        <div>
+          <h2 class="text-2xl font-light mb-4">The Challenge</h2>
+          <p class="text-text-muted leading-relaxed">
+            How do you make strategic foresight accessible to organizations that don't
+            have dedicated futures teams? FAST needed to translate complex network graph
+            science into an interface that felt intuitive to non-technical strategists.
+          </p>
+        </div>
+
+        <!-- Full-bleed image -->
+        <figure class="relative aspect-video rounded-[var(--radius-md)] overflow-hidden bg-bg-surface">
+          <img
+            src="/images/projects/fast/interface.jpg"
+            alt="FAST platform interface showing network graph visualization"
+            class="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </figure>
+
+        <div>
+          <h2 class="text-2xl font-light mb-4">Approach</h2>
+          <p class="text-text-muted leading-relaxed">
+            I led frontend development and product design, building a React application
+            that renders complex graph relationships as interactive, explorable visualizations.
+            The AI layer surfaces connections between signals that would take human researchers
+            weeks to identify.
+          </p>
+        </div>
+
+        <!-- Interactive demo could go here -->
+        <!-- <NetworkGraph client:visible data={graphData} /> -->
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="lg:col-span-4 space-y-8">
+        <div class="border border-border rounded-[var(--radius-md)] p-6">
+          <h3 class="font-mono text-xs uppercase tracking-widest text-text-muted mb-4">
+            Project Details
+          </h3>
+          <dl class="space-y-3">
+            <div>
+              <dt class="font-mono text-xs text-text-muted">Role</dt>
+              <dd class="text-sm">Frontend Dev & Product Design</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-xs text-text-muted">Year</dt>
+              <dd class="text-sm">2025</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-xs text-text-muted">Stack</dt>
+              <dd class="text-sm">React, D3, Python, AI/ML</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-xs text-text-muted">Company</dt>
+              <dd class="text-sm">Futurity Systems</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Page-specific styles -->
+  <style>
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at 30% 80%,
+        color-mix(in srgb, var(--accent-1) 8%, transparent),
+        transparent 60%
+      );
+      pointer-events: none;
+    }
+  </style>
+</Base>

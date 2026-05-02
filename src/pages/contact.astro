@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import { contactLinks } from '../data/content.js';
+import { getBreadcrumbJsonLd } from '../lib/seo.js';
+
+const jsonLd = getBreadcrumbJsonLd([
+  { name: 'Home', url: '/' },
+  { name: 'Contact' },
+]);
+---
+
+<Base
+  title="Contact — Carlton Lindsay"
+  description="Get in touch — available for design technology, creative engineering, and AI-focused frontend roles."
+  jsonLd={jsonLd}
+>
+  <section class="container--content pt-32 pb-16">
+    <h1 class="text-4xl font-light tracking-tight mb-4">Contact</h1>
+    <p class="text-lg text-text-muted max-w-lg mb-12">
+      Open to interesting roles and collaborations — especially at the intersection of AI, design, and hardware.
+    </p>
+
+    <div class="space-y-6 max-w-md">
+      {contactLinks.map(({ label, value, href }) => (
+        <a
+          href={href}
+          class="group flex items-center justify-between p-4 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
+          target={href.startsWith('http') ? '_blank' : undefined}
+          rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        >
+          <span class="font-mono text-xs uppercase tracking-widest text-text-muted">
+            {label}
+          </span>
+          <span class="text-sm group-hover:text-accent-1 transition-colors">
+            {value}
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>
