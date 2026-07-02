@@ -10,6 +10,7 @@ import { siteConfig } from '../data/content.js';
 
 /**
  * Person schema — appears on homepage and about page.
+ * Helps Google's Knowledge Panel understand who you are.
  */
 export function getPersonJsonLd() {
   return {
@@ -19,8 +20,14 @@ export function getPersonJsonLd() {
     url: siteConfig.url,
     jobTitle: 'Design Technologist',
     description: siteConfig.description,
-    sameAs: [siteConfig.social.linkedin, siteConfig.social.github],
-    worksFor: { '@type': 'Organization', name: 'Futurity Systems' },
+    sameAs: [
+      siteConfig.social.linkedin,
+      siteConfig.social.github,
+    ],
+    worksFor: {
+      '@type': 'Organization',
+      name: 'Futurity Systems',
+    },
     alumniOf: [
       { '@type': 'Organization', name: 'Apple' },
       { '@type': 'EducationalOrganization', name: 'Harbour.Space University' },
@@ -39,6 +46,7 @@ export function getPersonJsonLd() {
 
 /**
  * WebSite schema — appears on homepage.
+ * Tells search engines this is a portfolio/personal site.
  */
 export function getWebSiteJsonLd() {
   return {
@@ -47,12 +55,16 @@ export function getWebSiteJsonLd() {
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
-    author: { '@type': 'Person', name: siteConfig.name },
+    author: {
+      '@type': 'Person',
+      name: siteConfig.name,
+    },
   };
 }
 
 /**
  * CreativeWork schema — one per project page.
+ * Makes projects eligible for rich results in Google.
  */
 export function getCreativeWorkJsonLd(project) {
   return {
@@ -64,7 +76,11 @@ export function getCreativeWorkJsonLd(project) {
     image: project.image.startsWith('http')
       ? project.image
       : `${siteConfig.url}${project.image}`,
-    creator: { '@type': 'Person', name: siteConfig.name, url: siteConfig.url },
+    creator: {
+      '@type': 'Person',
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
     keywords: project.tags?.join(', '),
     dateCreated: project.meta?.match(/\d{4}/)?.[0],
   };
@@ -97,7 +113,11 @@ export function getBlogPostJsonLd(post) {
     description: post.excerpt,
     url: `${siteConfig.url}/blog/${post.slug}`,
     datePublished: post.date,
-    author: { '@type': 'Person', name: siteConfig.name, url: siteConfig.url },
+    author: {
+      '@type': 'Person',
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
     keywords: post.tags?.join(', '),
   };
 }

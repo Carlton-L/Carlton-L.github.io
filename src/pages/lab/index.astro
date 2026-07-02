@@ -1,8 +1,11 @@
 ---
 /**
- * Lab — Interactive experiments and explorations
+ * Lab — patch document.
+ * Registry-based: add experiments to the array below.
  */
 import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
 
 const experiments = [
   // {
@@ -19,37 +22,55 @@ const experiments = [
   title="Lab — Carlton Lindsay"
   description="Interactive experiments, generative sketches, and technical explorations."
 >
-  <section class="container--content pt-32 pb-16">
-    <h1 class="text-4xl font-light tracking-tight mb-4">Lab</h1>
-    <p class="text-lg text-text-muted max-w-lg mb-12">
-      Interactive experiments and technical explorations — things I'm building, testing, or just curious about.
-    </p>
-
-    {experiments.length === 0 ? (
-      <p class="text-text-muted font-mono text-sm">
-        Experiments loading soon.
+  <PatchDoc meta={`${experiments.length} EXPERIMENTS`}>
+    <Operator id="labIntro" name="input · lab_txt" type="txt" ports="none">
+      <h1 class="pd-h">Lab</h1>
+      <p class="pd-p">
+        Interactive experiments and technical explorations — things I'm
+        building, testing, or just curious about.
       </p>
-    ) : (
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {experiments.map((exp) => (
-          <a
-            href={`/lab/${exp.slug}`}
-            class="group block p-6 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
-          >
-            <div class="flex items-center gap-2 mb-3">
-              <span class={`w-2 h-2 rounded-full ${exp.status === 'live' ? 'bg-green-400' : 'bg-yellow-400'}`} />
-              <span class="font-mono text-xs text-text-muted uppercase">{exp.status}</span>
-            </div>
-            <h2 class="text-lg font-medium mb-2">{exp.title}</h2>
-            <p class="text-sm text-text-muted mb-4">{exp.description}</p>
-            <div class="flex gap-2">
-              {exp.tags.map((tag) => (
-                <span class="font-mono text-xs text-text-muted">{tag}</span>
-              ))}
-            </div>
-          </a>
-        ))}
-      </div>
-    )}
-  </section>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="labIndex" name="experiments_index" type="data" ports="none">
+      {experiments.length === 0 ? (
+        <p class="pd-empty">0 OPS IN THE LAB — EXPERIMENTS COOKING, CHECK BACK.</p>
+      ) : (
+        <div class="pd-exps">
+          {experiments.map((exp) => (
+            <a href={`/lab/${exp.slug}`} class="pd-exp">
+              <span class="pd-status" data-live={exp.status === 'live'}>● {exp.status.toUpperCase()}</span>
+              <span class="pd-title">{exp.title}</span>
+              <span class="pd-desc">{exp.description}</span>
+              <span class="pd-tags">{exp.tags.join(' · ')}</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </Operator>
+  </PatchDoc>
 </Base>
+
+<style>
+  .pd-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+  .pd-empty { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; }
+
+  .pd-exps { display: flex; flex-direction: column; }
+  .pd-exp { display: block; padding: 14px 4px; border-bottom: 1px solid var(--border-color); text-decoration: none; }
+  .pd-exp:last-child { border-bottom: none; }
+  .pd-status { display: block; font-family: var(--font-mono); font-size: 9.5px; color: #e8c34a; margin-bottom: 4px; }
+  .pd-status[data-live='true'] { color: var(--signal); }
+  .pd-title { display: block; font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; transition: color var(--duration-fast); }
+  .pd-exp:hover .pd-title { color: var(--signal); }
+  .pd-desc { display: block; font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
+  .pd-tags { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+</style>

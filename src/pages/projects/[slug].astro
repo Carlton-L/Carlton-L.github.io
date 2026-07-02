@@ -1,19 +1,21 @@
 ---
 /**
- * Project Template (fallback)
+ * Project Template (fallback) — patch document.
  *
- * Generates pages for projects that DON'T have custom .astro files.
- * Uses a consistent layout with the project data from content.js.
- * For your top projects, create dedicated files like fast.astro instead.
+ * Generates pages for projects that DON'T have custom .astro files:
+ * a stacked operator chain — brief → facts → case-study sections → out.
+ * Top projects get bespoke network pages (fast.astro, futurescaper.astro).
  */
 import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
-// Projects with custom pages — exclude them from template generation
-const customPages = ['fast', 'immersive-experience-builder'];
-
 export function getStaticPaths() {
+  // Projects with custom pages — exclude them from template generation.
+  // (Defined inside getStaticPaths: Astro executes this function in isolation.)
+  const customPages = ['fast', 'futurescaper'];
   return projects
     .filter((p) => !customPages.includes(p.slug))
     .map((p) => ({
@@ -35,6 +37,13 @@ const jsonLd = {
     ]),
   ],
 };
+
+const snake = (s) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+// OUT node: next project in the list (wraps around)
+const idx = projects.findIndex((p) => p.slug === project.slug);
+const next = projects[(idx + 1) % projects.length];
 ---
 
 <Base
@@ -43,42 +52,111 @@ const jsonLd = {
   ogImage={project.image}
   jsonLd={jsonLd}
 >
-  <article class="container--content pt-32 pb-16">
-    <!-- Header -->
-    <header class="mb-12">
-      <p class="font-mono text-xs uppercase tracking-widest text-text-muted mb-4">
-        {project.meta}
-      </p>
-      <h1 class="text-4xl md:text-5xl font-light tracking-tight mb-6">
-        {project.title}
-      </h1>
-      <p class="text-lg text-text-muted max-w-2xl leading-relaxed">
-        {project.description}
-      </p>
-      <div class="flex flex-wrap gap-2 mt-6">
-        {project.tags.map((tag) => (
-          <span class="font-mono text-xs px-3 py-1 rounded-full border border-border text-text-muted">
-            {tag}
-          </span>
-        ))}
+  <PatchDoc meta={project.facts ? project.facts.year.toUpperCase() : ''}>
+    <Operator id="csBrief" name="input · the_brief" type="txt" ports="none">
+      <p class="cs-meta">{project.meta}</p>
+      <h1 class="cs-h">{project.title}</h1>
+      <p class="cs-desc">{project.description}</p>
+      <div class="cs-tags">
+        {project.tags.map((tag) => <span class="cs-chip">{tag}</span>)}
       </div>
-    </header>
+    </Operator>
 
-    <!-- Cover image -->
-    <figure class="relative aspect-video rounded-[var(--radius-md)] overflow-hidden bg-bg-surface mb-12">
-      <img
-        src={project.image}
-        alt={`${project.title} project cover`}
-        class="w-full h-full object-cover"
-        loading="lazy"
-      />
-    </figure>
+    {project.facts && (
+      <>
+        <div class="oplink" aria-hidden="true"></div>
+        <Operator id="csFacts" name="facts_data" type="data" ports="none">
+          <dl class="cs-facts">
+            <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
+            <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
+            <div><dt>STACK / METHOD</dt><dd>{project.facts.stack}</dd></div>
+            <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
+          </dl>
+        </Operator>
+      </>
+    )}
 
-    <!-- Content placeholder — expand per project -->
-    <div class="max-w-2xl">
-      <p class="text-text-muted">
-        Full case study content coming soon.
-      </p>
-    </div>
-  </article>
+    {project.caseStudy ? (
+      project.caseStudy.map((section, i) => (
+        <>
+          <div class="oplink" aria-hidden="true"></div>
+          <Operator id={`csSec${i}`} name={`txt_${String(i + 1).padStart(2, '0')} · ${snake(section.heading)}`} type="txt" ports="none">
+            <h2 class="cs-h2">{section.heading}</h2>
+            {section.body.map((paragraph) => <p class="cs-p">{paragraph}</p>)}
+          </Operator>
+        </>
+      ))
+    ) : (
+      <>
+        <div class="oplink" aria-hidden="true"></div>
+        <Operator id="csSoon" name="txt_01 · case_study" type="txt" ports="none">
+          <p class="cs-p">Full case study content coming soon.</p>
+        </Operator>
+      </>
+    )}
+
+    <div class="oplink" aria-hidden="true"></div>
+    <Operator id="csOut" name="out · next_network" type="data" ports="none">
+      <a class="cs-next" href={`/projects/${next.slug}`}>
+        NEXT ▸ {next.slug.replace(/-/g, '_')}
+        <span class="cs-nextsub">{next.title}</span>
+      </a>
+    </Operator>
+  </PatchDoc>
 </Base>
+
+<style>
+  .cs-meta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .cs-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 0.98;
+    margin-bottom: 12px;
+  }
+  .cs-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
+  .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cs-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .cs-facts dd { font-size: 12.5px; color: var(--text); }
+  @media (max-width: 560px) { .cs-facts { grid-template-columns: 1fr; } }
+
+  .cs-h2 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 10px;
+  }
+  .cs-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+  .cs-p:last-child { margin-bottom: 0; }
+
+  .cs-next {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    text-decoration: none;
+  }
+  .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+</style>

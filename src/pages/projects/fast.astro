@@ -1,12 +1,14 @@
 ---
 /**
- * FAST — Custom Project Page
+ * FAST — Custom Project Page (patch document).
  *
- * This is an example of a fully bespoke project page.
- * Every section, layout decision, and interactive element is unique to this project.
- * No template constraints — this file IS the page.
+ * Bespoke operator chain; prose is fact-checked — do not embellish.
+ * The full "viewer wall" network (3 VIEW nodes) lands in a later
+ * demo session per live-demos/01_SESSION_PROMPTS.md.
  */
 import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
@@ -30,107 +32,169 @@ const jsonLd = {
   ogImage="/images/projects/fast/og.jpg"
   jsonLd={jsonLd}
 >
-  <!-- Custom hero — unique to this project -->
-  <header class="min-h-[70vh] flex items-end pb-16 relative">
-    <div class="container--content">
-      <p class="font-mono text-xs text-accent-1 uppercase tracking-widest mb-4">
-        {project.meta}
-      </p>
-      <h1 class="text-5xl md:text-6xl font-light tracking-tight mb-6">
-        FAST
-      </h1>
-      <p class="text-xl text-text-muted max-w-2xl leading-relaxed">
-        {project.description}
-      </p>
-      <div class="flex gap-3 mt-6">
-        {project.tags.map((tag) => (
-          <span class="font-mono text-xs px-3 py-1 rounded-full border border-border text-text-muted">
-            {tag}
-          </span>
-        ))}
+  <PatchDoc meta="2025–2026">
+    <Operator id="fastBrief" name="input · the_brief" type="txt" ports="none">
+      <p class="cs-meta">{project.meta}</p>
+      <h1 class="cs-h">FAST</h1>
+      <p class="cs-desc">{project.description}</p>
+      <div class="cs-tags">
+        {project.tags.map((tag) => <span class="cs-chip">{tag}</span>)}
       </div>
-    </div>
-  </header>
+    </Operator>
 
-  <!-- Project content — completely custom structure -->
-  <section class="container--content py-16">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-      <!-- Main content column -->
-      <div class="lg:col-span-8 space-y-12">
-        <div>
-          <h2 class="text-2xl font-light mb-4">The Challenge</h2>
-          <p class="text-text-muted leading-relaxed">
-            How do you make strategic foresight accessible to organizations that don't
-            have dedicated futures teams? FAST needed to translate complex network graph
-            science into an interface that felt intuitive to non-technical strategists.
-          </p>
-        </div>
+    <div class="oplink" aria-hidden="true"></div>
 
-        <!-- Full-bleed image -->
-        <figure class="relative aspect-video rounded-[var(--radius-md)] overflow-hidden bg-bg-surface">
-          <img
-            src="/images/projects/fast/interface.jpg"
-            alt="FAST platform interface showing network graph visualization"
-            class="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </figure>
+    <Operator id="fastFacts" name="facts_data" type="data" ports="none">
+      <dl class="cs-facts">
+        <div><dt>ROLE</dt><dd>Lead Frontend Engineer & Lead UX/UI Designer</dd></div>
+        <div><dt>YEAR</dt><dd>2025–2026</dd></div>
+        <div><dt>STACK</dt><dd>React, TypeScript, Chakra UI, Cosmograph, React Flow, D3</dd></div>
+        <div><dt>CONTEXT</dt><dd>Futurity Systems</dd></div>
+      </dl>
+    </Operator>
 
-        <div>
-          <h2 class="text-2xl font-light mb-4">Approach</h2>
-          <p class="text-text-muted leading-relaxed">
-            I led frontend development and product design, building a React application
-            that renders complex graph relationships as interactive, explorable visualizations.
-            The AI layer surfaces connections between signals that would take human researchers
-            weeks to identify.
-          </p>
-        </div>
+    <div class="oplink" aria-hidden="true"></div>
 
-        <!-- Interactive demo could go here -->
-        <!-- <NetworkGraph client:visible data={graphData} /> -->
-      </div>
+    <Operator id="fastChallenge" name="txt_01 · the_challenge" type="txt" ports="none">
+      <h2 class="cs-h2">The Challenge</h2>
+      <p class="cs-p">
+        How do you make strategic foresight accessible to organizations that don't
+        have dedicated futures teams? FAST (Futurity Accelerated Science Tools) needed
+        to translate knowledge-graph science and LLM-driven analysis into an interface
+        that non-technical strategists could actually think with — dense enough for
+        researchers, legible enough for executives.
+      </p>
+    </Operator>
 
-      <!-- Sidebar -->
-      <aside class="lg:col-span-4 space-y-8">
-        <div class="border border-border rounded-[var(--radius-md)] p-6">
-          <h3 class="font-mono text-xs uppercase tracking-widest text-text-muted mb-4">
-            Project Details
-          </h3>
-          <dl class="space-y-3">
-            <div>
-              <dt class="font-mono text-xs text-text-muted">Role</dt>
-              <dd class="text-sm">Frontend Dev & Product Design</dd>
-            </div>
-            <div>
-              <dt class="font-mono text-xs text-text-muted">Year</dt>
-              <dd class="text-sm">2025</dd>
-            </div>
-            <div>
-              <dt class="font-mono text-xs text-text-muted">Stack</dt>
-              <dd class="text-sm">React, D3, Python, AI/ML</dd>
-            </div>
-            <div>
-              <dt class="font-mono text-xs text-text-muted">Company</dt>
-              <dd class="text-sm">Futurity Systems</dd>
-            </div>
-          </dl>
-        </div>
-      </aside>
-    </div>
-  </section>
+    <div class="oplink" aria-hidden="true"></div>
 
-  <!-- Page-specific styles -->
-  <style>
-    header::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at 30% 80%,
-        color-mix(in srgb, var(--accent-1) 8%, transparent),
-        transparent 60%
-      );
-      pointer-events: none;
-    }
-  </style>
+    <Operator id="fastRole" name="txt_02 · my_role" type="txt" ports="none">
+      <h2 class="cs-h2">My Role</h2>
+      <p class="cs-p">
+        As Lead Frontend Engineer and Lead UX/UI Designer on FAST, I owned both the
+        interaction model — how people explore a knowledge graph, compose analysis
+        workflows, and steer LLM tools — and the production React behind it: a
+        codebase of 400+ components on a Chakra-based design system with shared
+        theme tokens.
+      </p>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="fastSurfaces" name="txt_03 · key_surfaces" type="txt" ports="none">
+      <h2 class="cs-h2">Key Surfaces</h2>
+      <p class="cs-p">
+        <strong class="cs-strong">Knowledge graph explorer.</strong>
+        A GPU-accelerated Cosmograph visualization with eight-plus semantic node
+        types, real-time filtering, and interactions tuned so ten-thousand-node
+        graphs stay explorable rather than becoming hairballs.
+      </p>
+      <p class="cs-p">
+        <strong class="cs-strong">Visual analysis workflows.</strong>
+        A React Flow node editor where researchers compose analysis pipelines as
+        DAGs — custom nodes, auto-layout, and report generation wired into the
+        graph data underneath.
+      </p>
+      <p class="cs-p">
+        <strong class="cs-strong">LLM invention tools.</strong>
+        Multi-step generative tools that turn graph insights into structured
+        innovation concepts — the AI layer surfaces connections that would take
+        human researchers weeks to identify, and the UI keeps humans in control
+        of every step.
+      </p>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" ports="none">
+      <h2 class="cs-h2">Companion Tooling: Browser Extension</h2>
+      <p class="cs-p">
+        Research happens in the browser, but research platforms live in another tab.
+        I designed and built a companion browser extension that closes that gap:
+        it extracts structured content from the page a researcher is reading and
+        files it into the FAST knowledge base in one action — clean extraction,
+        sensible defaults, no context switch. Small surface, used constantly; the
+        kind of tooling that compounds.
+      </p>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="fastLessons" name="txt_04 · what_it_taught_me" type="txt" ports="none">
+      <h2 class="cs-h2">What It Taught Me</h2>
+      <p class="cs-p">
+        Data-dense AI interfaces live or die on progressive disclosure. The craft
+        isn't rendering the graph — it's deciding what the user shouldn't see yet.
+        FAST is where I developed the patterns I now apply everywhere: semantic
+        visual encoding, incremental data loading, and treating LLM output as
+        material to be shaped rather than an answer to be displayed.
+      </p>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="fastOut" name="out · next_network" type="data" ports="none">
+      <a class="cs-next" href="/projects/futurity-engine">
+        NEXT ▸ futurity_engine
+        <span class="cs-nextsub">watch the machine think</span>
+      </a>
+    </Operator>
+  </PatchDoc>
 </Base>
+
+<style>
+  .cs-meta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .cs-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 0.98;
+    margin-bottom: 12px;
+  }
+  .cs-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
+  .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cs-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .cs-facts dd { font-size: 12.5px; color: var(--text); }
+  @media (max-width: 560px) { .cs-facts { grid-template-columns: 1fr; } }
+
+  .cs-h2 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 10px;
+  }
+  .cs-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+  .cs-p:last-child { margin-bottom: 0; }
+  .cs-strong { color: var(--text); font-weight: 500; }
+
+  .cs-next {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    text-decoration: none;
+  }
+  .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+</style>

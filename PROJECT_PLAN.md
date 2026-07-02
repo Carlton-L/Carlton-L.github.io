@@ -60,9 +60,8 @@ Rebuild carlton.dev as a static Astro site with React islands, deployed to GitHu
 - [x] About, Contact, Blog, Lab, Projects pages
 - [x] Content data file (carried over from Next.js version)
 - [x] SEO utility library (JSON-LD generators)
-- [ ] Clean up old Vite files from branch
-- [ ] npm install + verify build passes locally
-- [ ] Deploy to GitHub Pages
+- [ ] Verify build passes
+- [ ] Deploy to GitHub Pages (new repo or replace existing)
 - [ ] CNAME + DNS pointing
 
 ### Phase 2: Design & Polish
@@ -201,7 +200,7 @@ npm run preview  # Preview production build locally
 ## File Structure
 
 ```
-Carlton-L.github.io/          (astro branch)
+carlton-astro/
 ├── src/
 │   ├── layouts/Base.astro           # Shared HTML shell
 │   ├── pages/
@@ -230,11 +229,9 @@ Carlton-L.github.io/          (astro branch)
 │       ├── tokens.css               # Design token definitions
 │       └── global.css               # Tailwind + base styles
 ├── public/                          # Static assets (images, fonts)
-├── chatbot/                         # RAG chatbot knowledge base + docs
 ├── astro.config.mjs
 ├── tailwind.config.mjs
 ├── tsconfig.json
-├── CNAME
 └── package.json
 ```
 
@@ -242,12 +239,11 @@ Carlton-L.github.io/          (astro branch)
 
 ## Migration Checklist (from current live site)
 
-- [ ] Remove old Vite files (src/App.jsx, src/main.jsx, vite.config.js, index.html, etc.)
-- [ ] Port project images from dist/hero-images/ to public/images/projects/
+- [ ] Port all project images from Carlton-L.github.io/dist/hero-images/
 - [ ] Verify all content matches current live site
 - [ ] Set up GitHub Actions deploy workflow
-- [ ] Verify CNAME still works with new build
-- [ ] Redirect old hash-based URLs if possible (meta refresh in 404)
+- [ ] Update CNAME / DNS records
+- [ ] Redirect old hash-based URLs if possible (301s via _redirects or meta refresh)
 - [ ] Verify Google Search Console picks up new sitemap
 - [ ] Submit sitemap to Google/Bing
 
@@ -255,10 +251,11 @@ Carlton-L.github.io/          (astro branch)
 
 ## Open Questions
 
-1. **Domain:** Keep carlton.dev on GitHub Pages, or consider Cloudflare Pages (free, faster CDN, native redirects)?
-2. **Image hosting:** Keep images in repo, or use a CDN / image service?
-3. **Analytics timeline:** Set up Umami in Phase 2 or wait for Pi setup in Phase 5?
-4. **Blog cadence:** How often? Weekly, biweekly, when-inspired?
+1. **Repo strategy:** New repo, or replace Carlton-L.github.io contents?
+2. **Domain:** Keep carlton.dev on GitHub Pages, or consider Cloudflare Pages (free, faster CDN, native redirects)?
+3. **Image hosting:** Keep images in repo, or use a CDN / image service?
+4. **Analytics timeline:** Set up Umami in Phase 2 or wait for Pi setup in Phase 5?
+5. **Blog cadence:** How often? Weekly, biweekly, when-inspired?
 
 ---
 

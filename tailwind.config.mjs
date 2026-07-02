@@ -4,6 +4,7 @@ export default {
   darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
     extend: {
+      // Design tokens — mapped from your CSS variables to Tailwind utilities
       colors: {
         bg: {
           DEFAULT: 'var(--bg)',
@@ -27,6 +28,9 @@ export default {
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+      },
+      backdropBlur: {
+        nav: 'var(--backdrop-blur)',
       },
     },
   },

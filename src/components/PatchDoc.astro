@@ -1,0 +1,80 @@
+---
+/**
+ * PatchDoc — patch-styled document column.
+ *
+ * For pages that don't need a full spatial network (blog, lab,
+ * projects index, case-study template). Operators placed in the slot
+ * stack as static blocks in BOTH modes; put an <OpLink/> (or
+ * <div class="oplink"/>) between them to draw a connector stub.
+ *
+ * Props:
+ *  - path:  network path readout, defaults to the current URL
+ *  - meta:  right-hand mono annotation, e.g. "4 OPS"
+ *  - wide:  bump max-width from 760px to 980px (tables, grids)
+ */
+interface Props {
+  path?: string;
+  meta?: string;
+  wide?: boolean;
+}
+const { path = Astro.url.pathname.replace(/\/$/, '') || '/', meta = '', wide = false } = Astro.props;
+const netPath = path === '/' ? '/network/home' : `/network${path}`;
+---
+
+<section class:list={['patchdoc', { wide }]}>
+  <div class="doclabel" aria-hidden="true">
+    <span>// {netPath}</span>
+    {meta && <span class="docmeta">{meta}</span>}
+  </div>
+  <slot />
+</section>
+
+<style>
+  .patchdoc {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: calc(var(--nav-height) + 44px) 20px 72px;
+  }
+  .patchdoc.wide { max-width: 980px; }
+
+  .doclabel {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .doclabel .docmeta { color: var(--signal); }
+
+  /* Operators inside a doc are static in both modes */
+  .patchdoc :global(.op) {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+  }
+  .patchdoc :global(.ohead) { cursor: default; }
+  .patchdoc :global(.port) { display: none; }
+
+  /* connector stub between stacked operators */
+  .patchdoc :global(.oplink) {
+    width: 2px;
+    height: 30px;
+    margin: 0 auto;
+    background: repeating-linear-gradient(180deg, var(--signal) 0 5px, transparent 5px 10px);
+    background-size: 100% 10px;
+    opacity: 0.45;
+    animation: oplink-flow 1.4s linear infinite;
+  }
+  @keyframes oplink-flow {
+    from { background-position: 0 0; }
+    to { background-position: 0 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .patchdoc :global(.oplink) { animation: none; }
+  }
+
+  /* PERFORM: clean reading column — stubs disappear, chrome stays quiet */
+  :global(body.perform) .patchdoc :global(.oplink) { visibility: hidden; }
+</style>

@@ -1,0 +1,101 @@
+---
+/**
+ * Operator — the core PATCH content block.
+ *
+ * Every content unit on a network page is an operator node with a
+ * typed header (VIEW / TXT / DATA / SYS), optional in/out ports,
+ * and a body (slot). In NETWORK mode operators are absolutely
+ * positioned on the patch canvas (pass `pos`) and draggable
+ * (data-drag). In PERFORM mode they stack as clean static blocks.
+ *
+ * Props:
+ *  - id:    DOM id (wires reference operators by id)
+ *  - name:  header label, e.g. "futurescaper_view · OCEAN.scn"
+ *  - type:  'view' | 'txt' | 'data' | 'sys'
+ *  - pos:   inline position styles for network mode, e.g. "left:5%; top:60px; width:430px;"
+ *  - ports: 'both' | 'in' | 'out' | 'none' (default 'both')
+ */
+interface Props {
+  id: string;
+  name: string;
+  type?: 'view' | 'txt' | 'data' | 'sys';
+  pos?: string;
+  ports?: 'both' | 'in' | 'out' | 'none';
+}
+const { id, name, type = 'txt', pos = '', ports = 'both' } = Astro.props;
+---
+
+<div class={`op op-${type}`} id={id} data-drag style={pos}>
+  <div class="ohead">
+    <span class="oname">{name}</span>
+    <span class="otyp">{type.toUpperCase()}</span>
+  </div>
+  <div class="obody"><slot /></div>
+  {(ports === 'both' || ports === 'in') && <span class="port port-in" aria-hidden="true"></span>}
+  {(ports === 'both' || ports === 'out') && <span class="port port-out" aria-hidden="true"></span>}
+</div>
+
+<style>
+  .op {
+    position: absolute;
+    z-index: 5;
+    background: var(--bg-elevated);
+    border: 1px solid #2a2a2e;
+    border-radius: var(--radius-md);
+    min-width: 150px;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+    transition: box-shadow var(--duration-normal), border-color var(--duration-normal);
+  }
+  .op:hover { border-color: var(--border-hover); box-shadow: 0 14px 50px rgba(61, 255, 136, 0.1); }
+  .ohead {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: grab; user-select: none;
+  }
+  .otyp { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+  .op-view .otyp { background: var(--op-view-bg); color: var(--op-view-fg); }
+  .op-txt  .otyp { background: var(--op-txt-bg);  color: var(--op-txt-fg); }
+  .op-data .otyp { background: var(--op-data-bg); color: var(--op-data-fg); }
+  .op-sys  .otyp { background: var(--op-sys-bg);  color: var(--op-sys-fg); }
+  .obody { padding: 12px 14px; }
+  .port {
+    position: absolute; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--bg); border: 1.5px solid var(--signal);
+  }
+  .port-in  { left: -5px; top: 50%; transform: translateY(-50%); }
+  .port-out { right: -5px; top: 50%; transform: translateY(-50%); }
+
+  /* PERFORM mode: operators dissolve into clean reading blocks —
+     the box chrome drops away, the typed header becomes an eyebrow,
+     body typography opens up. */
+  :global(body.perform) .op {
+    position: static !important;
+    width: 100% !important;
+    max-width: 680px;
+    margin: 0 auto 40px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none !important;
+  }
+  :global(body.perform) .ohead {
+    cursor: default;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 0 7px;
+    margin-bottom: 14px;
+  }
+  :global(body.perform) .obody { padding: 0; }
+  :global(body.perform) .obody :global(p) {
+    font-size: 15px;
+    line-height: 1.75;
+    max-width: 62ch;
+  }
+  :global(body.perform) .obody :global(h1) { margin-bottom: 14px; }
+  :global(body.perform) .obody :global(h2) { font-size: 13px; }
+  :global(body.perform) .port { display: none; }
+</style>

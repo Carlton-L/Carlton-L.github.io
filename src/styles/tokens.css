@@ -1,41 +1,75 @@
 /* ============================================
-   Design Tokens
+   Design Tokens — "THE PATCH" (Dataflow Workstation)
 
-   Source of truth for the design system.
-   These CSS custom properties are consumed by:
-   - Tailwind (via tailwind.config.mjs theme.extend.colors)
-   - Astro components (directly via var(--token))
-   - React islands (via getComputedStyle or Tailwind classes)
+   The site is a live dataflow patch: content blocks are operators,
+   navigation is cables, demos are VIEW nodes. See:
+   Carlton Portfolio/design/DIRECTION_PATCH.md
 
-   To generate tokens for other platforms (Figma, iOS, Android),
-   add Style Dictionary config that reads from this file.
+   Token NAMES are stable (Tailwind + components consume them);
+   values define the patch language.
+
+   Families:
+   - Patch chrome: near-black, dot grid, phosphor green signal
+   - Operator types: VIEW (signal green) / TXT (paper) / DATA (cyan) / SYS (gray)
+   - Viewer interiors may use product palettes (e.g. Futurescaper
+     ink-on-paper + amber + Wong STEEPLE) — scoped inside .viewer only.
    ============================================ */
 
 /* --- Color Tokens --- */
 :root {
-  /* Surfaces */
-  --bg: #0a0a0c;
-  --bg-elevated: #111114;
-  --bg-surface: #18181b;
+  /* Surfaces (patch canvas) */
+  --bg: #0a0a0b;
+  --bg-elevated: #101013;      /* operator body */
+  --bg-surface: #161619;       /* operator header / inputs */
 
-  /* Accents (category-mapped) */
-  --accent-1: #4f5aff;        /* Apps & Systems — blue */
-  --accent-2: #f7c385;        /* Experiences — warm gold */
-  --accent-3: #ee6d71;        /* Research — coral */
+  /* Signal + operator families */
+  --signal: #3dff88;           /* phosphor — cables, live states, VIEW */
+  --signal-dim: rgba(61, 255, 136, 0.28);
+  --accent-1: #3dff88;         /* AI-Native Interfaces → signal green */
+  --accent-2: #56b4e9;         /* Experiences & Hardware → DATA cyan */
+  --accent-3: #e8a317;         /* Research & Writing → viewer amber */
 
   /* Text */
-  --text: #e4e4e7;
-  --text-muted: #71717a;
+  --text: #e6e6e2;
+  --text-muted: #8f8f8a;
+  --text-dim: #5c5c58;
 
   /* Borders */
-  --border-color: #27272a;
-  --border-hover: #52525b;
+  --border-color: #232326;
+  --border-hover: #3dff8866;
+
+  /* Operator type badges */
+  --op-view-bg: #123c24; --op-view-fg: #3dff88;
+  --op-txt-bg: #2a2a20;  --op-txt-fg: #e6e6d8;
+  --op-data-bg: #0f2c3d; --op-data-fg: #56b4e9;
+  --op-sys-bg: #232326;  --op-sys-fg: #8f8f8a;
+
+  /* Viewer product palettes (scoped to demo interiors) */
+  --paper: #f4f1ea;
+  --paper-card: #fbfaf7;
+  --paper-line: #d2caba;
+  --ink: #15140f;
+  --ink-muted: #5c5849;
+  --amber: #e8a317;
+  --amber-ink: #2e2206;
+  /* Wong colorblind-safe STEEPLE palette (Futurescaper) */
+  --steep-social: #cc79a7;
+  --steep-tech: #56b4e9;
+  --steep-econ: #e69f00;
+  --steep-env: #009e73;
+  --steep-pol: #d55e00;
+  --steep-legal: #007cbf;
+  --steep-ethical: #d4c83a;
 
   /* Utility */
-  --backdrop-blur: rgba(10, 10, 12, 0.75);
+  --backdrop-blur: rgba(10, 10, 11, 0.78);
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
+  --radius-md: 7px;
+  --radius-lg: 12px;
+
+  /* Patch grid */
+  --grid-dot: #17171a;
+  --grid-size: 26px;
 
   /* Spacing scale */
   --space-xs: 0.25rem;
@@ -46,6 +80,7 @@
   --space-2xl: 8rem;
 
   /* Typography */
+  --font-display: 'Archivo', 'Inter', -apple-system, sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --text-xs: 0.75rem;
@@ -66,22 +101,28 @@
   --duration-slow: 500ms;
 
   /* Layout */
-  --nav-height: 64px;
-  --content-max: 1200px;
+  --nav-height: 44px;
+  --playbar-height: 40px;
+  --content-max: 1240px;
   --plus-size: 20px;
 }
 
-/* --- Light Theme --- */
+/* --- PERFORM mode (clean reading view; default on mobile) ---
+   In perform mode operators render as stacked static blocks,
+   wires and dither canvases are hidden. Toggled via body.perform. */
+body.perform .wires,
+body.perform .bgdither { display: none !important; }
+
+/* --- Light Theme (kept for compatibility; patch is dark-first) --- */
 [data-theme='light'] {
-  --bg: #e8e8ea;
-  --bg-elevated: #f5f5f6;
-  --bg-surface: #e0e1e3;
-  --accent-1: #252ff1;
-  --accent-2: #f7c385;
-  --accent-3: #ee6d71;
-  --text: #040407;
-  --text-muted: #71717a;
-  --border-color: #d4d4d8;
-  --border-hover: #a1a1aa;
-  --backdrop-blur: rgba(232, 232, 234, 0.75);
+  --bg: #f4f1ea;
+  --bg-elevated: #fbfaf7;
+  --bg-surface: #efece3;
+  --text: #15140f;
+  --text-muted: #5c5849;
+  --text-dim: #8a8576;
+  --border-color: #d2caba;
+  --border-hover: #e8a317;
+  --grid-dot: #e5e1d6;
+  --backdrop-blur: rgba(244, 241, 234, 0.78);
 }

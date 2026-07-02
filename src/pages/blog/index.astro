@@ -1,5 +1,11 @@
 ---
+/**
+ * Blog — patch document.
+ * One TXT intro operator wired into a writing_index DATA operator.
+ */
 import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
 import { blogPosts } from '../../data/content.js';
 
 const sortedPosts = [...blogPosts].sort(
@@ -11,31 +17,54 @@ const sortedPosts = [...blogPosts].sort(
   title="Blog — Carlton Lindsay"
   description="Writing about design technology, AI tools, creative engineering, and the space between hardware and software."
 >
-  <section class="container--content pt-32 pb-16">
-    <h1 class="text-4xl font-light tracking-tight mb-4">Blog</h1>
-    <p class="text-lg text-text-muted max-w-lg mb-12">
-      Notes on building things at the edges of what's possible.
-    </p>
+  <PatchDoc meta={`${sortedPosts.length} POSTS COOKED`}>
+    <Operator id="blogIntro" name="input · writing_txt" type="txt" ports="none">
+      <h1 class="pd-h">Blog</h1>
+      <p class="pd-p">Notes on building things at the edges of what's possible.</p>
+    </Operator>
 
-    {sortedPosts.length === 0 ? (
-      <p class="text-text-muted font-mono text-sm">
-        Posts coming soon.
-      </p>
-    ) : (
-      <div class="space-y-6 max-w-2xl">
-        {sortedPosts.map((post) => (
-          <a
-            href={`/blog/${post.slug}`}
-            class="group block p-6 rounded-[var(--radius-md)] border border-border hover-inset transition-all"
-          >
-            <p class="font-mono text-xs text-text-muted mb-2">{post.date}</p>
-            <h2 class="text-lg font-medium mb-2 group-hover:text-accent-1 transition-colors">
-              {post.title}
-            </h2>
-            <p class="text-sm text-text-muted">{post.excerpt}</p>
-          </a>
-        ))}
-      </div>
-    )}
-  </section>
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="blogIndex" name="writing_index" type="data" ports="none">
+      {sortedPosts.length === 0 ? (
+        <p class="pd-empty">0 POSTS COOKED — THE QUEUE IS WIRED, CHECK BACK.</p>
+      ) : (
+        <div class="pd-posts">
+          {sortedPosts.map((post) => (
+            <a href={`/blog/${post.slug}`} class="pd-post">
+              <span class="pd-date">{post.date}</span>
+              <span class="pd-title">{post.title}</span>
+              <span class="pd-excerpt">{post.excerpt}</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </Operator>
+  </PatchDoc>
 </Base>
+
+<style>
+  .pd-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+  .pd-empty { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; }
+
+  .pd-posts { display: flex; flex-direction: column; }
+  .pd-post {
+    display: block;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+  }
+  .pd-post:last-child { border-bottom: none; }
+  .pd-date { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+  .pd-title { display: block; font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; transition: color var(--duration-fast); }
+  .pd-post:hover .pd-title { color: var(--signal); }
+  .pd-excerpt { display: block; font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+</style>

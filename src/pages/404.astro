@@ -1,0 +1,104 @@
+---
+/**
+ * 404 — a NULL operator.
+ * The requested op doesn't exist in the network; offer a patch cable home.
+ */
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="404 — NULL operator | Carlton Lindsay"
+  description="This operator doesn't exist in the network."
+>
+  <section class="nullfield">
+    <div class="op-null">
+      <div class="nhead">
+        <span>null · op_not_found</span>
+        <span class="ntyp">NULL</span>
+      </div>
+      <div class="nbody">
+        <p class="ncode">404</p>
+        <p class="nmsg">
+          THIS OPERATOR DOESN'T EXIST IN THE NETWORK.<br />
+          NO INPUTS. NO OUTPUTS. NOTHING COOKS.
+        </p>
+        <a class="nlink" href="/">▸ PATCH A CABLE BACK TO /network/home</a>
+      </div>
+      <span class="nport" aria-hidden="true"></span>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nullfield {
+    min-height: calc(100vh - var(--nav-height) - var(--playbar-height) - 4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+  .op-null {
+    position: relative;
+    background: var(--bg-elevated);
+    border: 1px dashed #3a3a3f;
+    border-radius: var(--radius-md);
+    width: min(420px, 90vw);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+  }
+  .nhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-bottom: 1px dashed #3a3a3f;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  .ntyp {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    background: #2a1416;
+    color: #ff6860;
+  }
+  .nbody { padding: 22px 20px 24px; }
+  .ncode {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.4px #4b4b4f;
+    margin-bottom: 12px;
+  }
+  .nmsg {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+  .nlink {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--signal);
+    text-decoration: none;
+  }
+  .nlink:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .nport {
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px dashed #4b4b4f;
+  }
+</style>

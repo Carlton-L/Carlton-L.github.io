@@ -1,0 +1,170 @@
+---
+/**
+ * PatchField — the shared network canvas.
+ *
+ * Wraps a set of Operators in a spatial patch: dot-grid background,
+ * dither canvas (optional), bezier cables with signal pulses, and
+ * draggable operators. One inline runtime initializes every field
+ * on the page (guarded, view-transition safe).
+ *
+ * Props:
+ *  - id:      DOM id (required, unique per field)
+ *  - links:   [[fromOpId, toOpId], ...] — cables, drawn out-port → in-port
+ *  - density: initial dither density 0–1 (0 disables the dither canvas)
+ *  - height:  'viewport' (fill viewport minus chrome) | CSS min-height value
+ *  - label:   aria-label for the region
+ *
+ * Density can be controlled from inside the field by an
+ * <input type="range" data-density-control> (0–100); an element with
+ * data-density-value receives the readout.
+ *
+ * PERFORM mode: the field collapses to a plain column; operators stack
+ * in DOM order — author the slot in reading order.
+ */
+interface Props {
+  id: string;
+  links?: [string, string][];
+  density?: number;
+  height?: string;
+  label?: string;
+}
+const { id, links = [], density = 0.45, height = 'viewport', label = 'Interactive network — press P for reading mode' } = Astro.props;
+const heightStyle =
+  height === 'viewport'
+    ? `height: calc(100vh - var(--nav-height) - var(--playbar-height) - 4px); min-height: 760px;`
+    : `min-height: ${height};`;
+---
+
+<section
+  class="patchfield"
+  id={id}
+  aria-label={label}
+  data-links={JSON.stringify(links)}
+  data-density={String(density)}
+  style={heightStyle}
+>
+  {density > 0 && <canvas class="bgdither" aria-hidden="true"></canvas>}
+  <svg class="wires" aria-hidden="true"></svg>
+  <slot />
+</section>
+
+<style>
+  .patchfield {
+    position: relative;
+    overflow: hidden;
+    cursor: crosshair;
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+  .bgdither { position: absolute; inset: 0; opacity: 0.5; }
+  .wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+
+  /* PERFORM: the network becomes a document */
+  :global(body.perform) .patchfield {
+    height: auto !important;
+    min-height: 0 !important;
+    cursor: default;
+    background-image: none;
+    padding: calc(var(--nav-height) + 40px) 20px 64px;
+  }
+
+</style>
+
+<script is:inline data-astro-rerun>
+(function () {
+  document.querySelectorAll('.patchfield').forEach((host) => {
+    if (host.dataset.pfInit) return;
+    host.dataset.pfInit = '1';
+
+    const cv = host.querySelector('canvas.bgdither');
+    const svg = host.querySelector('svg.wires');
+    const LINKS = JSON.parse(host.dataset.links || '[]');
+    let DENS = parseFloat(host.dataset.density || '0.45');
+
+    /* density control (e.g. the bg_generator SYS op) */
+    const ctl = host.querySelector('[data-density-control]');
+    const out = host.querySelector('[data-density-value]');
+    ctl && ctl.addEventListener('input', (e) => {
+      DENS = e.target.value / 100;
+      if (out) out.textContent = DENS.toFixed(2);
+    });
+
+    /* ---------- dither ---------- */
+    const B = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+    let W, H, t = 0, ctx = null;
+    if (cv) {
+      ctx = cv.getContext('2d');
+      const size = () => { W = cv.width = host.clientWidth; H = cv.height = host.clientHeight; };
+      new ResizeObserver(size).observe(host);
+      size();
+    }
+
+    /* ---------- wires ---------- */
+    function portPos(el, side) {
+      const r = el.getBoundingClientRect(), h = host.getBoundingClientRect();
+      return { x: (side === 'out' ? r.right : r.left) - h.left, y: r.top + r.height / 2 - h.top };
+    }
+
+    let phase = 0;
+    function frame() {
+      if (!document.body.classList.contains('perform') && host.isConnected) {
+        if (ctx && DENS > 0) {
+          t += 0.0035;
+          const s = 4, gw = Math.ceil(W / s), gh = Math.ceil(H / s);
+          ctx.clearRect(0, 0, W, H);
+          ctx.fillStyle = '#1c221d';
+          for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+            const u = x / gw, v = y / gh;
+            let L = 0.5 * Math.max(0, 1 - Math.hypot(u - 0.5 - Math.sin(t) * 0.3, (v - 0.5 - Math.cos(t * 0.8) * 0.2) * 1.3) / 0.55)
+                  + 0.4 * Math.max(0, 1 - Math.hypot(u - 0.15 + Math.cos(t * 0.5) * 0.1, (v - 0.75) * 1.3) / 0.4)
+                  + 0.3 * Math.max(0, 1 - Math.hypot(u - 0.85, (v - 0.2 + Math.sin(t * 0.7) * 0.12) * 1.3) / 0.36);
+            L *= DENS;
+            if (L > (B[y % 4][x % 4] + 0.5) / 16) ctx.fillRect(x * s, y * s, s - 1, s - 1);
+          }
+        }
+        if (svg) {
+          phase += 0.008;
+          let o = '';
+          for (let i = 0; i < LINKS.length; i++) {
+            const a = document.getElementById(LINKS[i][0]), b = document.getElementById(LINKS[i][1]);
+            if (!a || !b) continue;
+            const A = portPos(a, 'out'), Bp = portPos(b, 'in');
+            const dx = Math.max(60, Math.abs(Bp.x - A.x) * 0.5);
+            const d = `M ${A.x} ${A.y} C ${A.x + dx} ${A.y}, ${Bp.x - dx} ${Bp.y}, ${Bp.x} ${Bp.y}`;
+            o += `<path d="${d}" fill="none" stroke="#3dff88" stroke-opacity=".28" stroke-width="1.4"/>`;
+            const tt = (phase + i * 0.22) % 1;
+            const len = Math.hypot(Bp.x - A.x, Bp.y - A.y) + 2 * dx;
+            o += `<path d="${d}" fill="none" stroke="#3dff88" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="10 2000" stroke-dashoffset="${-(tt * len)}" opacity=".9"/>`;
+          }
+          svg.innerHTML = o;
+        }
+      }
+      if (host.isConnected) requestAnimationFrame(frame);
+    }
+    frame();
+
+    /* ---------- draggable operators ---------- */
+    host.querySelectorAll('.op').forEach((op) => {
+      const bar = op.querySelector('.ohead');
+      if (!bar) return;
+      let sx, sy, ox, oy, drag = false;
+      bar.addEventListener('mousedown', (e) => {
+        if (document.body.classList.contains('perform')) return;
+        drag = true; sx = e.clientX; sy = e.clientY;
+        const r = op.getBoundingClientRect(), pr = op.parentElement.getBoundingClientRect();
+        ox = r.left - pr.left; oy = r.top - pr.top;
+        op.style.left = ox + 'px'; op.style.top = oy + 'px'; op.style.right = 'auto'; op.style.bottom = 'auto'; op.style.transform = 'none';
+        host.querySelectorAll('.op').forEach((o) => (o.style.zIndex = 5));
+        op.style.zIndex = 25;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!drag) return;
+        op.style.left = ox + e.clientX - sx + 'px';
+        op.style.top = oy + e.clientY - sy + 'px';
+      });
+      window.addEventListener('mouseup', () => (drag = false));
+    });
+  });
+})();
+</script>

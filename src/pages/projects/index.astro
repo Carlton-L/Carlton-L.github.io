@@ -1,12 +1,28 @@
 ---
+/**
+ * Projects index — patch document.
+ * One work_index DATA operator: the full project table grouped by
+ * category. (The old card grid referenced cover images that don't
+ * exist yet; the table is the honest patch-native index.)
+ */
 import Base from '../../layouts/Base.astro';
-import { projects } from '../../data/content.js';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
+import { projects, categories } from '../../data/content.js';
 import { getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const jsonLd = getBreadcrumbJsonLd([
   { name: 'Home', url: '/' },
   { name: 'Projects' },
 ]);
+
+const groups = categories.map((cat) => ({
+  ...cat,
+  items: projects.filter((p) => p.categorySlug === cat.slug),
+}));
+
+const yearOf = (p) => (p.facts?.year ?? p.meta.split(' ')[0] ?? '').split('–').pop();
+const roleOf = (p) => (p.facts?.role ?? p.meta.replace(/^[0-9–\s]+—\s*/, '').split('·')[0]).toUpperCase();
 ---
 
 <Base
@@ -14,33 +30,77 @@ const jsonLd = getBreadcrumbJsonLd([
   description="Selected work in AI tools, spatial computing, robotics, and design technology."
   jsonLd={jsonLd}
 >
-  <section class="container--content pt-32 pb-16">
-    <h1 class="text-4xl font-light tracking-tight mb-4">Projects</h1>
-    <p class="text-lg text-text-muted max-w-lg mb-12">
-      Selected work across software, hardware, and research.
-    </p>
+  <PatchDoc wide meta={`${projects.length} NETWORKS`}>
+    <Operator id="prIntro" name="input · work_txt" type="txt" ports="none">
+      <h1 class="pd-h">Projects</h1>
+      <p class="pd-p">
+        Selected work across software, hardware, and research. Each case
+        study is itself a network — follow the cables.
+      </p>
+    </Operator>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {projects.map((project) => (
-        <a
-          href={`/projects/${project.slug}`}
-          class="group block rounded-[var(--radius-md)] border border-border overflow-hidden hover-inset transition-all"
-        >
-          <div class="aspect-video bg-bg-surface overflow-hidden">
-            <img
-              src={project.image}
-              alt={project.title}
-              class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-              loading="lazy"
-            />
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="prIndex" name="work_index" type="data" ports="none">
+      {groups.map((group) => (
+        <div class="pr-group">
+          <div class="pr-cat">
+            <span class="pr-catnum">{group.number}</span>
+            <span>{group.title.toUpperCase()}</span>
+            <span class="pr-catcount">{group.items.length} OPS</span>
           </div>
-          <div class="p-6">
-            <p class="font-mono text-xs text-text-muted mb-2">{project.meta}</p>
-            <h2 class="text-lg font-medium mb-2">{project.title}</h2>
-            <p class="text-sm text-text-muted line-clamp-2">{project.description}</p>
-          </div>
-        </a>
+          <table class="pr-table">
+            {group.items.map((p) => (
+              <tr onclick={`location.href='/projects/${p.slug}'`}>
+                <td class="pr-name"><a href={`/projects/${p.slug}`}>▸ {p.slug.replace(/-/g, '_')}</a></td>
+                <td class="pr-role dim">{roleOf(p)}</td>
+                <td class="pr-year dim">{yearOf(p)}</td>
+              </tr>
+            ))}
+          </table>
+        </div>
       ))}
-    </div>
-  </section>
+    </Operator>
+  </PatchDoc>
 </Base>
+
+<style>
+  .pd-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(24px, 3vw, 36px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; max-width: 52ch; }
+
+  .pr-group { margin-bottom: 22px; }
+  .pr-group:last-child { margin-bottom: 0; }
+  .pr-cat {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .pr-catnum { color: var(--signal); }
+  .pr-catcount { margin-left: auto; color: var(--text-dim); }
+
+  .pr-table { border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; width: 100%; }
+  .pr-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+  .pr-table tr:last-child td { border-bottom: none; }
+  .pr-table tr:hover td, .pr-table tr:hover td a { color: var(--signal); background: rgba(61, 255, 136, 0.03); }
+  .pr-name a { color: var(--text); text-decoration: none; }
+  .pr-role { font-size: 10px; }
+  .pr-year { text-align: right; white-space: nowrap; }
+  .dim { color: var(--text-dim); }
+
+  @media (max-width: 640px) {
+    .pr-role { display: none; }
+  }
+</style>

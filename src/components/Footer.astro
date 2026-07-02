@@ -1,24 +1,28 @@
 ---
 /**
- * Footer
+ * Footer — "Playbar"
  *
- * Simple footer with contact links and copyright.
+ * TouchDesigner-style timeline strip: play state, animated track,
+ * status readouts, contact links. Decorative track is CSS-only.
  */
 import { contactLinks } from '../data/content.js';
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-border py-8 mt-auto">
-  <div class="container--content flex flex-col md:flex-row justify-between items-center gap-4">
-    <p class="font-mono text-xs text-text-muted">
-      &copy; {year} Carlton Lindsay
-    </p>
-    <ul class="flex gap-6 list-none">
+<footer class="border-t border-border mt-auto" style="background: var(--bg-elevated);">
+  <div class="flex items-center gap-4 px-4 md:px-6 h-[var(--playbar-height)]">
+    <span class="font-mono text-[11px] text-[var(--signal)] select-none" aria-hidden="true">▶</span>
+    <div class="playtrack flex-1" aria-hidden="true"><i></i></div>
+    <span class="hidden md:inline font-mono text-[10px] text-text-dim whitespace-nowrap">00:{String(new Date().getMonth() + 1).padStart(2, '0')}:{String(new Date().getDate()).padStart(2, '0')} / ∞</span>
+  </div>
+  <div class="flex flex-col md:flex-row justify-between items-center gap-2 px-4 md:px-6 py-3 border-t border-border">
+    <p class="font-mono text-[10.5px] text-text-dim">© {year} CARLTON LINDSAY · THIS SITE IS A PATCH — EVERYTHING YOU SEE IS WIRED</p>
+    <ul class="flex gap-5 list-none">
       {contactLinks.map(({ label, href }) => (
         <li>
           <a
             href={href}
-            class="font-mono text-xs text-text-muted hover:text-text transition-colors"
+            class="font-mono text-[10.5px] uppercase tracking-widest text-text-muted hover:text-[var(--signal)] transition-colors"
             target={href.startsWith('http') ? '_blank' : undefined}
             rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
           >
@@ -29,3 +33,30 @@ const year = new Date().getFullYear();
     </ul>
   </div>
 </footer>
+
+<style>
+  .playtrack {
+    height: 5px;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .playtrack i {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 30%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, var(--signal));
+    animation: playhead 14s linear infinite;
+    opacity: .8;
+  }
+  @keyframes playhead {
+    from { left: -30%; }
+    to { left: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .playtrack i { animation: none; width: 38%; }
+  }
+  body.perform .playtrack i { animation: none; width: 38%; }
+</style>

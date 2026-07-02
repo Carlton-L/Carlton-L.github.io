@@ -1,20 +1,40 @@
 ---
 /**
- * Navigation
+ * Navigation — "PatchBar"
  *
- * Sticky header with site title + nav links.
- * Pure Astro component — zero JS shipped.
- * Uses View Transition names for smooth nav persistence across pages.
+ * Patch chrome, not OS chrome: current network path + op-search palette
+ * (TAB in network mode / ⌘K anywhere) + NETWORK/PERFORM mode toggle +
+ * cook status. Pure Astro; scripts are inline and dependency-free.
  */
+import { projects } from '../data/content.js';
+
 const currentPath = Astro.url.pathname;
 
 const links = [
-  { href: '/', label: 'Work' },
-  { href: '/about', label: 'About' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/lab', label: 'Lab' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/', label: 'work' },
+  { href: '/about', label: 'about' },
+  { href: '/blog', label: 'writing' },
+  { href: '/lab', label: 'lab' },
+  { href: '/contact', label: 'contact' },
 ];
+
+// op-search palette entries
+const ops = [
+  { href: '/', name: 'network_home', typ: 'SYS' },
+  { href: '/projects', name: 'work_index', typ: 'DATA' },
+  { href: '/about', name: 'bio_txt', typ: 'TXT' },
+  { href: '/blog', name: 'writing_index', typ: 'DATA' },
+  { href: '/lab', name: 'experiments_index', typ: 'DATA' },
+  { href: '/contact', name: 'say_hi', typ: 'TXT' },
+  ...projects.map((p) => ({
+    href: `/projects/${p.slug}`,
+    name: p.slug.replace(/-/g, '_'),
+    typ: p.featured ? 'VIEW' : 'TXT',
+  })),
+];
+
+// network path readout, e.g. /network/work/futurescaper
+const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.replace(/\/$/, '')}`;
 ---
 
 <header
@@ -22,25 +42,222 @@ const links = [
   style="background: var(--backdrop-blur); backdrop-filter: blur(12px);"
   transition:persist
 >
-  <nav class="container--content h-full flex items-center justify-between">
-    <a href="/" class="font-mono text-sm font-medium tracking-wide text-text hover:text-accent-1 transition-colors">
-      Carlton Lindsay
+  <nav class="h-full flex items-center justify-between px-4 md:px-6">
+    <a href="/" class="font-mono text-[12px] tracking-wide text-text hover:text-[var(--signal)] transition-colors whitespace-nowrap">
+      ▛▟ <span class="hidden sm:inline">carlton.dev </span><span class="hidden lg:inline text-[var(--signal)]">{netPath}</span>
     </a>
 
-    <ul class="flex gap-6 list-none">
-      {links.map(({ href, label }) => (
-        <li>
-          <a
-            href={href}
-            class:list={[
-              'font-mono text-xs uppercase tracking-widest transition-colors',
-              currentPath === href ? 'text-text' : 'text-text-muted hover:text-text',
-            ]}
-          >
-            {label}
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div class="flex items-center gap-3 lg:gap-5 min-w-0">
+      <ul class="flex gap-3 md:gap-5 list-none overflow-x-auto">
+        {links.map(({ href, label }) => (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                'font-mono text-[11px] uppercase tracking-widest transition-colors',
+                currentPath === href ? 'text-[var(--signal)]' : 'text-text-muted hover:text-text',
+              ]}
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        id="modeToggle"
+        class="hidden xl:flex font-mono text-[10px] tracking-widest border border-border rounded-[5px] overflow-hidden"
+        aria-label="Toggle network / perform mode"
+        title="P — toggle NETWORK / PERFORM"
+      >
+        <span data-mode="network" class="px-2.5 py-[3px] mode-on">NETWORK</span>
+        <span data-mode="perform" class="px-2.5 py-[3px] text-text-muted">PERFORM</span>
+      </button>
+
+      <span class="hidden xl:inline font-mono text-[10px] text-[var(--signal)] whitespace-nowrap">● COOKED</span>
+    </div>
   </nav>
+
+  <!-- op-search palette (TAB in network mode / ⌘K anywhere) -->
+  <div id="opSearch" class="opsearch" hidden>
+    <div class="opsearch-box" role="dialog" aria-modal="true" aria-label="Operator search">
+      <div class="opsearch-head">
+        <span>ADD OPERATOR</span>
+        <span class="opsearch-kbd">ESC</span>
+      </div>
+      <input id="opSearchInput" type="text" placeholder="type to filter ops…" autocomplete="off" spellcheck="false" />
+      <ul id="opSearchList">
+        {ops.map(({ href, name, typ }) => (
+          <li data-href={href} data-name={name}>
+            <a href={href} tabindex="-1">
+              <span class={`opsearch-typ t-${typ.toLowerCase()}`}>{typ}</span>
+              <span class="opsearch-name">{name}</span>
+              <span class="opsearch-path">{href}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
 </header>
+
+<style>
+  .mode-on { background: var(--signal); color: var(--bg); font-weight: 700; }
+
+  .opsearch {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(10, 10, 11, 0.7);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 14vh;
+  }
+  .opsearch-box {
+    width: min(480px, 92vw);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+  }
+  .opsearch-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+  }
+  .opsearch-kbd {
+    border: 1px solid #2c2c30;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .opsearch input {
+    width: 100%;
+    background: var(--bg-surface);
+    border: none;
+    outline: none;
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+  }
+  .opsearch ul { list-style: none; max-height: 42vh; overflow-y: auto; margin: 0; padding: 4px 0; }
+  .opsearch li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+  .opsearch li[hidden] { display: none; }
+  .opsearch li.sel a, .opsearch li a:hover { background: rgba(61, 255, 136, 0.07); }
+  .opsearch-typ { font-size: 8.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+  .opsearch-typ.t-view { background: var(--op-view-bg); color: var(--op-view-fg); }
+  .opsearch-typ.t-txt { background: var(--op-txt-bg); color: var(--op-txt-fg); }
+  .opsearch-typ.t-data { background: var(--op-data-bg); color: var(--op-data-fg); }
+  .opsearch-typ.t-sys { background: var(--op-sys-bg); color: var(--op-sys-fg); }
+  .opsearch-name { color: var(--text); }
+  .opsearch-path { margin-left: auto; color: var(--text-dim); font-size: 10px; }
+</style>
+
+<script is:inline>
+  (function () {
+    const KEY = 'patch-mode';
+    const btn = document.getElementById('modeToggle');
+    function apply(mode) {
+      document.body.classList.toggle('perform', mode === 'perform');
+      if (btn) btn.querySelectorAll('span').forEach(s => {
+        const on = s.dataset.mode === mode;
+        s.classList.toggle('mode-on', on);
+        s.classList.toggle('text-text-muted', !on);
+      });
+      try { localStorage.setItem(KEY, mode); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('patchmode', { detail: mode }));
+    }
+    // default: perform below 1280px (network topologies are authored
+    // for desktop widths) and for reduced motion; else stored or network
+    let mode = 'network';
+    try { mode = localStorage.getItem(KEY) || mode; } catch (e) {}
+    if (window.matchMedia('(max-width: 1279px)').matches ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) mode = 'perform';
+    apply(mode);
+    btn && btn.addEventListener('click', () =>
+      apply(document.body.classList.contains('perform') ? 'network' : 'perform'));
+    window.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'p' && !e.metaKey && !e.ctrlKey &&
+          !/input|textarea/i.test(document.activeElement?.tagName || ''))
+        apply(document.body.classList.contains('perform') ? 'network' : 'perform');
+    });
+
+    /* ---------- op-search palette ---------- */
+    const pal = document.getElementById('opSearch');
+    const inp = document.getElementById('opSearchInput');
+    const list = document.getElementById('opSearchList');
+    if (!pal || pal.dataset.init) return;
+    pal.dataset.init = '1';
+    let sel = 0;
+
+    function rows() { return [...list.querySelectorAll('li:not([hidden])')]; }
+    function paint() {
+      rows().forEach((li, i) => li.classList.toggle('sel', i === sel));
+      const cur = rows()[sel];
+      cur && cur.scrollIntoView({ block: 'nearest' });
+    }
+    function openPal() {
+      pal.hidden = false;
+      inp.value = '';
+      list.querySelectorAll('li').forEach((li) => (li.hidden = false));
+      sel = 0; paint();
+      inp.focus();
+    }
+    function closePal() { pal.hidden = true; inp.blur(); }
+
+    window.addEventListener('keydown', (e) => {
+      const inField = /input|textarea/i.test(document.activeElement?.tagName || '') &&
+                      document.activeElement !== inp;
+      const cmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      // TAB opens the palette in NETWORK mode only — perform mode keeps
+      // native keyboard navigation untouched (accessibility first).
+      const tab = e.key === 'Tab' && !e.shiftKey &&
+                  !document.body.classList.contains('perform') && !inField;
+      if ((cmdK || tab) && pal.hidden) { e.preventDefault(); openPal(); return; }
+      if (!pal.hidden && e.key === 'Escape') { e.preventDefault(); closePal(); }
+    });
+    pal.addEventListener('mousedown', (e) => { if (e.target === pal) closePal(); });
+
+    inp.addEventListener('input', () => {
+      const q = inp.value.trim().toLowerCase();
+      list.querySelectorAll('li').forEach((li) => {
+        li.hidden = q !== '' && !li.dataset.name.includes(q) && !li.dataset.href.includes(q);
+      });
+      sel = 0; paint();
+    });
+    inp.addEventListener('keydown', (e) => {
+      const r = rows();
+      if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(sel + 1, r.length - 1); paint(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(sel - 1, 0); paint(); }
+      else if (e.key === 'Enter') { e.preventDefault(); r[sel] && (location.href = r[sel].dataset.href); }
+      else if (e.key === 'Tab') { e.preventDefault(); closePal(); }
+    });
+    document.addEventListener('astro:after-swap', () => {
+      closePal();
+      // body classes don't survive the view-transition swap — re-apply mode
+      let m = 'network';
+      try { m = localStorage.getItem(KEY) || m; } catch (err) {}
+      if (window.matchMedia('(max-width: 1279px)').matches ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'perform';
+      apply(m);
+    });
+  })();
+</script>
