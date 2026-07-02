@@ -1,10 +1,10 @@
-# carlton-astro — Claude Guidelines
+# Carlton-L.github.io (carlton.dev) — Claude Guidelines
 
-Portfolio site for carlton.dev. Astro 6 + React islands + Tailwind 4, static output, deploys to GitHub Pages (**replaces** the Carlton-L.github.io repo contents entirely).
+Portfolio site for carlton.dev. Astro 6 + React islands + Tailwind 4, static output. **This repo IS the canonical source** (carlton-astro was merged in and deleted, 2026-07-02); branch `astro`; deploys via GitHub Actions → Pages (`.github/workflows/deploy.yml`). The `chatbot/` directory is a separate project (RAG digital twin) — leave it alone unless asked.
 
 ## Design system: "THE PATCH"
 
-The site is a live dataflow network (TouchDesigner-derived grammar). **Read `../design/DIRECTION_PATCH.md` before any UI work.** Core rules:
+The site is a live dataflow network (TouchDesigner-derived grammar). **Read `design/DIRECTION_PATCH.md` in the "Carlton Portfolio" project folder (`~/Documents/Claude/Projects/Carlton Portfolio/`) before any UI work.** Core rules:
 
 - Content blocks are **operators** (`src/components/Operator.astro`): typed header (VIEW / TXT / DATA / SYS), in/out ports, draggable in network mode.
 - Navigation between ideas = **cables** (bezier wires with flowing signal pulses, drawn into an svg.wires layer; see homepage inline script).
@@ -28,9 +28,11 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `../
 
 The mounted repo's `.vite`/`.astro`/`dist` caches are NOT writable from the Linux sandbox. To verify builds: copy the project (excluding node_modules/.astro/dist) to /tmp, `npm install --prefer-offline`, `npx astro build` there. `astro.config.sandbox.mjs` exists for this; safe to ignore locally.
 
-## Related docs (in parent "Carlton Portfolio" folder)
+## Related docs (in the "Carlton Portfolio" project folder — `~/Documents/Claude/Projects/Carlton Portfolio/`)
 
+- `HANDOFF_2026-07-02.md` — session state + gap list (read first in a new session)
 - `REVAMP_PLAN_2026-07.md` — overall strategy, positioning, job-spec→evidence matrix
 - `design/DIRECTION_PATCH.md` — the chosen creative direction + Awwwards strategy
 - `design/concept-patch.html` — living mockup of home + Futurescaper case-study network
 - `live-demos/` — master plan, per-project demo session prompts, intake answers (incl. Futurity publish permissions: FAST/Engine recreated-only, Futurescaper/extension public)
+- `archive/` — salvaged pages from the pre-patch site (e.g. immersive-experience-builder.astro)

@@ -1,18 +1,18 @@
 # Deploy carlton.dev — build in-repo, publish via GitHub Actions → Pages
 #
-# ⚠️ NOT YET ACTIVE — becomes live when pushed to Carlton-L.github.io
-#    AND Pages is switched to the Actions source. Don't push without OK.
+# ACTIVE since 2026-07-02 (first run failed at deploy: Pages source was
+# still "branch"; configure-pages with enablement:true now handles that
+# automatically — next push deploys for real).
 #
-# Model (decided 2026-07-02): the Astro source lives in the
-# Carlton-L.github.io repo itself, so no cross-repo PAT is needed —
-# the default GITHUB_TOKEN deploys through actions/deploy-pages.
+# Model: the Astro source lives in this repo (branch `astro`), so no
+# cross-repo PAT is needed — the default GITHUB_TOKEN deploys through
+# actions/deploy-pages.
 #
-# One-time setup:
-#   - Carlton-L.github.io → Settings → Pages → Source: "GitHub Actions".
-#   - Custom domain carlton.dev stays configured in Pages settings;
+# Notes:
+#   - Custom domain carlton.dev is configured in Pages settings;
 #     public/CNAME also ships inside the build artifact.
 #   - Adjust the trigger branch below if you deploy from a different branch.
-#   - After first deploy: re-verify carlton.dev in Search Console.
+#   - After first successful deploy: re-verify carlton.dev in Search Console.
 
 name: Deploy to carlton.dev
 
@@ -43,6 +43,11 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Configure Pages (enables the Actions source if needed)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Build
         run: npx astro build

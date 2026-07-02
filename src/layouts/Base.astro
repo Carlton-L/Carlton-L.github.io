@@ -22,7 +22,7 @@ export interface Props {
 const {
   title,
   description,
-  ogImage = '/images/og-default.jpg',
+  ogImage = '/images/og-default.png',
   canonicalUrl,
   jsonLd,
 } = Astro.props;
@@ -65,8 +65,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
       rel="stylesheet"
     />
 
-    <!-- Favicon -->
+    <!-- Favicon (patch mark) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- JSON-LD Structured Data -->
     {jsonLd && (
