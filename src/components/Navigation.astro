@@ -2,9 +2,13 @@
 /**
  * Navigation — "PatchBar"
  *
- * Patch chrome, not OS chrome: current network path + op-search palette
- * (TAB in network mode / ⌘K anywhere) + NETWORK/PERFORM mode toggle +
- * cook status. Pure Astro; scripts are inline and dependency-free.
+ * Patch chrome, not OS chrome, in three clusters:
+ *   1. brand mark + live network-path chip
+ *   2. routes addressed like operators (/work /about …) with port dots
+ *   3. instrument controls: TAB hint · PATCH/READ toggle · cook status
+ * Modes are labeled PATCH (spatial) / READ (linear) for visitors;
+ * internally the class/localStorage values remain network/perform.
+ * Pure Astro; scripts are inline and dependency-free.
  */
 import { projects } from '../data/content.js';
 
@@ -42,40 +46,41 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
   style="background: var(--backdrop-blur); backdrop-filter: blur(12px);"
   transition:persist
 >
-  <nav class="h-full flex items-center justify-between px-4 md:px-6">
-    <a href="/" class="font-mono text-[12px] tracking-wide text-text hover:text-[var(--signal)] transition-colors whitespace-nowrap">
-      ▛▟ <span class="hidden sm:inline">carlton.dev </span><span class="hidden lg:inline text-[var(--signal)]">{netPath}</span>
+  <nav class="h-full flex items-center gap-3 px-4 md:px-6">
+    <!-- cluster 1: brand + live network path -->
+    <a href="/" class="brand" aria-label="carlton.dev — home">
+      <span class="mark" aria-hidden="true">▛▟</span>
+      <span class="hidden sm:inline">carlton.dev</span>
     </a>
+    <span class="pathchip hidden lg:inline-flex" aria-hidden="true">{netPath}</span>
 
-    <div class="flex items-center gap-3 lg:gap-5 min-w-0">
-      <ul class="flex gap-3 md:gap-5 list-none overflow-x-auto">
-        {links.map(({ href, label }) => (
-          <li>
-            <a
-              href={href}
-              class:list={[
-                'font-mono text-[11px] uppercase tracking-widest transition-colors',
-                currentPath === href ? 'text-[var(--signal)]' : 'text-text-muted hover:text-text',
-              ]}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
+    <span class="flex-1"></span>
 
-      <button
-        id="modeToggle"
-        class="hidden xl:flex font-mono text-[10px] tracking-widest border border-border rounded-[5px] overflow-hidden"
-        aria-label="Toggle network / perform mode"
-        title="P — toggle NETWORK / PERFORM"
-      >
-        <span data-mode="network" class="px-2.5 py-[3px] mode-on">NETWORK</span>
-        <span data-mode="perform" class="px-2.5 py-[3px] text-text-muted">PERFORM</span>
-      </button>
+    <!-- cluster 2: routes, addressed like operators -->
+    <ul class="flex items-center gap-1 list-none overflow-x-auto">
+      {links.map(({ href, label }) => (
+        <li>
+          <a href={href} class:list={['navlink', { on: currentPath === href }]}>
+            <i class="ndot" aria-hidden="true"></i><span class="slash" aria-hidden="true">/</span>{label}
+          </a>
+        </li>
+      ))}
+    </ul>
 
-      <span class="hidden xl:inline font-mono text-[10px] text-[var(--signal)] whitespace-nowrap">● COOKED</span>
-    </div>
+    <!-- cluster 3: instrument controls -->
+    <span class="vdiv hidden xl:block" aria-hidden="true"></span>
+    <span class="kbdhint hidden xl:inline-flex" aria-hidden="true"><kbd>TAB</kbd> ops</span>
+    <button
+      id="modeToggle"
+      class="modetog hidden xl:flex"
+      aria-label="Toggle patch / read view"
+      title="P — toggle PATCH (spatial) / READ (linear)"
+    >
+      <span data-mode="network" class="mode-on">PATCH</span>
+      <span data-mode="perform" class="text-text-muted">READ</span>
+    </button>
+    <span class="vdiv hidden xl:block" aria-hidden="true"></span>
+    <span class="cook hidden xl:inline-flex" aria-hidden="true"><i></i>COOKED</span>
   </nav>
 
   <!-- op-search palette (TAB in network mode / ⌘K anywhere) -->
@@ -102,7 +107,123 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
 </header>
 
 <style>
+  /* --- PatchBar clusters --- */
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand:hover { color: var(--signal); }
+  .brand .mark { color: var(--signal); font-weight: 400; }
+
+  .pathchip {
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--signal);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 2px 8px;
+    background: rgba(61, 255, 136, 0.04);
+    white-space: nowrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    transition: color var(--duration-fast), background var(--duration-fast);
+  }
+  .navlink .slash { color: var(--text-dim); }
+  .navlink .ndot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    border: 1px solid var(--text-dim);
+    background: transparent;
+    transition: background var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .navlink:hover { color: var(--text); background: rgba(230, 230, 226, 0.04); }
+  .navlink:hover .ndot { border-color: var(--text-muted); }
+  .navlink.on { color: var(--signal); }
+  .navlink.on .slash { color: var(--signal-dim); }
+  .navlink.on .ndot {
+    background: var(--signal);
+    border-color: var(--signal);
+    box-shadow: 0 0 7px rgba(61, 255, 136, 0.8);
+  }
+
+  .vdiv { width: 1px; height: 16px; background: var(--border-color); margin: 0 4px; }
+
+  .kbdhint {
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .kbdhint kbd {
+    border: 1px solid #2c2c30;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .modetog {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .modetog span { padding: 3px 10px; }
   .mode-on { background: var(--signal); color: var(--bg); font-weight: 700; }
+
+  .cook {
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--signal);
+    white-space: nowrap;
+  }
+  .cook i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--signal);
+    animation: cookpulse 2.4s ease-in-out infinite;
+  }
+  @keyframes cookpulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(61, 255, 136, 0.9); }
+    50% { opacity: 0.45; box-shadow: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cook i { animation: none; }
+  }
 
   .opsearch {
     position: fixed;

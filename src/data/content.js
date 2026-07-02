@@ -4,8 +4,10 @@
 export const siteConfig = {
   name: 'Carlton Lindsay',
   title: 'Carlton Lindsay — Design Engineer',
+  // Tagline decided 2026-07-02. Alternates Carlton is still considering:
+  // "Designer who debugs. Engineer who dreams." / "Designer who deploys. Engineer who delights."
   description:
-    'Designer who ships, engineer who sketches. Carlton Lindsay is a Design Engineer building AI-native interfaces — knowledge graphs, multi-agent pipeline UIs, and research tools — at Futurity Systems.',
+    'Designer who deploys. Engineer who dreams. Carlton Lindsay is a Design Engineer building AI-native interfaces — knowledge graphs, multi-agent pipeline UIs, and research tools — at Futurity Systems.',
   url: 'https://carlton.dev',
   social: {
     linkedin: 'https://linkedin.com/in/carltonl',
@@ -328,7 +330,7 @@ export const contactLinks = [
 // ============================================
 export const aboutContent = {
   intro:
-    'Designer who ships, engineer who sketches — I make AI systems make sense.',
+    'Designer who deploys. Engineer who dreams. I make AI systems make sense.',
   bio: [
     'I spent a decade in hardware before I ever shipped a web app: component-level electronics repair, then prototyping labs for medical devices, VR hardware, and consumer electronics, then building out product-design labs at Apple, where I worked on Vision Pro. Hardware taught me that ideas are cheap and prototypes are truth — you find out what works by building it.',
     "A lab-equipment portal I built in React was the hinge: designing how people interact with systems turned out to be the part I couldn't put down. I did a Master's in Interaction Design in Barcelona, then joined Futurity Systems as Design Technologist and Product Lead, where I now build AI research tools — knowledge-graph interfaces, multi-agent pipeline UIs, and the design systems behind them.",

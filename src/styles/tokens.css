@@ -107,11 +107,11 @@
   --plus-size: 20px;
 }
 
-/* --- PERFORM mode (clean reading view; default on mobile) ---
-   In perform mode operators render as stacked static blocks,
-   wires and dither canvases are hidden. Toggled via body.perform. */
-body.perform .wires,
-body.perform .bgdither { display: none !important; }
+/* --- READ mode (clean reading view; default on mobile) ---
+   Internally still `body.perform` (class + localStorage compat).
+   Operators render as stacked blocks and wires hide; the dither canvas
+   stays live as a quiet fixed backdrop (see PatchField). */
+body.perform .wires { display: none !important; }
 
 /* --- Light Theme (kept for compatibility; patch is dark-first) --- */
 [data-theme='light'] {
