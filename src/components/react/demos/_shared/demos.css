@@ -1,0 +1,71 @@
+/**
+ * demos.css — shared chrome for all demo islands (imported by DemoFrame.jsx).
+ *
+ * Uses portfolio tokens (tokens.css custom properties) only. Demo INTERIORS
+ * carry each product's own language — scoped under the demo's own class.
+ */
+
+.demoframe {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  min-height: 0;
+}
+
+.demoframe:fullscreen {
+  background: var(--bg);
+  padding: 24px;
+}
+
+.demoframe-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.demoframe-title { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.demoframe-label { flex: 1; text-align: right; }
+.demoframe-label b { color: var(--signal); font-weight: 400; }
+
+.demoframe-controls { display: flex; gap: 6px; flex: none; }
+.demoframe-controls button {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.demoframe-controls button:hover { border-color: var(--signal); color: var(--signal); }
+.demoframe-controls button:active { transform: scale(0.98); }
+
+.demoframe-body { position: relative; flex: 1; min-height: 0; }
+
+.demoframe-skeleton {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+.demoframe-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(255, 255, 255, 0.015) 6px 12px);
+  pointer-events: none;
+}

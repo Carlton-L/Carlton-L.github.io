@@ -53,10 +53,21 @@ const indexRows = projects
         Designer who <span class="grn">deploys</span>.
         <span class="ghost">Engineer who dreams.</span>
       </h1>
-      <span class="hero-tag">&gt; I make AI systems make sense</span>
+      <span class="hero-tag">&gt; I build what I design</span>
     </Operator>
 
-    <Operator id="opIndex" name="work_index · click to preview" type="data" pos="left:7%; bottom:130px;">
+    <Operator id="opRead" name="readme_txt" type="txt" pos="right:9%; bottom:40px; width:min(300px,86vw);">
+      <div class="readme">
+        <span class="k">## about</span><br />
+        10 yrs in hardware labs (incl. Apple Vision Pro) → Master's in interaction
+        design, Barcelona → Design Engineer at Futurity Systems, building AI
+        research instruments.<br />
+        <span class="k">## wiring</span><br />
+        Every case study here is itself a network. <a href="/about">Follow the cables.</a>
+      </div>
+    </Operator>
+
+    <Operator id="opIndex" name="work_index · click to preview" type="data" pos="left:7%; bottom:40px;">
       <table class="idx" id="workIndex">
         {indexRows.map((r, i) => (
           <tr data-slug={r.slug} class={i === 0 ? 'sel' : ''} title="Click: preview in viewer · name: open case study">
@@ -68,7 +79,7 @@ const indexRows = projects
       </table>
     </Operator>
 
-    <Operator id="opFx" name="post_fx" type="sys" pos="left:46%; bottom:178px; width:170px;">
+    <Operator id="opFx" name="post_fx" type="sys" pos="left:46%; bottom:60px; width:170px;">
       <div class="chain">
         <span class="chip">IN</span><span class="arr">▶</span>
         <button id="invertBtn" class="chip chipbtn" aria-pressed="false">INVERT</button>
@@ -76,7 +87,7 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opScape" name="futurescaper_view · OCEAN_PLASTICS.scn" type="view" pos="right:4%; top:190px; width:min(450px,90vw);">
+    <Operator id="opScape" name="futurescaper_view · OCEAN_PLASTICS.scn" type="view" pos="right:4%; top:120px; width:clamp(420px,38vw,560px);">
       <div class="viewer-wrap">
         <svg class="viewer" id="viewerSvg" viewBox="0 0 420 240" role="img" aria-label="Futurescaper radial consequence map, live synthetic demo"></svg>
         <div class="vfoot">
@@ -86,19 +97,10 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opRead" name="readme_txt" type="txt" pos="right:9%; bottom:90px; width:min(300px,86vw);">
-      <div class="readme">
-        <span class="k">## about</span><br />
-        10 yrs hardware labs (Apple, Valve) → MFA interaction design → AI research
-        instruments in Barcelona.<br />
-        <span class="k">## wiring</span><br />
-        Every case study here is itself a network. <a href="/about">Follow the cables.</a>
-      </div>
-    </Operator>
-
-    <!-- the background generator, as a real operator chain -->
-    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" pos="left:42%; top:44px; width:min(185px,86vw);" ports="out">
-      <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE" title="Click: cycle noise type">TYPE ▸ FBM</button>
+    <!-- the background generator: a chain of ops arcing around the
+         hero card's bottom-right corner (01 top-right → 04 below-left) -->
+    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" pos="left:42%; top:70px; width:min(185px,86vw);" ports="out">
+      <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE" title="Click: cycle noise type">TYPE ▸ RIDGE</button>
       <div class="prow">
         <span class="plab">SPEED</span>
         <input class="prange" type="range" data-param="speed" data-div="100" min="0" max="300" value="100" aria-label="Noise drift speed" />
@@ -106,7 +108,7 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" pos="left:44%; top:168px; width:min(175px,86vw);">
+    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" pos="left:43%; top:255px; width:min(175px,86vw);">
       <div class="prow">
         <span class="plab">FDBK</span>
         <input class="prange" type="range" data-param="feedback" data-div="100" min="0" max="95" value="78" aria-label="Feedback amount — higher leaves longer cursor trails" />
@@ -115,21 +117,21 @@ const indexRows = projects
       <div class="genhint">CURSOR PAINTS THE FIELD ▚</div>
     </Operator>
 
-    <Operator id="opDither" name="bg_03 · dither" type="sys" pos="left:42.5%; top:272px; width:min(195px,86vw);">
-      <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE" title="Click: cycle dither pattern">TYPE ▸ BAYER4</button>
+    <Operator id="opDither" name="bg_03 · dither" type="sys" pos="left:33%; top:430px; width:min(195px,86vw);">
+      <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE" title="Click: cycle dither pattern">TYPE ▸ BAYER2</button>
       <div class="prow">
         <span class="plab">DENS</span>
-        <input class="prange" type="range" data-param="density" data-div="100" min="5" max="95" value="50" aria-label="Dither density" />
-        <b class="pval" data-out="density">0.50</b>
+        <input class="prange" type="range" data-param="density" data-div="100" min="5" max="95" value="77" aria-label="Dither density" />
+        <b class="pval" data-out="density">0.77</b>
       </div>
       <div class="prow">
         <span class="plab">SCALE</span>
-        <input class="prange" type="range" data-param="scale" min="2" max="8" value="5" aria-label="Dither cell scale" />
-        <b class="pval" data-out="scale">5</b>
+        <input class="prange" type="range" data-param="scale" min="2" max="8" value="3" aria-label="Dither cell scale" />
+        <b class="pval" data-out="scale">3</b>
       </div>
     </Operator>
 
-    <Operator id="opOut" name="bg_04 · out" type="sys" pos="left:45%; top:400px; width:min(165px,86vw);" ports="in">
+    <Operator id="opOut" name="bg_04 · out" type="sys" pos="left:17%; top:455px; width:min(165px,86vw);" ports="in">
       <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL" title="Click: cycle output palette">PAL ▸ GRN</button>
       <div class="genhint">RENDERS THE PAGE ▚</div>
     </Operator>
@@ -146,8 +148,8 @@ const indexRows = projects
     letter-spacing: -0.01em;
   }
   .hero-h .grn { color: var(--signal); }
-  /* ghost line: page-bg fill (masks the dither) + system muted stroke */
-  .hero-h .ghost { color: var(--bg); -webkit-text-stroke: 1.3px var(--text-muted); }
+  /* ghost line: signal outline (same hue as "deploys"), pitch-black fill */
+  .hero-h .ghost { color: #000; -webkit-text-stroke: 1.3px var(--signal); }
   .hero-tag { font-family: var(--font-mono); font-size: 11.5px; color: var(--signal); margin-top: 12px; display: block; }
   .hero-tag::after { content: '█'; animation: blink 1.1s steps(1) infinite; margin-left: 3px; font-size: 10px; }
   @keyframes blink { 50% { opacity: 0; } }
@@ -177,6 +179,11 @@ const indexRows = projects
   .readme .k { color: var(--signal); }
   .readme a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
   .readme a:hover { color: var(--signal); }
+
+  /* READ mode: open up the dense mono blocks for actual reading */
+  :global(body.perform) .readme { font-size: 13.5px; line-height: 1.9; max-width: 62ch; }
+  :global(body.perform) .idx { font-size: 13px; }
+  :global(body.perform) .hero-tag { font-size: 13px; }
 
   .chain { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); }
   .chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
@@ -364,10 +371,11 @@ const indexRows = projects
   if (REDUCED) {
     svg.innerHTML = V[cur].draw(state, ft, inv);
   } else {
+    let vfc = 0;
     (function frame() {
       if (!svg.isConnected) return;
       ft += 1 / 60;
-      svg.innerHTML = V[cur].draw(state, ft, inv);
+      if ((vfc++ & 1) === 0) svg.innerHTML = V[cur].draw(state, ft, inv); // 30fps is plenty
       requestAnimationFrame(frame);
     })();
   }

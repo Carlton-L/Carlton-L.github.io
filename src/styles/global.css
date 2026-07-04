@@ -2,6 +2,38 @@
 @import './tokens.css';
 
 /* ============================================
+   Gotham (self-hosted, display face)
+   ============================================ */
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/gothambook-webfont.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/gothammedium-webfont.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/gothambold-webfont.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gotham';
+  src: url('/fonts/gothamblack-webfont.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
    Base Styles
    ============================================ */
 *,
@@ -66,9 +98,9 @@ input.prange::-webkit-slider-runnable-track {
 }
 input.prange::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 5px;
-  height: 13px;
-  margin-top: -5px;
+  width: 13px;
+  height: 5px;
+  margin-top: -1px;
   border-radius: 1px;
   background: var(--text);
 }
@@ -78,8 +110,8 @@ input.prange::-moz-range-track {
   background: linear-gradient(90deg, var(--signal-dim) var(--p, 50%), var(--bg-surface) var(--p, 50%));
 }
 input.prange::-moz-range-thumb {
-  width: 5px;
-  height: 13px;
+  width: 13px;
+  height: 5px;
   border: 0;
   border-radius: 1px;
   background: var(--text);

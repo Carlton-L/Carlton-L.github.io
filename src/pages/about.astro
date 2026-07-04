@@ -23,7 +23,8 @@ const jsonLd = {
 
 const links: [string, string][] = [
   ['abBio', 'abXp'],
-  ['abXp', 'abSkills'],
+  ['abXp', 'abEdu'],
+  ['abEdu', 'abSkills'],
   ['abBio', 'abSkills'],
 ];
 ---
@@ -40,6 +41,7 @@ const links: [string, string][] = [
       <div class="ab-bio">
         {aboutContent.bio.map((paragraph) => <p>{paragraph}</p>)}
       </div>
+      <a class="ab-cv" href="/cv/Carlton_Lindsay_Design_Engineer_CV.pdf">▸ DOWNLOAD CV (PDF)</a>
     </Operator>
 
     <Operator id="abXp" name="experience_data" type="data" pos="right:5%; top:80px; width:min(430px,90vw);">
@@ -51,6 +53,20 @@ const links: [string, string][] = [
               <span class="dim">{entry.company}</span>
             </td>
             <td class="dim ab-dates">{entry.dates}</td>
+          </tr>
+        ))}
+      </table>
+    </Operator>
+
+    <Operator id="abEdu" name="education_data" type="data" pos="right:5%; top:430px; width:min(430px,90vw);">
+      <table class="ab-xp">
+        {aboutContent.education.map((entry) => (
+          <tr>
+            <td>
+              <span class="ab-role">{entry.degree}</span><br />
+              <span class="dim">{entry.school}{entry.place ? ` · ${entry.place}` : ''}</span>
+            </td>
+            {entry.dates && <td class="dim ab-dates">{entry.dates}</td>}
           </tr>
         ))}
       </table>
@@ -86,6 +102,19 @@ const links: [string, string][] = [
     margin-bottom: 10px;
   }
   .ab-bio p:last-child { margin-bottom: 0; }
+  .ab-cv {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid rgba(61, 255, 136, 0.45);
+    border-radius: 4px;
+    padding: 5px 12px;
+  }
+  .ab-cv:hover { background: rgba(61, 255, 136, 0.09); }
 
   .ab-xp { border-collapse: collapse; font-size: 12px; width: 100%; }
   .ab-xp td { padding: 8px 6px; border-bottom: 1px solid var(--border-color); vertical-align: top; }

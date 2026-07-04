@@ -98,4 +98,27 @@ const { id, name, type = 'txt', pos = '', ports = 'both' } = Astro.props;
   :global(body.perform) .obody :global(h1) { margin-bottom: 14px; }
   :global(body.perform) .obody :global(h2) { font-size: 13px; }
   :global(body.perform) .port { display: none; }
+
+  /* READ: demos deserve more width than prose */
+  :global(body.perform) .op.op-view { max-width: 860px; }
+
+  /* READ: SYS control ops compact into an inline strip instead of
+     full-width reading blocks — they're instruments, not prose */
+  :global(body.perform) .op.op-sys {
+    display: inline-block;
+    width: auto !important;
+    min-width: 230px;
+    max-width: 320px;
+    margin: 0 10px 18px;
+    vertical-align: top;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+  }
+  :global(body.perform) .op.op-sys .ohead {
+    border-bottom: 1px solid var(--border-color);
+    padding: 6px 10px;
+    margin-bottom: 0;
+  }
+  :global(body.perform) .op.op-sys .obody { padding: 12px 14px; }
 </style>
