@@ -82,30 +82,54 @@ window.GridLab = (function () {
       return [(a[1] + (b[1] - a[1]) * t) / 255, (a[2] + (b[2] - a[2]) * t) / 255, (a[3] + (b[3] - a[3]) * t) / 255];
     }
 
-    /* ---- press & hold sculpting (touch-to-raise / quick re-hold reverses) ---- */
+    /* ---- press & hold sculpting (touch-to-raise / quick re-hold reverses) ----
+       A short press is a TAP: one discrete 10 mm step, so tapping a pad always
+       visibly moves the cylinder (a sub-250ms hold used to move ~nothing —
+       dead-feeling on touch). Consecutive taps keep stepping the SAME way;
+       the quick-re-press reversal only applies after a hold. Steps bounce off
+       the travel limits so a tap is never a no-op. */
     const HOLD_RATE = 0.55;          // level units per second while held
     const REHOLD_MS = 700;           // quick re-hold window → invert direction
-    const hold = { active: false, i: -1, dir: 1 };
+    const TAP_MS = 250;              // press shorter than this = a tap (one step)
+    const hold = { active: false, i: -1, dir: 1, t0: 0 };
     const lastRelease = Array(CELLS).fill(-1e9);
     const lastDir = Array(CELLS).fill(-1);   // so first-ever hold raises
+    const lastWasTap = Array(CELLS).fill(false);
 
     function startHold(i) {
       if (fam !== 'static') return;
       const now = performance.now();
-      hold.dir = (now - lastRelease[i] < REHOLD_MS) ? -lastDir[i] : 1;
-      hold.active = true; hold.i = i;
+      hold.dir = (now - lastRelease[i] < REHOLD_MS)
+        ? (lastWasTap[i] ? lastDir[i] : -lastDir[i])   // taps accumulate; holds reverse
+        : 1;
+      hold.active = true; hold.i = i; hold.t0 = now;
       markHoldVisual(i, hold.dir);
     }
     function endHold() {
       if (!hold.active) return;
-      /* jog semantics: release = STOP. While held, the target runs ahead so
-         the motor cruises at full speed; on release the target is pulled
-         back to wherever the motor actually is (inverse of the Range remap),
-         so the cylinder brakes instead of chasing a stale command. */
+      const now = performance.now();
       const span = (ceilV - floorV) || 1;
-      base[hold.i] = Math.max(0, Math.min(1, (actual[hold.i] - floorV) / span));
-      lastRelease[hold.i] = performance.now();
+      const isTap = now - hold.t0 < TAP_MS;
+      const cur = Math.max(0, Math.min(1, (actual[hold.i] - floorV) / span));
+      if (isTap) {
+        // one 10 mm step (level is 0..1 of TRAVEL cm); bounce at the ends
+        const step = 1 / TRAVEL;
+        let nxt = Math.max(0, Math.min(1, cur + hold.dir * step));
+        if (Math.abs(nxt - cur) < step * 0.5) {
+          hold.dir = -hold.dir;
+          nxt = Math.max(0, Math.min(1, cur + hold.dir * step));
+        }
+        base[hold.i] = nxt;
+      } else {
+        /* jog semantics: release = STOP. While held, the target runs ahead so
+           the motor cruises at full speed; on release the target is pulled
+           back to wherever the motor actually is (inverse of the Range remap),
+           so the cylinder brakes instead of chasing a stale command. */
+        base[hold.i] = cur;
+      }
+      lastRelease[hold.i] = now;
       lastDir[hold.i] = hold.dir;
+      lastWasTap[hold.i] = isTap;
       markHoldVisual(-1, 0);
       hold.active = false; hold.i = -1;
       detectSetpoint();
@@ -222,10 +246,10 @@ window.GridLab = (function () {
       const stat = fam === 'static';
       document.getElementById('speed').classList.toggle('show', !stat);
       document.getElementById('holdhint').textContent = stat
-        ? 'Hold to raise · quick re-hold to lower'
+        ? 'Tap steps 10 mm · hold to jog · quick re-hold reverses'
         : 'Motion running · grid is read-only';
       document.getElementById('vhint').textContent = stat
-        ? 'Drag to orbit · scroll to zoom · hold a cylinder to raise it'
+        ? 'Drag to orbit · scroll to zoom · tap or hold a cylinder to raise it'
         : 'Drag to orbit · scroll to zoom';
       updateTelMode();
     }

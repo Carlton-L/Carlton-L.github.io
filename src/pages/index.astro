@@ -236,6 +236,9 @@ const ICONS: Record<string, string> = {
   /* input-aware bg_02: ghost-painter chip + hint copy exist only where they're
      true — coarse pointers get AUTO + "TOUCH", fine pointers get "CURSOR" */
   .wanderchip, .hint-coarse { display: none; }
+  /* READ mode: the two compact chain ops (cycle_clock + post_fx) sit side by
+     side — the 230px sys-strip min-width forces a wrap on phones, drop it */
+  :global(body.perform #opClock), :global(body.perform #opFx) { min-width: 0; }
   @media (hover: none) and (pointer: coarse) {
     .wanderchip { display: inline-block; margin-top: 6px; }
     .hint-fine { display: none; }
