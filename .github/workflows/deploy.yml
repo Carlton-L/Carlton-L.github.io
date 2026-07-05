@@ -2,15 +2,17 @@
 #
 # ACTIVE since 2026-07-02.
 #
-# ⚠️ 2026-07-05 deploy failures ("Deployments are only allowed from
-# gh-pages"): the `github-pages` ENVIRONMENT carries a deployment-branch
-# policy left over from the old site's branch-mode Pages (gh-pages only).
-# configure-pages enablement:true canNOT rewrite environment policies —
-# this is a one-time repo-settings fix:
-#   Settings → Environments → github-pages → Deployment branches and tags
-#   → add branch rule `astro` (keep or delete the gh-pages rule).
-# Also confirm Settings → Pages → Source = "GitHub Actions".
-# Then re-run the failed workflow.
+# ⚠️ 2026-07-05 deploy failures — BOTH repo-settings issues, not workflow bugs:
+#   1. "Deployments are only allowed from gh-pages": the `github-pages`
+#      ENVIRONMENT carries a deployment-branch policy from the old
+#      branch-mode Pages. Fix: Settings → Environments → github-pages →
+#      Deployment branches and tags → add branch rule `astro`.
+#   2. A failing "pages build and deployment" run (jekyll-theme-primer in
+#      the log) = GitHub's built-in Jekyll workflow, which only runs while
+#      Settings → Pages → Source = "Deploy from a branch". Fix: switch
+#      Source to "GitHub Actions". Jekyll should never build this repo.
+# configure-pages enablement:true canNOT fix either of these.
+# After both: re-run "Deploy to carlton.dev".
 #
 # Model: the Astro source lives in this repo (branch `astro`), so no
 # cross-repo PAT is needed — the default GITHUB_TOKEN deploys through
