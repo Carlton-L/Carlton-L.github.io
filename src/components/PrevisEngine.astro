@@ -1,0 +1,20 @@
+---
+/**
+ * PrevisEngine — inlines src/lib/previs.js (window.Previs), the shared
+ * project-preview engine (five featured live previews + generic seeded
+ * schematics). Same inline+strip pipeline as PatchField's patch-runtime:
+ * is:inline skips the bundler, so prod strips comments/indentation.
+ * ⚠️ Keep previs.js free of `//` and `/*` inside string/regex literals.
+ * Singleton-guarded inside the lib — safe if two fields ever include it.
+ * Must precede the page script that calls window.Previs (DOM order).
+ */
+import previs from '../lib/previs.js?raw';
+const stripJs = (s) =>
+  s
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1')
+    .split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+const previsJs = import.meta.env.DEV ? previs : stripJs(previs);
+---
+
+<script is:inline data-astro-rerun set:html={previsJs}></script>

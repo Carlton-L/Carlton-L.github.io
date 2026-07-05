@@ -14,12 +14,20 @@ import { projects } from '../data/content.js';
 
 const currentPath = Astro.url.pathname;
 
+// /work addresses the full project index (case studies highlight it too);
+// the homepage network is reachable through the brand mark, like a patch's
+// root node. Active state is prefix-aware so /projects/futurescaper lights
+// /work and /lab/* lights /lab.
 const links = [
-  { href: '/', label: 'work' },
+  { href: '/projects', label: 'work' },
   { href: '/about', label: 'about' },
   { href: '/lab', label: 'lab' },
   { href: '/contact', label: 'contact' },
 ];
+const isOn = (href) => {
+  const path = currentPath.replace(/\/+$/, '') || '/';
+  return path === href || (href !== '/' && path.startsWith(href + '/'));
+};
 
 // op-search palette entries
 const ops = [
@@ -58,7 +66,7 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     <ul class="flex items-center gap-1 list-none overflow-x-auto">
       {links.map(({ href, label }) => (
         <li>
-          <a href={href} class:list={['navlink', { on: currentPath === href }]}>
+          <a href={href} class:list={['navlink', { on: isOn(href) }]}>
             <i class="ndot" aria-hidden="true"></i><span class="slash" aria-hidden="true">/</span>{label}
           </a>
         </li>
@@ -333,7 +341,8 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
       const path = (location.pathname || '/').replace(/\/+$/, '') || '/';
       document.querySelectorAll('header .navlink').forEach((a) => {
         const href = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
-        a.classList.toggle('on', href === path);
+        // prefix-aware: /projects/foo lights /work, /lab/foo lights /lab
+        a.classList.toggle('on', href === path || (href !== '/' && path.indexOf(href + '/') === 0));
       });
       const chip = document.querySelector('header .pathchip');
       if (chip) chip.textContent = path === '/' ? '/network/home' : '/network' + path;

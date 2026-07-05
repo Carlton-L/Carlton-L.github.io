@@ -1,13 +1,24 @@
 ---
 /**
- * Projects index — patch document.
- * One work_index DATA operator: the full project table grouped by
- * category. (The old card grid referenced cover images that don't
- * exist yet; the table is the honest patch-native index.)
+ * Projects index — a quieter homepage: the full work_index wired to one
+ * shared viewer.
+ *
+ * Network: input · work_txt → work_index ─selection→ projects_view.
+ * Selection grammar matches home: hover/tap previews, select again opens.
+ *
+ * Previews come from the shared engine (PrevisEngine → window.Previs):
+ * the 5 featured projects get their real live previews; the other six get
+ * bespoke recreated minis (honest RECREATION labels). Rows carry a
+ * LIVE / RECR badge to match.
+ *
+ * READ mode reuses the homepage rack pattern: narrow = sticky viewer
+ * under the nav with the list scrolling beneath (list + visualizer stay
+ * co-visible on mobile); ≥880px = playlist column beside a sticky viewer.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
-import PatchDoc from '../../components/PatchDoc.astro';
+import PatchField from '../../components/PatchField.astro';
+import PrevisEngine from '../../components/PrevisEngine.astro';
 import { projects, categories } from '../../data/content.js';
 import { getBreadcrumbJsonLd } from '../../lib/seo.js';
 
@@ -23,45 +34,119 @@ const groups = categories.map((cat) => ({
 
 const yearOf = (p) => (p.facts?.year ?? p.meta.split(' ')[0] ?? '').split('–').pop();
 const roleOf = (p) => (p.facts?.role ?? p.meta.replace(/^[0-9–\s]+—\s*/, '').split('·')[0]).toUpperCase();
+
+const catIdx = { 'apps-systems': 0, 'experiences': 1, 'research': 2 };
+
+// initial selection = first row (server-rendered chrome must match: FAST)
+const first = groups[0].items[0];
+
+const links: [string, string][] = [
+  ['prIntro', 'prIndex'],
+  ['prIndex:selection', 'prView'],
+];
+
+// layout: content mode — index column left, viewer block right.
+// Nudges are art direction.
+const layout = {
+  mode: 'content',
+  padTop: 24,
+  tiers: [
+    {
+      min: 0,
+      cols: 12,
+      areas: `
+        intro intro intro intro .     .     view  view  view  view  view  view
+        index index index index .     .     view  view  view  view  view  view
+        index index index index .     .     view  view  view  view  view  view
+        index index index index .     .     .     .     .     .     .     .
+      `,
+    },
+    {
+      min: 1600,
+      cols: 14,
+      areas: `
+        intro intro intro intro .     .     .     view  view  view  view  view  view  .
+        index index index index .     .     .     view  view  view  view  view  view  .
+        index index index index .     .     .     view  view  view  view  view  view  .
+        index index index index .     .     .     .     .     .     .     .     .     .
+      `,
+    },
+  ],
+};
 ---
 
 <Base
   title="Projects — Carlton Lindsay"
-  description="Selected work in AI tools, spatial computing, robotics, and design technology."
+  description="Selected work in AI tools, spatial computing, robotics, and design technology — every project previewed live in the patch."
   jsonLd={jsonLd}
 >
-  <PatchDoc wide meta={`${projects.length} NETWORKS`}>
-    <Operator id="prIntro" name="input · work_txt" type="txt" ports="none">
+  <PatchField
+    id="prnet"
+    links={links}
+    height="1100px"
+    layout={layout}
+    label="Project index network — press P for read view"
+  >
+    <Operator id="prIntro" name="input · work_txt" type="txt" area="intro" ports="out">
       <h1 class="pd-h">Projects</h1>
       <p class="pd-p">
-        Selected work across software, hardware, and research. Each case
-        study is itself a network — follow the cables.
+        {projects.length} networks across software, hardware, and research.
+        Select a row to preview it in the viewer; select it again to open the
+        case study.
       </p>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="prIndex" name="work_index" type="data" ports="none">
-      {groups.map((group) => (
-        <div class="pr-group">
-          <div class="pr-cat">
-            <span class="pr-catnum">{group.number}</span>
-            <span>{group.title.toUpperCase()}</span>
-            <span class="pr-catcount">{group.items.length} OPS</span>
+    <!-- the work rack: viewer + index are one unit in READ mode (player/playlist);
+         display:contents in PATCH mode so both ops float free on the canvas -->
+    <div class="rack" data-rack="projects">
+      <Operator id="prView" name="fast_view · SYNBIO.scn" type="view" area="view" nudge="0 24" maxw={640}>
+        <div class="viewer-wrap">
+          <div class="viewer-stage">
+            <svg class="viewer" id="pvSvg" viewBox="0 0 420 240" role="img" aria-label="FAST clustered knowledge graph, live synthetic demo"></svg>
+            <canvas class="viewer-dither" id="pvDither" aria-hidden="true"></canvas>
           </div>
-          <table class="pr-table">
-            {group.items.map((p) => (
-              <tr onclick={`location.href='/projects/${p.slug}'`}>
-                <td class="pr-name"><a href={`/projects/${p.slug}`}>▸ {p.slug.replace(/-/g, '_')}</a></td>
-                <td class="pr-role dim">{roleOf(p)}</td>
-                <td class="pr-year dim">{yearOf(p)}</td>
-              </tr>
-            ))}
-          </table>
+          <div class="vfoot">
+            <span id="pvFoot">KNOWLEDGE GRAPH · SEMANTIC TYPES</span>
+            <a id="pvOpen" href={`/projects/${first.slug}`}><b>OPEN NETWORK →</b></a>
+          </div>
         </div>
-      ))}
-    </Operator>
-  </PatchDoc>
+      </Operator>
+
+      <Operator id="prIndex" name="work_index · preview · open" type="data" area="index">
+        <div class="idx" id="projIndex">
+          {groups.map((group, gi) => (
+            <div class="idxgroup" data-cat={group.slug}>
+              <div class="idxcat">
+                <span class="idxcatnum">{group.number}</span>
+                <span>{group.title.toUpperCase()}</span>
+                <span class="idxcatcount">{group.items.length} OPS</span>
+              </div>
+              {group.items.map((p, i) => (
+                <a
+                  href={`/projects/${p.slug}`}
+                  data-slug={p.slug}
+                  data-cat={group.slug}
+                  class:list={['idxrow', { sel: gi === 0 && i === 0 }]}
+                  title="Preview in the viewer · select again to open the case study"
+                >
+                  <span class="idxnum">{String(i + 1).padStart(2, '0')}</span>
+                  <i class="catdot" data-c={catIdx[group.slug] ?? 0} aria-hidden="true"></i>
+                  <span class="idxmain">
+                    <span class="idxname">{p.slug.replace(/-/g, '_')}</span>
+                    <span class="idxmeta">{roleOf(p)}</span>
+                  </span>
+                  <span class:list={['idxtag', p.featured ? 'live' : 'recr']}>{p.featured ? 'LIVE' : 'RECR'}</span>
+                  <span class="idxyear">{yearOf(p)}</span>
+                  <span class="idxgo" aria-hidden="true">OPEN ↗</span>
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+      </Operator>
+    </div>
+  </PatchField>
+  <PrevisEngine />
 </Base>
 
 <style>
@@ -73,34 +158,199 @@ const roleOf = (p) => (p.facts?.role ?? p.meta.replace(/^[0-9–\s]+—\s*/, '')
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; max-width: 52ch; }
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; max-width: 46ch; }
 
-  .pr-group { margin-bottom: 22px; }
-  .pr-group:last-child { margin-bottom: 0; }
-  .pr-cat {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.14em;
+  .viewer-wrap { margin: -12px -14px; }
+  .viewer-stage { position: relative; font-size: 0; }
+  .viewer { display: block; background: #15140F; width: 100%; height: auto; transition: background 300ms var(--ease-out); }
+  .viewer-dither { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; image-rendering: pixelated; }
+  .vfoot {
+    display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px;
+    border-top: 1px solid var(--border-color);
+    font-family: var(--font-mono); font-size: 9.5px; color: var(--text-dim);
+  }
+  .vfoot a { text-decoration: none; white-space: nowrap; }
+  .vfoot b { color: var(--signal); font-weight: 400; }
+
+  /* cook flash when a new preview lands in the viewer */
+  :global(#prView.cooking) { border-color: var(--signal); box-shadow: 0 14px 50px rgba(61, 255, 136, 0.22); }
+
+  /* ---- index (compact: single-line rows) ---- */
+  .idx { display: flex; flex-direction: column; gap: 2px; margin: -4px -6px; }
+  .idxcat {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;
     color: var(--text-muted);
-    padding: 6px 4px;
+    padding: 8px 11px 4px;
     border-bottom: 1px solid var(--border-color);
   }
-  .pr-catnum { color: var(--signal); }
-  .pr-catcount { margin-left: auto; color: var(--text-dim); }
+  .idxgroup:first-child .idxcat { padding-top: 4px; }
+  .idxcatnum { color: var(--signal); }
+  .idxcatcount { margin-left: auto; color: var(--text-dim); }
 
-  .pr-table { border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; width: 100%; }
-  .pr-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
-  .pr-table tr:last-child td { border-bottom: none; }
-  .pr-table tr:hover td, .pr-table tr:hover td a { color: var(--signal); background: rgba(61, 255, 136, 0.03); }
-  .pr-name a { color: var(--text); text-decoration: none; }
-  .pr-role { font-size: 10px; }
-  .pr-year { text-align: right; white-space: nowrap; }
-  .dim { color: var(--text-dim); }
+  .idxrow {
+    display: flex; align-items: center; gap: 9px;
+    padding: 4px 11px; border-radius: 6px;
+    border: 1px solid transparent;
+    text-decoration: none; color: var(--text);
+    font-family: var(--font-mono);
+    transition: background var(--duration-fast), border-color var(--duration-fast);
+  }
+  .idxnum { font-size: 9px; color: var(--text-dim); width: 15px; flex: none; letter-spacing: 0.04em; }
+  .catdot { width: 7px; height: 7px; border-radius: 2px; flex: none; opacity: 0.8; }
+  .catdot[data-c='0'] { background: #56b4e9; }
+  .catdot[data-c='1'] { background: #cc79a7; }
+  .catdot[data-c='2'] { background: #e69f00; }
+  .idxmain { display: flex; flex-direction: row; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
+  .idxname { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; flex: none; }
+  .idxname::before { content: '▸ '; color: var(--signal-dim); }
+  .idxmeta { font-size: 8.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .idxtag { font-size: 7.5px; letter-spacing: 0.12em; flex: none; padding: 0 5px; border-radius: 3px; border: 1px solid var(--border-color); line-height: 1.6; }
+  .idxtag.live { color: var(--signal); border-color: var(--signal-dim); }
+  .idxtag.recr { color: var(--text-dim); }
+  @media (max-width: 560px) {
+    .idxmeta { display: none; }
+  }
+  .idxyear { font-size: 10px; color: var(--text-dim); flex: none; font-variant-numeric: tabular-nums; }
+  .idxgo { font-size: 8px; letter-spacing: 0.09em; color: var(--signal); opacity: 0; flex: none; width: 40px; text-align: right; transition: opacity var(--duration-fast); }
+  .idxrow:hover, .idxrow.sel { background: color-mix(in srgb, var(--signal) 7%, transparent); border-color: var(--border-color); }
+  .idxrow:hover { border-color: var(--border-hover); }
+  .idxrow:hover .idxname, .idxrow.sel .idxname { color: var(--signal); }
+  .idxrow:hover .idxgo { opacity: 1; }
+  .idxrow.sel .idxgo { opacity: 1; }
+  .idxrow.sel { box-shadow: inset 2px 0 0 var(--signal); }
+  .idxrow:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 
-  @media (max-width: 640px) {
-    .pr-role { display: none; }
+  /* READ mode: open up the dense mono blocks for actual reading */
+  :global(body.perform) .idx { font-size: 13px; }
+
+  /* ---- the work rack ----
+     PATCH mode: the wrapper doesn't exist layout-wise — both ops float free. */
+  .rack { display: contents; }
+
+  /* READ narrow (default): player/playlist. The viewer sticks under the nav
+     as a chromed panel; the index scrolls beneath it, so a selection always
+     cooks a viewer that's on screen. */
+  :global(body.perform) .rack {
+    display: block;
+    max-width: 860px;
+    margin: 0 auto 40px;
+    text-align: left;
+  }
+  :global(body.perform) .rack :global(.op) { margin: 0 0 18px; max-width: none; }
+  :global(body.perform) .rack :global(#prView) {
+    position: sticky !important;
+    max-width: none;
+    top: calc(var(--nav-height) + 10px);
+    z-index: 40;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+  }
+  :global(body.perform) .rack :global(#prView .ohead) { padding: 6px 10px; margin-bottom: 0; }
+  :global(body.perform) .rack :global(#prView .obody) { padding: 0; }
+  :global(body.perform) .rack .viewer-wrap { margin: 0; }
+
+  /* READ wide (≥880px): playlist column beside the viewer. The list is long,
+     so the viewer STAYS sticky (unlike home) — it rides along while you scroll. */
+  @media (min-width: 880px) {
+    :global(body.perform) .rack {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      max-width: 1120px;
+    }
+    :global(body.perform) .rack :global(#prIndex) { grid-column: 1; grid-row: 1; margin: 0; }
+    :global(body.perform) .rack :global(#prView) { grid-column: 2; grid-row: 1; margin: 0; }
   }
 </style>
+
+<script is:inline data-astro-rerun>
+(function () {
+  const svg = document.getElementById('pvSvg');
+  if (!svg || svg.dataset.init) return;
+  svg.dataset.init = '1';
+
+  const op = document.getElementById('prView');
+  const nameEl = op && op.querySelector('.oname');
+  const footEl = document.getElementById('pvFoot');
+  const openEl = document.getElementById('pvOpen');
+  // closured rows only — a live document query later would let a stale
+  // instance (pre view-transition) repaint the NEW page's rows out of sync
+  const idxRows = Array.prototype.slice.call(document.querySelectorAll('#projIndex [data-slug]'));
+
+  // shared preview engine: 5 live previews + 6 recreated minis
+  const eng = window.Previs.engine({ svg, dither: document.getElementById('pvDither') });
+
+  const selRow = idxRows.filter((r) => r.classList.contains('sel'))[0] || idxRows[0];
+  const cur0 = (selRow && eng.has(selRow.dataset.slug)) ? selRow.dataset.slug : 'futurescaper';
+
+  const net = window.Patch ? window.Patch.field('prnet') : null;
+  const LIVE = !!(net && !net.stub);
+  const NOOP = function () {};
+  const N = (id, spec) => (net ? net.node(id, spec) : { el: null, emit: NOOP, every: NOOP, timeout: NOOP, observe: NOOP, listen: NOOP, cleanup: NOOP });
+
+  /* ---- projects_view: ins.selection → cook; relabels the operator chrome ---- */
+  const view = N('prView', {
+    ins: {
+      selection: (m) => {
+        const changed = eng.select(m.slug, false);
+        if (changed) {
+          const meta = eng.meta(eng.current());
+          if (nameEl) nameEl.textContent = meta.name;
+          if (footEl) footEl.textContent = meta.foot;
+          if (openEl) openEl.href = '/projects/' + eng.current();
+          if (op) {
+            op.classList.add('cooking');
+            view.timeout(450, () => op.classList.remove('cooking'));
+          }
+        }
+      },
+    },
+  });
+
+  /* ---- work_index: same selection grammar as home — hover previews (mouse),
+          tap previews (touch), second activation opens. Rows stay real links. ---- */
+  let sel = cur0;
+  const idx = N('prIndex', {
+    outs: { selection: 'object' },
+  });
+  function pick(slug) {
+    if (!slug || slug === sel) return;
+    sel = slug;
+    idxRows.forEach((row) => row.classList.toggle('sel', row.dataset.slug === slug));
+    idx.emit('selection', { slug });
+    if (!LIVE) {
+      // no runtime (?nopatch=1): keep the instrument honest anyway
+      eng.select(slug, false);
+      const meta = eng.meta(eng.current());
+      if (nameEl) nameEl.textContent = meta.name;
+      if (footEl) footEl.textContent = meta.foot;
+      if (openEl) openEl.href = '/projects/' + eng.current();
+    }
+  }
+  idxRows.forEach((row) => {
+    idx.listen(row, 'pointerenter', (e) => { if (e.pointerType === 'mouse') pick(row.dataset.slug); });
+    idx.listen(row, 'focus', () => pick(row.dataset.slug));
+    idx.listen(row, 'click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (row.dataset.slug !== sel) { e.preventDefault(); pick(row.dataset.slug); }
+      // already the current selection → the link navigates ("tap again to open")
+    });
+  });
+  if (!LIVE) {
+    idxRows.forEach((row) => {
+      row.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pick(row.dataset.slug); });
+      row.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        if (row.dataset.slug !== sel) { e.preventDefault(); pick(row.dataset.slug); }
+      });
+    });
+  }
+
+  /* ---- boot the viewer: first cook + rAF loop live in the engine ---- */
+  eng.boot(cur0);
+})();
+</script>
