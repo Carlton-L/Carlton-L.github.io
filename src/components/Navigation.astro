@@ -74,6 +74,8 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     </ul>
 
     <!-- cluster 3: instrument controls -->
+    <!-- touch path into the op-search palette: TAB/⌘K don't exist on phones -->
+    <button id="opsBtn" class="opsbtn xl:hidden" aria-label="Open operator search">▸ OPS</button>
     <span class="vdiv hidden xl:block" aria-hidden="true"></span>
     <span class="kbdhint hidden xl:inline-flex" aria-hidden="true"><kbd>TAB</kbd> ops</span>
     <button
@@ -94,7 +96,9 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     <div class="opsearch-box" role="dialog" aria-modal="true" aria-label="Operator search">
       <div class="opsearch-head">
         <span>ADD OPERATOR</span>
-        <span class="opsearch-kbd">ESC</span>
+        <button id="opSearchClose" class="opsearch-kbd" aria-label="Close operator search">
+          <span class="hidden xl:inline">ESC</span><span class="xl:hidden">✕</span>
+        </button>
       </div>
       <input id="opSearchInput" type="text" placeholder="type to filter ops…" autocomplete="off" spellcheck="false" />
       <ul id="opSearchList">
@@ -176,6 +180,21 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
   }
 
   .vdiv { width: 1px; height: 16px; background: var(--border-color); margin: 0 4px; }
+
+  /* touch entry to the palette — chip grammar, signal accents like a chipbtn */
+  .opsbtn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 4px 9px;
+    background: rgba(61, 255, 136, 0.04);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .opsbtn:active { background: rgba(61, 255, 136, 0.12); }
 
   .kbdhint {
     align-items: center;
@@ -266,6 +285,11 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     padding: 0 5px;
     font-size: 9px;
     color: var(--text-dim);
+    background: transparent;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    min-width: 26px;
+    min-height: 20px;
   }
   .opsearch input {
     width: 100%;
@@ -276,6 +300,10 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     font-family: var(--font-mono);
     font-size: 13px;
     color: var(--text);
+  }
+  /* mobile: 16px keeps iOS from zoom-jumping when the input focuses */
+  @media (max-width: 1279px) {
+    .opsearch input { font-size: 16px; }
   }
   .opsearch ul { list-style: none; max-height: 42vh; overflow-y: auto; margin: 0; padding: 4px 0; }
   .opsearch li a {
@@ -367,9 +395,18 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
       inp.value = '';
       list.querySelectorAll('li').forEach((li) => (li.hidden = false));
       sel = 0; paint();
-      inp.focus();
+      // touch: don't auto-summon the keyboard over the list — tapping the
+      // input still focuses it when the visitor wants to type a filter
+      if (window.matchMedia('(hover: hover)').matches) inp.focus();
     }
     function closePal() { pal.hidden = true; inp.blur(); }
+
+    // touch path: the ▸ OPS chip (below xl) + a tappable close chip —
+    // phones have no TAB, no ⌘K, no ESC
+    const opsBtn = document.getElementById('opsBtn');
+    opsBtn && opsBtn.addEventListener('click', openPal);
+    const closeBtn = document.getElementById('opSearchClose');
+    closeBtn && closeBtn.addEventListener('click', closePal);
 
     window.addEventListener('keydown', (e) => {
       const inField = /input|textarea/i.test(document.activeElement?.tagName || '') &&

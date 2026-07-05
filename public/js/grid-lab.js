@@ -333,10 +333,10 @@ window.GridLab = (function () {
 
     /* ==================================================================
        3D LIVE VIEW — dark, cozy, warm pools of light
-       Units: 1 = 1 cm.  Base 27×27×8, pitch 6, cyl Ø5, rest +2.5, travel 11.
+       Units: 1 = 1 cm.  Base 27×27×8, pitch 6, cyl Ø5, rest +2.5, travel 6 (default) / 11.
        ================================================================== */
     const PITCH = 6, CYL_R = 2.42, BASE_H = 8, REST = 2.5, CYL_LEN = 15;
-    let TRAVEL = 11;                 // cm — toggleable: 6 (Stage 1 spec) vs 11 (Build Plan)
+    let TRAVEL = 6;                  // cm — toggleable: 6 (Stage 1 spec, default) vs 11 (Build Plan)
     /* motor kinematics: a 28BYJ-48 on a lead screw moves at constant speed
        with short accel ramps (AccelStepper's trapezoidal profile). These are
        the physical dials that map to screw pitch × step rate. */
