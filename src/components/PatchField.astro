@@ -57,9 +57,20 @@
  * their previous position). Re-resolves on resize / patchmode / (content mode)
  * op size changes — late-hydrating islands are safe.
  *
+ * PATCH RUNTIME (P1): PatchField inlines `src/lib/patch-runtime.js` and
+ * registers each field as a runtime scope (`Patch.field(id)`), feeding it the
+ * links array. Links may carry ports — ['opIndex:selection', 'opFx'] — which
+ * makes the cable a real subscription: node registrations (page scripts)
+ * emit/receive along them, and every routed delivery pushes a one-shot pulse
+ * that cookWires renders as a traveling dot on the correct cable. Old
+ * two-string links stay valid and purely visual. `?nopatch=1` skips the
+ * runtime (visual-only cables). Field-level timers/listeners/observers ride
+ * a housekeeping node so `astro:before-swap` tears everything down.
+ *
  * Props:
  *  - id:      DOM id (required, unique per field)
- *  - links:   [[fromOpId, toOpId], ...] — cables, drawn out-port → in-port
+ *  - links:   [[fromOpId, toOpId], ...] — cables, drawn out-port → in-port;
+ *             ends may carry ports ('opId:channel') for runtime routing
  *  - density: initial dither density 0–1 (0 disables the dither canvas)
  *  - height:  'viewport' (fill viewport minus chrome) | CSS min-height value
  *             (content-mode layouts recompute this at runtime; the prop is the
@@ -80,7 +91,22 @@ interface Props {
     tiers: { min?: number; cols?: number; areas: string }[];
   };
 }
+import patchRuntime from '../lib/patch-runtime.js?raw';
 const { id, links = [], density = 0.5, height = 'viewport', label = 'Interactive patch — press P for read view', layout } = Astro.props;
+// The runtime is inlined verbatim (is:inline skips the bundler), so prod
+// strips comments, indentation, and //<dev …//>dev blocks (the runtime's
+// dev-only warnings/cycle-check — zero cost in prod). ⚠️ Keep
+// patch-runtime.js free of `//` and `/*` inside string/regex literals or
+// this strip will corrupt it. DEV keeps everything + flips the DEV const.
+const stripJs = (s) =>
+  s
+    .replace(/\/\/<dev[\s\S]*?\/\/>dev/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1')
+    .split('\n').map((l) => l.trim()).filter(Boolean).join('\n');
+const runtimeJs = import.meta.env.DEV
+  ? patchRuntime.replace('var DEV = false; // @dev', 'var DEV = true; // @dev')
+  : stripJs(patchRuntime);
 // Fill the content area (viewport minus the fixed nav + footer/playbar). For
 // fixed-height fields (case studies, contact) still grow to at least fill, so
 // short pages don't leave a bare strip below the dither.
@@ -185,6 +211,11 @@ const heightStyle =
   }
 </style>
 
+<!-- the patch runtime: singleton guard inside; must precede every field/node
+     registration script in DOM order (it does — PatchField renders before
+     page scripts; data-astro-rerun keeps that true after ClientRouter swaps) -->
+<script is:inline data-astro-rerun set:html={runtimeJs}></script>
+
 <script is:inline data-astro-rerun>
 (function () {
   document.querySelectorAll('.patchfield').forEach((host) => {
@@ -193,9 +224,22 @@ const heightStyle =
 
     const cv = host.querySelector('canvas.bgdither');
     const svg = host.querySelector('svg.wires');
-    const LINKS = JSON.parse(host.dataset.links || '[]');
+    const RAWLINKS = JSON.parse(host.dataset.links || '[]');
+    // drawn ends = ports stripped; routing keeps the ported form
+    const LINKS = RAWLINKS.map((l) => [String(l[0]).split(':')[0], String(l[1]).split(':')[0]]);
     const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isRead = () => document.body.classList.contains('perform');
+
+    /* ---------- patch runtime: field scope + lifecycle ----------
+       `net` is this field's runtime scope (stub under ?nopatch=1 → LIVE
+       false, everything below falls back to today's direct paths). The
+       housekeeping node carries every field-level timer/listener/observer,
+       so astro:before-swap tears them all down — no leaks across swaps. */
+    const net = window.Patch ? window.Patch.field(host.id) : null;
+    const LIVE = !!(net && !net.stub);
+    if (LIVE) net.links(RAWLINKS);
+    const sys = LIVE ? net.node('__' + host.id, {}) : null;
+    const on = (el, ev, fn, opts) => (sys ? sys.listen(el, ev, fn, opts) : el.addEventListener(ev, fn, opts));
 
     /* ---------- TD-style parameters ---------- */
     const PALETTES = [
@@ -223,14 +267,22 @@ const heightStyle =
       try { localStorage.setItem(STORE, JSON.stringify(P)); } catch (e) {}
     }
 
+    /* param intake rides the bus: inputs emit on `param:<k>` channels, the
+       engine's P is a subscriber. NOTE: persistence stays the full-P persist()
+       write (NOT per-key channel persist) so the visitor-facing `patch-bg`
+       format is byte-identical to before. Delivery is synchronous — behavior
+       is unchanged; under ?nopatch=1 the direct fallback assigns P[k]. */
     host.querySelectorAll('[data-param]').forEach((inp) => {
       const k = inp.dataset.param;
       const div = parseFloat(inp.dataset.div || '1');
       const out = host.querySelector(`[data-out="${k}"]`);
+      const ch = LIVE ? net.channel('param:' + k) : null;
+      if (ch) ch.on((v) => { P[k] = v; });
       // reflect current (possibly persisted) value in the control
       inp.value = String(P[k] * div);
       const upd = (save) => {
-        P[k] = parseFloat(inp.value) / div;
+        const v = parseFloat(inp.value) / div;
+        if (ch) ch.emit(v); else P[k] = v;
         if (out) out.textContent = div === 1 ? String(P[k]) : P[k].toFixed(2);
         // track fill up to the thumb (consumed by .prange CSS)
         const mn = parseFloat(inp.min || '0'), mx = parseFloat(inp.max || '100');
@@ -258,13 +310,17 @@ const heightStyle =
     host.querySelectorAll('[data-cycle]').forEach((btn) => {
       const c = CYC[btn.dataset.cycle];
       if (!c) return;
+      const ch = LIVE ? net.channel('param:' + c.key) : null;
+      if (ch) ch.on((v) => { P[c.key] = v; });
       const pre = btn.dataset.prefix || btn.dataset.cycle.toUpperCase();
       const label = () => {
         P[c.key] = ((P[c.key] | 0) % c.opts.length + c.opts.length) % c.opts.length;
         btn.textContent = `${pre} ▸ ${c.opts[P[c.key]]}`;
       };
       btn.addEventListener('click', () => {
-        P[c.key] = (P[c.key] + 1) % c.opts.length; label(); persist();
+        const v = (P[c.key] + 1) % c.opts.length;
+        if (ch) ch.emit(v); else P[c.key] = v;
+        label(); persist();
         if (btn.dataset.cycle === 'palette') applySignal();
       });
       label();
@@ -397,8 +453,9 @@ const heightStyle =
 
       let rlT = null;
       const debRelayout = (ms) => { clearTimeout(rlT); rlT = setTimeout(relayout, ms); };
-      window.addEventListener('resize', () => debRelayout(80));
-      document.addEventListener('patchmode', () => debRelayout(60));
+      on(window, 'resize', () => debRelayout(80));
+      on(document, 'patchmode', () => debRelayout(60));
+      if (sys) sys.cleanup(() => clearTimeout(rlT));
       if (LAYOUT.mode === 'content' && typeof ResizeObserver !== 'undefined') {
         // late-hydrating islands change op heights → re-relax (signature-guarded, no loops)
         const ro = new ResizeObserver(() => {
@@ -406,6 +463,7 @@ const heightStyle =
           if (sig !== lastSig) debRelayout(120);
         });
         host.querySelectorAll('.op[data-area]').forEach((el) => ro.observe(el));
+        if (sys) sys.cleanup(() => ro.disconnect());
       }
       relayout();
     })();
@@ -476,15 +534,17 @@ const heightStyle =
     }
     if (cv) {
       ctx = cv.getContext('2d');
-      new ResizeObserver(size).observe(host);
-      window.addEventListener('resize', size);
-      document.addEventListener('patchmode', () => setTimeout(size, 50));
+      const szRo = new ResizeObserver(size);
+      szRo.observe(host);
+      if (sys) sys.cleanup(() => szRo.disconnect());
+      on(window, 'resize', size);
+      on(document, 'patchmode', () => setTimeout(size, 50));
       size();
     }
 
     /* mouse heat — velocity-driven so a parked cursor cools down */
     let mcx = -1e4, mcy = -1e4, energy = 0, lmx = 0, lmy = 0;
-    window.addEventListener('pointermove', (e) => {
+    on(window, 'pointermove', (e) => {
       energy = Math.min(70, energy + Math.hypot(e.clientX - lmx, e.clientY - lmy) * 0.6);
       lmx = e.clientX; lmy = e.clientY;
       mcx = e.clientX; mcy = e.clientY;
@@ -582,17 +642,35 @@ const heightStyle =
       if (!REDUCED) phase += 0.008;
       const sig = PALETTES[((P.pal % PALETTES.length) + PALETTES.length) % PALETTES.length].hot;
       let o = '';
+      const geo = []; // per drawn cable: endpoints for the routed-delivery pulses
       for (let i = 0; i < LINKS.length; i++) {
         const a = document.getElementById(LINKS[i][0]), b = document.getElementById(LINKS[i][1]);
         if (!a || !b) continue;
         const A = portPos(a, 'out'), Bp = portPos(b, 'in');
         const dx = Math.max(60, Math.abs(Bp.x - A.x) * 0.5);
+        geo.push({ f: LINKS[i][0], t: LINKS[i][1], A, Bp, dx });
         const d = `M ${A.x} ${A.y} C ${A.x + dx} ${A.y}, ${Bp.x - dx} ${Bp.y}, ${Bp.x} ${Bp.y}`;
         o += `<path d="${d}" fill="none" stroke="${sig}" stroke-opacity=".28" stroke-width="1.4"/>`;
         if (!REDUCED) {
           const tt = (phase + i * 0.22) % 1;
           const len = Math.hypot(Bp.x - A.x, Bp.y - A.y) + 2 * dx;
           o += `<path d="${d}" fill="none" stroke="${sig}" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="10 2000" stroke-dashoffset="${-(tt * len)}" opacity=".9"/>`;
+        }
+      }
+      /* transient pulses (visual = truth): every routed delivery queued a
+         one-shot dot that travels its cable in ~300ms. Reduced motion: skipped
+         (ambient drift is already static there). */
+      if (net && !REDUCED && net.pulses.length) {
+        const now = performance.now(), q = net.pulses;
+        for (let i = q.length - 1; i >= 0; i--) {
+          const p = (now - q[i].t0) / 300;
+          if (p >= 1) { q.splice(i, 1); continue; }
+          const g = geo.find((x) => x.f === q[i].f && x.t === q[i].t);
+          if (!g) continue;
+          const u = 1 - p, c1x = g.A.x + g.dx, c2x = g.Bp.x - g.dx;
+          const x = u * u * u * g.A.x + 3 * u * u * p * c1x + 3 * u * p * p * c2x + p * p * p * g.Bp.x;
+          const y = u * u * u * g.A.y + 3 * u * u * p * g.A.y + 3 * u * p * p * g.Bp.y + p * p * p * g.Bp.y;
+          o += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${sig}" opacity="${(1 - p * 0.45).toFixed(2)}"/>`;
         }
       }
       svg.innerHTML = o;
@@ -611,7 +689,7 @@ const heightStyle =
       const still = () => { cookDither(); cookWires(); };
       host.addEventListener('input', () => setTimeout(still, 0));
       host.addEventListener('click', () => setTimeout(still, 0));
-      document.addEventListener('patchmode', () => setTimeout(still, 80));
+      on(document, 'patchmode', () => setTimeout(still, 80));
       still();
     } else {
       frame();
@@ -635,12 +713,12 @@ const heightStyle =
         op.style.zIndex = 25;
         e.preventDefault();
       });
-      window.addEventListener('mousemove', (e) => {
+      on(window, 'mousemove', (e) => {
         if (!drag) return;
         op.style.left = ox + e.clientX - sx + 'px';
         op.style.top = oy + e.clientY - sy + 'px';
       });
-      window.addEventListener('mouseup', () => (drag = false));
+      on(window, 'mouseup', () => (drag = false));
     });
 
     /* ---------- DUO dock: co-visibility for paired surfaces ---------- */
@@ -720,6 +798,7 @@ const heightStyle =
         // neither visible → keep the current dock, no thrash
       }, { threshold: [0, 0.18, 0.5] });
       pair.forEach((el) => io.observe(el.__home));
+      if (sys) sys.cleanup(() => io.disconnect());
 
       function activate() {
         if (!docked) return;
@@ -731,9 +810,9 @@ const heightStyle =
       dock.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
       });
-      window.addEventListener('resize', () => { if (docked) fit(docked); });
+      on(window, 'resize', () => { if (docked) fit(docked); });
       // mode toggles reflow everything — reset and let the IO re-decide
-      document.addEventListener('patchmode', undock);
+      on(document, 'patchmode', undock);
     })();
   });
 })();

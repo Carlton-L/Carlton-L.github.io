@@ -73,9 +73,10 @@ export function getCreativeWorkJsonLd(project) {
     name: project.title,
     description: project.description,
     url: `${siteConfig.url}/projects/${project.slug}`,
-    image: project.image.startsWith('http')
-      ? project.image
-      : `${siteConfig.url}${project.image}`,
+    // image is optional (e.g. carlton-dev has none); JSON.stringify drops undefined
+    image: project.image
+      ? (project.image.startsWith('http') ? project.image : `${siteConfig.url}${project.image}`)
+      : undefined,
     creator: {
       '@type': 'Person',
       name: siteConfig.name,

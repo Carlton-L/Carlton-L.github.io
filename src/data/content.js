@@ -139,9 +139,29 @@ export const projects = [
     ],
   },
   {
+    title: 'carlton.dev',
+    description:
+      'This site, built as a live dataflow patch. Every content block is a typed operator, the cables route real messages on a small vanilla-JS runtime, the dither background comes from a visible operator chain you can tweak, and node placement is authored as ASCII grid-areas resolved at runtime.',
+    meta: '2026 — Design & Build (solo) · Personal',
+    category: 'Design Engineering',
+    categorySlug: 'apps-systems',
+    slug: 'carlton-dev',
+    accent: 'accent-1',
+    liveUrl: 'https://carlton.dev',
+    tags: ['Astro', 'Vanilla JS', 'Canvas', 'Design System', 'React Islands'],
+    featured: true,
+    hasCustomPage: true,
+    facts: {
+      role: 'Design & Build (solo)',
+      year: '2026',
+      stack: 'Astro 6, React islands, Tailwind 4, vanilla JS patch runtime',
+      company: 'Personal',
+    },
+  },
+  {
     title: 'Futurescaper',
     description:
-      'A futures-exploration tool for mapping scenario spaces — custom graph layout algorithms and AI orchestration for navigating possible futures.',
+      'A futures-exploration tool for mapping scenario spaces: custom graph layouts and AI orchestration for navigating possible futures.',
     meta: '2025–2026 — Design & Full-Stack Development · Futurity Systems',
     category: 'AI-Native Interfaces',
     categorySlug: 'apps-systems',
@@ -162,35 +182,35 @@ export const projects = [
       {
         heading: 'What it is',
         body: [
-          'Futurescaper is a futures-exploration tool. You give it a scenario — a driver, a signal, a "what if" — and it maps the consequences outward: the first-order effects, then the second- and third-order ripples those set off, laid out as an explorable landscape rather than a list. Consequences are organized along the STEEPLE dimensions — social, technological, economic, environmental, political, legal, ethical — so a scenario’s blind spots are visible at a glance: if a whole dimension is thin, the map says so.',
-          'Foresight data has structure that generic graph tools throw away. Drop it into an off-the-shelf force-directed layout and it collapses into a hairball exactly when the picture matters most. Futurescaper treats that structure — orders of consequence, causal lineage, category — as hard constraints, so the map stays a map as it grows.',
+          'Futurescaper is a futures-exploration tool. You give it a scenario, a driver, a "what if", and it maps the consequences outward: first-order effects, then the second- and third-order ripples those set off. The result reads like a metro map you can explore, not a list you scroll. Consequences are organized along the STEEPLE dimensions (social, technological, economic, environmental, political, legal, ethical), so a scenario’s blind spots show up at a glance. If a whole dimension is thin, the map says so.',
+          'Foresight data has structure that generic graph tools throw away. Drop it into an off-the-shelf force-directed layout and it collapses into a hairball, exactly when the picture matters most. Futurescaper treats that structure as hard constraints: orders of consequence, causal lineage, category. The map stays a map as it grows.',
         ],
       },
       {
         heading: 'The layout problem',
         body: [
-          'The layout is the argument. A consequence map has a grammar force-directed graphs can’t respect: consequences belong to orders (how many steps removed from the seed), every node carries a causal lineage back to that seed, and children should sit inside their parent’s outward cone rather than drift back toward the center. The custom layout encodes all of it — orders become concentric bands, ring radius grows with node count so crowded orders don’t collide, and each new node fills the largest angular gap.',
-          'That last rule buys the property users actually feel: spatial stability. When new AI-generated consequences arrive, existing nodes barely move, so the mental map you just built stays intact. Stability beats elegance — an arrangement you can keep your bearings in beats a tighter one that reshuffles on every generation.',
+          'The layout is the argument. A consequence map has a grammar that force-directed graphs can’t respect. Consequences belong to orders (how many steps removed from the seed), every node carries a causal lineage back to that seed, and children should sit inside their parent’s outward cone instead of drifting back toward the center. The custom layout encodes all of it. Orders become concentric bands. Ring radius grows with node count, so crowded orders don’t collide. Each new node fills the largest angular gap.',
+          'That last rule buys the property users actually feel: spatial stability. When new AI-generated consequences arrive, existing nodes barely move, and the mental map you just built stays intact. I tuned for stability over elegance. An arrangement you can keep your bearings in beats a tighter one that reshuffles on every generation.',
         ],
       },
       {
         heading: 'My role',
         body: [
-          'Futurescaper began as a colleague’s quick proof-of-concept — LLM calls fired straight from the browser, no backend, no persistence. I rebuilt it from the ground up, solo: the interface and graph rendering, the custom layout system, the exploration interactions, and a real backend to own the AI orchestration, prompt structure, and generation state. The concept was a shared starting point; the design, the frontend, and the backend are mine.',
-          'It’s the most focused instrument I’ve built at Futurity Systems — it distills lessons from FAST (knowledge-graph interfaces) and the Futurity Engine (streaming multi-agent reasoning) into one tool that does a single thing well: turn a scenario into a legible map you can think with.',
+          'Futurescaper began as a colleague’s quick proof-of-concept: LLM calls fired straight from the browser, no backend, no persistence. I rebuilt it from the ground up, solo. The interface and graph rendering, the custom layout system, the exploration interactions, and a real backend to own the AI orchestration, prompt structure, and generation state. The concept was a shared starting point. The design, the frontend, and the backend are mine.',
+          'It’s the most focused instrument I’ve built at Futurity Systems. It distills lessons from FAST (knowledge-graph interfaces) and the Futurity Engine (streaming multi-agent reasoning) into one tool that does a single thing well: turn a scenario into a legible map you can think with.',
         ],
       },
       {
         heading: 'Craft notes',
         body: [
           'The interesting problems all lived at the design-engineering seam. How much layout stability do you trade for clarity when new nodes land? How do you make machine-generated content visibly distinct from human-curated content, so trust has a seam you can see? How do you keep interaction latency imperceptible while a layout recomputes over a growing graph? None of these is answerable from the design side or the engineering side alone.',
-          'The answers were concrete: recompute layouts off the main thread so interaction never stalls; render AI-generated nodes in a distinct visual state until a human promotes them; and tune the layout for stability first, so the map is a place you return to rather than a picture that’s redrawn.',
+          'The answers were concrete. Recompute layouts off the main thread, so interaction never stalls. Render AI-generated nodes in a distinct visual state until a human promotes them. Tune the layout for stability first, so the map is a place you return to, not a picture that gets redrawn.',
         ],
       },
       {
         heading: 'Outcome',
         body: [
-          'Futurescaper runs as a real product — a designed frontend on a backend that owns generation — live at futurescape.futurity.science. It’s the clearest small statement of the through-line in my work: an AI tool earns trust when its output is legible, and legibility is a layout problem as much as a model problem.',
+          'Futurescaper runs as a real product, a designed frontend on a backend that owns generation, live at futurescape.futurity.science. It’s the clearest small statement of the through-line in my work: an AI tool earns trust when its output is legible, and legibility is a layout problem as much as a model problem.',
         ],
       },
     ],

@@ -46,7 +46,9 @@ const jsonLd = {
 
 const links: [string, string][] = [
   ['fsTitle', 'fsHero'],
-  ['fsHero', 'fsWhat'],
+  ['fsHero', 'fsSect'],
+  ['fsSect', 'fsWhat'],
+  ['fsSect', 'fsBefore'],
   ['fsWhat', 'fsOwn'],
   ['fsWhat', 'fsRole'],
   ['fsRole', 'fsCraft'],
@@ -71,9 +73,10 @@ const layout = {
     areas: `
       title title title title title .     .     .     .     own   own   own
       .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      what  what  what  what  .     .     .     .     role  role  role  role
-      craft craft craft craft .     .     .     .     .     .     .     .
-      d1    d1    d1    .     .     d2    d2    d2    .     d3    d3    d3
+      .     sect  sect  sect  sect  sect  sect  .     bfr   bfr   bfr   bfr
+      .     what  what  what  what  .     .     role  role  role  role  .
+      .     .     .     .     craft craft craft craft .     .     .     .
+      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
       .     .     .     lay   lay   lay   lay   lay   lay   .     .     .
       .     view  view  view  view  view  view  view  view  view  view  .
       outc  outc  outc  outc  outc  .     .     .     .     out   out   out
@@ -83,7 +86,7 @@ const layout = {
 ---
 
 <Base
-  title="Futurescaper — A Map Room for Possible Futures | Carlton Lindsay"
+  title="Futurescaper — A Metro Map for Possible Futures | Carlton Lindsay"
   description={project.description}
   jsonLd={jsonLd}
 >
@@ -91,7 +94,7 @@ const layout = {
     <!-- INPUT -->
     <Operator id="fsTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="fs-meta">{project.meta}</p>
-      <h1 class="fs-h">A map room for <span class="amb">possible futures</span></h1>
+      <h1 class="fs-h">A metro map for <span class="amb">possible futures</span></h1>
       <p class="fs-sub">// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS. FORCE LAYOUTS COLLAPSE INTO HAIRBALLS EXACTLY WHEN THE PICTURE MATTERS. THIS ONE DOESN'T.</p>
       <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · futurescape.futurity.science ↗</a>
     </Operator>
@@ -100,8 +103,22 @@ const layout = {
     <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
         <HeroMap client:only="react">
-          <div class="fs-poster hero" slot="fallback" aria-hidden="true">COOKING VIEWER — SELF-GENERATING MAP…</div>
+          <div class="fs-poster hero" slot="fallback" aria-hidden="true">COOKING VIEWER · SELF-GENERATING MAP…</div>
         </HeroMap>
+      </div>
+    </Operator>
+
+    <Operator id="fsSect" name="process · the_build" type="txt" area="sect">
+      <p class="fs-meta">PROCESS · WHAT IT IS / MY ROLE / THREE DECISIONS</p>
+      <h2 class="fs-h2">From <span class="amb">hairball</span> to metro map</h2>
+      <p class="fs-sub">What it is, where I fit, and the three decisions that shaped the build. Then the product itself, running live below.</p>
+    </Operator>
+
+    <!-- reserved slot: screenshot of the original POC, once it's dug up -->
+    <Operator id="fsBefore" name="before · original_poc" type="view" area="bfr" maxw={360} nudge="0 24" ports="in">
+      <div class="fs-photoslot">
+        <span>// SCREENSHOT PENDING · THE APP BEFORE THE REBUILD</span>
+        <span class="fs-photosub">ORIGINAL PROOF-OF-CONCEPT · SLOT RESERVED</span>
       </div>
     </Operator>
 
@@ -116,11 +133,11 @@ const layout = {
         <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
         <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
         <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="fs-meternote">SOLO REBUILD FROM A COLLEAGUE'S POC — UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO.</span>
+        <span class="fs-meternote">SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO.</span>
       </div>
     </Operator>
 
-    <Operator id="fsRole" name="txt · my_role" type="txt" area="role">
+    <Operator id="fsRole" name="txt · my_role" type="txt" area="role" nudge="0 48">
       {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
@@ -130,15 +147,27 @@ const layout = {
 
     <!-- PROCESS: the three design-engineering decisions -->
     <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" area="d1">
-      <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">01</span>
+        <h3 class="fs-dh">Spatial memory</h3>
+        <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
+      </div>
     </Operator>
 
-    <Operator id="fsD2" name="decision_02 · provenance" type="txt" area="d2">
-      <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
+    <Operator id="fsD2" name="decision_02 · provenance" type="txt" area="d2" nudge="0 40">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">02</span>
+        <h3 class="fs-dh">Visible provenance</h3>
+        <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
+      </div>
     </Operator>
 
-    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" area="d3">
-      <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
+    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" area="d3" nudge="0 80">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">03</span>
+        <h3 class="fs-dh">Off the main thread</h3>
+        <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
+      </div>
     </Operator>
 
     <!-- PROCESS: the core argument, set up right before the live demo -->
@@ -150,7 +179,7 @@ const layout = {
     <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" area="view" maxw={900}>
       <div class="fs-viewerwrap">
         <FuturescaperDemo client:only="react">
-          <div class="fs-poster" slot="fallback" aria-hidden="true">COOKING VIEWER — REAL LAYOUT CODE, SYNTHETIC DATA…</div>
+          <div class="fs-poster" slot="fallback" aria-hidden="true">COOKING VIEWER · REAL LAYOUT CODE, SYNTHETIC DATA…</div>
         </FuturescaperDemo>
       </div>
     </Operator>
@@ -198,6 +227,34 @@ const layout = {
     max-width: 42ch;
   }
 
+  .fs-h2 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(18px, 2vw, 26px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .fs-h2 .amb { color: var(--signal); }
+
+  /* decisions: outlined ghost numeral (hero's stroke grammar) + display heading */
+  .fs-dec { position: relative; padding-top: 4px; }
+  .fs-dnum {
+    position: absolute; top: -6px; right: -2px;
+    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
+    pointer-events: none; user-select: none;
+  }
+  .fs-dh {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    padding-right: 52px;
+  }
+
   .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
   .fs-p:last-child { margin-bottom: 0; }
 
@@ -230,6 +287,22 @@ const layout = {
     background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px);
   }
   .fs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
+
+  .fs-photoslot {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    padding: 10px;
+  }
+  .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
 
   .fs-viewerwrap { margin: -12px -14px; }
   .fs-poster.hero { height: 600px; }
