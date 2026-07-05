@@ -58,6 +58,28 @@ const links: [string, string][] = [
   ['fsView', 'fsOutcome'],
   ['fsOutcome', 'fsOut'],
 ];
+
+// layout: content mode — the narrative spine as rows; hero/demo/core-argument
+// are centered spans (maxw re-centers them inside their cells, replacing the
+// old translateX(-50%) idiom); field height is computed (was hardcoded 3800px).
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title .     .     .     .     own   own   own
+      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
+      what  what  what  what  .     .     .     .     role  role  role  role
+      craft craft craft craft .     .     .     .     .     .     .     .
+      d1    d1    d1    .     .     d2    d2    d2    .     d3    d3    d3
+      .     .     .     lay   lay   lay   lay   lay   lay   .     .     .
+      .     view  view  view  view  view  view  view  view  view  view  .
+      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+    `,
+  }],
+};
 ---
 
 <Base
@@ -65,9 +87,9 @@ const links: [string, string][] = [
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="fsNet" links={links} density={0.3} height="3800px" label="Futurescaper case-study network — press P for reading mode">
+  <PatchField id="fsNet" links={links} density={0.3} height="3800px" layout={layout} label="Futurescaper case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="fsTitle" name="input · the_problem" type="txt" pos="left:4%; top:100px; width:min(440px,88vw);" ports="out">
+    <Operator id="fsTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="fs-meta">{project.meta}</p>
       <h1 class="fs-h">A map room for <span class="amb">possible futures</span></h1>
       <p class="fs-sub">// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS. FORCE LAYOUTS COLLAPSE INTO HAIRBALLS EXACTLY WHEN THE PICTURE MATTERS. THIS ONE DOESN'T.</p>
@@ -75,7 +97,7 @@ const links: [string, string][] = [
     </Operator>
 
     <!-- VIEW (opener): the product's landing hero — a map generating itself -->
-    <Operator id="fsHero" name="futurescaper_view · live_map" type="view" pos="left:50%; top:360px; transform:translateX(-50%); width:min(900px,94vw);">
+    <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
         <HeroMap client:only="react">
           <div class="fs-poster hero" slot="fallback" aria-hidden="true">COOKING VIEWER — SELF-GENERATING MAP…</div>
@@ -83,12 +105,12 @@ const links: [string, string][] = [
       </div>
     </Operator>
 
-    <Operator id="fsWhat" name="txt · what_it_is" type="txt" pos="left:4%; top:1120px; width:min(360px,86vw);">
+    <Operator id="fsWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
     <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
-    <Operator id="fsOwn" name="ownership_data" type="data" pos="right:4%; top:100px; width:min(260px,86vw);">
+    <Operator id="fsOwn" name="ownership_data" type="data" area="own" maxw={280}>
       <div class="fs-meter">
         <span>CONCEPT</span><div class="bar"><i style="width:35%"></i></div>
         <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
@@ -98,34 +120,34 @@ const links: [string, string][] = [
       </div>
     </Operator>
 
-    <Operator id="fsRole" name="txt · my_role" type="txt" pos="right:4%; top:1120px; width:min(360px,86vw);">
+    <Operator id="fsRole" name="txt · my_role" type="txt" area="role">
       {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fsCraft" name="process · craft_notes" type="txt" pos="left:4%; top:1540px; width:min(360px,86vw);">
+    <Operator id="fsCraft" name="process · craft_notes" type="txt" area="craft">
       {cs['Craft notes'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
     <!-- PROCESS: the three design-engineering decisions -->
-    <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" pos="left:4%; top:1940px; width:min(270px,86vw);">
+    <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" area="d1">
       <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
     </Operator>
 
-    <Operator id="fsD2" name="decision_02 · provenance" type="txt" pos="left:37%; top:1940px; width:min(270px,86vw);">
+    <Operator id="fsD2" name="decision_02 · provenance" type="txt" area="d2">
       <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
     </Operator>
 
-    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" pos="right:4%; top:1940px; width:min(270px,86vw);">
+    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" area="d3">
       <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
     </Operator>
 
     <!-- PROCESS: the core argument, set up right before the live demo -->
-    <Operator id="fsLayout" name="process · the_layout_problem" type="txt" pos="left:50%; top:2220px; transform:translateX(-50%); width:min(600px,92vw);">
+    <Operator id="fsLayout" name="process · the_layout_problem" type="txt" area="lay" maxw={600}>
       {cs['The layout problem'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
     <!-- VIEW: the real product, live — real layout code, synthetic data -->
-    <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" pos="left:50%; top:2620px; transform:translateX(-50%); width:min(900px,94vw);">
+    <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" area="view" maxw={900}>
       <div class="fs-viewerwrap">
         <FuturescaperDemo client:only="react">
           <div class="fs-poster" slot="fallback" aria-hidden="true">COOKING VIEWER — REAL LAYOUT CODE, SYNTHETIC DATA…</div>
@@ -134,12 +156,12 @@ const links: [string, string][] = [
     </Operator>
 
     <!-- OUT -->
-    <Operator id="fsOutcome" name="out · outcome" type="txt" pos="left:4%; top:3500px; width:min(440px,88vw);" ports="in">
+    <Operator id="fsOutcome" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
       <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · futurescape.futurity.science ↗</a>
     </Operator>
 
-    <Operator id="fsOut" name="out · next_network" type="data" pos="right:5%; top:3520px; width:min(250px,86vw);" ports="in">
+    <Operator id="fsOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
       <p class="fs-out">
         THE LAYOUT IS THE ARGUMENT.<br /><br />
         <a href="/projects/futurity-engine">NEXT ▸ futurity_engine</a><br />

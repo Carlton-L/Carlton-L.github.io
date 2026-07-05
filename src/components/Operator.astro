@@ -13,7 +13,15 @@
  *  - name:  header label, e.g. "futurescaper_view · OCEAN.scn"
  *  - type:  'view' | 'txt' | 'data' | 'sys'
  *  - pos:   inline position styles for network mode, e.g. "left:5%; top:60px; width:430px;"
+ *          (escape hatch — ops with `pos` and no `area` are untouched by the resolver)
  *  - ports: 'both' | 'in' | 'out' | 'none' (default 'both')
+ *  - area:  named region in the parent PatchField's `layout` areas string; the
+ *          layout resolver places/sizes this op (see PatchField LAYOUT RESOLVER)
+ *  - nudge: "x y" px offset applied to the resolved cell position (organic drift)
+ *  - fit:   'fill' (default — op takes the cell width) | 'auto' (natural width,
+ *          the cell only anchors it — for small SYS chips)
+ *  - maxw:  cap in px on the resolved width; the op re-centers inside its cells
+ *          (for wide centered spans like case-study viewers)
  */
 interface Props {
   id: string;
@@ -21,11 +29,15 @@ interface Props {
   type?: 'view' | 'txt' | 'data' | 'sys';
   pos?: string;
   ports?: 'both' | 'in' | 'out' | 'none';
+  area?: string;
+  nudge?: string;
+  fit?: 'fill' | 'auto';
+  maxw?: number;
 }
-const { id, name, type = 'txt', pos = '', ports = 'both' } = Astro.props;
+const { id, name, type = 'txt', pos = '', ports = 'both', area, nudge, fit, maxw } = Astro.props;
 ---
 
-<div class={`op op-${type}`} id={id} data-drag style={pos}>
+<div class={`op op-${type}`} id={id} data-drag style={pos} data-area={area} data-nudge={nudge} data-fit={fit} data-maxw={maxw}>
   <div class="ohead">
     <span class="oname">{name}</span>
     <span class="otyp">{type.toUpperCase()}</span>

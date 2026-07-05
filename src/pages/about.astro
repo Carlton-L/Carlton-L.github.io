@@ -27,6 +27,22 @@ const links: [string, string][] = [
   ['abEdu', 'abSkills'],
   ['abBio', 'abSkills'],
 ];
+
+// layout: bio holds the left column; the three DATA ops stack down the right.
+// Content mode — field height computed from the ops (was a hardcoded 920px).
+const layout = {
+  mode: 'content',
+  padTop: 24,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      bio bio bio bio bio . . xp     xp     xp     xp     .
+      bio bio bio bio bio . . edu    edu    edu    edu    .
+      bio bio bio bio bio . . skills skills skills skills .
+    `,
+  }],
+};
 ---
 
 <Base
@@ -34,8 +50,8 @@ const links: [string, string][] = [
   description={aboutContent.intro}
   jsonLd={jsonLd}
 >
-  <PatchField id="aboutNet" links={links} density={0.3} height="920px" label="About network — press P for reading mode">
-    <Operator id="abBio" name="input · bio_txt" type="txt" pos="left:4%; top:56px; width:min(500px,88vw);" ports="out">
+  <PatchField id="aboutNet" links={links} density={0.3} height="920px" layout={layout} label="About network — press P for reading mode">
+    <Operator id="abBio" name="input · bio_txt" type="txt" area="bio" ports="out">
       <h1 class="ab-h">About</h1>
       <p class="ab-intro">{aboutContent.intro}</p>
       <div class="ab-bio">
@@ -44,7 +60,7 @@ const links: [string, string][] = [
       <a class="ab-cv" href="/cv/Carlton_Lindsay_Design_Engineer_CV.pdf">▸ DOWNLOAD CV (PDF)</a>
     </Operator>
 
-    <Operator id="abXp" name="experience_data" type="data" pos="right:5%; top:80px; width:min(430px,90vw);">
+    <Operator id="abXp" name="experience_data" type="data" area="xp" nudge="0 24">
       <table class="ab-xp">
         {aboutContent.experience.map((entry) => (
           <tr>
@@ -58,7 +74,7 @@ const links: [string, string][] = [
       </table>
     </Operator>
 
-    <Operator id="abEdu" name="education_data" type="data" pos="right:5%; top:430px; width:min(430px,90vw);">
+    <Operator id="abEdu" name="education_data" type="data" area="edu">
       <table class="ab-xp">
         {aboutContent.education.map((entry) => (
           <tr>
@@ -72,7 +88,7 @@ const links: [string, string][] = [
       </table>
     </Operator>
 
-    <Operator id="abSkills" name="skills_data" type="data" pos="right:8%; bottom:64px; width:min(430px,90vw);" ports="in">
+    <Operator id="abSkills" name="skills_data" type="data" area="skills" ports="in">
       <div class="ab-skills">
         {aboutContent.skills.map((skill) => <span class="ab-chip">{skill}</span>)}
       </div>

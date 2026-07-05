@@ -35,6 +35,42 @@ const jsonLd = {
   '@graph': [getPersonJsonLd(), getWebSiteJsonLd()],
 };
 
+// layout: fill mode — rows share the viewport-height field. The bg_generator
+// chain (noise → fdbk → dith → out) arcs down-left around the hero via its
+// row/col drift + nudges; the viewer holds the right block; index + readme
+// anchor the bottom corners. ≥1600px the grid widens to 14 cols and everything
+// gets more air. Nudges are art direction — tune by eye, not by math.
+const layout = {
+  mode: 'fill',
+  padTop: 24,
+  tiers: [
+    {
+      min: 0,
+      cols: 12,
+      areas: `
+        hero  hero  hero  hero  .     noise noise view  view  view  view  view
+        hero  hero  hero  hero  fdbk  fdbk  .     view  view  view  view  view
+        .     .     dith  dith  .     .     .     view  view  view  view  view
+        .     out   out   .     .     .     .     view  view  view  view  view
+        index index index index .     fx    .     .     .     read  read  read
+        index index index index .     .     .     .     .     read  read  read
+      `,
+    },
+    {
+      min: 1600,
+      cols: 14,
+      areas: `
+        hero  hero  hero  hero  .     noise noise .     view  view  view  view  view  .
+        hero  hero  hero  hero  fdbk  fdbk  .     .     view  view  view  view  view  .
+        .     .     dith  dith  .     .     .     .     view  view  view  view  view  .
+        .     out   out   .     .     .     .     .     view  view  view  view  view  .
+        index index index index .     fx    .     .     .     .     read  read  read  .
+        index index index index .     .     .     .     .     .     read  read  read  .
+      `,
+    },
+  ],
+};
+
 const indexRows = projects
   .filter((p) => ['futurescaper', 'futurity-engine', 'fast', 'campus-ai'].includes(p.slug))
   .map((p) => ({
@@ -55,8 +91,8 @@ const ICONS: Record<string, string> = {
 ---
 
 <Base title={siteConfig.title} description={siteConfig.description} jsonLd={jsonLd}>
-  <PatchField id="net" links={links}>
-    <Operator id="opHero" name="hero_txt" type="txt" pos="left:5%; top:70px; width:min(460px,86vw);" ports="out">
+  <PatchField id="net" links={links} layout={layout}>
+    <Operator id="opHero" name="hero_txt" type="txt" area="hero" nudge="0 24" ports="out">
       <h1 class="hero-h">
         Designer who <span class="grn">deploys</span>.
         <span class="ghost">Engineer who dreams.</span>
@@ -67,7 +103,7 @@ const ICONS: Record<string, string> = {
     <!-- the work rack: viewer + index are one unit in READ mode (player/playlist);
          display:contents in PATCH mode so both ops stay free-floating on the canvas -->
     <div class="rack" data-rack="work">
-      <Operator id="opScape" name="futurescaper_view · live_map" type="view" pos="right:4%; top:120px; width:clamp(420px,38vw,560px);">
+      <Operator id="opScape" name="futurescaper_view · live_map" type="view" area="view" nudge="0 48" maxw={640}>
         <div class="viewer-wrap">
           <div class="viewer-stage">
             <svg class="viewer" id="viewerSvg" viewBox="0 0 420 240" role="img" aria-label="Futurescaper self-generating consequence map, live synthetic demo"></svg>
@@ -80,7 +116,7 @@ const ICONS: Record<string, string> = {
         </div>
       </Operator>
 
-      <Operator id="opIndex" name="work_index · preview · open" type="data" pos="left:6%; bottom:40px; width:min(430px,88vw);">
+      <Operator id="opIndex" name="work_index · preview · open" type="data" area="index">
         <div class="idx" id="workIndex">
           {indexRows.map((r, i) => (
             <a href={r.href} data-slug={r.slug} class:list={['idxrow', { sel: i === 0 }]} title="Preview in the viewer · select again to open the case study">
@@ -98,7 +134,7 @@ const ICONS: Record<string, string> = {
       </Operator>
     </div>
 
-    <Operator id="opFx" name="post_fx" type="sys" pos="left:46%; bottom:60px; width:170px;">
+    <Operator id="opFx" name="post_fx" type="sys" area="fx" fit="auto" nudge="0 96">
       <div class="chain">
         <span class="chip">IN</span><span class="arr">▶</span>
         <button id="invertBtn" class="chip chipbtn" aria-pressed="false">INVERT</button>
@@ -106,7 +142,7 @@ const ICONS: Record<string, string> = {
       </div>
     </Operator>
 
-    <Operator id="opRead" name="readme_txt" type="txt" pos="right:9%; bottom:40px; width:min(300px,86vw);">
+    <Operator id="opRead" name="readme_txt" type="txt" area="read" nudge="0 12">
       <div class="readme">
         <span class="k">## about</span><br />
         10 yrs in hardware labs (incl. Apple Vision Pro) → Master's in interaction
@@ -119,7 +155,7 @@ const ICONS: Record<string, string> = {
 
     <!-- the background generator: a tight, compact chain arcing around the
          hero card's bottom-right corner (01 top-right → 04 below-left) -->
-    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" pos="left:40%; top:100px; width:min(154px,86vw);" ports="out">
+    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" area="noise" maxw={170} nudge="24 48" ports="out">
       <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE" title="Click: cycle noise type">TYPE ▸ RIDGE</button>
       <div class="prow">
         <span class="plab">SPEED</span>
@@ -128,7 +164,7 @@ const ICONS: Record<string, string> = {
       </div>
     </Operator>
 
-    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" pos="left:42%; top:232px; width:min(150px,86vw);">
+    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" area="fdbk" maxw={160} nudge="0 24">
       <div class="prow">
         <span class="plab">FDBK</span>
         <input class="prange" type="range" data-param="feedback" data-div="100" min="0" max="95" value="78" aria-label="Feedback amount — higher leaves longer cursor trails" />
@@ -137,7 +173,7 @@ const ICONS: Record<string, string> = {
       <div class="genhint">CURSOR PAINTS THE FIELD ▚</div>
     </Operator>
 
-    <Operator id="opDither" name="bg_03 · dither" type="sys" pos="left:33%; top:356px; width:min(168px,86vw);">
+    <Operator id="opDither" name="bg_03 · dither" type="sys" area="dith" maxw={180} nudge="12 24">
       <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE" title="Click: cycle dither pattern">TYPE ▸ BAYER2</button>
       <div class="prow">
         <span class="plab">DENS</span>
@@ -151,7 +187,7 @@ const ICONS: Record<string, string> = {
       </div>
     </Operator>
 
-    <Operator id="opOut" name="bg_04 · out" type="sys" pos="left:23%; top:388px; width:min(150px,86vw);" ports="in">
+    <Operator id="opOut" name="bg_04 · out" type="sys" area="out" maxw={160} nudge="0 -24" ports="in">
       <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL" title="Click: cycle output palette">PAL ▸ GRN</button>
       <div class="genhint">RENDERS THE PAGE ▚</div>
     </Operator>

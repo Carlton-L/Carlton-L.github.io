@@ -16,6 +16,18 @@ const jsonLd = getBreadcrumbJsonLd([
 
 const channelIds = contactLinks.map((_, i) => `ctCh${i}`);
 const links = channelIds.map((id) => ['ctHi', id] as [string, string]);
+
+// layout: say_hi holds the left column beside the channel stack (one row per
+// channel; hi spans all but the last so the columns balance). Content mode —
+// the field height is computed from the ops.
+const areas = channelIds
+  .map((id, i) => `${i < channelIds.length - 1 ? 'hi hi hi hi hi' : '.  .  .  .  .'} . . ${id} ${id} ${id} ${id} .`)
+  .join('\n');
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{ min: 0, cols: 12, areas }],
+};
 ---
 
 <Base
@@ -23,8 +35,8 @@ const links = channelIds.map((id) => ['ctHi', id] as [string, string]);
   description="Get in touch — available for design technology, creative engineering, and AI-focused frontend roles."
   jsonLd={jsonLd}
 >
-  <PatchField id="contactNet" links={links} density={0.3} height="640px" label="Contact network — press P for reading mode">
-    <Operator id="ctHi" name="input · say_hi" type="txt" pos="left:6%; top:120px; width:min(440px,88vw);" ports="out">
+  <PatchField id="contactNet" links={links} density={0.3} height="640px" layout={layout} label="Contact network — press P for reading mode">
+    <Operator id="ctHi" name="input · say_hi" type="txt" area="hi" nudge="0 24" ports="out">
       <h1 class="ct-h">Contact</h1>
       <p class="ct-p">
         Open to interesting roles and collaborations — especially at the
@@ -38,7 +50,7 @@ const links = channelIds.map((id) => ['ctHi', id] as [string, string]);
         id={channelIds[i]}
         name={`out · ${label.toLowerCase()}`}
         type="data"
-        pos={`right:7%; top:${64 + i * 160}px; width:min(360px,90vw);`}
+        area={channelIds[i]}
         ports="in"
       >
         <a

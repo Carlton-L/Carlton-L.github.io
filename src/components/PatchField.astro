@@ -36,12 +36,36 @@
  * (e.g. drop pixel ratio while docked). One dock per field; first pair
  * wins if several fight over it.
  *
+ * LAYOUT RESOLVER (opt-in via the `layout` prop): places ops that carry an
+ * `area` prop from an ASCII grid-areas string, snapped to the dot grid.
+ *   layout = {
+ *     mode: 'fill' | 'content',  // fill: rows share the field height (hero pages)
+ *                                // content: rows measure their tallest op, field
+ *                                //          height is computed (long pages)
+ *     padTop: 0,                 // extra px above row 0
+ *     jitter: false,             // seeded half-grid scatter per op (opt-in)
+ *     tiers: [                   // ascending `min` (field width px); last match wins
+ *       { min: 0, cols: 12, areas: `
+ *           hero hero .    view view
+ *           .    .    .    view view
+ *       ` },
+ *     ],
+ *   }
+ * Rules: resolver only touches `.op[data-area]`; `pos` ops are never touched;
+ * dragged ops (data-manual) and DUO-docked ops are left alone; overlaps get
+ * relaxed down-column; every tier should name every area op (missing ones keep
+ * their previous position). Re-resolves on resize / patchmode / (content mode)
+ * op size changes — late-hydrating islands are safe.
+ *
  * Props:
  *  - id:      DOM id (required, unique per field)
  *  - links:   [[fromOpId, toOpId], ...] — cables, drawn out-port → in-port
  *  - density: initial dither density 0–1 (0 disables the dither canvas)
  *  - height:  'viewport' (fill viewport minus chrome) | CSS min-height value
+ *             (content-mode layouts recompute this at runtime; the prop is the
+ *             pre-JS fallback)
  *  - label:   aria-label for the region
+ *  - layout:  optional layout-resolver config (see above)
  */
 interface Props {
   id: string;
@@ -49,8 +73,14 @@ interface Props {
   density?: number;
   height?: string;
   label?: string;
+  layout?: {
+    mode?: 'fill' | 'content';
+    padTop?: number;
+    jitter?: boolean;
+    tiers: { min?: number; cols?: number; areas: string }[];
+  };
 }
-const { id, links = [], density = 0.5, height = 'viewport', label = 'Interactive patch — press P for read view' } = Astro.props;
+const { id, links = [], density = 0.5, height = 'viewport', label = 'Interactive patch — press P for read view', layout } = Astro.props;
 // Fill the content area (viewport minus the fixed nav + footer/playbar). For
 // fixed-height fields (case studies, contact) still grow to at least fill, so
 // short pages don't leave a bare strip below the dither.
@@ -67,6 +97,7 @@ const heightStyle =
   aria-label={label}
   data-links={JSON.stringify(links)}
   data-density={String(density)}
+  data-layout={layout ? JSON.stringify(layout) : undefined}
   style={heightStyle}
 >
   {density > 0 && <canvas class="bgdither" aria-hidden="true"></canvas>}
@@ -109,8 +140,20 @@ const heightStyle =
   }
 </style>
 
+<!-- resolver-managed ops stay invisible until first placement (no flash at 0,0);
+     scoped to JS-on patch mode: READ mode and noscript never hide anything -->
+<noscript>
+  <style>
+    /* no JS = no resolver, no drag, no wires: fall back to READ-style stacking */
+    .patchfield { height: auto !important; min-height: 0 !important; padding: 80px 20px 64px; }
+    .patchfield .op { position: static !important; width: 100% !important; max-width: 680px; margin: 0 auto 40px; visibility: visible !important; }
+  </style>
+</noscript>
+
 <!-- DUO dock — JS-created, so it can't take Astro's scoped attributes -->
 <style is:global>
+  body:not(.perform) .patchfield .op[data-area]:not([data-placed]) { visibility: hidden; }
+
   .pfdock {
     position: fixed;
     right: 14px;
@@ -227,6 +270,145 @@ const heightStyle =
       label();
     });
     applySignal();
+
+    /* ---------- layout resolver (opt-in: host carries data-layout) ----------
+       ASCII grid-areas → absolute positions snapped to the dot grid.
+       See the component doc comment for the config shape and rules. */
+    (function () {
+      let LAYOUT = null;
+      try { LAYOUT = JSON.parse(host.dataset.layout || 'null'); } catch (e) {}
+      if (!LAYOUT || !Array.isArray(LAYOUT.tiers) || !LAYOUT.tiers.length) return;
+
+      const guRaw = parseFloat(getComputedStyle(host).getPropertyValue('--grid-size'));
+      const GU = isFinite(guRaw) && guRaw > 0 ? guRaw : 24;
+      const snap = (v) => Math.round(v / GU) * GU;
+      const jitterFor = (id) => {
+        let h = 2166136261;
+        for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 16777619); }
+        const u = (b) => Math.round((((h >>> b) & 255) / 255 - 0.5) * 2) * (GU / 2);
+        return [u(8), u(16)];
+      };
+      const parseAreas = (str) => {
+        const rows = String(str).trim().split('\n')
+          .map((l) => l.trim().split(/\s+/))
+          .filter((r) => r.length && r[0]);
+        const cells = {};
+        rows.forEach((row, r) => row.forEach((n, c) => {
+          if (n === '.') return;
+          const a = cells[n] || (cells[n] = { c0: c, c1: c, r0: r, r1: r });
+          if (c < a.c0) a.c0 = c; if (c > a.c1) a.c1 = c;
+          if (r < a.r0) a.r0 = r; if (r > a.r1) a.r1 = r;
+        }));
+        return { nrows: rows.length, cells };
+      };
+
+      let lastSig = '';
+      function relayout() {
+        if (isRead()) return;
+        const W = host.clientWidth;
+        if (W < 2) return;
+        let tier = LAYOUT.tiers[0];
+        for (const t of LAYOUT.tiers) if (W >= (t.min || 0)) tier = t;
+        const { nrows, cells } = parseAreas(tier.areas);
+        const cols = tier.cols || 12;
+        const PAD = GU, padTop = LAYOUT.padTop || 0;
+        const colW = (W - 2 * PAD) / cols;
+
+        // ops this pass may move: skip dragged (data-manual), display:none, and
+        // anything re-parented out of the field (e.g. into the DUO dock)
+        const areaEls = {};
+        host.querySelectorAll('.op[data-area]').forEach((el) => {
+          el.setAttribute('data-placed', '1'); // never leave an op invisible
+          if (el.hasAttribute('data-manual') || el.offsetParent !== host) return;
+          areaEls[el.dataset.area] = el;
+        });
+
+        // 1. widths first (content mode measures heights against final widths)
+        Object.keys(areaEls).forEach((name) => {
+          const a = cells[name], el = areaEls[name];
+          if (!a || el.dataset.fit === 'auto') { if (el) el.__cx = 0; return; }
+          let w = (a.c1 - a.c0 + 1) * colW - GU / 2, cx = 0;
+          const mw = parseFloat(el.dataset.maxw);
+          if (isFinite(mw) && mw < w) { cx = (w - mw) / 2; w = mw; }
+          el.style.width = Math.max(GU, snap(w)) + 'px';
+          el.__cx = cx;
+        });
+
+        // 2. row tops
+        const rowTops = [];
+        if (LAYOUT.mode === 'content') {
+          const rh = new Array(nrows).fill(GU);
+          Object.keys(areaEls).forEach((name) => {
+            const a = cells[name]; if (!a) return;
+            const per = areaEls[name].offsetHeight / (a.r1 - a.r0 + 1);
+            for (let r = a.r0; r <= a.r1; r++) if (per > rh[r]) rh[r] = per;
+          });
+          let acc = PAD + padTop;
+          for (let r = 0; r < nrows; r++) { rowTops[r] = acc; acc += rh[r] + GU; }
+        } else {
+          const H = Math.max(host.clientHeight, 640);
+          const rowH = (H - 2 * PAD - padTop) / nrows;
+          for (let r = 0; r < nrows; r++) rowTops[r] = PAD + padTop + r * rowH;
+        }
+
+        // 3. place (ops missing from this tier keep their previous position)
+        Object.keys(areaEls).forEach((name) => {
+          const a = cells[name]; if (!a) return;
+          const el = areaEls[name];
+          const nd = (el.dataset.nudge || '').trim().split(/\s+/).map(parseFloat);
+          const jit = LAYOUT.jitter ? jitterFor(name) : [0, 0];
+          const x = PAD + a.c0 * colW + (el.__cx || 0) + (nd[0] || 0) + jit[0];
+          const y = rowTops[a.r0] + (nd[1] || 0) + jit[1];
+          el.style.left = snap(Math.max(0, x)) + 'px';
+          el.style.top = snap(Math.max(0, y)) + 'px';
+          el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.transform = 'none';
+        });
+
+        // 4. relax: push real overlaps down their column (bounded passes)
+        const els = Object.keys(areaEls).filter((n) => cells[n]).map((n) => areaEls[n]);
+        for (let pass = 0; pass < 3; pass++) {
+          let moved = false;
+          const sorted = els.slice().sort((a, b) => a.offsetTop - b.offsetTop);
+          for (let i = 0; i < sorted.length; i++) {
+            for (let j = i + 1; j < sorted.length; j++) {
+              const A = sorted[i], B = sorted[j];
+              const ox = Math.min(A.offsetLeft + A.offsetWidth, B.offsetLeft + B.offsetWidth) - Math.max(A.offsetLeft, B.offsetLeft);
+              const oy = Math.min(A.offsetTop + A.offsetHeight, B.offsetTop + B.offsetHeight) - Math.max(A.offsetTop, B.offsetTop);
+              if (ox > GU / 2 && oy > 0) {
+                B.style.top = snap(A.offsetTop + A.offsetHeight + GU) + 'px';
+                moved = true;
+              }
+            }
+          }
+          if (!moved) break;
+        }
+
+        // 5. field height: content mode computes it; fill mode only grows if relax overflowed
+        let maxY = 0;
+        els.forEach((el) => { const b = el.offsetTop + el.offsetHeight; if (b > maxY) maxY = b; });
+        if (LAYOUT.mode === 'content') {
+          host.style.height = 'auto';
+          host.style.minHeight = Math.max(640, maxY + 2 * GU) + 'px';
+        } else if (maxY + GU > host.clientHeight) {
+          host.style.minHeight = (maxY + 2 * GU) + 'px';
+        }
+        lastSig = Array.from(host.querySelectorAll('.op[data-area]')).map((el) => el.offsetHeight).join(',');
+      }
+
+      let rlT = null;
+      const debRelayout = (ms) => { clearTimeout(rlT); rlT = setTimeout(relayout, ms); };
+      window.addEventListener('resize', () => debRelayout(80));
+      document.addEventListener('patchmode', () => debRelayout(60));
+      if (LAYOUT.mode === 'content' && typeof ResizeObserver !== 'undefined') {
+        // late-hydrating islands change op heights → re-relax (signature-guarded, no loops)
+        const ro = new ResizeObserver(() => {
+          const sig = Array.from(host.querySelectorAll('.op[data-area]')).map((el) => el.offsetHeight).join(',');
+          if (sig !== lastSig) debRelayout(120);
+        });
+        host.querySelectorAll('.op[data-area]').forEach((el) => ro.observe(el));
+      }
+      relayout();
+    })();
 
     /* ---------- dither engine v2.1 ----------
        Perf model: cook the field at 1px/cell into an offscreen ImageData,
@@ -443,6 +625,7 @@ const heightStyle =
       bar.addEventListener('mousedown', (e) => {
         if (isRead()) return;
         drag = true; sx = e.clientX; sy = e.clientY;
+        op.setAttribute('data-manual', ''); // layout resolver leaves dragged ops alone
         // offsetParent, not parentElement: ops may sit inside a display:contents
         // wrapper (e.g. the homepage rack), which has no box to measure against
         const r = op.getBoundingClientRect(), pr = (op.offsetParent || host).getBoundingClientRect();
