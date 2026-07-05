@@ -601,39 +601,92 @@ const ICONS: Record<string, string> = {
     return o + '</g>';
   }
 
-  /* ---------- viewer: futurity_engine — graph growing from an SSE stream ---------- */
-  const ENG = ['#3dff88', '#56B4E9', '#E69F00', '#CC79A7', '#009E73', '#F0E442'];
+  /* ---------- viewer: futurity_engine — a full run compressed to one cycle.
+     The product's real graph grammar in miniature: subjects are hexagons,
+     evidence (papers/patents/orgs/press) clusters around them in bursts,
+     signals land as diamonds, agents (indigo) reach out to the web, and a
+     report (orange) crystallizes — INTENT → DB_PULL → SIGNALS → AGENTS →
+     SYNTH ticker along the bottom. Arc ≈6.7s + fade, phased to the 7.2s
+     cycle clock so each work-index dwell shows exactly one complete run. */
+  const ENG_ENT = ['#20C6DB', '#20C6DB', '#20C6DB', '#C3DE6D', '#C3DE6D', '#E07B91', '#E69500', '#46ACC8'];
+  const ENG_L = 7.15, ENG_PH = [['INTENT', 0], ['DB_PULL', 1.0], ['SIGNALS', 3.05], ['AGENTS', 3.8], ['SYNTH', 5.85]];
   function engInit() {
-    const r = srnd(1234);
-    const nodes = [{ x: W / 2, y: H / 2, c: 0, p: -1, r: 5 }];
-    for (let i = 1; i < 64; i++) {
-      const p = Math.max(0, i - 1 - Math.floor(r() * 8));
-      const a = r() * Math.PI * 2, d = 24 + r() * 34;
-      nodes.push({
-        x: Math.min(W - 14, Math.max(14, nodes[p].x + Math.cos(a) * d * 1.4)),
-        y: Math.min(H - 14, Math.max(14, nodes[p].y + Math.sin(a) * d)),
-        c: Math.floor(r() * 6), p, r: 2 + r() * 2.2,
-      });
+    const r = srnd(4242);
+    const nodes = [];
+    const SP = [[96, 66], [212, 48], [330, 72], [118, 172], [238, 190], [342, 162]];
+    for (let i = 0; i < 6; i++) nodes.push({ x: SP[i][0], y: SP[i][1], t: 'sub', b: 0.1 + i * 0.13, r: 7.5, p: -1 });
+    let bt = 1.0;
+    for (let b2 = 0; b2 < 8; b2++) {
+      const n = 4 + Math.floor(r() * 3);
+      for (let j = 0; j < n; j++) {
+        const pi = Math.floor(r() * 6), pn = nodes[pi];
+        const a = r() * Math.PI * 2, d = 17 + r() * 30;
+        nodes.push({
+          x: Math.min(W - 10, Math.max(10, pn.x + Math.cos(a) * d * 1.5)),
+          y: Math.min(H - 30, Math.max(14, pn.y + Math.sin(a) * d)),
+          t: 'ent', c: ENG_ENT[Math.floor(r() * ENG_ENT.length)], b: bt + r() * 0.2, r: 2.1 + r() * 1.5, p: pi,
+        });
+      }
+      bt += 0.24;
     }
+    for (let s2 = 0; s2 < 4; s2++) {
+      const pi = Math.floor(r() * 6), pn = nodes[pi], a = r() * Math.PI * 2;
+      nodes.push({ x: pn.x + Math.cos(a) * 26, y: Math.min(H - 30, Math.max(14, pn.y + Math.sin(a) * 24)), t: 'sig', b: 3.05 + s2 * 0.14, r: 3.6, p: pi });
+    }
+    const AP = [[34, 42], [388, 50], [34, 200], [388, 196]];
+    const agi = [];
+    for (let a2 = 0; a2 < 4; a2++) { nodes.push({ x: AP[a2][0], y: AP[a2][1], t: 'ag', b: 3.8 + a2 * 0.16, r: 4.6, p: Math.floor(r() * 6) }); agi.push(nodes.length - 1); }
+    for (let w2 = 0; w2 < 10; w2++) {
+      const pi = agi[Math.floor(r() * 4)], pn = nodes[pi], a = r() * Math.PI * 2;
+      nodes.push({ x: Math.min(W - 8, Math.max(8, pn.x + Math.cos(a) * 22)), y: Math.min(H - 30, Math.max(12, pn.y + Math.sin(a) * 20)), t: 'web', b: 4.2 + r() * 1.3, r: 1.7, p: pi });
+    }
+    nodes.push({ x: W / 2, y: H / 2 + 4, t: 'rep', b: 5.85, r: 6.5, p: -1 });
+    const ri = nodes.length - 1;
+    agi.forEach((i2) => nodes.push({ lk: 1, a: i2, b2: ri, b: 5.9 }));
     return nodes;
   }
+  function engHex(x, y, rr) {
+    let pts = '';
+    for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; pts += (x + rr * Math.cos(a)).toFixed(1) + ',' + (y + rr * Math.sin(a)).toFixed(1) + ' '; }
+    return pts;
+  }
   function engDraw(st, ft, inv) {
-    const shown = REDUCED ? st.length : Math.min(st.length, ((ft % 9) * 10));
-    const edge = inv ? 'rgba(21,20,15,.2)' : 'rgba(230,230,226,.14)';
-    let o = '';
-    for (let i = 1; i < shown; i++) {
-      const n = st[i], m = st[n.p];
-      o += `<line x1="${m.x}" y1="${m.y}" x2="${n.x}" y2="${n.y}" stroke="${edge}"/>`;
+    const t = REDUCED ? 6.5 : ft % ENG_L;
+    const fade = (!REDUCED && t > 6.75) ? Math.max(0, 1 - (t - 6.75) / 0.4) : 1;
+    const ECOL = { sub: '#4252BD', sig: '#F0E442', ag: '#818cf8', web: '#64748b', rep: '#f97316' };
+    const edge = inv ? 'rgba(21,20,15,.22)' : 'rgba(230,230,226,.15)';
+    const tickDim = inv ? 'rgba(21,20,15,.42)' : 'rgba(230,230,226,.35)';
+    const tickOff = inv ? 'rgba(21,20,15,.22)' : 'rgba(230,230,226,.16)';
+    let o = '<g opacity="' + fade.toFixed(3) + '">';
+    for (const n of st) {
+      if (n.lk) { if (t >= n.b) { const A = st[n.a], B2 = st[n.b2]; o += '<line x1="' + A.x + '" y1="' + A.y + '" x2="' + B2.x + '" y2="' + B2.y + '" stroke="' + edge + '"/>'; } continue; }
+      if (n.p >= 0 && t >= n.b) { const m = st[n.p]; o += '<line x1="' + m.x + '" y1="' + m.y + '" x2="' + n.x + '" y2="' + n.y + '" stroke="' + edge + '"/>'; }
     }
-    for (let i = 0; i < shown; i++) {
-      const n = st[i], prog = Math.min(1, shown - i);
-      o += `<circle cx="${n.x}" cy="${n.y}" r="${n.r * prog}" fill="${ENG[n.c]}" fill-opacity=".9"/>`;
+    let newest = null;
+    for (const n of st) {
+      if (n.lk || t < n.b) continue;
+      const g = REDUCED ? 1 : Math.min(1, (t - n.b) / 0.25), rr = n.r * (0.4 + 0.6 * g);
+      if (!REDUCED && t - n.b < 0.5 && (!newest || n.b > newest.b)) newest = n;
+      if (n.t === 'sub') o += '<polygon points="' + engHex(n.x, n.y, rr) + '" fill="' + ECOL.sub + '" stroke="rgba(130,140,220,.8)" stroke-width="1"/>';
+      else if (n.t === 'sig') o += '<rect x="' + (n.x - rr * 0.8).toFixed(1) + '" y="' + (n.y - rr * 0.8).toFixed(1) + '" width="' + (rr * 1.6).toFixed(1) + '" height="' + (rr * 1.6).toFixed(1) + '" fill="' + ECOL.sig + '" transform="rotate(45 ' + n.x + ' ' + n.y + ')"/>';
+      else o += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + rr.toFixed(1) + '" fill="' + (n.t === 'ent' ? n.c : ECOL[n.t]) + '" fill-opacity=".92"/>';
     }
-    if (!REDUCED && shown < st.length) {
-      const n = st[Math.floor(shown)];
-      o += `<circle cx="${n.x}" cy="${n.y}" r="8" fill="none" stroke="#3dff88" stroke-opacity=".6"/>`;
+    if (newest) {
+      const ag2 = t - newest.b;
+      o += '<circle cx="' + newest.x + '" cy="' + newest.y + '" r="' + (newest.r + 3 + ag2 * 10).toFixed(1) + '" fill="none" stroke="#3dff88" stroke-opacity="' + ((1 - ag2 / 0.5) * 0.7).toFixed(2) + '"/>';
     }
-    return o;
+    for (const n of st) if (n.t === 'rep' && t >= n.b && t - n.b < 0.9) {
+      o += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + (9 + (t - n.b) * 26).toFixed(1) + '" fill="none" stroke="#f97316" stroke-opacity="' + ((1 - (t - n.b) / 0.9) * 0.5).toFixed(2) + '"/>';
+    }
+    let cur = 0;
+    for (let i = 0; i < ENG_PH.length; i++) if (t >= ENG_PH[i][1]) cur = i;
+    for (let i = 0; i < ENG_PH.length; i++) {
+      const x = 14 + i * 82;
+      const col = i === cur ? '#3dff88' : (i < cur ? tickDim : tickOff);
+      o += '<text x="' + x + '" y="' + (H - 7) + '" font-family="monospace" font-size="6.5" letter-spacing="1.2" fill="' + col + '">' + ENG_PH[i][0] + '</text>';
+      if (i === cur) o += '<rect x="' + x + '" y="' + (H - 4) + '" width="30" height="1.5" fill="#3dff88"/>';
+    }
+    return o + '</g>';
   }
 
   /* ---------- viewer: fast — clustered knowledge graph w/ filter sweep ---------- */

@@ -1,0 +1,574 @@
+---
+/**
+ * Futurity Engine — case-study network (first run).
+ *
+ * INPUT (problem) → VIEW (hero: THE RUN — a compressed Engine run growing a
+ * typed knowledge graph, vanilla canvas, deterministic ~45s loop) →
+ * PROCESS (what / how / role / three decisions) → VIEW (agent_card — a
+ * faithful miniature of the product's live agent transcript card, replayed
+ * from a scripted synthetic run) → OUT (outcome + next).
+ *
+ * Both demos are RECREATIONS: real behavior, portfolio-owned code, synthetic
+ * "solid-state batteries" data. Engine ruling is RECREATED-ONLY — no product
+ * source ships here. No live link by design: the CTA is contact-for-demo.
+ * Prose comes from src/data/content.js — fact-checked, don't embellish.
+ * Fidelity refs: Carlton Portfolio/engine-case-study/07-GROUND_TRUTH.md.
+ */
+import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchField from '../../components/PatchField.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'futurity-engine');
+const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: 'Futurity Engine' },
+    ]),
+  ],
+};
+
+const links: [string, string][] = [
+  ['engTitle', 'engHero'],
+  ['engHero', 'engSect'],
+  ['engSect', 'engWhat'],
+  ['engSect', 'engRole'],
+  ['engWhat', 'engHow'],
+  ['engHow', 'engD1'],
+  ['engD1', 'engD2'],
+  ['engD2', 'engD3'],
+  ['engD3', 'engView'],
+  ['engView', 'engOutcome'],
+  ['engOutcome', 'engOut'],
+];
+
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title .     .     .     .     own   own   own
+      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
+      .     sect  sect  sect  sect  sect  sect  .     .     .     .     .
+      .     what  what  what  what  .     .     role  role  role  role  .
+      .     .     .     how   how   how   how   how   how   .     .     .
+      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
+      .     view  view  view  view  view  view  view  view  view  view  .
+      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+    `,
+  }],
+};
+---
+
+<Base
+  title="Futurity Engine — Watch the Machine Think | Carlton Lindsay"
+  description={project.description}
+  jsonLd={jsonLd}
+>
+  <PatchField id="engNet" links={links} density={0.3} height="4200px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
+    <!-- INPUT -->
+    <Operator id="engTitle" name="input · the_problem" type="txt" area="title" ports="out">
+      <p class="eng-meta">{project.meta}</p>
+      <h1 class="eng-h">Watch the machine <span class="sig">think</span></h1>
+      <p class="eng-sub">// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. MOST UIS SHOW A SPINNER. THIS ONE SHOWS THE REASONING.</p>
+      <a class="eng-live" href="/contact">▸ CONTACT FOR A LIVE DEMO</a>
+    </Operator>
+
+    <!-- OWNERSHIP (git-verified; see engine-case-study/06-ROLE_EVIDENCE.md) -->
+    <Operator id="engOwn" name="ownership_data" type="data" area="own" maxw={280}>
+      <div class="eng-meter">
+        <span>UI CONCEPT</span><div class="bar"><i style="width:100%"></i></div>
+        <span>VISUAL SYSTEM</span><div class="bar"><i style="width:85%"></i></div>
+        <span>INTERACTION DESIGN</span><div class="bar"><i style="width:90%"></i></div>
+        <span>PIPELINE / BACKEND</span><div class="bar"><i style="width:15%"></i></div>
+        <span class="eng-meternote">TEAM BUILD. CONCEPT PROTOTYPE, FRONTEND VISUAL SYSTEM, AND THE STREAMING + LIVENESS DESIGNS ARE MINE — THE PIPELINE IS NOT.</span>
+      </div>
+    </Operator>
+
+    <!-- VIEW: hero — THE RUN, compressed -->
+    <Operator id="engHero" name="futurity_engine_view · THE_RUN" type="view" area="hero" maxw={900}>
+      <div class="eng-viewerwrap">
+        <div class="eng-strip">
+          <span><span class="eng-dot" id="engHeroDot"></span><span id="engHeroPhase">EXTRACTING INTENT…</span></span>
+          <span class="eng-lbl">RECREATION — REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span>
+        </div>
+        <canvas id="engHeroCv" width="880" height="440" aria-label="A compressed Futurity Engine run: subjects arrive as hexagons, evidence clusters around them, agents reach out to the web, a report crystallizes"></canvas>
+        <div class="eng-ticker" id="engHeroTicker">
+          <span data-p="0">INTENT</span><span data-p="1">DB_PULL</span><span data-p="2">SIGNALS</span><span data-p="3">AGENTS</span><span data-p="4">SYNTHESIS</span>
+        </div>
+      </div>
+    </Operator>
+
+    <Operator id="engSect" name="process · the_build" type="txt" area="sect">
+      <p class="eng-meta">PROCESS · WHAT IT IS / HOW IT WORKS / THREE DECISIONS</p>
+      <h2 class="eng-h2">Reasoning you can <span class="sig">navigate</span></h2>
+      <p class="eng-sub">What the Engine does, where I fit, and the three interaction decisions that make a long-running AI legible. Then one of its agents, thinking, below.</p>
+    </Operator>
+
+    <Operator id="engWhat" name="txt · what_it_is" type="txt" area="what">
+      {cs['What it is'].map((p) => <p class="eng-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="engRole" name="txt · my_role" type="txt" area="role" nudge="0 48">
+      {cs['My role'].map((p) => <p class="eng-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="engHow" name="process · how_it_works" type="txt" area="how" maxw={600}>
+      {cs['How it works'].map((p) => <p class="eng-p">{p}</p>)}
+    </Operator>
+
+    <!-- PROCESS: the three design decisions -->
+    <Operator id="engD1" name="decision_01 · graph_not_log" type="txt" area="d1">
+      <div class="eng-dec">
+        <span class="eng-dnum" aria-hidden="true">01</span>
+        <h3 class="eng-dh">A graph, not a log</h3>
+        <p class="eng-p">Every entity the pipeline touches becomes a typed node — subjects are hexagons, signals are diamonds — and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
+      </div>
+    </Operator>
+
+    <Operator id="engD2" name="decision_02 · incremental" type="txt" area="d2" nudge="0 40">
+      <div class="eng-dec">
+        <span class="eng-dnum" aria-hidden="true">02</span>
+        <h3 class="eng-dh">Incremental everything</h3>
+        <p class="eng-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. The heavy map is lazy-loaded on saved reports — the report stays responsive without it.</p>
+      </div>
+    </Operator>
+
+    <Operator id="engD3" name="decision_03 · honest_liveness" type="txt" area="d3" nudge="0 80">
+      <div class="eng-dec">
+        <span class="eng-dnum" aria-hidden="true">03</span>
+        <h3 class="eng-dh">Honest liveness</h3>
+        <p class="eng-p">Some steps run ten minutes without an event. The status system tells the truth in three states — events flowing, quiet-but-alive, actually stalled — with a heartbeat contract I specified for the backend before it existed.</p>
+      </div>
+    </Operator>
+
+    <!-- VIEW: one agent, thinking — miniature of the live transcript card -->
+    <Operator id="engView" name="futurity_engine_view · agent_card" type="view" area="view" maxw={760}>
+      <div class="eng-viewerwrap eng-agentwrap">
+        <div class="eng-statusline">
+          <span class="eng-dot" id="engAgDot"></span>
+          <span class="eng-slmain"><b id="engAgPhase">Agents Researching</b> — <span id="engAgMsg">Running agent 1/10: scientific_rd</span></span>
+          <span class="eng-slright"><span id="engAgElapsed">0:00</span> elapsed · <span id="engAgQuiet">quiet 0s</span> · ♥ <span id="engAgHb">2s</span></span>
+        </div>
+        <div class="eng-agent" id="engAgCard">
+          <div class="eng-ahead">
+            <span class="eng-badge running" id="engAgBadge">RUNNING</span>
+            <span class="eng-aname">Scientific R&amp;D</span>
+            <span class="eng-ameta"><span id="engAgIter">iter 1/3 · research</span> · <span id="engAgTools">0 tools</span></span>
+          </div>
+          <div class="eng-abody" id="engAgBody"></div>
+        </div>
+        <div class="eng-lbl eng-lbl-under">RECREATION — REAL BEHAVIOR, PORTFOLIO-OWNED CODE · SYNTHETIC RUN: SOLID-STATE BATTERIES</div>
+      </div>
+    </Operator>
+
+    <!-- OUT -->
+    <Operator id="engOutcome" name="out · outcome" type="txt" area="outc" ports="in">
+      {cs['Outcome'].map((p) => <p class="eng-p">{p}</p>)}
+      <p class="eng-p">The Engine is client-facing software, so there’s no public instance to poke at — but I’m happy to walk through the real thing.</p>
+      <a class="eng-live" href="/contact">▸ CONTACT FOR A LIVE DEMO</a>
+    </Operator>
+
+    <Operator id="engOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
+      <p class="eng-out">
+        TRUST IS EARNED IN THE TRANSCRIPT.<br /><br />
+        <a href="/projects/fast">NEXT ▸ fast</a><br />
+        <span class="eng-outsub">the knowledge network it thinks with</span>
+      </p>
+    </Operator>
+  </PatchField>
+</Base>
+
+<script is:inline data-astro-rerun>
+/* THE_RUN hero — deterministic compressed Engine run. Vanilla canvas, seeded,
+   ~45s loop, reduced-motion → settled poster. Recreation; no product code. */
+(() => {
+  const cv = document.getElementById('engHeroCv');
+  if (!cv || cv.dataset.booted) return;
+  cv.dataset.booted = '1';
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const C = { sub: '#4252BD', sig: '#F0E442', ag: '#818cf8', web: '#64748b', rep: '#f97316', pulse: '#3dff88' };
+  const ENT = ['#20C6DB', '#20C6DB', '#20C6DB', '#C3DE6D', '#C3DE6D', '#E07B91', '#E69500', '#46ACC8'];
+  const SEED = 1337;
+  let s = SEED;
+  const rnd = () => (s = (s + 0x6D2B79F5) | 0, ((Math.imul(s ^ (s >>> 15), 1 | s) + 0x6D2B79F5) >>> 0) / 4294967296);
+
+  const EV = [];
+  let t = 400;
+  for (let i = 0; i < 6; i++) { EV.push({ t, k: 'subject', i }); t += 550; }
+  const PULL_T0 = t;
+  for (let b = 0; b < 10; b++) {
+    const n = 4 + Math.floor(rnd() * 5);
+    for (let j = 0; j < n; j++) EV.push({ t: t + rnd() * 140, k: 'entity' });
+    t += 700;
+  }
+  const SIG_T0 = t;
+  for (let i = 0; i < 4; i++) { EV.push({ t, k: 'signal' }); t += 500; }
+  const AG_T0 = t;
+  for (let a = 0; a < 5; a++) EV.push({ t: t + a * 800, k: 'agent', a });
+  for (let w = 0; w < 26; w++) EV.push({ t: AG_T0 + 1200 + rnd() * 16000, k: 'web' });
+  t = AG_T0 + 18500;
+  const SYN_T0 = t;
+  EV.push({ t: t + 900, k: 'report' });
+  const LOOP = t + 4200;
+  EV.sort((a, b) => a.t - b.t);
+  const PHASES = [
+    [0, 'EXTRACTING INTENT…'], [PULL_T0, 'PULLING EVIDENCE — PAPERS · PATENTS · ORGS'],
+    [SIG_T0, 'COMPUTING SIGNALS'], [AG_T0, 'AGENTS RESEARCHING ↔ CRITIQUING'], [SYN_T0, 'SYNTHESIZING REPORT'],
+  ];
+
+  const SUBJ_POS = [[.22, .3], [.5, .22], [.78, .3], [.25, .7], [.55, .75], [.8, .68]];
+  const AGENT_POS = [[.12, .5], [.38, .12], [.65, .1], [.92, .5], [.5, .92]];
+  let nodes, edges, elapsed, subjNodes, agentNodes, reportNode;
+
+  function reset() {
+    s = SEED; nodes = []; edges = []; elapsed = 0;
+    subjNodes = []; agentNodes = []; reportNode = null;
+    for (const e of EV) e.done = false;
+  }
+  function addNode(type, px, py, r, anchor) {
+    const n = { type, x: px + (rnd() - .5) * 30, y: py + (rnd() - .5) * 30, vx: 0, vy: 0, r, anchor, born: elapsed };
+    if (type === 'entity') n.c = ENT[Math.floor(rnd() * ENT.length)];
+    nodes.push(n); return n;
+  }
+  function link(a, b) { edges.push({ a, b, born: elapsed }); }
+  function fire(e) {
+    if (e.k === 'subject') { const p = SUBJ_POS[e.i]; subjNodes[e.i] = addNode('subject', p[0] * W, p[1] * H, 9, true); }
+    else if (e.k === 'entity') { const sn = subjNodes[Math.floor(rnd() * subjNodes.length)]; if (!sn) return; const n = addNode('entity', sn.x, sn.y, 3.2); link(n, sn); }
+    else if (e.k === 'signal') { const sn = subjNodes[Math.floor(rnd() * subjNodes.length)]; if (!sn) return; const n = addNode('signal', sn.x, sn.y, 5); n.diamond = true; link(n, sn); }
+    else if (e.k === 'agent') { const p = AGENT_POS[e.a]; agentNodes[e.a] = addNode('agent', p[0] * W, p[1] * H, 7, true); subjNodes.forEach((sn) => { if (rnd() < .4) link(agentNodes[e.a], sn); }); }
+    else if (e.k === 'web') { const an = agentNodes[Math.floor(rnd() * agentNodes.length)]; if (!an) return; const n = addNode('web', an.x, an.y, 2.6); link(n, an); }
+    else if (e.k === 'report') { reportNode = addNode('report', W / 2, H / 2, 11, true); agentNodes.forEach((an) => an && link(an, reportNode)); subjNodes.forEach((sn) => { if (rnd() < .5) link(sn, reportNode); }); }
+  }
+  function step(dt) {
+    for (const e of edges) {
+      const a = e.a, b = e.b; let dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 1;
+      const want = (a.anchor || b.anchor) ? 46 : 30, f = (d - want) * 0.004;
+      dx /= d; dy /= d;
+      if (!a.anchor) { a.vx += dx * f * d * dt; a.vy += dy * f * d * dt; }
+      if (!b.anchor) { b.vx -= dx * f * d * dt; b.vy -= dy * f * d * dt; }
+    }
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j]; let dx = b.x - a.x, dy = b.y - a.y; const d2 = dx * dx + dy * dy;
+      if (d2 > 2600 || d2 === 0) continue;
+      const d = Math.sqrt(d2), f = (2600 - d2) / 2600 * 0.9 * dt; dx /= d; dy /= d;
+      if (!a.anchor) { a.vx -= dx * f; a.vy -= dy * f; }
+      if (!b.anchor) { b.vx += dx * f; b.vy += dy * f; }
+    }
+    for (const n of nodes) {
+      if (n.anchor) continue;
+      n.vx *= .86; n.vy *= .86; n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(8, Math.min(W - 8, n.x)); n.y = Math.max(8, Math.min(H - 8, n.y));
+    }
+  }
+  function hexPath(x, y, r) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; const px = x + r * Math.cos(a), py = y + r * Math.sin(a); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+    ctx.closePath();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineWidth = 1;
+    for (const e of edges) {
+      const age = elapsed - e.born, al = Math.min(1, age / 400) * .28;
+      ctx.strokeStyle = `rgba(120,130,150,${al})`;
+      ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
+    }
+    for (const n of nodes) {
+      const age = elapsed - n.born, g = Math.min(1, age / 300), r = n.r * (0.4 + 0.6 * g);
+      ctx.fillStyle = n.type === 'entity' ? n.c : (C[{ subject: 'sub', signal: 'sig', agent: 'ag', web: 'web', report: 'rep' }[n.type]] || '#888');
+      if (n.type === 'subject') { hexPath(n.x, n.y, r); ctx.fill(); }
+      else if (n.diamond) { ctx.save(); ctx.translate(n.x, n.y); ctx.rotate(Math.PI / 4); ctx.fillRect(-r * .8, -r * .8, r * 1.6, r * 1.6); ctx.restore(); }
+      else { ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 7); ctx.fill(); }
+      if (age < 500) { ctx.strokeStyle = `rgba(61,255,136,${(1 - age / 500) * .8})`; ctx.beginPath(); ctx.arc(n.x, n.y, r + 3 + age / 60, 0, 7); ctx.stroke(); }
+    }
+    if (reportNode) {
+      const age = elapsed - reportNode.born;
+      if (age < 2000) { ctx.strokeStyle = `rgba(249,115,22,${.5 * (1 - age / 2000)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(reportNode.x, reportNode.y, 12 + age / 40, 0, 7); ctx.stroke(); ctx.lineWidth = 1; }
+    }
+  }
+  const phEls = Array.prototype.slice.call(document.querySelectorAll('#engHeroTicker span'));
+  const msgEl = document.getElementById('engHeroPhase');
+  function tickUI() {
+    let cur = 0;
+    for (let i = 0; i < PHASES.length; i++) if (elapsed >= PHASES[i][0]) cur = i;
+    phEls.forEach((el, i) => { el.classList.toggle('on', i === cur); el.classList.toggle('done', i < cur); });
+    if (msgEl) msgEl.textContent = PHASES[cur][1];
+  }
+  reset();
+  if (REDUCED) {
+    elapsed = LOOP - 1;
+    for (const e of EV) { e.done = true; fire(e); }
+    for (let i = 0; i < 400; i++) step(0.5);
+    draw(); tickUI();
+    return;
+  }
+  let last = performance.now();
+  (function frame(now) {
+    if (!cv.isConnected) return;
+    const dt = Math.min(.05, (now - last) / 1000);
+    elapsed += now - last; last = now;
+    for (const e of EV) if (!e.done && e.t <= elapsed) { e.done = true; fire(e); }
+    step(dt * 60); draw(); tickUI();
+    if (elapsed > LOOP) { reset(); last = performance.now(); }
+    requestAnimationFrame(frame);
+  })(last);
+})();
+</script>
+
+<script is:inline data-astro-rerun>
+/* agent_card — miniature of the Engine's live agent transcript card.
+   Scripted replay, ~19s loop; reduced-motion → full transcript, static. */
+(() => {
+  const body = document.getElementById('engAgBody');
+  if (!body || body.dataset.booted) return;
+  body.dataset.booted = '1';
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (id) => document.getElementById(id);
+  const badge = $('engAgBadge'), card = $('engAgCard'), iterlbl = $('engAgIter'),
+        toolct = $('engAgTools'), pmsg = $('engAgMsg');
+
+  const S = [
+    { t: 300, k: 'chip', text: 'ITER 1 · RESEARCH' },
+    { t: 900, k: 'call', tool: 'web_search', args: '{"query": "\\"solid-state battery\\" \\"TRL\\" EV mass market displacement lithium-ion"}' },
+    { t: 2600, k: 'result', tool: 'web_search', text: '"results": [{"title": "Solid-State Batteries: The Technology of the 2030s but the Research…"}, {"title": "The race to 500 Wh/kg"}, …] · 8 results' },
+    { t: 3400, k: 'call', tool: 'query_knowledgebase', args: '{"query": "solid electrolyte interface stability lithium metal anode"}' },
+    { t: 5200, k: 'result', tool: 'query_knowledgebase', text: '[{"type": "signal", "label": "research_velocity: anode", "content_preview": "accelerating (74 recent vs 22 prior 5yr)"}, {"type": "paper", …}] · 6 nodes' },
+    { t: 6000, k: 'call', tool: 'web_fetch', args: '{"url": "https://…/solid-state-roadmap"}' },
+    { t: 8200, k: 'result', tool: 'web_fetch', text: '# Solid-State Battery Roadmap — pilot lines 2026-27, automotive qualification 2028-30, cost parity contingent on sulfide electrolyte scale-up…' },
+    { t: 9200, k: 'iterdone', text: '✓ — Solid-state cells are approaching automotive qualification, but manufacturing scale-up — not cell chemistry — is the binding constraint through 2030.' },
+    { t: 10400, k: 'chip', crit: true, text: 'ITER 2 · CRITIQUE', iter: 'iter 2/3 · critique' },
+    { t: 11200, k: 'call', tool: 'web_search', args: '{"query": "solid-state battery hype counterevidence delays"}' },
+    { t: 13200, k: 'result', tool: 'web_search', text: '"results": [{"title": "Why solid-state timelines keep slipping"}, {"title": "Semi-solid interim chemistries win 2025 design-ins"}, …] · 7 results' },
+    { t: 14600, k: 'iterdone', text: '✓ critique — Vendor roadmap timelines are systematically optimistic; displacement window adjusted to 2030-2034, semi-solid interim chemistries flagged as the near-term winner.' },
+    { t: 16000, k: 'complete' },
+  ];
+  const LOOP = 19000;
+  let start = null, timers = [], tools = 0, pendingEl = null, hbT = 0;
+
+  function el(html, cls) {
+    const d = document.createElement('div');
+    d.className = cls || 'eng-msg';
+    d.innerHTML = html;
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+    return d;
+  }
+  function fire(e) {
+    if (e.k === 'chip') { el(e.text, 'eng-iterchip' + (e.crit ? ' crit' : '')); if (e.iter) iterlbl.textContent = e.iter; }
+    else if (e.k === 'call') { tools++; toolct.textContent = tools + ' tools'; pendingEl = el('<div class="tl">→ ' + e.tool + '</div><pre>' + e.args + '</pre>'); pendingEl.classList.add('pending'); }
+    else if (e.k === 'result') { if (pendingEl) pendingEl.classList.remove('pending'); el('<div class="tl res">← ' + e.tool + '</div><pre>' + e.text + '</pre>'); }
+    else if (e.k === 'iterdone') { el('<b>ITERATION SUMMARY</b><br>' + e.text, 'eng-summary'); }
+    else if (e.k === 'complete') { badge.textContent = 'COMPLETE'; badge.className = 'eng-badge complete'; card.classList.add('done'); pmsg.textContent = 'Running agent 2/10: market_strategy'; }
+  }
+  function reset() {
+    body.innerHTML = ''; tools = 0; toolct.textContent = '0 tools';
+    iterlbl.textContent = 'iter 1/3 · research';
+    badge.textContent = 'RUNNING'; badge.className = 'eng-badge running';
+    card.classList.remove('done');
+    pmsg.textContent = 'Running agent 1/10: scientific_rd';
+    start = performance.now();
+    S.forEach((e) => timers.push(setTimeout(() => fire(e), e.t)));
+    timers.push(setTimeout(() => { timers.forEach(clearTimeout); timers = []; if (body.isConnected) reset(); }, LOOP));
+  }
+  const ticker = setInterval(() => {
+    if (!body.isConnected) { clearInterval(ticker); timers.forEach(clearTimeout); timers = []; return; }
+    if (!start) return;
+    const sNow = Math.floor((performance.now() - start) / 1000);
+    $('engAgElapsed').textContent = Math.floor(sNow / 60) + ':' + String(sNow % 60).padStart(2, '0');
+    const now = performance.now() - start;
+    let lastT = 0;
+    for (const e of S) if (e.t <= now) lastT = e.t;
+    const q = Math.max(0, Math.floor((now - lastT) / 1000));
+    const qel = $('engAgQuiet');
+    qel.textContent = 'quiet ' + q + 's';
+    qel.classList.toggle('warm', q >= 3);
+    hbT = (hbT + 1) % 9;
+    $('engAgHb').textContent = (hbT + 1) + 's';
+  }, 1000);
+  if (REDUCED) { start = performance.now(); S.forEach(fire); }
+  else reset();
+})();
+</script>
+
+<style>
+  /* ---- shared case-study grammar (matches futurescaper.astro) ---- */
+  .eng-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .eng-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(24px, 2.8vw, 38px);
+    line-height: 0.98;
+    max-width: 14ch;
+  }
+  .eng-h .sig, .eng-h2 .sig { color: var(--signal); }
+  .eng-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.7;
+    max-width: 42ch;
+  }
+  .eng-h2 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(18px, 2vw, 26px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .eng-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
+  .eng-p:last-child { margin-bottom: 0; }
+  .eng-live {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: border-color var(--duration-normal), background var(--duration-normal);
+  }
+  .eng-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+
+  .eng-dec { position: relative; padding-top: 4px; }
+  .eng-dnum {
+    position: absolute; top: -6px; right: -2px;
+    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
+    pointer-events: none; user-select: none;
+  }
+  .eng-dh {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    padding-right: 52px;
+  }
+  .eng-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
+  .eng-meter .bar {
+    height: 6px;
+    background: var(--bg-surface);
+    border: 1px solid #26262a;
+    margin: 4px 0 8px;
+    position: relative;
+  }
+  .eng-meter .bar i {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px);
+  }
+  .eng-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
+  .eng-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+  .eng-out a { color: var(--signal); text-decoration: none; }
+  .eng-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .eng-outsub { color: var(--text-dim); }
+
+  /* ---- viewer interiors: the Engine's own visual language, scoped ---- */
+  .eng-viewerwrap { margin: -12px -14px; background: #111111; }
+  .eng-strip {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 6px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em;
+    color: #9ca3ab;
+  }
+  .eng-lbl { font-size: 8.5px; color: #7d858c; letter-spacing: 0.08em; }
+  .eng-lbl-under { display: block; text-align: right; padding: 8px 12px 10px; }
+  .eng-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: #3dff88; margin-right: 7px; vertical-align: 1px;
+    animation: engpulse 1.5s infinite;
+  }
+  #engHeroCv { display: block; width: 100%; height: auto; background: #111111; }
+  .eng-ticker {
+    display: flex; border-top: 1px solid #2a2a2a;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
+  }
+  .eng-ticker span {
+    flex: 1; padding: 6px 8px; text-align: center; color: #9ca3ab;
+    border-right: 1px solid #2a2a2a; position: relative; transition: color 0.3s;
+  }
+  .eng-ticker span:last-child { border-right: none; }
+  .eng-ticker span.on { color: #3dff88; }
+  .eng-ticker span.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #3dff88; }
+  .eng-ticker span.done { color: #5a5a5a; }
+  @keyframes engpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* agent card (product replica, scoped: sans prose / mono data) */
+  .eng-agentwrap { padding: 14px; }
+  .eng-statusline {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 10px; color: #9ca3ab;
+    border: 1px solid #2a2a2a; background: #161616; border-radius: 6px;
+    padding: 8px 12px; margin-bottom: 10px;
+  }
+  .eng-statusline b { color: #fff; font-weight: 500; }
+  .eng-slmain { min-width: 0; }
+  .eng-slright { margin-left: auto; white-space: nowrap; }
+  #engAgQuiet.warm { color: #f2cd5d; }
+  .eng-agent { border: 1px solid #46acc8; border-radius: 8px; background: #1a1a1a; overflow: hidden; transition: border-color 0.4s; }
+  .eng-agent.done { border-color: #333; }
+  .eng-ahead { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #2a2a2a; }
+  .eng-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px; }
+  .eng-badge.running { color: #46acc8; background: rgba(70, 172, 200, 0.12); animation: engpulse 1.5s infinite; }
+  .eng-badge.complete { color: #5eff8f; background: rgba(94, 255, 143, 0.1); }
+  .eng-aname { font-weight: 600; font-size: 14px; color: #fff; }
+  .eng-ameta { font-family: var(--font-mono); font-size: 10px; color: #7d858c; margin-left: auto; }
+  .eng-abody {
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+    height: 300px; overflow-y: auto; scrollbar-width: thin;
+  }
+  .eng-abody :global(.eng-iterchip) {
+    align-self: flex-start; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
+    color: #46acc8; border: 1px solid #46acc8; border-radius: 4px; padding: 2px 8px;
+  }
+  .eng-abody :global(.eng-iterchip.crit) { color: #f2cd5d; border-color: #f2cd5d; }
+  .eng-abody :global(.eng-msg) {
+    font-family: var(--font-mono); font-size: 10px; line-height: 1.6;
+    border: 1px solid #2a2a2a; border-radius: 6px; padding: 8px 10px; background: #161616;
+    opacity: 0; transform: translateY(6px); animation: engin 0.3s forwards;
+  }
+  .eng-abody :global(.eng-msg .tl) { color: #8285ff; margin-bottom: 2px; }
+  .eng-abody :global(.eng-msg .tl.res) { color: #7d858c; }
+  .eng-abody :global(.eng-msg pre) { margin: 0; white-space: pre-wrap; word-break: break-word; color: #9ca3ab; font: inherit; }
+  .eng-abody :global(.eng-msg.pending .tl::after) { content: ' ⋯'; animation: engpulse 1s infinite; }
+  .eng-abody :global(.eng-summary) {
+    font-size: 11.5px; line-height: 1.55; color: #d0d4d8;
+    border: 1px solid rgba(94, 255, 143, 0.35); border-radius: 6px; padding: 9px 11px;
+    background: rgba(94, 255, 143, 0.05);
+    opacity: 0; animation: engin 0.4s forwards;
+  }
+  .eng-abody :global(.eng-summary b) { color: #5eff8f; font-family: var(--font-mono); font-size: 10px; }
+  @keyframes engin { to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eng-dot, .eng-badge.running { animation: none; }
+    .eng-abody :global(.eng-msg), .eng-abody :global(.eng-summary) { animation: none; opacity: 1; transform: none; }
+  }
+</style>

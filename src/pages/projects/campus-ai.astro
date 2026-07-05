@@ -1,0 +1,301 @@
+---
+/**
+ * Campus AI — under-construction state (patch document).
+ *
+ * The full research write-up is being rebuilt as a proper network page.
+ * Until then: the brief, the facts, and a SYS operator that cooks the
+ * case study into focus with a Bayer-dither reveal (TouchDesigner
+ * grammar: the page is literally still cooking). Cursor heat resolves
+ * the image locally; the COOK slider drives the threshold by hand.
+ * Reduced motion → fully cooked static frame.
+ */
+import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchDoc from '../../components/PatchDoc.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'campus-ai');
+const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: 'Campus AI — Learning Research' },
+    ]),
+  ],
+};
+---
+
+<Base
+  title="Campus AI — Learning Research | Carlton Lindsay"
+  description={project.description}
+  jsonLd={jsonLd}
+>
+  <PatchDoc meta="2024">
+    <Operator id="caBrief" name="input · the_brief" type="txt" ports="none">
+      <p class="cs-meta">{project.meta}</p>
+      <h1 class="cs-h">Campus AI</h1>
+      <p class="cs-desc">{project.description}</p>
+      <div class="cs-tags">
+        {project.tags.map((tag) => <span class="cs-chip">{tag}</span>)}
+      </div>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="caFacts" name="facts_data" type="data" ports="none">
+      <dl class="cs-facts">
+        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
+        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
+        <div><dt>METHOD</dt><dd>{project.facts.stack}</dd></div>
+        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
+      </dl>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="caCook" name="under_construction · dither_cook" type="sys" ports="none">
+      <div class="ca-cookwrap">
+        <canvas id="caCv" width="840" height="480" aria-label="Case study cooking into focus through a dither pattern — move the cursor over it to resolve it locally"></canvas>
+        <div class="ca-cookbar">
+          <span class="ca-cooklab">COOK</span>
+          <input type="range" class="prange ca-range" id="caCook" min="0" max="100" value="0" aria-label="Manually cook the preview into focus" />
+          <span class="ca-cookpct" id="caPct">0%</span>
+        </div>
+        <p class="ca-cooknote">// FULL CASE STUDY UNDER CONSTRUCTION — THE NETWORK PAGE IS STILL COOKING. CURSOR HEAT RESOLVES IT EARLY.</p>
+      </div>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="caWhat" name="txt_01 · what_this_is" type="txt" ports="none">
+      <h2 class="cs-h2">What this is</h2>
+      {cs['The question'].map((p) => <p class="cs-p">{p}</p>)}
+      <p class="cs-p">
+        The headline finding: career shifters don’t job hunt — they stumble into
+        paths through people, validate them through proxy communities, and trust
+        outputs over certificates. The full write-up (method, coded themes, and
+        the strategic recommendations that came out of it) lands here as a proper
+        network page.
+      </p>
+      <a class="ca-req" href="/contact">▸ WANT THE FINDINGS EARLY? CONTACT ME</a>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
+    <Operator id="caOut" name="out · next_network" type="data" ports="none">
+      <a class="cs-next" href="/projects/futurescaper">
+        NEXT ▸ futurescaper
+        <span class="cs-nextsub">a metro map for possible futures</span>
+      </a>
+    </Operator>
+  </PatchDoc>
+</Base>
+
+<script is:inline data-astro-rerun>
+/* dither_cook — the case study resolving through a Bayer threshold.
+   Offscreen scene (thematic-coding rows + type) sampled at cell resolution,
+   revealed by cook level + cursor heat. Deterministic; reduced-motion →
+   fully cooked. No product data — this is the site's own dither grammar. */
+(() => {
+  const cv = document.getElementById('caCv');
+  if (!cv || cv.dataset.booted) return;
+  cv.dataset.booted = '1';
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CW = 210, CH = 120, CELL = 4;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  /* target scene at cell resolution */
+  const off = document.createElement('canvas');
+  off.width = CW; off.height = CH;
+  const oc = off.getContext('2d');
+  const THEME = ['#CC79A7', '#56B4E9', '#E69F00', '#009E73'];
+  let seed = 2024;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  oc.fillStyle = '#15140F'; oc.fillRect(0, 0, CW, CH);
+  for (let row = 0; row < 7; row++) {
+    let x = 8;
+    while (x < CW - 10) {
+      const w = 7 + rnd() * 17;
+      const hl = rnd() < 0.24 ? THEME[Math.floor(rnd() * 4)] : '#3a382f';
+      oc.fillStyle = hl;
+      oc.fillRect(x, 14 + row * 9, w, 4);
+      x += w + 4;
+    }
+  }
+  oc.fillStyle = '#e6e6e2';
+  oc.font = '900 16px monospace';
+  oc.fillText('CAMPUS_AI', 8, 96);
+  oc.fillStyle = '#3dff88';
+  oc.font = '700 7px monospace';
+  oc.fillText('CASE_STUDY // UNDER CONSTRUCTION', 8, 108);
+  oc.fillText('42 SURVEYS · 8 INTERVIEWS · 4 COUNTRIES', 8, 117);
+  const scene = oc.getImageData(0, 0, CW, CH);
+
+  const B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  const out = ctx.createImageData(CW, CH);
+  const heat = new Float32Array(CW * CH);
+  const slider = document.getElementById('caCook');
+  const pct = document.getElementById('caPct');
+
+  let t0 = performance.now(), manualUntil = 0, manualV = 0;
+  function cookLevel(now) {
+    if (now < manualUntil) return manualV;
+    /* auto: cook up → hold → fall back to a simmer → up again (12s loop) */
+    const t = ((now - t0) / 1000) % 12;
+    if (t < 4.2) return t / 4.2;
+    if (t < 6.4) return 1;
+    if (t < 8.4) return 1 - (t - 6.4) / 2 * 0.75;
+    return 0.25 + (t - 8.4) / 3.6 * 0.75;
+  }
+  slider.addEventListener('input', () => {
+    manualV = slider.value / 100;
+    manualUntil = performance.now() + 4000;
+    slider.style.setProperty('--p', slider.value + '%');
+  });
+  cv.addEventListener('pointermove', (e) => {
+    const r = cv.getBoundingClientRect();
+    const mx = (e.clientX - r.left) / r.width * CW, my = (e.clientY - r.top) / r.height * CH;
+    for (let dy = -9; dy <= 9; dy++) for (let dx = -9; dx <= 9; dx++) {
+      const x = Math.round(mx + dx), y = Math.round(my + dy);
+      if (x < 0 || y < 0 || x >= CW || y >= CH) continue;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 81) heat[y * CW + x] = Math.min(1, heat[y * CW + x] + 0.09 * (1 - d2 / 81));
+    }
+  }, { passive: true });
+
+  function render(p) {
+    const sd = scene.data, od = out.data;
+    for (let y = 0; y < CH; y++) {
+      for (let x = 0; x < CW; x++) {
+        const i = (y * CW + x), i4 = i * 4;
+        const local = Math.min(1, p + heat[i]);
+        const th = (B4[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+        const on = local > th;
+        if (on) { od[i4] = sd[i4]; od[i4 + 1] = sd[i4 + 1]; od[i4 + 2] = sd[i4 + 2]; }
+        else { od[i4] = 21; od[i4 + 1] = 20; od[i4 + 2] = 15; }
+        od[i4 + 3] = 255;
+        if (!REDUCED) heat[i] *= 0.985;
+      }
+    }
+    /* blit cell-res → display-res, crisp */
+    const tmp = document.createElement('canvas');
+    tmp.width = CW; tmp.height = CH;
+    tmp.getContext('2d').putImageData(out, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(tmp, 0, 0, CW, CH, 0, 0, CW * CELL, CH * CELL);
+  }
+
+  if (REDUCED) {
+    render(1);
+    if (pct) pct.textContent = '100%';
+    slider.value = 100;
+    slider.style.setProperty('--p', '100%');
+    return;
+  }
+  let fc = 0;
+  (function frame(now) {
+    if (!cv.isConnected) return;
+    if ((fc++ & 1) === 0) {
+      const p = cookLevel(now);
+      render(p);
+      if (pct) pct.textContent = Math.round(p * 100) + '%';
+      if (now >= manualUntil) {
+        slider.value = Math.round(p * 100);
+        slider.style.setProperty('--p', slider.value + '%');
+      }
+    }
+    requestAnimationFrame(frame);
+  })(performance.now());
+})();
+</script>
+
+<style>
+  .cs-meta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .cs-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 0.98;
+    margin-bottom: 12px;
+  }
+  .cs-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
+  .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cs-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .cs-facts dd { font-size: 12.5px; color: var(--text); }
+  @media (max-width: 560px) { .cs-facts { grid-template-columns: 1fr; } }
+  .cs-h2 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 10px;
+  }
+  .cs-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+  .cs-p:last-child { margin-bottom: 0; }
+  .cs-next {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    text-decoration: none;
+  }
+  .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ---- dither cook ---- */
+  .ca-cookwrap { font-family: var(--font-mono); }
+  #caCv {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    image-rendering: pixelated;
+    cursor: crosshair;
+  }
+  .ca-cookbar { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .ca-cooklab { font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-muted); }
+  .ca-range { flex: 1; }
+  .ca-cookpct { font-size: 9.5px; color: var(--signal); min-width: 4ch; text-align: right; }
+  .ca-cooknote { font-size: 9.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 8px; line-height: 1.6; }
+  .ca-req {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: border-color var(--duration-normal), background var(--duration-normal);
+  }
+  .ca-req:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+</style>

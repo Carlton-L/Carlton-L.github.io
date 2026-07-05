@@ -104,6 +104,7 @@ export const projects = [
     accent: 'accent-1',
     tags: ['React', 'SSE Streaming', 'Multi-Agent AI', 'WebGL Graphs', 'FastAPI'],
     featured: true,
+    hasCustomPage: true,
     facts: {
       role: 'UI Concept Prototype, Frontend, Backend Contributions',
       year: '2026',
@@ -115,6 +116,13 @@ export const projects = [
         heading: 'What it is',
         body: [
           'The Futurity Engine is a multi-agent research and prediction platform. A user poses a research question; a five-phase pipeline of AI agent personas plans, gathers, analyzes, and reports — pulling in papers, patents, and web signals. Every step of that reasoning streams to the browser over Server-Sent Events and lands in a live knowledge graph with 25+ semantic node types, so the system’s thinking is visible while it happens.',
+        ],
+      },
+      {
+        heading: 'How it works',
+        body: [
+          'A run moves through five phases. The Engine reads the question — or takes a lab, a curated taxonomy of subjects from FAST — and pulls connected evidence from Futurity’s knowledge network: papers, patents, organizations, press, books, investment data. It computes analytical signals over that evidence — research velocity, patent concentration, citation momentum, whitespace analysis — each one traceable to the exact papers behind it. Then ten domain-expert agents research the question and critique their own findings before a synthesis pass turns it all into a structured report with scenarios, confidence scores, and receipts.',
+          'Runs are long — minutes to hours, depending on the lab — so the system is built to be honest about time: every phase checkpoints, interrupted runs resume without re-running finished agents, and the interface distinguishes “working quietly” from “actually stalled.”',
         ],
       },
       {

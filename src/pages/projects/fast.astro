@@ -54,6 +54,26 @@ const jsonLd = {
 
     <div class="oplink" aria-hidden="true"></div>
 
+    <!-- ACCESS GATE: FAST is client-facing software — there is no public
+         build and no password. The gate is honest theater: any attempt
+         routes to a request-a-walkthrough CTA. Sections below blur while
+         body.fast-locked is set (JS-on only; no-JS visitors read freely,
+         which also keeps the content indexable). -->
+    <Operator id="fastGate" name="access_ctl · fast_network" type="sys" ports="none">
+      <div class="fg" id="fgRoot">
+        <p class="fg-line">// RESTRICTED NETWORK · CLIENT-FACING SOFTWARE</p>
+        <form class="fg-row" id="fgForm" autocomplete="off">
+          <label class="fg-lab" for="fgPass">PASSKEY</label>
+          <input class="fg-in" id="fgPass" type="password" placeholder="••••••••" aria-describedby="fgMsg" />
+          <button class="chipbtn fg-btn" type="submit">AUTH</button>
+        </form>
+        <p class="fg-msg" id="fgMsg" role="status">FULL CASE STUDY IS GATED. DEMOS HAPPEN LIVE.</p>
+        <a class="fg-req" href="/contact">▸ REQUEST A LIVE DEMO / INTERVIEW WALKTHROUGH</a>
+      </div>
+    </Operator>
+
+    <div class="oplink" aria-hidden="true"></div>
+
     <Operator id="fastChallenge" name="txt_01 · the_challenge" type="txt" ports="none">
       <h2 class="cs-h2">The Challenge</h2>
       <p class="cs-p">
@@ -141,6 +161,53 @@ const jsonLd = {
   </PatchDoc>
 </Base>
 
+<script is:inline data-astro-rerun>
+/* FAST access gate — no password exists; every attempt converts to the
+   contact CTA. Lock only applies with JS (no-JS readers see everything). */
+(() => {
+  const form = document.getElementById('fgForm');
+  if (!form || form.dataset.booted) return;
+  form.dataset.booted = '1';
+  document.body.classList.add('fast-locked');
+  const msg = document.getElementById('fgMsg');
+  const root = document.getElementById('fgRoot');
+  const pass = document.getElementById('fgPass');
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let tries = 0;
+  const DENIALS = [
+    'ACCESS DENIED — NO PUBLIC BUILD OF FAST EXISTS.',
+    'STILL NO. THERE IS NO PASSWORD — THIS GATE IS HONEST THEATER.',
+    'PERSISTENT. I LIKE IT. THE DEMO IS BETTER IN PERSON ANYWAY ▸ CONTACT',
+  ];
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    msg.textContent = DENIALS[Math.min(tries, DENIALS.length - 1)];
+    msg.classList.add('deny');
+    tries++;
+    pass.value = '';
+    if (!REDUCED) {
+      root.classList.remove('shake');
+      void root.offsetWidth;
+      root.classList.add('shake');
+    }
+  });
+  document.addEventListener('astro:before-swap', () => document.body.classList.remove('fast-locked'), { once: true });
+})();
+</script>
+
+<style is:global>
+  /* gated sections: readable silhouette, no interaction, while locked */
+  body.fast-locked #fastChallenge .obody,
+  body.fast-locked #fastRole .obody,
+  body.fast-locked #fastSurfaces .obody,
+  body.fast-locked #fastCapture .obody,
+  body.fast-locked #fastLessons .obody {
+    filter: blur(7px) saturate(0.6);
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+
 <style>
   .cs-meta {
     font-family: var(--font-mono);
@@ -196,4 +263,48 @@ const jsonLd = {
   }
   .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
   .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ---- access gate ---- */
+  .fg { font-family: var(--font-mono); }
+  .fg-line { font-size: 10px; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 10px; }
+  .fg-row { display: flex; align-items: center; gap: 8px; }
+  .fg-lab { font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-muted); }
+  .fg-in {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color var(--duration-normal);
+  }
+  .fg-in:focus { border-color: var(--signal); }
+  .fg-btn { flex: none; }
+  .fg-msg { font-size: 9.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
+  .fg-msg.deny { color: var(--signal); }
+  .fg-req {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: border-color var(--duration-normal), background var(--duration-normal);
+  }
+  .fg-req:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+  .fg.shake { animation: fgshake 0.3s; }
+  @keyframes fgshake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-2px); }
+  }
 </style>

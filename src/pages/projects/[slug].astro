@@ -15,7 +15,7 @@ import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 export function getStaticPaths() {
   // Projects with custom pages — exclude them from template generation.
   // (Defined inside getStaticPaths: Astro executes this function in isolation.)
-  const customPages = ['fast', 'futurescaper', 'carlton-dev'];
+  const customPages = ['fast', 'futurescaper', 'carlton-dev', 'futurity-engine', 'campus-ai'];
   return projects
     .filter((p) => !customPages.includes(p.slug))
     .map((p) => ({
