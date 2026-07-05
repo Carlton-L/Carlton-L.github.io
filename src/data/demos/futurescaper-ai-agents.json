@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "note": "Hand-authored synthetic futurescape for the portfolio demo, transcribed from the product's interactive-map structure preview (futurescaper/demos/interactive-map/preview.html). Not client data, not product AI output. Positions are computed live by the real layout algorithm (layout.js).",
+    "created": "2026-07-04"
+  },
+  "input": {
+    "title": "Widespread adoption of AI agents in knowledge work",
+    "description": "What happens when AI agents can autonomously handle 80% of routine knowledge work tasks — email triage, report writing, scheduling, data analysis, code review — across most industries?",
+    "horizon": "near"
+  },
+  "consequences": [
+    { "id": "c1-social-1", "text": "Workers redefine professional identity around judgment, creativity, and relationship-building rather than task execution, leading to widespread career existential crises.", "sentiment": "negative", "category": "social", "order": 1, "parentIds": ["seed"], "timeFrame": "1–3 yrs", "probability": "probable", "importance": "high" },
+    { "id": "c1-tech-1", "text": "Demand for AI infrastructure drives a new generation of specialized hardware, creating supply chain bottlenecks and geopolitical competition for chip manufacturing capacity.", "sentiment": "negative", "category": "technological", "order": 1, "parentIds": ["seed"], "timeFrame": "1–3 yrs", "probability": "probable", "importance": "critical" },
+    { "id": "c1-econ-1", "text": "Companies that adopt AI agents earliest capture disproportionate productivity gains, accelerating market concentration in every sector.", "sentiment": "negative", "category": "economic", "order": 1, "parentIds": ["seed"], "timeFrame": "0–1 yr", "probability": "probable", "importance": "critical" },
+    { "id": "c1-env-1", "text": "Energy consumption from always-on AI agents offsets efficiency gains from reduced commuting and office space, with net carbon impact depending on grid mix.", "sentiment": "neutral", "category": "environmental", "order": 1, "parentIds": ["seed"], "timeFrame": "1–3 yrs", "probability": "plausible", "importance": "medium" },
+    { "id": "c1-pol-1", "text": "Governments struggle to adapt labor regulations, tax policy, and social safety nets to a workforce where humans and AI agents share responsibilities.", "sentiment": "negative", "category": "political", "order": 1, "parentIds": ["seed"], "timeFrame": "1–3 yrs", "probability": "probable", "importance": "high" },
+    { "id": "c1-legal-1", "text": "Liability frameworks collapse when AI agents make autonomous decisions — who is responsible when an agent sends the wrong email, approves a bad contract, or leaks sensitive data?", "sentiment": "negative", "category": "legal", "order": 1, "parentIds": ["seed"], "timeFrame": "0–1 yr", "probability": "probable", "importance": "critical" },
+    { "id": "c1-eth-1", "text": "Power asymmetry grows between those who control AI agents and those who don't, raising fundamental questions about consent, autonomy, and digital self-determination.", "sentiment": "negative", "category": "ethical", "order": 1, "parentIds": ["seed"], "timeFrame": "1–3 yrs", "probability": "plausible", "importance": "high" },
+
+    { "id": "c2-social-1", "text": "New forms of mentorship emerge where senior professionals teach AI-collaboration skills rather than task-specific knowledge, fundamentally changing how expertise is transmitted.", "sentiment": "positive", "category": "social", "order": 2, "parentIds": ["c1-social-1"], "timeFrame": "1–3 yrs", "probability": "plausible", "importance": "medium" },
+    { "id": "c2-econ-1", "text": "Mid-tier consulting, accounting, and legal firms face existential pressure as AI agents deliver comparable output at a fraction of the cost, forcing consolidation or specialization.", "sentiment": "negative", "category": "economic", "order": 2, "parentIds": ["c1-econ-1"], "timeFrame": "1–3 yrs", "probability": "probable", "importance": "high" },
+    { "id": "c2-econ-2", "text": "A new gig economy emerges around AI agent configuration, training, and oversight — 'agent wranglers' become a major employment category.", "sentiment": "positive", "category": "economic", "order": 2, "parentIds": ["c1-econ-1"], "timeFrame": "1–3 yrs", "probability": "plausible", "importance": "medium" },
+    { "id": "c2-pol-1", "text": "Countries that heavily regulate AI agents lose competitive advantage to those that don't, creating a regulatory race to the bottom internationally.", "sentiment": "negative", "category": "political", "order": 2, "parentIds": ["c1-pol-1"], "timeFrame": "3–10+ yrs", "probability": "plausible", "importance": "high" },
+    { "id": "c2-legal-1", "text": "Insurance industry develops new 'AI liability' products, creating a multi-billion dollar market but also normalizing the risks of autonomous AI decision-making.", "sentiment": "neutral", "category": "legal", "order": 2, "parentIds": ["c1-legal-1"], "timeFrame": "1–3 yrs", "probability": "probable", "importance": "medium" },
+    { "id": "c2-tech-1", "text": "Open-source AI agent frameworks democratize access, enabling small teams to compete with enterprises — but also lower the barrier for malicious use.", "sentiment": "neutral", "category": "technological", "order": 2, "parentIds": ["c1-tech-1"], "timeFrame": "0–1 yr", "probability": "probable", "importance": "high" },
+
+    { "id": "c3-econ-1", "text": "Universal basic income debates shift from theoretical to urgent as traditional employment models break down faster than new ones emerge.", "sentiment": "neutral", "category": "economic", "order": 3, "parentIds": ["c2-econ-1"], "timeFrame": "3–10+ yrs", "probability": "possible", "importance": "critical" },
+    { "id": "c3-eth-1", "text": "Society develops new norms around 'AI transparency' — disclosing when work was done by an agent becomes as expected as disclosing conflicts of interest.", "sentiment": "positive", "category": "ethical", "order": 3, "parentIds": ["c1-eth-1", "c2-legal-1"], "timeFrame": "3–10+ yrs", "probability": "plausible", "importance": "medium" },
+
+    { "id": "idea-1", "title": "Agent audit trails", "text": "Create open-source 'AI agent audit trails' that log every decision an agent makes, enabling accountability without sacrificing speed. Could be mandated by regulators.", "sentiment": "positive", "category": "legal", "order": 2, "parentIds": ["c1-legal-1"], "nodeType": "action", "stance": "prepare", "effort": "medium", "importance": "high" },
+    { "id": "idea-2", "title": "HITL certification", "text": "Develop a 'human-in-the-loop' certification standard for AI agent deployments, where organizations commit to meaningful human oversight at critical decision points.", "sentiment": "positive", "category": "ethical", "order": 2, "parentIds": ["c1-eth-1"], "nodeType": "action", "stance": "prepare", "effort": "medium", "importance": "high" }
+  ]
+}

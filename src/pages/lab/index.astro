@@ -1,55 +1,349 @@
 ---
 /**
- * Lab — patch document.
- * Registry-based: add experiments to the array below.
+ * Lab — a small network (converted from PatchDoc so the dither cooks here too).
+ *
+ * lab_txt → experiments_index → GRID experiment:
+ * grid concept TXT → controller VIEW (the app sim) → studio VIEW (live 3D).
+ * The cable between the two VIEW ops is literal: one shared state drives
+ * both — sculpt on the controller, the lamp responds in the studio.
+ *
+ * GRID demo: prototype code kept verbatim (public/js/grid-lab.js), three.js
+ * r128 + postprocessing from CDN, all lazy-loaded by the bootstrap script
+ * below only when the experiment ops approach the viewport. The homepage
+ * and lab-above-the-fold ship none of it.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
-import PatchDoc from '../../components/PatchDoc.astro';
+import PatchField from '../../components/PatchField.astro';
+import { getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const experiments = [
-  // {
-  //   title: 'Phototropic Plants',
-  //   description: 'BEAM robotics simulation — drag a light source and watch emergent behavior.',
-  //   slug: 'phototropic-plants',
-  //   tags: ['Canvas', 'Simulation', 'Emergent Behavior'],
-  //   status: 'live',
-  // },
+  {
+    title: 'GRID — kinetic light',
+    description:
+      'A lamp you sculpt by touch: sixteen motorized cylinders, one shared state, two live views. Sim for a hardware build in progress.',
+    href: '#gridConcept',
+    tags: ['Three.js', 'Hardware', 'Kinetic light'],
+    status: 'building',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Lab' },
+    ]),
+  ],
+};
+
+const links: [string, string][] = [
+  ['labIntro', 'labIndex'],
+  ['labIndex', 'gridConcept'],
+  ['gridConcept', 'gridPhoto'],
+  ['gridConcept', 'ctrlHelp'],
+  ['gridConcept', 'studioHelp'],
+  ['ctrlHelp', 'gridApp'],
+  ['studioHelp', 'gridView'],
+  ['gridApp', 'gridView'],
+  ['gridApp', 'gridTelemetry'],
+  ['gridView', 'controlDesign'],
+  ['controlDesign', 'gridOut'],
+  ['gridOut', 'labSoon'],
 ];
 ---
 
 <Base
   title="Lab — Carlton Lindsay"
   description="Interactive experiments, generative sketches, and technical explorations."
+  jsonLd={jsonLd}
 >
-  <PatchDoc meta={`${experiments.length} EXPERIMENTS`}>
-    <Operator id="labIntro" name="input · lab_txt" type="txt" ports="none">
+  <PatchField id="labNet" links={links} density={0.3} height="2660px" label="Lab network — press P for reading mode">
+    <Operator id="labIntro" name="input · lab_txt" type="txt" pos="left:4%; top:56px; width:min(460px,88vw);" ports="out">
       <h1 class="pd-h">Lab</h1>
       <p class="pd-p">
-        Interactive experiments and technical explorations — things I'm
+        Interactive experiments and technical explorations: things I'm
         building, testing, or just curious about.
       </p>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="labIndex" name="experiments_index" type="data" ports="none">
-      {experiments.length === 0 ? (
-        <p class="pd-empty">0 OPS IN THE LAB — EXPERIMENTS COOKING, CHECK BACK.</p>
-      ) : (
-        <div class="pd-exps">
-          {experiments.map((exp) => (
-            <a href={`/lab/${exp.slug}`} class="pd-exp">
-              <span class="pd-status" data-live={exp.status === 'live'}>● {exp.status.toUpperCase()}</span>
-              <span class="pd-title">{exp.title}</span>
-              <span class="pd-desc">{exp.description}</span>
-              <span class="pd-tags">{exp.tags.join(' · ')}</span>
-            </a>
-          ))}
-        </div>
-      )}
+    <Operator id="labIndex" name="experiments_index" type="data" pos="right:5%; top:96px; width:min(400px,90vw);">
+      <div class="pd-exps">
+        {experiments.map((exp) => (
+          <a href={exp.href} class="pd-exp">
+            <span class="pd-status" data-live={exp.status === 'live'}>● {exp.status.toUpperCase()}</span>
+            <span class="pd-title">{exp.title}</span>
+            <span class="pd-desc">{exp.description}</span>
+            <span class="pd-tags">{exp.tags.join(' · ')}</span>
+          </a>
+        ))}
+      </div>
     </Operator>
-  </PatchDoc>
+
+    <!-- ============ EXPERIMENT 001 · GRID ============ -->
+    <Operator id="gridConcept" name="input · grid_txt" type="txt" pos="left:4%; top:430px; width:min(620px,88vw);">
+      <p class="gl-meta">EXPERIMENT 001 · KINETIC LIGHT · SIM FOR A HARDWARE BUILD IN PROGRESS</p>
+      <h2 class="gl-h">GRID — a lamp you <span class="sig">sculpt</span></h2>
+      <p class="pd-p">
+        GRID is a lamp: sixteen frosted cylinders in a 4×4 bed, each on its
+        own lead screw with its own tunable-white LEDs. Hold a cylinder, in
+        the app or straight in the 3D scene, and it rises. Hold it again
+        quickly and it lowers. Each cylinder is one number: height, brightness
+        and color temperature all come from it. Low cylinders glow like a
+        1800&nbsp;K ember; the light only cools toward the slider's ceiling as
+        they rise.
+      </p>
+      <p class="pd-p">
+        There are static set-points (Full, Night, Off, plus anything you
+        sculpt and save) and four motion patterns: wave, ripple, fireplace,
+        noise. The motors are simulated too, 28BYJ-48 steppers with
+        trapezoidal ramps, so everything on screen moves at the speed the
+        real lamp would.
+      </p>
+      <p class="pd-p">
+        Both views below run off the same state. Change something in the app
+        and the lamp follows. Works the other way too.
+      </p>
+      <p class="gl-spec">16 PTS · Ø50MM COLUMNS · 60MM PITCH · TRAVEL 60/110MM · 1800–6500K</p>
+    </Operator>
+
+    <!-- reserved slot: photo of the physical build, once it exists -->
+    <Operator id="gridPhoto" name="grid_photo · build_log" type="view" pos="right:5%; top:430px; width:min(340px,86vw);" ports="in">
+      <div class="gl-photoslot">
+        <span>// BUILD PHOTO PENDING</span>
+        <span class="gl-photosub">HARDWARE IN PROGRESS · SLOT RESERVED</span>
+      </div>
+    </Operator>
+
+    <!-- how-to nodes sit on the cable feeding each surface -->
+    <Operator id="ctrlHelp" name="help · ctrl_howto" type="txt" pos="left:3%; top:880px; width:min(360px,86vw);">
+      <ul class="gl-help">
+        <li><b>HOLD</b> a pad and its cylinder rises · release stops it</li>
+        <li><b>RE-HOLD</b> quickly to reverse and lower</li>
+        <li><b>FULL / NIGHT / OFF</b> are set-points · sculpt something and <b>SAVE</b> it as P1–P3</li>
+        <li><b>MOTION</b> runs patterns (the grid becomes read-only) · <b>TEMP</b> sets the white-point ceiling · <b>RANGE</b> clamps travel</li>
+      </ul>
+    </Operator>
+
+    <!-- app + studio share one viewport band: sculpt on the left,
+         watch the lamp respond on the right -->
+    <Operator id="gridApp" name="grid_ctrl · app_sim" type="view" pos="left:3%; top:1120px; width:min(392px,92vw);">
+      <div class="gridlab glctr">
+        <!-- .glduo carries .gridlab so the demo's vars/selectors travel with it into the dock -->
+        <div class="gridlab glduo" data-duo="grid" data-duo-name="grid_ctrl">
+        <div class="phone">
+          <div class="bar">
+            <span class="lampname">Studio</span>
+            <div class="status"><span class="led"></span>connected</div>
+          </div>
+
+          <div class="core">
+            <div class="seg" id="seg">
+              <button data-fam="static" class="active">Static</button>
+              <button data-fam="motion">Motion</button>
+            </div>
+
+            <div class="setpoints" id="setpoints">
+              <button data-set="Full">Full</button>
+              <button data-set="Night">Night</button>
+              <button data-set="Off">Off</button>
+              <button data-set="Custom" class="custom">Custom</button>
+            </div>
+            <div class="setpoints presetrow" id="presets">
+              <button id="saveBtn" class="custom dim">Save</button>
+            </div>
+
+            <div class="modewrap" id="modewrap" style="display:none;">
+              <select class="mode-select" id="mode" aria-label="Motion pattern"></select>
+              <span class="chev">&#9662;</span>
+            </div>
+
+            <div class="device-frame">
+              <span class="tick tl"></span><span class="tick tr"></span>
+              <span class="tick bl"></span><span class="tick br"></span>
+              <span class="notch"></span>
+              <div class="device" id="device"></div>
+            </div>
+            <div class="holdhint" id="holdhint">Hold to raise &middot; quick re-hold to lower</div>
+
+            <div class="speed" id="speed">
+              <span class="k">Speed</span>
+              <div class="strack" id="spdTrack"><div class="sfill" id="spdFill"></div><div class="sknob" id="spdKnob"></div></div>
+            </div>
+
+            <div class="speed show" id="tempRow">
+              <span class="k">Temp</span>
+              <div class="strack temptrack" id="tmpTrack"><div class="sknob" id="tmpKnob"></div></div>
+              <b class="kval" id="tempK">2700k</b>
+            </div>
+
+            <div class="limit">
+              <div class="lab"><span>Range</span><b><span id="lfloor">0</span> &ndash; <span id="lceil">100</span></b></div>
+              <div class="rtrack" id="rtrack">
+                <div class="rspan" id="rspan"></div>
+                <div class="rhandle" id="hfloor"></div>
+                <div class="rhandle" id="hceil"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="foot">
+            <span>16 pts</span>
+            <span id="avg">avg 0%</span>
+            <span id="ctemp">1800k</span>
+          </div>
+        </div>
+        </div>
+      </div>
+    </Operator>
+
+    <Operator id="studioHelp" name="help · studio_howto" type="txt" pos="right:3%; top:880px; width:min(360px,86vw);">
+      <ul class="gl-help">
+        <li><b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>DOUBLE-CLICK</b> returns to the hero cam</li>
+        <li><b>HOLD</b> a cylinder in the scene for the same jog as the app</li>
+        <li><b>HERO / TOP / LOW</b> camera presets · <b>AUTO-ORBIT</b> spins the scene slowly</li>
+        <li><b>60 / 110&nbsp;MM</b> switches the build-plan travel · stroke time updates live</li>
+      </ul>
+    </Operator>
+
+    <Operator
+      id="gridView"
+      name="grid_view · studio_3d"
+      type="view"
+      pos="right:3%; top:1120px; width:min(calc(94vw - 440px), 820px);"
+    >
+      <div class="gridlab glviewwrap" data-duo="grid" data-duo-name="grid_view">
+        <div class="viewcard" id="viewcard">
+          <canvas id="gl"></canvas>
+          <div class="vignette"></div>
+          <span class="vtick tl"></span><span class="vtick tr"></span>
+          <span class="vtick bl"></span><span class="vtick br"></span>
+          <div class="vtop"><span>Studio &middot; live</span></div>
+          <div class="vctrl">
+            <div class="vgroup">
+              <button class="vbtn on" data-view="hero">Hero</button>
+              <button class="vbtn" data-view="top">Top</button>
+              <button class="vbtn" data-view="low">Low</button>
+            </div>
+            <div class="vgroup">
+              <button class="vbtn" id="orbitBtn">Auto-orbit</button>
+            </div>
+            <div class="vgroup">
+              <button class="vbtn" data-travel="6">60 mm</button>
+              <button class="vbtn on" data-travel="11">110 mm</button>
+            </div>
+            <div class="vnote" id="travelNote"></div>
+          </div>
+          <div class="vhud"><span id="vhint">Drag to orbit &middot; scroll to zoom &middot; hold a cylinder to raise it</span></div>
+          <div class="glposter" id="glposter">COOKING SIM &middot; THREE.JS LOADS ON APPROACH&hellip;</div>
+        </div>
+      </div>
+    </Operator>
+
+    <!-- SYS: live readout tapped off the shared state (hidden on small screens) -->
+    <Operator id="gridTelemetry" name="sys · telemetry" type="sys" pos="right:6%; top:1800px; width:min(250px,80vw);" ports="in">
+      <div class="gl-tel">
+        <span>AVG LEVEL</span><b id="telAvg">0%</b>
+        <span>AVG COLOR</span><b id="telK">1800K</b>
+        <span>IN TRANSIT</span><b id="telMove">0 / 16</b>
+        <span>MODE</span><b id="telMode">STATIC · OFF</b>
+      </div>
+    </Operator>
+
+    <!-- PROCESS: why the controls work the way they do — read after playing -->
+    <Operator id="controlDesign" name="process · control_design" type="txt" pos="left:4%; top:1980px; width:min(560px,88vw);">
+      <h3 class="gl-h3">Why the controls work this way</h3>
+      <p class="pd-p">
+        <b>Jog, not slider.</b> Hold means keep moving; release means stop.
+        And the app draws where each cylinder actually is, not where you told
+        it to go: anything still traveling gets a pulsing rim. I didn't want
+        a screen showing a lamp that doesn't exist yet.
+      </p>
+      <p class="pd-p">
+        <b>One number per cylinder.</b> Height, brightness and color are
+        locked together on purpose. Dim light is always warm; there's no way
+        to build a low, cold scene, and I consider that a feature. Night mode
+        caps the ceiling at 2700&nbsp;K, and the cap eases in rather than
+        snapping, the way firmware would fade it.
+      </p>
+      <p class="pd-p">
+        <b>The motors set the rules.</b> Range clamps travel for everything:
+        set-points, patterns, your fingers. And the patterns run through the
+        same motor model as manual holds, so a fireplace flicker can only
+        ever move as fast as a lead screw turns.
+      </p>
+    </Operator>
+
+    <!-- OUT: what the sim settles, and what only hardware can answer -->
+    <Operator id="gridOut" name="out · the_build" type="txt" pos="right:4%; top:1980px; width:min(420px,90vw);" ports="in">
+      <p class="pd-p">
+        The sim exists so the hardware decisions get made cheaply. Jog feel,
+        60 vs 110&nbsp;mm of travel, the shape of the warm-to-cool ramp,
+        whether the patterns still read at real motor speed: all decided
+        here, before committing to parts.
+      </p>
+      <p class="pd-p">
+        Some questions only the build can answer. How loud are sixteen
+        steppers in a quiet room? Does real frosted plastic scatter anything
+        like the shader? How low can the LEDs dim before the ember falls
+        apart?
+      </p>
+      <p class="gl-outnext">▸ NEXT · BUILD PHOTOS LAND IN grid_photo AS THE HARDWARE COMES TOGETHER</p>
+    </Operator>
+
+    <!-- placeholder for the next experiment -->
+    <Operator id="labSoon" name="queue · exp_002" type="sys" pos="left:50%; top:2460px; transform:translateX(-50%); width:min(300px,80vw);" ports="in">
+      <div class="gl-soon">
+        <span class="gl-soonline">MORE COOKING<i class="gl-cursor">▮</i></span>
+        <span class="gl-soonsub">NEXT EXPERIMENT LANDS HERE</span>
+      </div>
+    </Operator>
+  </PatchField>
+
+  <!-- Lazy bootstrap: nothing GRID-related loads until an experiment op nears
+       the viewport; then three r128 → postprocessing → grid-lab.js, in order.
+       Re-nav safe: CDN globals persist, GridLab.init() re-binds to fresh DOM. -->
+  <script is:inline data-astro-rerun>
+  (function () {
+    var view = document.getElementById('gridView');
+    var app = document.getElementById('gridApp');
+    if (!view || view.dataset.glBoot) return;
+    view.dataset.glBoot = '1';
+
+    var STEPS = [
+      // [global, url, required] — optional steps fail soft (grid-lab.js
+      // falls back to sprite halos when POSTPROCESSING is absent)
+      ['THREE', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', true],
+      ['POSTPROCESSING', 'https://cdn.jsdelivr.net/npm/postprocessing@6.22.2/build/postprocessing.min.js', false],
+      ['GridLab', '/js/grid-lab.js', true],
+    ];
+    function loadStep(i) {
+      if (i >= STEPS.length) { window.GridLab && window.GridLab.init(); return; }
+      if (window[STEPS[i][0]]) { loadStep(i + 1); return; }
+      var s = document.createElement('script');
+      s.src = STEPS[i][1];
+      s.onload = function () { loadStep(i + 1); };
+      s.onerror = function () {
+        if (STEPS[i][2]) { console.warn('GRID: failed to load ' + STEPS[i][1]); return; }
+        loadStep(i + 1);
+      };
+      document.head.appendChild(s);
+    }
+    var started = false;
+    function start() { if (started) return; started = true; loadStep(0); }
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
+      }, { rootMargin: '900px' });
+      io.observe(view);
+      if (app) io.observe(app);
+    } else {
+      start();
+    }
+  })();
+  </script>
 </Base>
 
 <style>
@@ -61,8 +355,8 @@ const experiments = [
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
-  .pd-empty { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; }
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 8px; }
+  .pd-p:last-of-type { margin-bottom: 0; }
 
   .pd-exps { display: flex; flex-direction: column; }
   .pd-exp { display: block; padding: 14px 4px; border-bottom: 1px solid var(--border-color); text-decoration: none; }
@@ -73,4 +367,237 @@ const experiments = [
   .pd-exp:hover .pd-title { color: var(--signal); }
   .pd-desc { display: block; font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
   .pd-tags { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+
+  .gl-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .gl-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(20px, 2.2vw, 28px);
+    line-height: 0.98;
+    margin-bottom: 10px;
+  }
+  .gl-h .sig { color: var(--signal); }
+  .gl-spec {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+
+  /* reserved build-photo slot — swap the placeholder for an <img> when it lands */
+  .gl-photoslot {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+  .gl-photoslot .gl-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
+
+  .gl-help {
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .gl-help li { padding-left: 14px; position: relative; margin-bottom: 7px; }
+  .gl-help li:last-child { margin-bottom: 0; }
+  .gl-help li::before { content: '▸'; position: absolute; left: 0; color: var(--signal); }
+  .gl-help b { color: var(--text); font-weight: 600; }
+
+  .gl-h3 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .pd-p b { color: var(--text); font-weight: 600; }
+
+  .gl-tel {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 12px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .gl-tel b { color: var(--signal); font-weight: 400; text-align: right; }
+
+  .gl-outnext {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+
+  .gl-soon {
+    display: grid;
+    gap: 5px;
+    justify-items: center;
+    padding: 10px 4px;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+  .gl-soonline { font-size: 10.5px; color: var(--text-muted); }
+  .gl-soonsub { font-size: 8.5px; color: var(--text-dim); }
+  .gl-cursor { font-style: normal; color: var(--signal); animation: gl-blink 1.1s steps(1) infinite; }
+  @keyframes gl-blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .gl-cursor { animation: none; }
+  }
+
+  /* telemetry is patch garnish — drop it on small screens to keep READ quiet */
+  @media (max-width: 767px) {
+    :global(#gridTelemetry) { display: none !important; }
+  }
+</style>
+
+<!-- GRID demo interiors — the experiment's own visual language, scoped under
+     .gridlab (its DOM is partly JS-generated, so these can't be Astro-scoped).
+     Palette is the prototype's warm studio gray; fonts map to site tokens. -->
+<style is:global>
+  .gridlab {
+    --bg: #46433e; --line: #726c63; --line-soft: #5b5650;
+    --ink: #e2ded6; --ink-dim: #a09a90; --ink-faint: #767066;
+  }
+  .glctr { display: flex; justify-content: center; }
+  .glduo { width: min(360px, 100%); }
+
+  /* ---------- controller ---------- */
+  .gridlab .phone {
+    width: min(360px, 100%); height: 740px; background: var(--bg); border-radius: 36px;
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+    box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .75); border: 1px solid #2e2b27;
+  }
+  .gridlab .bar { display: flex; align-items: center; justify-content: space-between; padding: 20px 26px 0; }
+  .gridlab .lampname { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+  .gridlab .status { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; color: var(--ink-faint); display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+  .gridlab .status .led { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 5px var(--ink); }
+
+  .gridlab .core { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 13px; padding: 0 24px; }
+
+  .gridlab .seg { display: flex; width: 100%; max-width: 300px; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+  .gridlab .seg button { flex: 1; background: transparent; border: none; color: var(--ink-dim); font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; padding: 9px 0; cursor: pointer; transition: all .2s; }
+  .gridlab .seg button + button { border-left: 1px solid var(--line); }
+  .gridlab .seg button.active { background: rgba(255, 255, 255, .08); color: var(--ink); }
+
+  .gridlab .modewrap { position: relative; width: 100%; max-width: 300px; }
+  .gridlab .mode-select { width: 100%; appearance: none; -webkit-appearance: none; background: transparent; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; padding: 10px 38px 10px 15px; cursor: pointer; text-align: center; }
+  .gridlab .mode-select:focus { outline: none; border-color: var(--ink-dim); }
+  .gridlab .modewrap .chev { position: absolute; right: 15px; top: 50%; transform: translateY(-32%); pointer-events: none; color: var(--ink-dim); font-size: 10px; }
+  .gridlab .mode-select option { background: #34383a; color: var(--ink); }
+
+  .gridlab .setpoints { display: flex; width: 100%; max-width: 300px; gap: 8px; }
+  .gridlab .setpoints button { flex: 1; background: transparent; border: 1px solid var(--line-soft); border-radius: 7px; color: var(--ink-dim); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; padding: 10px 0; cursor: pointer; transition: all .2s; }
+  .gridlab .setpoints button:hover { border-color: var(--line); color: var(--ink); }
+  .gridlab .setpoints button.active { background: rgba(255, 255, 255, .08); color: var(--ink); border-color: var(--line); }
+  .gridlab .setpoints button.custom { border-style: dashed; }
+  .gridlab .setpoints button.custom.active { background: rgba(255, 255, 255, .05); }
+  .gridlab .presetrow { margin-top: -5px; }
+  .gridlab .setpoints button.dim { opacity: .38; cursor: default; }
+
+  .gridlab .device-frame { width: 100%; max-width: 300px; aspect-ratio: 1/1; position: relative; border: 1px solid var(--line-soft); border-radius: 26px; padding: 6px; }
+  .gridlab .device { width: 100%; height: 100%; position: relative; border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); padding: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .06)); }
+  .gridlab .tick { position: absolute; width: 9px; height: 9px; border: 1px solid var(--line); z-index: 2; }
+  .gridlab .tick.tl { top: 18px; left: 18px; border-right: none; border-bottom: none; }
+  .gridlab .tick.tr { top: 18px; right: 18px; border-left: none; border-bottom: none; }
+  .gridlab .tick.bl { bottom: 18px; left: 18px; border-right: none; border-top: none; }
+  .gridlab .tick.br { bottom: 18px; right: 18px; border-left: none; border-top: none; }
+  .gridlab .notch { position: absolute; right: -1px; top: calc(50% - 10px); width: 6px; height: 20px; border: 1px solid var(--line-soft); border-right: none; border-radius: 3px 0 0 3px; background: var(--bg); }
+  .gridlab .cell { display: flex; align-items: center; justify-content: center; }
+  .gridlab .circle { width: 82%; aspect-ratio: 1/1; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .24); cursor: pointer; transition: box-shadow .25s; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .gridlab .circle.holding { box-shadow: 0 0 0 2px rgba(220, 223, 224, .55), 0 0 14px rgba(220, 223, 224, .3); }
+  .gridlab .circle.lowering { box-shadow: 0 0 0 2px rgba(150, 156, 158, .55), 0 0 10px rgba(0, 0, 0, .4) inset; }
+  /* in transit: motor position hasn't reached the target yet — pulsing rim */
+  .gridlab .circle.moving { border-color: rgba(255, 255, 255, .6); animation: gl-transit 0.9s ease-in-out infinite; }
+  @keyframes gl-transit {
+    50% { border-color: rgba(255, 255, 255, .24); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gridlab .circle.moving { animation: none; }
+  }
+  .gridlab .device.readout .circle { cursor: default; }
+
+  .gridlab .holdhint { width: 100%; max-width: 300px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+
+  .gridlab .temptrack { background: linear-gradient(90deg, #ff9d54, #ffdcae, #fdf3e3, #dfe7fb) !important; height: 4px !important; }
+  .gridlab .kval { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); font-weight: normal; width: 42px; text-align: right; flex-shrink: 0; }
+
+  .gridlab .speed { width: 100%; max-width: 300px; display: none; align-items: center; gap: 12px; }
+  .gridlab .speed.show { display: flex; }
+  .gridlab .speed .k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); width: 44px; flex-shrink: 0; }
+  .gridlab .strack { flex: 1; height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; cursor: pointer; }
+  .gridlab .sfill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
+  .gridlab .sknob { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 13px; height: 13px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); }
+  .gridlab .tdet { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 7px; background: rgba(0, 0, 0, .35); border-radius: 1px; pointer-events: none; }
+
+  .gridlab .limit { width: 100%; max-width: 300px; }
+  .gridlab .limit .lab { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .gridlab .limit .lab b { color: var(--ink); font-weight: normal; }
+  .gridlab .rtrack { height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; margin: 8px 6px; }
+  .gridlab .rspan { position: absolute; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
+  .gridlab .rhandle { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 15px; height: 15px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); cursor: grab; touch-action: none; }
+  .gridlab .rhandle:active { cursor: grabbing; }
+
+  .gridlab .foot { padding: 0 26px 20px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: var(--ink-faint); text-transform: uppercase; }
+
+  /* ---------- live 3D ---------- */
+  /* sits flush inside the VIEW op body, DemoFrame-style */
+  .glviewwrap { margin: -12px -14px; }
+  .gridlab .viewcard {
+    position: relative; overflow: hidden; background: #0b0c0d;
+    height: clamp(440px, 62vh, 620px);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+  .gridlab .viewcard canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .gridlab .viewcard canvas.grabbing { cursor: grabbing; }
+  .gridlab .viewcard .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(0, 0, 0, .42) 100%); }
+  .gridlab .vtick { position: absolute; width: 11px; height: 11px; border: 1px solid #524d45; z-index: 3; pointer-events: none; }
+  .gridlab .vtick.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+  .gridlab .vtick.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+  .gridlab .vtick.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+  .gridlab .vtick.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+  .gridlab .vhud { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
+  .gridlab .vhud span { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .18em; text-transform: uppercase; color: #67615a; background: rgba(11, 12, 13, .55); padding: 6px 14px; border-radius: 20px; border: 1px solid #292623; }
+  .gridlab .vtop { position: absolute; top: 20px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
+  .gridlab .vtop span { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: #767066; }
+
+  .gridlab .vctrl { position: absolute; top: 48px; right: 18px; display: flex; flex-direction: column; gap: 7px; z-index: 4; align-items: flex-end; }
+  .gridlab .vgroup { display: flex; gap: 6px; }
+  .gridlab .vbtn { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a847a; background: rgba(20, 18, 16, .55); border: 1px solid #383430; border-radius: 6px; padding: 5px 9px; cursor: pointer; transition: all .18s; }
+  .gridlab .vbtn:hover { color: #e2ded6; border-color: #524d45; }
+  .gridlab .vbtn.on { color: #e2ded6; border-color: #726c63; background: rgba(255, 255, 255, .07); }
+  .gridlab .vnote { font-family: var(--font-mono); font-size: 8px; color: #5d574f; letter-spacing: .12em; text-transform: uppercase; }
+
+  .gridlab .glposter {
+    position: absolute; inset: 0; z-index: 5;
+    display: grid; place-items: center;
+    background: #0b0c0d;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
+    color: #67615a;
+  }
 </style>

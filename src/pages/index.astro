@@ -44,6 +44,14 @@ const indexRows = projects
     meta: p.facts?.role?.toUpperCase() ?? p.category.toUpperCase(),
     year: (p.facts?.year ?? '').split('–').pop(),
   }));
+
+// tiny operator-glyphs per project (currentColor → inherits the row accent)
+const ICONS: Record<string, string> = {
+  'futurescaper': '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="6" stroke-dasharray="1.6 1.9"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="14" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="2" r="1" fill="currentColor" stroke="none"/></svg>',
+  'futurity-engine': '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 12l4-5 3 3 3-6"/><circle cx="3" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="7" cy="7" r="1.4" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r="1.4" fill="currentColor" stroke="none"/><circle cx="13" cy="4" r="1.4" fill="currentColor" stroke="none"/></svg>',
+  'fast': '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="none"><circle cx="4" cy="4" r="1"/><circle cx="6.2" cy="3" r="1"/><circle cx="3" cy="6.2" r="1"/><circle cx="12" cy="4" r="1"/><circle cx="13" cy="6.2" r="1"/><circle cx="10" cy="4" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="3" cy="10" r="1"/><circle cx="6.2" cy="13" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="10" cy="12" r="1"/></svg>',
+  'campus-ai': '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="none"><rect x="2" y="3" width="8" height="2" rx="1"/><rect x="2" y="7" width="12" height="2" rx="1"/><rect x="2" y="11" width="6" height="2" rx="1"/></svg>',
+};
 ---
 
 <Base title={siteConfig.title} description={siteConfig.description} jsonLd={jsonLd}>
@@ -54,6 +62,48 @@ const indexRows = projects
         <span class="ghost">Engineer who dreams.</span>
       </h1>
       <span class="hero-tag">&gt; I build what I design</span>
+    </Operator>
+
+    <!-- the work rack: viewer + index are one unit in READ mode (player/playlist);
+         display:contents in PATCH mode so both ops stay free-floating on the canvas -->
+    <div class="rack" data-rack="work">
+      <Operator id="opScape" name="futurescaper_view · live_map" type="view" pos="right:4%; top:120px; width:clamp(420px,38vw,560px);">
+        <div class="viewer-wrap">
+          <div class="viewer-stage">
+            <svg class="viewer" id="viewerSvg" viewBox="0 0 420 240" role="img" aria-label="Futurescaper self-generating consequence map, live synthetic demo"></svg>
+            <canvas class="viewer-dither" id="viewerDither" aria-hidden="true"></canvas>
+          </div>
+          <div class="vfoot">
+            <span id="viewerFoot">SELF-GENERATING · STEEPLE · METRO EDGES</span>
+            <a id="viewerOpen" href="/projects/futurescaper"><b>OPEN NETWORK →</b></a>
+          </div>
+        </div>
+      </Operator>
+
+      <Operator id="opIndex" name="work_index · preview · open" type="data" pos="left:6%; bottom:40px; width:min(430px,88vw);">
+        <div class="idx" id="workIndex">
+          {indexRows.map((r, i) => (
+            <a href={r.href} data-slug={r.slug} class:list={['idxrow', { sel: i === 0 }]} title="Preview in the viewer · select again to open the case study">
+              <span class="idxnum">{String(i + 1).padStart(2, '0')}</span>
+              <span class="idxicon" set:html={ICONS[r.slug]} />
+              <span class="idxmain">
+                <span class="idxname">{r.name}</span>
+                <span class="idxmeta">{r.meta}</span>
+              </span>
+              <span class="idxyear">{r.year}</span>
+              <span class="idxgo" aria-hidden="true">OPEN ↗</span>
+            </a>
+          ))}
+        </div>
+      </Operator>
+    </div>
+
+    <Operator id="opFx" name="post_fx" type="sys" pos="left:46%; bottom:60px; width:170px;">
+      <div class="chain">
+        <span class="chip">IN</span><span class="arr">▶</span>
+        <button id="invertBtn" class="chip chipbtn" aria-pressed="false">INVERT</button>
+        <span class="arr">▶</span><span class="chip">OUT</span>
+      </div>
     </Operator>
 
     <Operator id="opRead" name="readme_txt" type="txt" pos="right:9%; bottom:40px; width:min(300px,86vw);">
@@ -67,39 +117,9 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opIndex" name="work_index · click to preview" type="data" pos="left:7%; bottom:40px;">
-      <table class="idx" id="workIndex">
-        {indexRows.map((r, i) => (
-          <tr data-slug={r.slug} class={i === 0 ? 'sel' : ''} title="Click: preview in viewer · name: open case study">
-            <td><a href={r.href}>▸ {r.name}</a></td>
-            <td class="dim">{r.meta}</td>
-            <td class="dim">{r.year}</td>
-          </tr>
-        ))}
-      </table>
-    </Operator>
-
-    <Operator id="opFx" name="post_fx" type="sys" pos="left:46%; bottom:60px; width:170px;">
-      <div class="chain">
-        <span class="chip">IN</span><span class="arr">▶</span>
-        <button id="invertBtn" class="chip chipbtn" aria-pressed="false">INVERT</button>
-        <span class="arr">▶</span><span class="chip">OUT</span>
-      </div>
-    </Operator>
-
-    <Operator id="opScape" name="futurescaper_view · OCEAN_PLASTICS.scn" type="view" pos="right:4%; top:120px; width:clamp(420px,38vw,560px);">
-      <div class="viewer-wrap">
-        <svg class="viewer" id="viewerSvg" viewBox="0 0 420 240" role="img" aria-label="Futurescaper radial consequence map, live synthetic demo"></svg>
-        <div class="vfoot">
-          <span id="viewerFoot">RADIAL · 5 ORDERS · STEEPLE</span>
-          <a id="viewerOpen" href="/projects/futurescaper"><b>OPEN NETWORK →</b></a>
-        </div>
-      </div>
-    </Operator>
-
-    <!-- the background generator: a chain of ops arcing around the
+    <!-- the background generator: a tight, compact chain arcing around the
          hero card's bottom-right corner (01 top-right → 04 below-left) -->
-    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" pos="left:42%; top:70px; width:min(185px,86vw);" ports="out">
+    <Operator id="opNoise" name="bg_01 · noise_src" type="sys" pos="left:40%; top:100px; width:min(154px,86vw);" ports="out">
       <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE" title="Click: cycle noise type">TYPE ▸ RIDGE</button>
       <div class="prow">
         <span class="plab">SPEED</span>
@@ -108,7 +128,7 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" pos="left:43%; top:255px; width:min(175px,86vw);">
+    <Operator id="opFeedbk" name="bg_02 · feedback" type="sys" pos="left:42%; top:232px; width:min(150px,86vw);">
       <div class="prow">
         <span class="plab">FDBK</span>
         <input class="prange" type="range" data-param="feedback" data-div="100" min="0" max="95" value="78" aria-label="Feedback amount — higher leaves longer cursor trails" />
@@ -117,7 +137,7 @@ const indexRows = projects
       <div class="genhint">CURSOR PAINTS THE FIELD ▚</div>
     </Operator>
 
-    <Operator id="opDither" name="bg_03 · dither" type="sys" pos="left:33%; top:430px; width:min(195px,86vw);">
+    <Operator id="opDither" name="bg_03 · dither" type="sys" pos="left:33%; top:356px; width:min(168px,86vw);">
       <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE" title="Click: cycle dither pattern">TYPE ▸ BAYER2</button>
       <div class="prow">
         <span class="plab">DENS</span>
@@ -131,7 +151,7 @@ const indexRows = projects
       </div>
     </Operator>
 
-    <Operator id="opOut" name="bg_04 · out" type="sys" pos="left:17%; top:455px; width:min(165px,86vw);" ports="in">
+    <Operator id="opOut" name="bg_04 · out" type="sys" pos="left:23%; top:388px; width:min(150px,86vw);" ports="in">
       <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL" title="Click: cycle output palette">PAL ▸ GRN</button>
       <div class="genhint">RENDERS THE PAGE ▚</div>
     </Operator>
@@ -155,7 +175,9 @@ const indexRows = projects
   @keyframes blink { 50% { opacity: 0; } }
 
   .viewer-wrap { margin: -12px -14px; }
+  .viewer-stage { position: relative; font-size: 0; }
   .viewer { display: block; background: var(--paper); width: 100%; height: auto; transition: background 300ms var(--ease-out); }
+  .viewer-dither { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; image-rendering: pixelated; }
   .vfoot {
     display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px;
     border-top: 1px solid var(--border-color);
@@ -167,13 +189,33 @@ const indexRows = projects
   /* cook flash when a new preview lands in the viewer */
   :global(#opScape.cooking) { border-color: var(--signal); box-shadow: 0 14px 50px rgba(61, 255, 136, 0.22); }
 
-  .idx { border-collapse: collapse; font-family: var(--font-mono); font-size: 11px; margin: -6px -8px; }
-  .idx td { padding: 6px 10px; border-bottom: 1px solid var(--border-color); color: var(--text); cursor: pointer; white-space: nowrap; }
-  .idx td a { color: inherit; text-decoration: none; }
-  .idx tr:hover td, .idx tr:hover td a { color: var(--signal); background: rgba(61, 255, 136, 0.03); }
-  .idx tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--signal); }
-  .idx tr.sel td, .idx tr.sel td a { color: var(--signal); }
-  .idx td.dim { color: var(--text-dim); }
+  .idx { display: flex; flex-direction: column; gap: 4px; margin: -4px -6px; }
+  .idxrow {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 11px; border-radius: 7px;
+    border: 1px solid transparent;
+    text-decoration: none; color: var(--text);
+    font-family: var(--font-mono);
+    transition: background var(--duration-fast), border-color var(--duration-fast);
+  }
+  .idxnum { font-size: 9px; color: var(--text-dim); width: 15px; flex: none; letter-spacing: 0.04em; }
+  .idxicon { display: inline-flex; color: var(--text-muted); flex: none; transition: color var(--duration-fast); }
+  .idxmain { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .idxname { font-size: 13px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; }
+  .idxname::before { content: '▸ '; color: var(--signal-dim); }
+  .idxmeta { font-size: 8.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: 0.06em; }
+  .idxyear { font-size: 10px; color: var(--text-dim); flex: none; font-variant-numeric: tabular-nums; }
+  .idxgo { font-size: 8px; letter-spacing: 0.09em; color: var(--signal); opacity: 0; flex: none; width: 40px; text-align: right; transition: opacity var(--duration-fast); }
+  .idxrow:hover, .idxrow.sel { background: color-mix(in srgb, var(--signal) 7%, transparent); border-color: var(--border-color); }
+  .idxrow:hover { border-color: var(--border-hover); }
+  .idxrow:hover .idxname, .idxrow.sel .idxname { color: var(--signal); }
+  .idxrow:hover .idxicon, .idxrow.sel .idxicon { color: var(--signal); }
+  .idxrow:hover .idxgo { opacity: 1; }
+  /* the selected row always shows its OPEN affordance — on touch it's the
+     "tap again" cue, on hover devices it matches the hover reveal anyway */
+  .idxrow.sel .idxgo { opacity: 1; }
+  .idxrow.sel { box-shadow: inset 2px 0 0 var(--signal); }
+  .idxrow:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 
   .readme { font-family: var(--font-mono); font-size: 11px; line-height: 1.8; color: var(--text-muted); }
   .readme .k { color: var(--signal); }
@@ -185,6 +227,48 @@ const indexRows = projects
   :global(body.perform) .idx { font-size: 13px; }
   :global(body.perform) .hero-tag { font-size: 13px; }
 
+  /* ---- the work rack ----
+     PATCH mode: the wrapper doesn't exist layout-wise — both ops float free. */
+  .rack { display: contents; }
+
+  /* READ narrow (default): player/playlist. The viewer sticks under the nav
+     as a chromed panel; the index scrolls beneath it, so a selection always
+     cooks a viewer that's on screen. */
+  :global(body.perform) .rack {
+    display: block;
+    max-width: 860px;
+    margin: 0 auto 40px;
+    text-align: left;
+  }
+  :global(body.perform) .rack :global(.op) { margin: 0 0 18px; max-width: none; }
+  :global(body.perform) .rack :global(#opScape) {
+    position: sticky !important;
+    max-width: none;
+    top: calc(var(--nav-height) + 10px);
+    z-index: 40; /* above sibling ops, well under the nav (90) */
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+  }
+  :global(body.perform) .rack :global(#opScape .ohead) { padding: 6px 10px; margin-bottom: 0; }
+  :global(body.perform) .rack :global(#opScape .obody) { padding: 0; }
+  :global(body.perform) .rack .viewer-wrap { margin: 0; }
+
+  /* READ wide (≥880px): two-up rack — index as a playlist column beside the
+     viewer, both fully visible. Sticky no longer needed. */
+  @media (min-width: 880px) {
+    :global(body.perform) .rack {
+      display: grid;
+      grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      max-width: 1080px;
+    }
+    :global(body.perform) .rack :global(#opIndex) { grid-column: 1; grid-row: 1; margin: 0; }
+    :global(body.perform) .rack :global(#opScape) { grid-column: 2; grid-row: 1; position: static !important; margin: 0; }
+  }
+
   .chain { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); }
   .chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
   .arr { color: var(--signal-dim); }
@@ -194,6 +278,15 @@ const indexRows = projects
   .prow input { flex: 1; min-width: 0; width: 100%; }
   .pval { font-size: 8.5px; color: var(--signal); font-weight: 400; width: 26px; flex: none; text-align: right; }
   .genhint { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.12em; color: var(--text-dim); margin-top: 9px; white-space: nowrap; }
+
+  /* bg_generator nodes are secondary instruments — keep them compact so the
+     dither field reads through and the hero/viewer stay the focus */
+  :global(#opNoise .obody), :global(#opFeedbk .obody),
+  :global(#opDither .obody), :global(#opOut .obody) { padding: 8px 10px; }
+  :global(#opNoise .ohead), :global(#opFeedbk .ohead),
+  :global(#opDither .ohead), :global(#opOut .ohead) { padding: 4px 9px; font-size: 9px; }
+  :global(#opNoise) .prow, :global(#opFeedbk) .prow,
+  :global(#opDither) .prow, :global(#opOut) .prow { margin-top: 6px; }
 </style>
 
 <script is:inline data-astro-rerun>
@@ -208,27 +301,231 @@ const indexRows = projects
   let seed = 99;
   const srnd = (s0) => { seed = s0; return () => (seed = (seed * 16807) % 2147483647) / 2147483647; };
 
-  /* ---------- viewer: futurescaper — radial consequence map ---------- */
+  /* ---------- shared helpers: dither transition + octilinear edge ---------- */
+  const TRANS = 0.44; // seconds — dithered dissolve when a new preview cooks in
+  const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+  const PAL_HOT = ['#3dff88', '#e8a317', '#56b4e9', '#9f9f98']; // GRN / AMB / CYN / MONO
+  const PAL_BASE = ['#233b2c', '#3a2c14', '#15303d', '#26262a']; // quiet tone per palette (matches bg)
+  let transSeed = 0.137; // re-rolled per transition so the grain is never identical
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function octi(sx, sy, tx, ty, stub) {
+    stub = stub || 14;
+    const ax = sx + stub, bx = tx - stub, dx = bx - ax, dy = ty - sy;
+    const adx = Math.abs(dx), ady = Math.abs(dy), gx = Math.sign(dx) || 1, gy = Math.sign(dy) || 1;
+    const pts = [[sx, sy], [ax, sy]];
+    if (adx >= ady) pts.push([bx - gx * ady, sy]); else pts.push([ax + gx * adx, sy + gy * adx]);
+    pts.push([bx, ty], [tx, ty]);
+    return 'M ' + pts.map((p) => p[0] + ' ' + p[1]).join(' L ');
+  }
+  // read the visitor's live bg_generator settings so the transition matches
+  function bgSettings() {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem('patch-bg') || '{}') || {}; } catch (e) {}
+    return {
+      pal: (((s.pal | 0) % 4) + 4) % 4,
+      ditherT: (((s.ditherT | 0) % 4) + 4) % 4,
+      noiseT: (typeof s.noiseT === 'number' ? (((s.noiseT % 3) + 3) % 3) : 1), // default RIDGE
+      scale: (typeof s.scale === 'number' ? s.scale : 3),
+    };
+  }
+  function hash01(x, y, s) { const h = ((x * 73856093) ^ (y * 19349663) ^ (((s * 1013) | 0) * 83492791)) >>> 0; return ((h >>> 8) & 1023) / 1024; }
+  // same threshold families the bg dither engine uses (0 BAYER4 · 1 BAYER2 · 2 SCAN · 3 STATIC)
+  function thresh(dt, gx, gy) {
+    if (dt === 1) { const B2 = [[0, 2], [3, 1]]; return (B2[gy & 1][gx & 1] + 0.5) / 4; }
+    if (dt === 2) return ((gy & 3) + 0.5) / 4.4;
+    if (dt === 3) { const h = ((gx * 73856093) ^ (gy * 19349663)) >>> 0; return ((h >>> 8) & 1023) / 1024; }
+    return (BAYER[gy & 3][gx & 3] + 0.5) / 16;
+  }
+  // compact value-noise so the dissolve SHAPE can follow the bg noise type
+  const _perm = (function () {
+    const p = new Uint8Array(512), a = []; for (let i = 0; i < 256; i++) a[i] = i;
+    let sd = 1337; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0, t = a[i]; a[i] = a[j]; a[j] = t; }
+    for (let i = 0; i < 512; i++) p[i] = a[i & 255]; return p;
+  })();
+  const _fade = (x) => x * x * (3 - 2 * x);
+  function _vn(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    const a = _perm[_perm[X] + Y] / 255, b = _perm[_perm[X + 1] + Y] / 255, c = _perm[_perm[X] + Y + 1] / 255, d = _perm[_perm[X + 1] + Y + 1] / 255;
+    const u = _fade(xf), v = _fade(yf), l1 = a + (b - a) * u, l2 = c + (d - c) * u; return l1 + (l2 - l1) * v;
+  }
+  function noiseShape(nt, gx, gy) {
+    const o = transSeed * 12; // shift the field each transition
+    if (nt === 2) { const n = 0.5 + (Math.sin((gx + o) * 0.05) + Math.sin(gy * 0.06 - o) + Math.sin((gx + gy) * 0.03)) / 6; return Math.max(0, Math.min(1, (n - 0.2) * 1.5)); }
+    let n1 = _vn(gx * 0.055 + o, gy * 0.055), n2 = _vn(gx * 0.12 - 7.7, gy * 0.12 + 3.1);
+    if (nt === 1) { n1 = 1 - Math.abs(2 * n1 - 1); n2 = 1 - Math.abs(2 * n2 - 1); return Math.max(0, Math.min(1, (0.62 * n1 + 0.38 * n2 - 0.15) * 1.5)); }
+    return Math.max(0, Math.min(1, (0.62 * n1 + 0.38 * n2) * 1.05));
+  }
+  /* Dithered dissolve on a CANVAS overlay — the preview resolves out of static.
+     The SHAPE follows the bg noise type (FBM/RIDGE/PLASMA), the pixel texture
+     the bg dither + SCALE (fine cells), the two tones the bg palette base/hot,
+     plus per-transition jitter. Perf: the cover/hot fields are computed ONCE per
+     transition; each frame is just one ImageData rebuild + a nearest-neighbor
+     blit (2 canvas ops) — no thousands of SVG nodes. */
+  const dcv = document.getElementById('viewerDither');
+  const dctx = dcv ? dcv.getContext('2d') : null;
+  let tOff = null, tOffCtx = null, tImg = null, tCols = 0, tRows = 0, tW = 0, tH = 0;
+  let tCover = null, tHot = null, tBaseRGB = [0, 0, 0], tHotRGB = [0, 0, 0], tActive = false;
+  const hx = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  function beginTransition() {
+    if (!dcv || !dctx || REDUCED) { tActive = false; return; }
+    const w = dcv.clientWidth | 0, h = dcv.clientHeight | 0;
+    if (w < 2 || h < 2) { tActive = false; return; }
+    tW = dcv.width = w; tH = dcv.height = h;
+    const b = bgSettings();
+    const CELL = Math.max(3, Math.min(7, Math.round(b.scale))); // fine dither, follows bg SCALE
+    tCols = Math.max(1, Math.ceil(w / CELL));
+    tRows = Math.max(1, Math.ceil(h / CELL));
+    tBaseRGB = hx(PAL_BASE[b.pal]);
+    // Muted accent: mostly the dark base tone, with only a restrained tint of
+    // the palette hot (blended halfway to base) so the dissolve isn't flashy.
+    const H0 = hx(PAL_HOT[b.pal]);
+    tHotRGB = [Math.round(H0[0] * 0.5 + tBaseRGB[0] * 0.5), Math.round(H0[1] * 0.5 + tBaseRGB[1] * 0.5), Math.round(H0[2] * 0.5 + tBaseRGB[2] * 0.5)];
+    tCover = new Float32Array(tCols * tRows);
+    tHot = new Uint8Array(tCols * tRows);
+    for (let gy = 0; gy < tRows; gy++) {
+      for (let gx = 0; gx < tCols; gx++) {
+        const i = gy * tCols + gx;
+        const n = noiseShape(b.noiseT, gx, gy);                 // dissolve shape = bg noise
+        tCover[i] = n * 0.82 + 0.18 + (hash01(gx, gy, transSeed) - 0.5) * 0.18;
+        const dth = thresh(b.ditherT, gx, gy);                  // pixel texture = bg dither
+        tHot[i] = (n - dth * 0.5 + (hash01(gx + 5, gy + 9, transSeed) - 0.5) * 0.28) > 0.74 ? 1 : 0; // sparse accent
+      }
+    }
+    if (!tOff) tOff = document.createElement('canvas');
+    if (tOff.width !== tCols || tOff.height !== tRows) { tOff.width = tCols; tOff.height = tRows; }
+    tOffCtx = tOff.getContext('2d');
+    tImg = tOffCtx.createImageData(tCols, tRows);
+    dctx.imageSmoothingEnabled = false;
+    dcv.style.opacity = '0.88'; // soften so the dissolve stays muted
+    tActive = true;
+  }
+  function cookTransition(p) {
+    if (!tActive || !tCover) return;
+    const d = tImg.data;
+    for (let i = 0; i < tCover.length; i++) {
+      const o = i * 4;
+      if (tCover[i] >= p) { const c = tHot[i] ? tHotRGB : tBaseRGB; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+      else d[o + 3] = 0;
+    }
+    tOffCtx.putImageData(tImg, 0, 0);
+    dctx.clearRect(0, 0, tW, tH);
+    dctx.drawImage(tOff, 0, 0, tCols, tRows, 0, 0, tW, tH);
+  }
+  function endTransition() {
+    tActive = false;
+    if (dctx) dctx.clearRect(0, 0, tW, tH);
+    if (dcv) dcv.style.opacity = '0';
+    tCover = null; tHot = null;
+  }
+
+  /* ---------- viewer: futurescaper — self-generating consequence map ----------
+     A compact vanilla port of the case-study hero (HeroMap): a seed appears,
+     octilinear "metro" edges draw themselves outward, and STEEPLE-coloured
+     consequence pills cascade in (first order, then second), looping through
+     scripted scenarios. Same visual language, zero framework JS. */
+  const SENT = { pos: '#16A34A', neg: '#DC2626', neu: '#64748B' };
+  const SGL = {
+    pos: ['M7 7h10v10', 'M7 17 17 7'],
+    neg: ['m7 7 10 10', 'M17 7v10H7'],
+    neu: ['M4 9.5q2.5-3 5 0t5 0 5 0', 'M4 15.5q2.5-3 5 0t5 0 5 0'],
+  };
+  // cat index → STEEP: 0 social · 1 tech · 2 econ · 3 env · 4 pol · 5 legal · 6 ethical
+  const SCAPE = [
+    { seed: 'Deepfakes indistinguishable from reality', nodes: [
+      { id: 'd1', cat: 5, s: 'neg' }, { id: 'd2', cat: 0, s: 'pos' }, { id: 'd3', cat: 2, s: 'pos' },
+      { id: 'd4', cat: 4, s: 'neu' }, { id: 'd5', cat: 6, s: 'neg' }, { id: 'd6', cat: 1, s: 'pos' },
+      { id: 'd1a', cat: 1, s: 'pos', p: 'd1' }, { id: 'd3a', cat: 2, s: 'neu', p: 'd3' }, { id: 'd6a', cat: 1, s: 'neg', p: 'd6' },
+    ] },
+    { seed: 'Universal basic income nationwide', nodes: [
+      { id: 'u1', cat: 2, s: 'pos' }, { id: 'u2', cat: 0, s: 'pos' }, { id: 'u3', cat: 4, s: 'neg' },
+      { id: 'u4', cat: 1, s: 'neu' }, { id: 'u5', cat: 5, s: 'pos' }, { id: 'u7', cat: 3, s: 'pos' },
+      { id: 'u1a', cat: 0, s: 'pos', p: 'u1' }, { id: 'u4a', cat: 4, s: 'neu', p: 'u4' }, { id: 'u7a', cat: 2, s: 'neu', p: 'u7' },
+    ] },
+    { seed: 'Lab-grown meat outprices farming', nodes: [
+      { id: 'm1', cat: 3, s: 'pos' }, { id: 'm2', cat: 2, s: 'neg' }, { id: 'm3', cat: 5, s: 'neg' },
+      { id: 'm4', cat: 1, s: 'neu' }, { id: 'm5', cat: 0, s: 'neg' }, { id: 'm7', cat: 6, s: 'pos' },
+      { id: 'm1a', cat: 2, s: 'neu', p: 'm1' }, { id: 'm3a', cat: 4, s: 'neg', p: 'm3' }, { id: 'm5a', cat: 3, s: 'pos', p: 'm5' },
+    ] },
+  ];
+  const SC_SEEDX = 14, SC_SEEDW = 94, SC_SEEDH = 40, SC_CY = H / 2;
+  const SC_D1X = 176, SC_D2X = 300, SC_W1 = 66, SC_W2 = 54, SC_PH = 18;
+  const SC_EDGE_DUR = 0.5, SC_HOLD = 2.6, SC_FADE = 0.55;
   function scapeInit() {
-    const r = srnd(99);
-    return Array.from({ length: 120 }, () => ({ order: 1 + Math.floor(r() * 5), a: r() * Math.PI * 2, c: Math.floor(r() * 7), sz: 1.8 + r() * 2.2, j: r() * 0.5 + 0.75 }));
+    const placed = SCAPE.map((sc) => {
+      const d1 = sc.nodes.filter((n) => !n.p), d2 = sc.nodes.filter((n) => n.p);
+      const byId = {}, nodes = [];
+      const spacing = Math.min(34, (H - 26) / d1.length);
+      d1.forEach((n, i) => {
+        const cy = SC_CY + (i - (d1.length - 1) / 2) * spacing;
+        const ed = 0.9 + i * 0.22, nd = ed + 0.34;
+        const pp = { s: n.s, cat: n.cat, x: SC_D1X, cy, w: SC_W1, h: SC_PH, sx: SC_SEEDX + SC_SEEDW, sy: SC_CY, tx: SC_D1X, ty: cy, ed, nd };
+        nodes.push(pp); byId[n.id] = pp;
+      });
+      const d2base = 0.9 + d1.length * 0.22 + 0.25;
+      d2.forEach((n, j) => {
+        const par = byId[n.p]; if (!par) return;
+        const cy = par.cy + (par.cy <= SC_CY ? -1 : 1) * 20;
+        const ed = d2base + j * 0.2, nd = ed + 0.34;
+        nodes.push({ s: n.s, cat: n.cat, x: SC_D2X, cy, w: SC_W2, h: SC_PH, sx: par.x + par.w, sy: par.cy, tx: SC_D2X, ty: cy, ed, nd });
+      });
+      const total = Math.max.apply(null, nodes.map((n) => n.nd)) + 0.5;
+      return { seed: sc.seed, nodes, total };
+    });
+    return { sc: placed };
+  }
+  function scapeWrap(str) {
+    const max = 18; if (str.length <= max) return [str, ''];
+    let cut = str.lastIndexOf(' ', max); if (cut < 0) cut = max;
+    let l2 = str.slice(cut + 1); if (l2.length > max) l2 = l2.slice(0, max - 1) + '…';
+    return [str.slice(0, cut), l2];
+  }
+  function scapeSeed(title, inv) {
+    const x = SC_SEEDX, y = SC_CY - SC_SEEDH / 2, w = SC_SEEDW, h = SC_SEEDH;
+    const ln = scapeWrap(title);
+    return '<g>'
+      + '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="6" fill="#1b1a20" stroke="' + (inv ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.12)') + '"/>'
+      + '<text x="' + (x + 9) + '" y="' + (y + 11) + '" font-family="monospace" font-size="5" letter-spacing="1" fill="rgba(255,255,255,0.5)">SCENARIO</text>'
+      + '<text x="' + (x + 9) + '" y="' + (y + 22) + '" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#fff"><tspan x="' + (x + 9) + '">' + esc(ln[0]) + '</tspan><tspan x="' + (x + 9) + '" dy="8.5">' + esc(ln[1]) + '</tspan></text>'
+      + '<circle cx="' + (x + 18) + '" cy="' + y + '" r="4" fill="#fff" stroke="#151419" stroke-width="2.5"/>'
+      + '</g>';
+  }
+  function scapePill(n, np, inv) {
+    const y = n.cy - n.h / 2, col = STEEP[n.cat], sc = SENT[n.s], base = inv ? '#201f24' : '#fff';
+    const fill = n.s === 'neu' ? base : 'color-mix(in srgb, ' + sc + ' 16%, ' + base + ')';
+    const g = SGL[n.s].map((d) => '<path d="' + d + '"/>').join('');
+    const dy = (1 - np) * 5;
+    return '<g opacity="' + np.toFixed(3) + '" transform="translate(0 ' + dy.toFixed(2) + ')">'
+      + '<rect x="' + n.x + '" y="' + y + '" width="' + n.w + '" height="' + n.h + '" rx="' + (n.h / 2) + '" fill="' + fill + '" stroke="' + col + '" stroke-width="1.4"/>'
+      + '<g transform="translate(' + (n.x + 5) + ' ' + (n.cy - 5) + ') scale(0.42)" fill="none" stroke="' + sc + '" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">' + g + '</g>'
+      + '</g>';
   }
   function scapeDraw(st, ft, inv) {
-    const T = REDUCED ? 1 : Math.min(1, (ft % 6.5) / 4);
-    const cx = W / 2, cy = H / 2 + 6, R = H * 0.46;
-    const line = inv ? '#3a382f' : '#D2CABA';
-    let o = '';
-    for (let k = 1; k <= 5; k++) {
-      o += `<circle cx="${cx}" cy="${cy}" r="${(R * k) / 5}" fill="none" stroke="${line}" stroke-dasharray="3 5" opacity="${0.9 - k * 0.1}"/>`;
+    const scs = st.sc;
+    const cyc = scs.map((s) => s.total + SC_HOLD + SC_FADE);
+    const loop = cyc.reduce((a, b) => a + b, 0);
+    let t = REDUCED ? scs[0].total : (ft % loop), idx = 0;
+    if (!REDUCED) { while (t > cyc[idx]) { t -= cyc[idx]; idx++; } }
+    const s = scs[idx], lt = REDUCED ? s.total : t;
+    const fadeStart = s.total + SC_HOLD;
+    const gOp = (!REDUCED && lt > fadeStart) ? Math.max(0, 1 - (lt - fadeStart) / SC_FADE) : 1;
+    const dot = inv ? 'rgba(230,230,226,0.06)' : 'rgba(42,42,46,0.08)';
+    let o = '<defs><pattern id="scdots" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="' + dot + '"/></pattern></defs>';
+    o += '<rect width="' + W + '" height="' + H + '" fill="url(#scdots)"/>';
+    o += '<g opacity="' + gOp.toFixed(3) + '">';
+    for (const n of s.nodes) {
+      const ep = REDUCED ? 1 : Math.min(1, Math.max(0, (lt - n.ed) / SC_EDGE_DUR));
+      if (ep <= 0) continue;
+      o += '<path d="' + octi(n.sx, n.sy, n.tx, n.ty) + '" fill="none" stroke="' + STEEP[n.cat] + '" stroke-width="2.6" stroke-linejoin="round" opacity="0.7" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="' + (1 - ep).toFixed(3) + '"/>';
     }
-    for (const p of st) {
-      const prog = Math.min(1, Math.max(0, T * 5 - (p.order - 1))); if (prog <= 0) continue;
-      const rr = ((R * p.order) / 5) * p.j * prog + R * 0.08;
-      o += `<circle cx="${cx + Math.cos(p.a) * rr * 1.5}" cy="${cy + Math.sin(p.a) * rr * 0.8}" r="${p.sz * prog}" fill="${STEEP[p.c]}" fill-opacity=".85"/>`;
+    o += scapeSeed(s.seed, inv);
+    for (const n of s.nodes) {
+      const np = REDUCED ? 1 : Math.min(1, Math.max(0, (lt - n.nd) / 0.3));
+      if (np <= 0) continue;
+      o += '<circle cx="' + n.tx + '" cy="' + n.ty + '" r="4" fill="' + (inv ? '#15140F' : '#FBFAF7') + '" stroke="' + STEEP[n.cat] + '" stroke-width="2"/>';
+      o += scapePill(n, np, inv);
     }
-    const pulse = REDUCED ? 0 : 2.5 * Math.sin(ft * 4);
-    o += `<circle cx="${cx}" cy="${cy}" r="${11 + pulse}" fill="#E8A317"/><circle cx="${cx}" cy="${cy}" r="17" fill="none" stroke="#E8A317" stroke-opacity=".5"/>`;
-    return o;
+    return o + '</g>';
   }
 
   /* ---------- viewer: futurity_engine — graph growing from an SSE stream ---------- */
@@ -324,7 +621,7 @@ const indexRows = projects
 
   /* ---------- viewer registry (facts: 5 phases / 42 surveys / 8 interviews are verified) ---------- */
   const V = {
-    'futurescaper': { name: 'futurescaper_view · OCEAN_PLASTICS.scn', foot: 'RADIAL · 5 ORDERS · STEEPLE', aria: 'Futurescaper radial consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
+    'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
     'futurity-engine': { name: 'futurity_engine_view · BATTERIES.scn', foot: 'SSE REPLAY · LIVE GRAPH · 5 PHASES', aria: 'Futurity Engine growing knowledge graph, live synthetic demo', paper: false, init: engInit, draw: engDraw },
     'fast': { name: 'fast_view · SYNBIO.scn', foot: 'KNOWLEDGE GRAPH · SEMANTIC TYPES', aria: 'FAST clustered knowledge graph, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
     'campus-ai': { name: 'campus_ai_view · INTERVIEWS.scn', foot: 'THEMATIC CODING · 42 SURVEYS · 8 INTERVIEWS', aria: 'Campus AI research thematic coding, live synthetic demo', paper: true, init: campInit, draw: campDraw },
@@ -335,6 +632,7 @@ const indexRows = projects
   const footEl = document.getElementById('viewerFoot');
   const openEl = document.getElementById('viewerOpen');
   const invBtn = document.getElementById('invertBtn');
+  const idxRows = Array.prototype.slice.call(document.querySelectorAll('#workIndex [data-slug]'));
   let cur = 'futurescaper', inv = false, ft = 0, state = V[cur].init();
 
   function bg() {
@@ -342,23 +640,83 @@ const indexRows = projects
     svg.style.background = paper ? '#F4F1EA' : '#15140F';
   }
   function select(slug) {
-    cur = slug; ft = 0; state = V[cur].init();
+    cur = slug; ft = 0; transSeed = Math.random(); state = V[cur].init();
     if (nameEl) nameEl.textContent = V[cur].name;
     if (footEl) footEl.textContent = V[cur].foot;
     if (openEl) openEl.href = '/projects/' + slug;
     svg.setAttribute('aria-label', V[cur].aria);
     bg();
-    document.querySelectorAll('#workIndex tr').forEach((tr) => tr.classList.toggle('sel', tr.dataset.slug === slug));
+    // closured rows only — a live document query here would let a stale
+    // instance (pre view-transition) repaint the NEW page's rows out of sync
+    idxRows.forEach((row) => row.classList.toggle('sel', row.dataset.slug === slug));
     if (op) { op.classList.add('cooking'); setTimeout(() => op.classList.remove('cooking'), 450); }
+    beginTransition();
     if (REDUCED) svg.innerHTML = V[cur].draw(state, ft, inv);
   }
 
-  document.querySelectorAll('#workIndex tr').forEach((tr) => {
-    tr.addEventListener('click', (e) => {
-      if (e.target.closest('a')) return; // name link still navigates
-      select(tr.dataset.slug);
+  /* Work index: hover previews (with the dithered transition); the row itself
+     is a link, so a click opens the case study. The viewer auto-cycles through
+     the projects until the visitor interacts, then resumes ~30s after. */
+  const idxEl = document.getElementById('workIndex');
+  const ORDER = idxRows.map((r) => r.dataset.slug);
+  const CYCLE_MS = 7200, RESUME_MS = 30000;
+  let cycleTimer = null, idleTimer = null, cycling = false, hovering = false;
+  let touched = false;     // first touch interaction stops the cycle for good —
+                           // without hover there's no "disengaged" signal to resume on
+  let viewerSeen = true;   // never advance the index against an off-screen viewer
+  function startCycle() {
+    if (REDUCED || cycling || hovering || touched || !viewerSeen || ORDER.length < 2) return;
+    cycling = true;
+    cycleTimer = setInterval(() => {
+      // never tick against a dead DOM (post view-transition) or a hidden tab —
+      // rAF is paused in both, so ticking would move the index without the viewer
+      if (!svg.isConnected) { stopCycle(); return; }
+      if (document.hidden) return;
+      const i = ORDER.indexOf(cur); select(ORDER[(i + 1) % ORDER.length]);
+    }, CYCLE_MS);
+  }
+  function stopCycle() {
+    cycling = false;
+    if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+  }
+  // Hovering the index pauses cycling entirely (no ticks fire under the cursor);
+  // leaving it schedules a graceful resume after RESUME_MS of no interaction.
+  // Mouse only: touch fires synthetic enter events we must not treat as hover.
+  if (idxEl) {
+    idxEl.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; stopCycle(); } });
+    idxEl.addEventListener('pointerleave', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      hovering = false;
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(startCycle, RESUME_MS);
+    });
+    idxEl.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') { touched = true; stopCycle(); } }, { passive: true });
+  }
+  /* Selection grammar: hover previews (mouse), tap previews (touch), and a
+     second activation opens. Rows stay real links (SEO / middle-click / ⌘-click);
+     we only intercept a plain primary click on a row that isn't current yet. */
+  idxRows.forEach((row) => {
+    row.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && row.dataset.slug !== cur) select(row.dataset.slug); });
+    row.addEventListener('focus', () => { stopCycle(); if (row.dataset.slug !== cur) select(row.dataset.slug); });
+    row.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (row.dataset.slug !== cur) { e.preventDefault(); stopCycle(); select(row.dataset.slug); }
+      // already the current selection → the link navigates ("tap again to open")
     });
   });
+  // Cycle only while the viewer can actually respond on screen (READ mode can
+  // scroll it away; in PATCH mode the field fills the viewport so this stays true).
+  if (op && typeof IntersectionObserver !== 'undefined') {
+    new IntersectionObserver((es) => {
+      viewerSeen = es[es.length - 1].isIntersecting;
+      if (viewerSeen) startCycle(); else stopCycle();
+    }, { threshold: 0.3 }).observe(op);
+  }
+  // teardown before the ClientRouter swaps the page — otherwise this interval
+  // survives navigation and cycles the NEXT homepage's rows out of sync
+  document.addEventListener('astro:before-swap', stopCycle, { once: true });
+  startCycle();
 
   invBtn && invBtn.addEventListener('click', () => {
     inv = !inv;
@@ -371,11 +729,13 @@ const indexRows = projects
   if (REDUCED) {
     svg.innerHTML = V[cur].draw(state, ft, inv);
   } else {
+    beginTransition(); // cook the first preview in on load
     let vfc = 0;
     (function frame() {
       if (!svg.isConnected) return;
       ft += 1 / 60;
       if ((vfc++ & 1) === 0) svg.innerHTML = V[cur].draw(state, ft, inv); // 30fps is plenty
+      if (tActive) { if (ft < TRANS) cookTransition(ft / TRANS); else endTransition(); } // dithered dissolve overlay
       requestAnimationFrame(frame);
     })();
   }

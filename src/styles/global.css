@@ -36,20 +36,33 @@
 /* ============================================
    Base Styles
    ============================================ */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Must live in @layer base: Tailwind v4 puts utilities in @layer utilities,
+   and UNLAYERED rules beat layered ones regardless of specificity — so an
+   unlayered universal "padding:0; margin:0" reset silently overrides every
+   padding/margin utility site-wide (that's why nav/footer padding never
+   applied). Keeping it in @layer base lets the utilities win. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  /* Never allow horizontal overflow: it was widening the fixed-element
+     containing block, which stretched the navbar + footer past the viewport
+     and clipped their right edge (COOKED / CV). clip = no scroll container,
+     so sticky/fixed and vertical scrolling are unaffected. */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+body { max-width: 100%; overflow-x: clip; }
 
 body {
   font-family: var(--font-sans);

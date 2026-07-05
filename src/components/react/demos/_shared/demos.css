@@ -12,11 +12,6 @@
   min-height: 0;
 }
 
-.demoframe:fullscreen {
-  background: var(--bg);
-  padding: 24px;
-}
-
 .demoframe-head {
   display: flex;
   align-items: center;
@@ -51,7 +46,13 @@
 .demoframe-controls button:hover { border-color: var(--signal); color: var(--signal); }
 .demoframe-controls button:active { transform: scale(0.98); }
 
-.demoframe-body { position: relative; flex: 1; min-height: 0; }
+/* fill=true: the inline `height` is authoritative (a fixed box the demo fills
+   absolutely). We must NOT use `flex: 1` here — in this column flex container
+   (which has no explicit height of its own) flex-basis:0 would collapse the
+   body to ~0 and starve React-Flow of a sized container. */
+.demoframe-body { position: relative; flex: 0 0 auto; min-height: 0; }
+/* content-sized demos (aspect-driven SVG, e.g. the hero animation) */
+.demoframe-body[data-fill='false'] { height: auto; }
 
 .demoframe-skeleton {
   display: grid;

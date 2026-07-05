@@ -46,7 +46,7 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
   style="background: var(--backdrop-blur); backdrop-filter: blur(12px);"
   transition:persist
 >
-  <nav class="h-full flex items-center gap-3 px-4 md:px-6">
+  <nav class="h-full flex items-center gap-3 px-5 md:px-8 lg:px-10">
     <!-- cluster 1: brand + live network path -->
     <a href="/" class="brand" aria-label="carlton.dev — home">
       <span class="mark" aria-hidden="true">▛▟</span>
@@ -296,30 +296,50 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
   (function () {
     const KEY = 'patch-mode';
     const btn = document.getElementById('modeToggle');
-    function apply(mode) {
+    // The visitor's EXPLICIT choice is the only thing we persist. The mode we
+    // actually render ("effective") may be forced to READ on narrow viewports
+    // or for reduced motion — but that must not overwrite their preference, or
+    // a transient narrow window would trap them in READ everywhere afterward.
+    const readPref = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
+    const forced = () => window.matchMedia('(max-width: 1279px)').matches ||
+                         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const effective = () => forced() ? 'perform' : (readPref() || 'network');
+    function apply(mode, persist) {
       document.body.classList.toggle('perform', mode === 'perform');
       if (btn) btn.querySelectorAll('span').forEach(s => {
         const on = s.dataset.mode === mode;
         s.classList.toggle('mode-on', on);
         s.classList.toggle('text-text-muted', !on);
       });
-      try { localStorage.setItem(KEY, mode); } catch (e) {}
+      if (persist) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
       document.dispatchEvent(new CustomEvent('patchmode', { detail: mode }));
     }
-    // default: perform below 1280px (network topologies are authored
-    // for desktop widths) and for reduced motion; else stored or network
-    let mode = 'network';
-    try { mode = localStorage.getItem(KEY) || mode; } catch (e) {}
-    if (window.matchMedia('(max-width: 1279px)').matches ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches) mode = 'perform';
-    apply(mode);
-    btn && btn.addEventListener('click', () =>
-      apply(document.body.classList.contains('perform') ? 'network' : 'perform'));
+    apply(effective(), false);
+    // An explicit toggle: flip relative to the current EFFECTIVE mode and save
+    // it as the new preference so it carries across every subsequent page.
+    const toggle = () => {
+      const next = document.body.classList.contains('perform') ? 'network' : 'perform';
+      apply(next, true);
+    };
+    btn && btn.addEventListener('click', toggle);
     window.addEventListener('keydown', (e) => {
       if (e.key.toLowerCase() === 'p' && !e.metaKey && !e.ctrlKey &&
-          !/input|textarea/i.test(document.activeElement?.tagName || ''))
-        apply(document.body.classList.contains('perform') ? 'network' : 'perform');
+          !/input|textarea/i.test(document.activeElement?.tagName || '')) toggle();
     });
+    // keep the effective mode correct if the window crosses the breakpoint
+    window.matchMedia('(max-width: 1279px)').addEventListener?.('change', () => apply(effective(), false));
+
+    // The header is transition:persist (kept across view-transition swaps), so
+    // the active route + /network path chip must be refreshed by hand on nav.
+    function updateNav() {
+      const path = (location.pathname || '/').replace(/\/+$/, '') || '/';
+      document.querySelectorAll('header .navlink').forEach((a) => {
+        const href = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+        a.classList.toggle('on', href === path);
+      });
+      const chip = document.querySelector('header .pathchip');
+      if (chip) chip.textContent = path === '/' ? '/network/home' : '/network' + path;
+    }
 
     /* ---------- op-search palette ---------- */
     const pal = document.getElementById('opSearch');
@@ -373,12 +393,11 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     });
     document.addEventListener('astro:after-swap', () => {
       closePal();
-      // body classes don't survive the view-transition swap — re-apply mode
-      let m = 'network';
-      try { m = localStorage.getItem(KEY) || m; } catch (err) {}
-      if (window.matchMedia('(max-width: 1279px)').matches ||
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'perform';
-      apply(m);
+      // body classes don't survive the view-transition swap — re-apply the
+      // effective mode (which respects the saved preference), so navigating
+      // from PATCH lands you in PATCH, from READ lands you in READ.
+      apply(effective(), false);
+      updateNav();
     });
   })();
 </script>

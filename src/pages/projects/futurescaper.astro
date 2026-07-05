@@ -2,15 +2,22 @@
 /**
  * Futurescaper — flagship case-study network.
  *
- * INPUT (problem) → PROCESS (decision nodes) → VIEW (the real product,
- * live: extracted layout code + synthetic data) → OUT (outcome + next).
+ * INPUT (problem) → VIEW (hero: the product's self-generating landing map,
+ * opens the story) → PROCESS (what/ownership/role/decisions) → VIEW (the real
+ * product, live: interactive AGENTS.scn map) → OUT (outcome + next).
  *
- * The VIEW op hosts FuturescaperDemo (React island, client:only) — the
+ * Two VIEW ops. fsHero hosts HeroMap (React island, client:only) — the
+ * product's landing hero ported nearly verbatim (framer-motion, scripted
+ * synthetic scenarios): a consequence map that draws itself on loop.
+ *
+ * The main VIEW op hosts FuturescaperDemo (React island, client:only) — the
  * product's REAL radial layout algorithm (layout.js, extraction allowed:
  * Futurescaper is public per Futurity ruling) rendered with @xyflow/react,
- * on a hand-authored synthetic ocean-plastics futurescape. Interior uses
- * the product language per futurescaper/CLAUDE-DESIGN-SYSTEM.md: paper
- * #F4F1EA, amber #E8A317 (dark ink on amber), Wong STEEPLE palette.
+ * on a hand-authored synthetic "AI agents in knowledge work" futurescape,
+ * in the product's own interactive-map visual language (metro cards, dark
+ * radial seed, octilinear edges, STEEPLE coverage radar; lifted from
+ * futurescaper/demos/interactive-map/preview.html). Paper #F4F1EA, amber
+ * #E8A317 (dark ink on amber), Wong STEEPLE palette.
  * Prose comes from src/data/content.js — fact-checked, don't embellish.
  * Ownership numbers (35/100/100/100) are honest and verified.
  */
@@ -18,6 +25,7 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import PatchField from '../../components/PatchField.astro';
 import FuturescaperDemo from '../../components/react/demos/futurescaper/FuturescaperDemo.jsx';
+import HeroMap from '../../components/react/demos/futurescaper/HeroMap.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
@@ -37,16 +45,18 @@ const jsonLd = {
 };
 
 const links: [string, string][] = [
-  ['fsTitle', 'fsWhat'],
-  ['fsTitle', 'fsCraft'],
+  ['fsTitle', 'fsHero'],
+  ['fsHero', 'fsWhat'],
   ['fsWhat', 'fsOwn'],
-  ['fsOwn', 'fsRole'],
+  ['fsWhat', 'fsRole'],
+  ['fsRole', 'fsCraft'],
   ['fsCraft', 'fsD1'],
   ['fsD1', 'fsD2'],
   ['fsD2', 'fsD3'],
-  ['fsD2', 'fsView'],
-  ['fsRole', 'fsView'],
-  ['fsView', 'fsOut'],
+  ['fsD3', 'fsLayout'],
+  ['fsLayout', 'fsView'],
+  ['fsView', 'fsOutcome'],
+  ['fsOutcome', 'fsOut'],
 ];
 ---
 
@@ -55,20 +65,30 @@ const links: [string, string][] = [
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="fsNet" links={links} density={0.3} height="1780px" label="Futurescaper case-study network — press P for reading mode">
+  <PatchField id="fsNet" links={links} density={0.3} height="3800px" label="Futurescaper case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="fsTitle" name="input · the_problem" type="txt" pos="left:4%; top:44px; width:min(400px,88vw);" ports="out">
+    <Operator id="fsTitle" name="input · the_problem" type="txt" pos="left:4%; top:100px; width:min(440px,88vw);" ports="out">
       <p class="fs-meta">{project.meta}</p>
       <h1 class="fs-h">A map room for <span class="amb">possible futures</span></h1>
       <p class="fs-sub">// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS. FORCE LAYOUTS COLLAPSE INTO HAIRBALLS EXACTLY WHEN THE PICTURE MATTERS. THIS ONE DOESN'T.</p>
+      <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · futurescape.futurity.science ↗</a>
     </Operator>
 
-    <Operator id="fsWhat" name="txt · what_it_is" type="txt" pos="left:38%; top:60px; width:min(300px,86vw);">
+    <!-- VIEW (opener): the product's landing hero — a map generating itself -->
+    <Operator id="fsHero" name="futurescaper_view · live_map" type="view" pos="left:50%; top:360px; transform:translateX(-50%); width:min(900px,94vw);">
+      <div class="fs-viewerwrap">
+        <HeroMap client:only="react">
+          <div class="fs-poster hero" slot="fallback" aria-hidden="true">COOKING VIEWER — SELF-GENERATING MAP…</div>
+        </HeroMap>
+      </div>
+    </Operator>
+
+    <Operator id="fsWhat" name="txt · what_it_is" type="txt" pos="left:4%; top:1120px; width:min(360px,86vw);">
       {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <!-- OWNERSHIP (honest numbers, verified) -->
-    <Operator id="fsOwn" name="ownership_data" type="data" pos="right:4%; top:44px; width:min(260px,86vw);">
+    <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
+    <Operator id="fsOwn" name="ownership_data" type="data" pos="right:4%; top:100px; width:min(260px,86vw);">
       <div class="fs-meter">
         <span>CONCEPT</span><div class="bar"><i style="width:35%"></i></div>
         <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
@@ -78,29 +98,34 @@ const links: [string, string][] = [
       </div>
     </Operator>
 
-    <Operator id="fsRole" name="txt · my_role" type="txt" pos="right:4%; top:390px; width:min(340px,86vw);">
+    <Operator id="fsRole" name="txt · my_role" type="txt" pos="right:4%; top:1120px; width:min(360px,86vw);">
       {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <!-- PROCESS: decisions -->
-    <Operator id="fsCraft" name="process · craft_notes" type="txt" pos="left:4%; top:390px; width:min(340px,86vw);">
+    <Operator id="fsCraft" name="process · craft_notes" type="txt" pos="left:4%; top:1540px; width:min(360px,86vw);">
       {cs['Craft notes'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" pos="left:4%; top:760px; width:min(270px,86vw);">
+    <!-- PROCESS: the three design-engineering decisions -->
+    <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" pos="left:4%; top:1940px; width:min(270px,86vw);">
       <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
     </Operator>
 
-    <Operator id="fsD2" name="decision_02 · provenance" type="txt" pos="left:36%; top:760px; width:min(270px,86vw);">
+    <Operator id="fsD2" name="decision_02 · provenance" type="txt" pos="left:37%; top:1940px; width:min(270px,86vw);">
       <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
     </Operator>
 
-    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" pos="right:4%; top:760px; width:min(270px,86vw);">
+    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" pos="right:4%; top:1940px; width:min(270px,86vw);">
       <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
     </Operator>
 
+    <!-- PROCESS: the core argument, set up right before the live demo -->
+    <Operator id="fsLayout" name="process · the_layout_problem" type="txt" pos="left:50%; top:2220px; transform:translateX(-50%); width:min(600px,92vw);">
+      {cs['The layout problem'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
     <!-- VIEW: the real product, live — real layout code, synthetic data -->
-    <Operator id="fsView" name="futurescaper_view · OCEAN.scn" type="view" pos="left:50%; top:1000px; transform:translateX(-50%); width:min(880px,94vw);">
+    <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" pos="left:50%; top:2620px; transform:translateX(-50%); width:min(900px,94vw);">
       <div class="fs-viewerwrap">
         <FuturescaperDemo client:only="react">
           <div class="fs-poster" slot="fallback" aria-hidden="true">COOKING VIEWER — REAL LAYOUT CODE, SYNTHETIC DATA…</div>
@@ -109,7 +134,12 @@ const links: [string, string][] = [
     </Operator>
 
     <!-- OUT -->
-    <Operator id="fsOut" name="out · next_network" type="data" pos="right:5%; bottom:36px; width:min(250px,86vw);" ports="in">
+    <Operator id="fsOutcome" name="out · outcome" type="txt" pos="left:4%; top:3500px; width:min(440px,88vw);" ports="in">
+      {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
+      <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · futurescape.futurity.science ↗</a>
+    </Operator>
+
+    <Operator id="fsOut" name="out · next_network" type="data" pos="right:5%; top:3520px; width:min(250px,86vw);" ports="in">
       <p class="fs-out">
         THE LAYOUT IS THE ARGUMENT.<br /><br />
         <a href="/projects/futurity-engine">NEXT ▸ futurity_engine</a><br />
@@ -136,7 +166,7 @@ const links: [string, string][] = [
     line-height: 0.98;
     max-width: 14ch;
   }
-  .fs-h .amb { color: var(--amber); }
+  .fs-h .amb { color: var(--signal); }
   .fs-sub {
     font-family: var(--font-mono);
     font-size: 10.5px;
@@ -146,8 +176,23 @@ const links: [string, string][] = [
     max-width: 42ch;
   }
 
-  .fs-p { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; margin-bottom: 8px; }
+  .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
   .fs-p:last-child { margin-bottom: 0; }
+
+  .fs-live {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: border-color var(--duration-normal), background var(--duration-normal);
+  }
+  .fs-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
 
   .fs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
   .fs-meter .bar {
@@ -165,10 +210,11 @@ const links: [string, string][] = [
   .fs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
 
   .fs-viewerwrap { margin: -12px -14px; }
+  .fs-poster.hero { height: 600px; }
   .fs-poster {
     display: grid;
     place-items: center;
-    height: 586px;
+    height: 634px;
     background: var(--paper);
     color: var(--ink-muted);
     font-family: var(--font-mono);

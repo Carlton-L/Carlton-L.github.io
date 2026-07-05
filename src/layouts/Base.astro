@@ -38,6 +38,30 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Palette accent: apply the visitor's chosen bg palette to the UI accent
+         (--signal) before first paint, so the whole site re-themes with the
+         bg_generator's OUT palette and there's no green→other flash. -->
+    <script is:inline>
+      (function () {
+        var PAL = [
+          ['#3dff88', 'rgba(61,255,136,0.28)'],
+          ['#e8a317', 'rgba(232,163,23,0.30)'],
+          ['#56b4e9', 'rgba(86,180,233,0.30)'],
+          ['#9f9f98', 'rgba(159,159,152,0.30)'],
+        ];
+        function applyPal() {
+          var i = 0;
+          try { var s = JSON.parse(localStorage.getItem('patch-bg') || '{}'); if (s && typeof s.pal === 'number') i = ((s.pal % 4) + 4) % 4; } catch (e) {}
+          var p = PAL[i], r = document.documentElement.style;
+          r.setProperty('--signal', p[0]);
+          r.setProperty('--signal-dim', p[1]);
+          r.setProperty('--border-hover', p[0] + '66');
+        }
+        applyPal();
+        document.addEventListener('astro:after-swap', applyPal);
+      })();
+    </script>
+
     <!-- SEO -->
     <title>{title}</title>
     <meta name="description" content={description} />
