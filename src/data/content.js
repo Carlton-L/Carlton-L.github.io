@@ -115,33 +115,33 @@ export const projects = [
       {
         heading: 'What it is',
         body: [
-          'The Futurity Engine is a multi-agent research and prediction platform. A user poses a research question; a five-phase pipeline of AI agent personas plans, gathers, analyzes, and reports — pulling in papers, patents, and web signals. Every step of that reasoning streams to the browser over Server-Sent Events and lands in a live knowledge graph with 25+ semantic node types, so the system’s thinking is visible while it happens.',
+          'The Futurity Engine answers one research question with a small army. You ask something like "how close are solid-state batteries to displacing lithium-ion", and a five-phase pipeline pulls papers, patents, organizations and press out of Futurity’s knowledge network, computes signals over the evidence, and sets ten domain agents loose on the question. Every step streams to the browser over Server-Sent Events and lands in a live knowledge graph with more than 25 node types. You watch the system think while it thinks.',
         ],
       },
       {
         heading: 'How it works',
         body: [
-          'A run moves through five phases. The Engine reads the question — or takes a lab, a curated taxonomy of subjects from FAST — and pulls connected evidence from Futurity’s knowledge network: papers, patents, organizations, press, books, investment data. It computes analytical signals over that evidence — research velocity, patent concentration, citation momentum, whitespace analysis — each one traceable to the exact papers behind it. Then ten domain-expert agents research the question and critique their own findings before a synthesis pass turns it all into a structured report with scenarios, confidence scores, and receipts.',
-          'Runs are long — minutes to hours, depending on the lab — so the system is built to be honest about time: every phase checkpoints, interrupted runs resume without re-running finished agents, and the interface distinguishes “working quietly” from “actually stalled.”',
+          'A run starts from a question, or from a lab: a curated taxonomy of subjects built in FAST. The Engine pulls everything connected to those subjects from the knowledge network, then computes a layer of signals over the pool. Research velocity, patent concentration, citation momentum, whitespace. Each signal keeps pointers to the exact papers behind it, so no claim floats free of its evidence. Then the agents run. Each one researches, turns around and attacks its own findings in a critique round, and a synthesis pass folds all ten analyses into a report with scenarios, confidence scores and receipts.',
+          'Runs are long. Minutes at best, hours on a big lab. So the system is honest about time: every phase checkpoints, an interrupted run resumes without re-running finished agents, and the interface knows the difference between working quietly and being stuck.',
         ],
       },
       {
         heading: 'My role',
         body: [
-          'The Engine was our CEO’s idea. I gave it its first form: a working UI prototype of the concept — a "collapsed" version of what is now a massive node graph — that established the core interaction idea: agent reasoning should be a navigable graph, not a wall of logs. The architecture notes and starter templates from that prototype became reference points for the production build.',
-          'From there I built the frontend alongside the team and stayed in the product conversations that defined what the Engine became: the three-pane workspace (brief & report, live graph, chat/transcript/log), the incremental graph-streaming state model, and the visual language that encodes node types by shape and color. I also contributed backend work in the FastAPI orchestrator.',
+          'The Engine was our CEO’s idea. I gave it its first form: a working prototype of the UI concept, a collapsed version of what is now a massive node graph. That prototype settled the core interaction bet early: agent reasoning should be a graph you can navigate, not a wall of logs you scroll.',
+          'From there I built the frontend alongside the team. The visual system is mine: the theme architecture, the shape and color grammar that makes node types readable at a glance, and most of the report, publishing and chat surfaces. So are the streaming designs the team built against, incremental graph ingest with no rebuilds, and the heartbeat liveness contract I wrote for the backend before the backend emitted it.',
         ],
       },
       {
         heading: 'The hard interaction problem',
         body: [
-          'Streaming an unbounded agent process into a graph without overwhelming the user is a real interaction-design problem: nodes arrive continuously for minutes at a time, layouts shift under the cursor, and the user still needs orientation. The answer combined incremental ingest (no full graph rebuilds), semantic encoding so node classes are scannable at a glance, and progressive disclosure — collapsed clusters that expand on demand.',
+          'Streaming an unbounded agent process into a graph without drowning the user is a real interaction problem. Nodes arrive continuously for minutes, the layout wants to shift under your cursor, and you still need to know where you are. The answers were concrete: ingest incrementally so the map never rebuilds, encode node types by shape and color so the picture reads at a glance, and keep the noisy machinery in the graph but hidden until someone asks for it.',
         ],
       },
       {
         heading: 'Outcome',
         body: [
-          'The Engine runs as a Dockerized multi-service stack with resumable pipeline checkpoints and a frontend that stays responsive through ten-minute agent runs. It’s the clearest expression of the thesis behind my work: AI systems earn trust when their process is legible.',
+          'The Engine runs today as a Dockerized multi-service stack with resumable checkpoints, and the frontend stays responsive through runs that take the better part of an hour. It is the clearest statement of the thesis that runs through all my work: an AI system earns trust when its process is legible.',
         ],
       },
     ],
@@ -353,14 +353,6 @@ export const caseStudies = {
 };
 
 export const pinnedItems = projects.filter((p) => p.featured);
-
-// ============================================
-// Blog Posts
-// ============================================
-export const blogPosts = [
-  // Structure:
-  // { title, slug, date, excerpt, tags }
-];
 
 // ============================================
 // Contact Links

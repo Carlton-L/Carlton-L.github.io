@@ -80,7 +80,7 @@ const layout = {
       <p class="eng-meta">{project.meta}</p>
       <h1 class="eng-h">Watch the machine <span class="sig">think</span></h1>
       <p class="eng-sub">// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. MOST UIS SHOW A SPINNER. THIS ONE SHOWS THE REASONING.</p>
-      <a class="eng-live" href="/contact">▸ CONTACT FOR A LIVE DEMO</a>
+      <a class="eng-live" href="/contact">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
 
     <!-- OWNERSHIP (git-verified; see engine-case-study/06-ROLE_EVIDENCE.md) -->
@@ -90,7 +90,7 @@ const layout = {
         <span>VISUAL SYSTEM</span><div class="bar"><i style="width:85%"></i></div>
         <span>INTERACTION DESIGN</span><div class="bar"><i style="width:90%"></i></div>
         <span>PIPELINE / BACKEND</span><div class="bar"><i style="width:15%"></i></div>
-        <span class="eng-meternote">TEAM BUILD. CONCEPT PROTOTYPE, FRONTEND VISUAL SYSTEM, AND THE STREAMING + LIVENESS DESIGNS ARE MINE — THE PIPELINE IS NOT.</span>
+        <span class="eng-meternote">TEAM BUILD. CONCEPT PROTOTYPE, FRONTEND VISUAL SYSTEM, AND THE STREAMING + LIVENESS DESIGNS ARE MINE. THE PIPELINE IS NOT.</span>
       </div>
     </Operator>
 
@@ -99,7 +99,7 @@ const layout = {
       <div class="eng-viewerwrap">
         <div class="eng-strip">
           <span><span class="eng-dot" id="engHeroDot"></span><span id="engHeroPhase">EXTRACTING INTENT…</span></span>
-          <span class="eng-lbl">RECREATION — REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span>
+          <span class="eng-lbl">RECREATION · REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span>
         </div>
         <canvas id="engHeroCv" width="880" height="440" aria-label="A compressed Futurity Engine run: subjects arrive as hexagons, evidence clusters around them, agents reach out to the web, a report crystallizes"></canvas>
         <div class="eng-ticker" id="engHeroTicker">
@@ -131,7 +131,7 @@ const layout = {
       <div class="eng-dec">
         <span class="eng-dnum" aria-hidden="true">01</span>
         <h3 class="eng-dh">A graph, not a log</h3>
-        <p class="eng-p">Every entity the pipeline touches becomes a typed node — subjects are hexagons, signals are diamonds — and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
+        <p class="eng-p">Every entity the pipeline touches becomes a typed node. Subjects are hexagons, signals are diamonds, and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
       </div>
     </Operator>
 
@@ -139,7 +139,7 @@ const layout = {
       <div class="eng-dec">
         <span class="eng-dnum" aria-hidden="true">02</span>
         <h3 class="eng-dh">Incremental everything</h3>
-        <p class="eng-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. The heavy map is lazy-loaded on saved reports — the report stays responsive without it.</p>
+        <p class="eng-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. On saved reports the heavy map is lazy-loaded on request, and the report stays responsive without it.</p>
       </div>
     </Operator>
 
@@ -147,7 +147,7 @@ const layout = {
       <div class="eng-dec">
         <span class="eng-dnum" aria-hidden="true">03</span>
         <h3 class="eng-dh">Honest liveness</h3>
-        <p class="eng-p">Some steps run ten minutes without an event. The status system tells the truth in three states — events flowing, quiet-but-alive, actually stalled — with a heartbeat contract I specified for the backend before it existed.</p>
+        <p class="eng-p">Some steps run ten minutes without an event. The status system tells the truth in three states: events flowing, quiet but alive, actually stalled. The heartbeat contract behind it is one I wrote for the backend before the backend emitted it.</p>
       </div>
     </Operator>
 
@@ -167,22 +167,22 @@ const layout = {
           </div>
           <div class="eng-abody" id="engAgBody"></div>
         </div>
-        <div class="eng-lbl eng-lbl-under">RECREATION — REAL BEHAVIOR, PORTFOLIO-OWNED CODE · SYNTHETIC RUN: SOLID-STATE BATTERIES</div>
+        <div class="eng-lbl eng-lbl-under">RECREATION · REAL BEHAVIOR, PORTFOLIO-OWNED CODE · SYNTHETIC RUN: SOLID-STATE BATTERIES</div>
       </div>
     </Operator>
 
     <!-- OUT -->
     <Operator id="engOutcome" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="eng-p">{p}</p>)}
-      <p class="eng-p">The Engine is client-facing software, so there’s no public instance to poke at — but I’m happy to walk through the real thing.</p>
-      <a class="eng-live" href="/contact">▸ CONTACT FOR A LIVE DEMO</a>
+      <p class="eng-p">The Engine is client software, so there is no public build to poke at. Everything on this page is a recreation built for the portfolio, on synthetic data. If you want to know more about the work, get in touch.</p>
+      <a class="eng-live" href="/contact">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
 
     <Operator id="engOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
       <p class="eng-out">
         TRUST IS EARNED IN THE TRANSCRIPT.<br /><br />
-        <a href="/projects/fast">NEXT ▸ fast</a><br />
-        <span class="eng-outsub">the knowledge network it thinks with</span>
+        <a href="/projects/carlton-dev">NEXT ▸ carlton_dev</a><br />
+        <span class="eng-outsub">this site, built as a live patch</span>
       </p>
     </Operator>
   </PatchField>

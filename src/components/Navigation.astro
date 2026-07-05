@@ -17,7 +17,6 @@ const currentPath = Astro.url.pathname;
 const links = [
   { href: '/', label: 'work' },
   { href: '/about', label: 'about' },
-  { href: '/blog', label: 'writing' },
   { href: '/lab', label: 'lab' },
   { href: '/contact', label: 'contact' },
 ];
@@ -27,7 +26,6 @@ const ops = [
   { href: '/', name: 'network_home', typ: 'SYS' },
   { href: '/projects', name: 'work_index', typ: 'DATA' },
   { href: '/about', name: 'bio_txt', typ: 'TXT' },
-  { href: '/blog', name: 'writing_index', typ: 'DATA' },
   { href: '/lab', name: 'experiments_index', typ: 'DATA' },
   { href: '/contact', name: 'say_hi', typ: 'TXT' },
   ...projects.map((p) => ({
