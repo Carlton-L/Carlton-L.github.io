@@ -159,11 +159,17 @@ const heightStyle =
     /* centers the inline-block SYS control strip; ops reset to left */
     text-align: center;
   }
-  :global(body.perform) .patchfield :global(.op) { text-align: left; }
+  :global(body.perform) .patchfield :global(.op) { text-align: left; transition: opacity 0.35s; }
   :global(body.perform) .bgdither {
     z-index: -1;
     opacity: 0.28;
+    transition: opacity 0.35s;
   }
+  /* audition: a bg control is being touched — the field comes forward so the
+     change is legible under the finger; content steps back for a beat
+     (body class set by the engine, auto-clears ~1.2s after last input) */
+  :global(body.perform.bg-audition) .bgdither { opacity: 0.65; }
+  :global(body.perform.bg-audition) .patchfield :global(.op:not(.op-sys)) { opacity: 0.25; }
 </style>
 
 <!-- resolver-managed ops stay invisible until first placement (no flash at 0,0);
@@ -192,6 +198,7 @@ const heightStyle =
     padding: 6px;
     cursor: pointer;
     text-align: left;
+    touch-action: none; /* drag-to-corner: the dock owns its touch gestures */
     transition: box-shadow var(--duration-fast), background var(--duration-fast);
   }
   .pfdock:hover,
@@ -228,6 +235,7 @@ const heightStyle =
     // drawn ends = ports stripped; routing keeps the ported form
     const LINKS = RAWLINKS.map((l) => [String(l[0]).split(':')[0], String(l[1]).split(':')[0]]);
     const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const COARSE = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     const isRead = () => document.body.classList.contains('perform');
 
     /* ---------- patch runtime: field scope + lifecycle ----------
@@ -258,6 +266,7 @@ const heightStyle =
       pal: 0,
       noiseT: 1,   // RIDGE
       ditherT: 1,  // BAYER2
+      wander: 1,   // ghost painter — only consulted on coarse pointers (AUTO chip)
     };
     const STORE = 'patch-bg';
     let saved = {};
@@ -297,6 +306,7 @@ const heightStyle =
       palette: { key: 'pal', opts: PALETTES.map((p) => p.n) },
       noise: { key: 'noiseT', opts: ['FBM', 'RIDGE', 'PLASMA'] },
       dither: { key: 'ditherT', opts: ['BAYER4', 'BAYER2', 'SCAN', 'STATIC'] },
+      wander: { key: 'wander', opts: ['OFF', 'ON'] },
     };
     // Re-theme the whole UI accent (--signal) to the active OUT palette, so the
     // color chooser recolors links, cables, nav highlights, etc. site-wide.
@@ -326,6 +336,21 @@ const heightStyle =
       label();
     });
     applySignal();
+
+    /* audition (READ mode): while a bg control is being touched the field
+       comes forward for a beat so the change is visible under the finger.
+       CSS does the fade (body.bg-audition rules in this component). */
+    let audT = null;
+    const audition = () => {
+      if (!isRead()) return;
+      document.body.classList.add('bg-audition');
+      clearTimeout(audT);
+      audT = setTimeout(() => document.body.classList.remove('bg-audition'), 1200);
+    };
+    host.querySelectorAll('[data-param], [data-cycle]').forEach((el) => {
+      ['pointerdown', 'input', 'click'].forEach((ev) => el.addEventListener(ev, audition));
+    });
+    if (sys) sys.cleanup(() => { clearTimeout(audT); document.body.classList.remove('bg-audition'); });
 
     /* ---------- layout resolver (opt-in: host carries data-layout) ----------
        ASCII grid-areas → absolute positions snapped to the dot grid.
@@ -542,12 +567,30 @@ const heightStyle =
       size();
     }
 
-    /* mouse heat — velocity-driven so a parked cursor cools down */
-    let mcx = -1e4, mcy = -1e4, energy = 0, lmx = 0, lmy = 0;
+    /* heat intake — desktop: velocity-driven cursor heat (a parked cursor
+       cools down); touch: taps burst, scroll rides the blob. Every real
+       input stamps lastReal, which gates the ghost painter below. */
+    let mcx = -1e4, mcy = -1e4, energy = 0, lmx = 0, lmy = 0, lastReal = -1e4;
     on(window, 'pointermove', (e) => {
       energy = Math.min(70, energy + Math.hypot(e.clientX - lmx, e.clientY - lmy) * 0.6);
       lmx = e.clientX; lmy = e.clientY;
       mcx = e.clientX; mcy = e.clientY;
+      lastReal = performance.now();
+    }, { passive: true });
+    on(window, 'pointerdown', (e) => {
+      energy = Math.min(70, energy + 45); // tap = burst (the mobile "hover")
+      lmx = mcx = e.clientX; lmy = mcy = e.clientY;
+      lastReal = performance.now();
+    }, { passive: true });
+    let lastSc = window.scrollY || 0;
+    on(window, 'scroll', () => {
+      const y = window.scrollY || 0, d = y - lastSc;
+      lastSc = y;
+      if (!COARSE || !d) return;
+      if (mcx < 0) { mcx = W * 0.5; mcy = H * 0.55; } // no touch yet → seed mid-screen
+      mcy = Math.min(H - 40, Math.max(40, mcy - d * 0.4)); // blob rides the scroll
+      energy = Math.min(70, energy + Math.min(18, Math.abs(d) * 0.25));
+      lastReal = performance.now();
     }, { passive: true });
 
     function cookDither() {
@@ -555,6 +598,15 @@ const heightStyle =
       if (Math.max(2, Math.round(P.scale)) !== FSbase) allocField();
       if (!REDUCED) t += 0.008 * P.speed; // cooks at half frame-rate
       energy *= 0.74;
+      /* ghost painter — coarse pointers only: after 1s without real input the
+         field paints itself (lissajous drift + noise wander; pace follows
+         SPEED via t). Any real touch wins instantly; AUTO chip toggles it. */
+      if (COARSE && !REDUCED && (P.wander | 0) && performance.now() - lastReal > 1000) {
+        const gt = t * 6;
+        mcx = W * (0.5 + 0.36 * Math.sin(gt) + 0.12 * (vn(gt * 0.7, 3.1) - 0.5));
+        mcy = H * (0.5 + 0.36 * Math.sin(gt * 0.618 + 1.7) + 0.12 * (vn(7.7, gt * 0.53) - 0.5));
+        energy = Math.min(70, energy + 6);
+      }
 
       // mouse position in field space (canvas is viewport-fixed → screen coords)
       let mx = -1e4, my = -1e4;
@@ -725,7 +777,8 @@ const heightStyle =
     (function () {
       const members = Array.from(host.querySelectorAll('[data-duo]'));
       if (members.length < 2) return;
-      const DOCK_W = 200, DOCK_H = 230;
+      // phones get a smaller dock — 200px wide covered the very controls it previews
+      const dockMax = () => (window.innerWidth <= 480 ? [148, 170] : [200, 230]);
 
       const dock = document.createElement('div');
       dock.className = 'pfdock';
@@ -740,7 +793,8 @@ const heightStyle =
       let docked = null;
 
       function fit(el) {
-        const sc = Math.min(DOCK_W / el.__w, DOCK_H / el.__h, 1);
+        const [DW, DH] = dockMax();
+        const sc = Math.min(DW / el.__w, DH / el.__h, 1);
         el.style.transformOrigin = 'top left';
         el.style.transform = 'scale(' + sc + ')';
         dockBody.style.width = el.__w * sc + 'px';
@@ -806,10 +860,54 @@ const heightStyle =
         undock(); // immediate feedback; IO settles the counterpart
         home.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' });
       }
-      dock.addEventListener('click', activate);
+      // a drag must not fire the tap action — `dragged` is set by the
+      // drag-to-corner logic below and consumed by this guard
+      dock.addEventListener('click', () => { if (dragged) { dragged = false; return; } activate(); });
       dock.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
       });
+
+      /* drag-to-corner: on phones the dock can cover the very controls the
+         other surface needs — let the visitor park it in any corner. <8px of
+         travel is a tap (activate, unchanged); more = drag, snap to nearest
+         corner on release, persisted. Safe insets clear the nav + playbar. */
+      const CKEY = 'pfdock-corner';
+      let corner = 'br';
+      try { const c = localStorage.getItem(CKEY); if (/^[tb][lr]$/.test(c || '')) corner = c; } catch (e) {}
+      function applyCorner() {
+        const m = 14;
+        dock.style.left = dock.style.right = dock.style.top = dock.style.bottom = 'auto';
+        dock.style[corner[1] === 'l' ? 'left' : 'right'] = m + 'px';
+        if (corner[0] === 't') dock.style.top = 'calc(var(--nav-height) + ' + m + 'px)';
+        else dock.style.bottom = 'calc(var(--playbar-height) + ' + m + 'px)';
+      }
+      applyCorner();
+      let dgx = 0, dgy = 0, tracking = false, dragged = false;
+      dock.addEventListener('pointerdown', (e) => {
+        tracking = true; dragged = false; dgx = e.clientX; dgy = e.clientY;
+        if (dock.setPointerCapture) try { dock.setPointerCapture(e.pointerId); } catch (e2) {}
+      });
+      dock.addEventListener('pointermove', (e) => {
+        if (!tracking) return;
+        const dx = e.clientX - dgx, dy = e.clientY - dgy;
+        if (!dragged && Math.hypot(dx, dy) < 8) return;
+        dragged = true;
+        dock.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      });
+      const endDrag = () => {
+        if (!tracking) return;
+        tracking = false;
+        if (!dragged) return; // plain tap → the click listener activates
+        const r = dock.getBoundingClientRect();
+        corner = (r.top + r.height / 2 < window.innerHeight / 2 ? 't' : 'b') +
+                 (r.left + r.width / 2 < window.innerWidth / 2 ? 'l' : 'r');
+        dock.style.transform = '';
+        applyCorner();
+        try { localStorage.setItem(CKEY, corner); } catch (e) {}
+      };
+      dock.addEventListener('pointerup', endDrag);
+      dock.addEventListener('pointercancel', () => { tracking = false; dragged = false; dock.style.transform = ''; });
+
       on(window, 'resize', () => { if (docked) fit(docked); });
       // mode toggles reflow everything — reset and let the IO re-decide
       on(document, 'patchmode', undock);
