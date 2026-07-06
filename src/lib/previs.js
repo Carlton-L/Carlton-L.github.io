@@ -271,33 +271,174 @@
     return o + '</g>';
   }
 
-  /* ---------- viewer: fast — clustered knowledge graph w/ filter sweep ---------- */
-  var FCL = ['#56B4E9', '#3dff88', '#E69F00', '#CC79A7'];
+  /* ---------- viewer: fast — the subject page: graph layer + identity card + index cards ----------
+     Miniature of the real subject-page hero. NODE_TYPE_COLORS are the product's
+     exact hexes; the network sits behind a glass identity card and three index
+     cards, and a traversable Subject node periodically pulses and hands off. */
+  var FAST_TYPES = {
+    Subject: '#4252BD', Organization: '#E07B91', Press: '#E69500',
+    Patent: '#C3DE6D', Paper: '#20C6DB', Book: '#46ACC8',
+  };
+  /* content: Carlton's real "Interstellar Propulsion Lab" — real index values
+     where the lab has them; N/A = the product's not-yet-computed state.
+     THREE scenes with distinct topologies so the traversal reads: subject page
+     → patent SOURCE SNAPSHOT (the page changes: no index cards, View Source)
+     → a sparser subject → loop. Subject scenes carry Carlton's tuned shape:
+     nucleus of papers+patents, ring of orgs+press, outer cloud of subjects. */
+  var FAST_SCENES = [
+    { kind: 'subject', name: 'DIGITAL TWIN', hr: '6.0', ws: '4.0', tt: '7.0', seed: 4242, nuc: 8, ring: 5, cloud: 4, goType: 'Patent', goText: 'Go to patent' },
+    { kind: 'patent', name: 'CN-115955011-A', seed: 777, goType: 'Subject', goText: 'Go to solar sail' },
+    { kind: 'subject', name: 'SOLAR SAIL', hr: 'N/A', ws: 'N/A', tt: 'N/A', seed: 91, nuc: 4, ring: 3, cloud: 5, goType: 'Subject', goText: 'Go to digital twin' },
+  ];
+  var FAST_IDX = [
+    { abbr: 'HR', label: 'HORIZON RANK', key: 'hr', c: '#D4AF37' },
+    { abbr: 'WS', label: 'WHITE SPACE', key: 'ws', c: '#20B2AA' },
+    { abbr: 'TT', label: 'TECH TRANSFER', key: 'tt', c: '#FF6B47' },
+  ];
+  function fastSubjScene(sc, cx, cy) {
+    var r = srnd(sc.seed);
+    var NUC_T = ['Paper', 'Patent'], RING_T = ['Organization', 'Press'];
+    var nodes = [{ bx: cx, by: cy, r: 6, type: 'Subject', hub: true, ph: 0 }];
+    var edges = [];
+    var i, a, d;
+    for (i = 0; i < sc.nuc; i++) {
+      a = (i / sc.nuc) * 6.283 + r() * 0.5;
+      d = 34 + r() * 16;
+      nodes.push({ bx: cx + Math.cos(a) * d * 1.5, by: cy + Math.sin(a) * d, r: 2.2 + r() * 1.6, type: NUC_T[i % 2], ph: r() * 6.28 });
+      edges.push([0, nodes.length - 1]);
+    }
+    for (i = 1; i + 1 <= sc.nuc; i += 3) edges.push([i, i + 1]);
+    for (i = 0; i < sc.ring; i++) {
+      a = (i / sc.ring) * 6.283 + 0.7 + r() * 0.4;
+      d = 66 + r() * 14;
+      nodes.push({ bx: cx + Math.cos(a) * d * 1.5, by: cy + Math.sin(a) * d, r: 2.2 + r() * 1.2, type: RING_T[i % 2], ph: r() * 6.28 });
+      edges.push([0, nodes.length - 1]);
+    }
+    for (i = 0; i < sc.cloud; i++) {
+      a = (i / sc.cloud) * 6.283 + 1.3 + r() * 0.5;
+      d = 94 + r() * 14;
+      nodes.push({ bx: cx + Math.cos(a) * d * 1.45, by: cy + Math.sin(a) * d, r: 2.8 + r() * 1.4, type: 'Subject', ph: r() * 6.28 });
+      edges.push([0, nodes.length - 1]);
+    }
+    for (i = 1; i < nodes.length; i++) { if (nodes[i].type === sc.goType) { nodes[i].go = true; break; } }
+    return { nodes: nodes, edges: edges };
+  }
+  function fastPatentScene(sc, cx, cy) {
+    var r = srnd(sc.seed);
+    var nodes = [{ bx: cx, by: cy, r: 5.5, type: 'Patent', hub: true, ph: 0 }];
+    var edges = [];
+    var spec = [
+      [-120, -42, 'Subject', 3.6, true],
+      [112, -55, 'Subject', 3.2, false],
+      [72, 56, 'Patent', 2.8, false],
+      [148, 22, 'Patent', 2.4, false],
+      [-82, 62, 'Paper', 2.6, false],
+      [-155, 14, 'Paper', 2.3, false],
+    ];
+    for (var i = 0; i < spec.length; i++) {
+      var s = spec[i];
+      nodes.push({ bx: cx + s[0] + r() * 8, by: cy + s[1] + r() * 6, r: s[3], type: s[2], ph: r() * 6.28, go: s[4] });
+      edges.push([0, nodes.length - 1]);
+    }
+    edges.push([3, 4]);
+    edges.push([5, 6]);
+    return { nodes: nodes, edges: edges };
+  }
   function fastInit() {
-    var r = srnd(777);
-    var centers = [[104, 78], [304, 66], [140, 178], [326, 170]];
-    var dots = [];
-    centers.forEach(function (c2, c) {
-      var cx = c2[0], cy = c2[1];
-      for (var i = 0; i < 22; i++) {
-        var a = r() * Math.PI * 2, d = r() * r() * 52 + 8;
-        dots.push({ x: cx + Math.cos(a) * d * 1.25, y: cy + Math.sin(a) * d, c: c, r: 1.6 + r() * 2, ph: r() * Math.PI * 2, cx: cx, cy: cy });
-      }
-    });
-    return dots;
+    var cx = W / 2, cy = H / 2 + 6;
+    var scenes = [];
+    for (var i = 0; i < FAST_SCENES.length; i++) {
+      var sc = FAST_SCENES[i];
+      scenes.push(sc.kind === 'subject' ? fastSubjScene(sc, cx, cy) : fastPatentScene(sc, cx, cy));
+    }
+    return { scenes: scenes, cx: cx, cy: cy };
   }
   function fastDraw(st, ft, inv) {
-    var cyc = REDUCED ? 5 : Math.floor(ft / 2.2) % 6;
-    var edge = inv ? 'rgba(21,20,15,1)' : 'rgba(230,230,226,1)';
-    var o = '';
-    for (var i = 0; i < st.length; i++) {
-      var d = st[i];
-      var hot = cyc >= 4 || d.c === cyc;
-      var jx = REDUCED ? 0 : Math.sin(ft * 1.3 + d.ph) * 1.6, jy = REDUCED ? 0 : Math.cos(ft * 1.1 + d.ph) * 1.6;
-      o += '<line x1="' + d.cx + '" y1="' + d.cy + '" x2="' + (d.x + jx) + '" y2="' + (d.y + jy) + '" stroke="' + edge + '" stroke-opacity="' + (hot ? 0.08 : 0.02) + '"/>';
-      o += '<circle cx="' + (d.x + jx) + '" cy="' + (d.y + jy) + '" r="' + d.r + '" fill="' + FCL[d.c] + '" fill-opacity="' + (hot ? 0.9 : 0.15) + '"/>';
+    var period = 5.2;
+    var idx = REDUCED ? 0 : Math.floor(ft / period) % FAST_SCENES.length;
+    var sc = FAST_SCENES[idx];
+    var scene = st.scenes[idx];
+    var localT = REDUCED ? 1 : ft % period;
+    var ain = REDUCED ? 1 : Math.min(1, localT / 0.45);
+    var selOn = !REDUCED && localT > 3.2 && localT < 4.9;
+    var edge = inv ? 'rgba(21,20,15,0.5)' : 'rgba(200,200,200,0.28)';
+    var o = '<g opacity="' + ain.toFixed(2) + '">';
+    var i, n, goNode = null;
+    for (i = 0; i < scene.nodes.length; i++) {
+      n = scene.nodes[i];
+      var k = n.hub ? 0.3 : 1;
+      n.x = n.bx + (REDUCED ? 0 : Math.sin(ft * 1.1 + n.ph) * 1.4 * k);
+      n.y = n.by + (REDUCED ? 0 : Math.cos(ft * 0.9 + n.ph) * 1.4 * k);
+      if (n.go) goNode = n;
     }
-    return o;
+    for (i = 0; i < scene.edges.length; i++) {
+      var e = scene.edges[i];
+      var A = scene.nodes[e[0]], B = scene.nodes[e[1]];
+      var lit = selOn && (A.go || B.go);
+      o += '<line x1="' + A.x.toFixed(1) + '" y1="' + A.y.toFixed(1) + '" x2="' + B.x.toFixed(1) + '" y2="' + B.y.toFixed(1) + '" stroke="' + (lit ? 'rgba(61,255,136,0.55)' : edge) + '" stroke-width="' + (lit ? 1.4 : 1) + '"/>';
+    }
+    for (i = 0; i < scene.nodes.length; i++) {
+      n = scene.nodes[i];
+      var col = FAST_TYPES[n.type] || '#999';
+      var lit2 = selOn && n.go;
+      var pr = lit2 ? n.r * (1 + Math.sin(ft * 5) * 0.2) : n.r;
+      o += '<circle cx="' + n.x.toFixed(1) + '" cy="' + n.y.toFixed(1) + '" r="' + pr.toFixed(1) + '" fill="' + col + '" fill-opacity="' + (n.hub ? 1 : 0.92) + '"/>';
+      if (lit2) o += '<circle cx="' + n.x.toFixed(1) + '" cy="' + n.y.toFixed(1) + '" r="' + (pr + 1.6).toFixed(1) + '" fill="none" stroke="#fff" stroke-width="1.1"/>';
+    }
+    if (sc.kind === 'subject') {
+      o += fastCard(sc, inv);
+      o += fastIndexCards(sc, inv);
+    } else {
+      o += fastSnapshotCard(sc, inv);
+    }
+    if (selOn && goNode) {
+      var txt = sc.goText;
+      var pillW = 34 + txt.length * 4.8;
+      var pillX = st.cx - pillW / 2, pillY = H - 30;
+      o += '<g opacity="0.96"><rect x="' + pillX.toFixed(1) + '" y="' + pillY + '" width="' + pillW.toFixed(1) + '" height="17" rx="8.5" fill="#4252BD"/>';
+      o += '<text x="' + st.cx + '" y="' + (pillY + 11.5) + '" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#fff">' + esc(txt) + ' &#9656;</text></g>';
+    }
+    return o + '</g>';
+  }
+  function fastCard(subj, inv) {
+    var x = 14, y = 16, w = 150, h = 70;
+    var o = '<g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" fill="rgba(16,16,22,0.78)" stroke="rgba(255,255,255,0.14)"/>';
+    o += '<text x="' + (x + 11) + '" y="' + (y + 15) + '" font-family="monospace" font-size="5.5" letter-spacing="1.4" fill="rgba(255,255,255,0.42)">SUBJECT</text>';
+    o += '<text x="' + (x + 11) + '" y="' + (y + 30) + '" font-family="sans-serif" font-size="11" font-weight="900" fill="#fff">' + esc(subj.name) + '</text>';
+    o += '<rect x="' + (x + 11) + '" y="' + (y + 40) + '" width="' + (w - 22) + '" height="3.2" rx="1.6" fill="rgba(255,255,255,0.14)"/>';
+    o += '<rect x="' + (x + 11) + '" y="' + (y + 47) + '" width="' + (w - 46) + '" height="3.2" rx="1.6" fill="rgba(255,255,255,0.1)"/>';
+    var cx0 = x + 11;
+    for (var i = 0; i < FAST_IDX.length; i++) {
+      var m = FAST_IDX[i];
+      o += '<circle cx="' + (cx0 + 4) + '" cy="' + (y + 60) + '" r="3" fill="' + m.c + '"/>';
+      o += '<text x="' + (cx0 + 10) + '" y="' + (y + 62.5) + '" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,0.82)">' + m.abbr + ' ' + subj[m.key] + '</text>';
+      cx0 += 44;
+    }
+    return o + '</g>';
+  }
+  function fastIndexCards(subj, inv) {
+    var o = '<g>';
+    var x = W - 78, y = 16;
+    for (var i = 0; i < FAST_IDX.length; i++) {
+      var m = FAST_IDX[i];
+      var cy = y + i * 34;
+      o += '<rect x="' + x + '" y="' + cy + '" width="64" height="28" rx="6" fill="rgba(16,16,22,0.78)" stroke="rgba(255,255,255,0.1)"/>';
+      o += '<rect x="' + x + '" y="' + cy + '" width="64" height="2" rx="1" fill="' + m.c + '"/>';
+      o += '<text x="' + (x + 58) + '" y="' + (cy + 17) + '" text-anchor="end" font-family="sans-serif" font-size="13" font-weight="900" fill="' + m.c + '">' + subj[m.key] + '</text>';
+      o += '<text x="' + (x + 58) + '" y="' + (cy + 25) + '" text-anchor="end" font-family="monospace" font-size="4.6" letter-spacing="0.6" fill="rgba(255,255,255,0.45)">' + m.label + '</text>';
+    }
+    return o + '</g>';
+  }
+  function fastSnapshotCard(sc, inv) {
+    var x = 14, y = 16, w = 158, h = 66;
+    var o = '<g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" fill="rgba(16,16,22,0.78)" stroke="rgba(255,255,255,0.14)"/>';
+    o += '<text x="' + (x + 11) + '" y="' + (y + 15) + '" font-family="monospace" font-size="5.5" letter-spacing="1.4" fill="rgba(255,255,255,0.42)">PATENT SNAPSHOT</text>';
+    o += '<text x="' + (x + 11) + '" y="' + (y + 30) + '" font-family="sans-serif" font-size="10.5" font-weight="900" fill="#fff">' + esc(sc.name) + '</text>';
+    o += '<rect x="' + (x + 11) + '" y="' + (y + 38) + '" width="' + (w - 22) + '" height="3.2" rx="1.6" fill="rgba(255,255,255,0.14)"/>';
+    o += '<rect x="' + (x + 11) + '" y="' + (y + 45) + '" width="' + (w - 52) + '" height="3.2" rx="1.6" fill="rgba(255,255,255,0.1)"/>';
+    o += '<rect x="' + (x + 11) + '" y="' + (y + 52) + '" width="62" height="11" rx="3" fill="#fff"/>';
+    o += '<text x="' + (x + 42) + '" y="' + (y + 60) + '" text-anchor="middle" font-family="sans-serif" font-size="6.5" font-weight="700" fill="#111">View Source &#8599;</text>';
+    return o + '</g>';
   }
 
   /* ---------- viewer: campus_ai — thematic coding over transcripts ---------- */
@@ -407,18 +548,18 @@
      phototropism…) in the product's own visual key — no fake product UI,
      no fake data, honest RECREATION labels in the vfoot. ---- */
 
-  /* ---- lab_equipment_portal: real-time equipment board + reservations ---- */
-  var LEP_ST = ['#3dff88', '#E69F00', '#DC2626'];
-  var LEP_LBL = ['FREE', 'RSVD', 'IN-USE'];
+  /* ---- lab_equipment_portal: real-time equipment board + QR check-out log ---- */
+  var LEP_ST = ['#3dff88', '#DC2626'];
+  var LEP_LBL = ['FREE', 'IN-USE'];
   function lepInit() {
     var r = srnd(3141);
     var cards = [];
     for (var row = 0; row < 3; row++) for (var col = 0; col < 4; col++) {
-      var sched = [(r() * 3) | 0, (r() * 3) | 0, (r() * 3) | 0, (r() * 3) | 0];
+      var sched = [(r() * 2) | 0, (r() * 2) | 0, (r() * 2) | 0, (r() * 2) | 0];
       cards.push({ x: 16 + col * 100, y: 16 + row * 52, w: 88, h: 42, sched: sched, off: r() * 4, bw: 24 + r() * 46 });
     }
     var blocks = [];
-    for (var b = 0; b < 9; b++) blocks.push({ x: 16 + r() * 340, w: 18 + r() * 42, lane: (r() * 2) | 0, s: (r() * 3) | 0, b: 0.4 + b * 0.5 });
+    for (var b = 0; b < 9; b++) blocks.push({ x: 16 + r() * 340, w: 18 + r() * 42, lane: (r() * 2) | 0, s: (r() * 2) | 0, b: 0.4 + b * 0.5 });
     return { cards: cards, blocks: blocks };
   }
   function lepDraw(st, ft, inv) {
@@ -438,7 +579,7 @@
       o += '<text x="' + (c.x + 20) + '" y="' + (c.y + c.h - 8.5) + '" font-family="monospace" font-size="6" letter-spacing="0.8" fill="' + label + '">' + LEP_LBL[si] + '</text>';
     }
     var ty = 178;
-    o += '<text x="16" y="' + (ty - 4) + '" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">RESERVATIONS · TODAY</text>';
+    o += '<text x="16" y="' + (ty - 4) + '" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">CHECK-OUT LOG · TODAY</text>';
     for (var l = 0; l < 2; l++) o += '<rect x="16" y="' + (ty + l * 22) + '" width="388" height="16" rx="3" fill="' + barBg + '"/>';
     var reveal = REDUCED ? 99 : ft * 1.2;
     for (var b = 0; b < st.blocks.length; b++) {
@@ -515,207 +656,6 @@
       o += '<rect x="216" y="' + (64 + b * 16) + '" width="' + (br.w * bp * 0.22).toFixed(0) + '" height="7" rx="3.5" fill="' + amber + '" fill-opacity="0.4" opacity="' + fade.toFixed(2) + '"/>';
     }
     o += '<text x="216" y="158" font-family="monospace" font-size="6" letter-spacing="1" fill="' + label + '" opacity="0.7">TAP AN OBJECT TO SPEAK</text>';
-    return o;
-  }
-
-  /* ---- biomimetic_eye: saccades, blinks, RGB ring, servo linkage ---- */
-  function beInit() {
-    var r = srnd(6070);
-    var way = [];
-    var t0 = 0.6;
-    for (var i = 0; i < 10; i++) { way.push({ x: (r() - 0.5) * 34, y: (r() - 0.5) * 22, t: t0 }); t0 += 0.9 + r() * 1.6; }
-    return { way: way, loop: t0, cx: 168, cy: 118 };
-  }
-  function beGaze(st, t) {
-    var w = st.way, gx = 0, gy = 0;
-    for (var i = 0; i < w.length; i++) {
-      if (t >= w[i].t) {
-        var k = Math.min(1, (t - w[i].t) / 0.14); // saccade: fast snap
-        var px = i > 0 ? w[i - 1].x : 0, py = i > 0 ? w[i - 1].y : 0;
-        var e2 = k * k * (3 - 2 * k);
-        gx = px + (w[i].x - px) * e2; gy = py + (w[i].y - py) * e2;
-      }
-    }
-    return [gx, gy];
-  }
-  function beDraw(st, ft, inv) {
-    var t = REDUCED ? 3.0 : ft % st.loop;
-    var g = REDUCED ? [6, -3] : beGaze(st, t);
-    var gx = g[0], gy = g[1];
-    var cx = st.cx, cy = st.cy;
-    var housing = inv ? '#ece9e2' : '#1b1a20';
-    var strk = inv ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.16)';
-    var metal = inv ? '#b9b6ad' : '#4a4a50';
-    var label = inv ? '#4a4a45' : '#9f9f98';
-    var hue = REDUCED ? 130 : (ft * 24) % 360;
-    var ring = 'hsl(' + hue.toFixed(0) + ' 90% 60%)';
-    var o = '';
-    // servo linkage behind: two arms tracking the gaze from fixed pivots
-    var ax = cx - 118, ay = cy - 52, bx = cx - 118, by = cy + 58;
-    var ex = cx + gx * 0.8, ey = cy + gy * 0.8;
-    o += '<rect x="' + (ax - 14) + '" y="' + (ay - 9) + '" width="24" height="18" rx="3" fill="' + metal + '"/>';
-    o += '<rect x="' + (bx - 14) + '" y="' + (by - 9) + '" width="24" height="18" rx="3" fill="' + metal + '"/>';
-    o += '<line x1="' + (ax + 10) + '" y1="' + ay + '" x2="' + (ex - 30).toFixed(1) + '" y2="' + (ey - 26).toFixed(1) + '" stroke="' + metal + '" stroke-width="3" stroke-linecap="round"/>';
-    o += '<line x1="' + (bx + 10) + '" y1="' + by + '" x2="' + (ex - 30).toFixed(1) + '" y2="' + (ey + 26).toFixed(1) + '" stroke="' + metal + '" stroke-width="3" stroke-linecap="round"/>';
-    o += '<circle cx="' + (ex - 30).toFixed(1) + '" cy="' + (ey - 26).toFixed(1) + '" r="3" fill="' + metal + '"/>';
-    o += '<circle cx="' + (ex - 30).toFixed(1) + '" cy="' + (ey + 26).toFixed(1) + '" r="3" fill="' + metal + '"/>';
-    // housing + RGB ring + sclera
-    o += '<circle cx="' + cx + '" cy="' + cy + '" r="64" fill="' + housing + '" stroke="' + strk + '"/>';
-    o += '<circle cx="' + cx + '" cy="' + cy + '" r="56" fill="none" stroke="' + ring + '" stroke-width="2.5" stroke-opacity="0.85" stroke-dasharray="6 4"/>';
-    o += '<circle cx="' + cx + '" cy="' + cy + '" r="46" fill="' + (inv ? '#fbfaf7' : '#e6e6e2') + '"/>';
-    // iris + pupil follow the gaze
-    var ix = cx + gx, iy = cy + gy;
-    o += '<circle cx="' + ix.toFixed(1) + '" cy="' + iy.toFixed(1) + '" r="20" fill="' + ring + '" fill-opacity="0.85"/>';
-    o += '<circle cx="' + ix.toFixed(1) + '" cy="' + iy.toFixed(1) + '" r="20" fill="none" stroke="' + (inv ? '#26261f' : '#15140F') + '" stroke-opacity="0.5"/>';
-    var pup = REDUCED ? 9 : 9 + Math.sin(ft * 0.9) * 1.5;
-    o += '<circle cx="' + ix.toFixed(1) + '" cy="' + iy.toFixed(1) + '" r="' + pup.toFixed(1) + '" fill="' + (inv ? '#26261f' : '#0a0a0b') + '"/>';
-    o += '<circle cx="' + (ix - 4).toFixed(1) + '" cy="' + (iy - 5).toFixed(1) + '" r="2.6" fill="#fff" fill-opacity="0.9"/>';
-    // blink: lids sweep in every ~3.4s
-    var bph = REDUCED ? 1 : (ft % 3.4) / 3.4;
-    var blink = (!REDUCED && bph > 0.92) ? Math.sin(((bph - 0.92) / 0.08) * Math.PI) : 0;
-    if (blink > 0.02) {
-      var lid = 46 * blink;
-      o += '<path d="M ' + (cx - 46) + ' ' + cy + ' A 46 46 0 0 1 ' + (cx + 46) + ' ' + cy + ' L ' + (cx + 46) + ' ' + (cy - 46 + lid).toFixed(1) + ' A 46 ' + (46 - lid).toFixed(1) + ' 0 0 0 ' + (cx - 46) + ' ' + (cy - 46 + lid).toFixed(1) + ' Z" transform="rotate(180 ' + cx + ' ' + cy + ')" fill="' + housing + '"/>';
-      o += '<path d="M ' + (cx - 46) + ' ' + cy + ' A 46 46 0 0 1 ' + (cx + 46) + ' ' + cy + ' L ' + (cx + 46) + ' ' + (cy - 46 + lid).toFixed(1) + ' A 46 ' + (46 - lid).toFixed(1) + ' 0 0 0 ' + (cx - 46) + ' ' + (cy - 46 + lid).toFixed(1) + ' Z" fill="' + housing + '"/>';
-    }
-    // readout
-    o += '<text x="300" y="86" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">GAZE</text>';
-    o += '<text x="300" y="98" font-family="monospace" font-size="7" fill="' + ring + '">X ' + (gx >= 0 ? '+' : '') + gx.toFixed(1) + '</text>';
-    o += '<text x="300" y="110" font-family="monospace" font-size="7" fill="' + ring + '">Y ' + (gy >= 0 ? '+' : '') + gy.toFixed(1) + '</text>';
-    o += '<text x="300" y="132" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">RGB ' + hue.toFixed(0) + '°</text>';
-    return o;
-  }
-
-  /* ---- home_lighting: floorplan, wandering presence, lights follow ---- */
-  var HL_ROOMS = [
-    { x: 24, y: 22, w: 130, h: 92 },
-    { x: 154, y: 22, w: 108, h: 92 },
-    { x: 262, y: 22, w: 134, h: 92 },
-    { x: 24, y: 114, w: 180, h: 100 },
-    { x: 204, y: 114, w: 192, h: 100 },
-  ];
-  function hlInit() {
-    // waypoint tour through room centers (loops)
-    var order = [0, 1, 2, 4, 3];
-    var way = [], t0 = 0.5;
-    for (var i = 0; i < order.length; i++) {
-      var rm = HL_ROOMS[order[i]];
-      way.push({ x: rm.x + rm.w / 2, y: rm.y + rm.h / 2, room: order[i], t: t0 });
-      t0 += 2.6;
-    }
-    return { way: way, loop: t0 };
-  }
-  function hlPos(st, t) {
-    var w = st.way, n = w.length;
-    for (var i = 0; i < n; i++) {
-      var a = w[i], b = w[(i + 1) % n];
-      var t1 = a.t, t2 = i + 1 < n ? b.t : st.loop + w[0].t;
-      if (t >= t1 && t < t2) {
-        var k = Math.min(1, (t - t1) / 1.1); // walk 1.1s, dwell the rest
-        var e2 = k * k * (3 - 2 * k);
-        return { x: a.x + (b.x - a.x) * e2, y: a.y + (b.y - a.y) * e2, room: k < 0.5 ? a.room : b.room };
-      }
-    }
-    return { x: w[0].x, y: w[0].y, room: w[0].room };
-  }
-  function hlDraw(st, ft, inv) {
-    var t = REDUCED ? 1.5 : ft % st.loop;
-    var p = REDUCED ? { x: st.way[0].x, y: st.way[0].y, room: st.way[0].room } : hlPos(st, t);
-    var wall = inv ? 'rgba(0,0,0,0.35)' : 'rgba(230,230,226,0.28)';
-    var floor = inv ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)';
-    var warm = '#ffb648';
-    var label = inv ? '#4a4a45' : '#9f9f98';
-    var o = '';
-    for (var i = 0; i < HL_ROOMS.length; i++) {
-      var rm = HL_ROOMS[i];
-      // light level: full when occupied, decays after the visitor leaves
-      var lit = 0;
-      if (i === p.room) lit = 1;
-      else if (!REDUCED) {
-        // find last dwell end for this room in the loop and decay from it
-        for (var wj = 0; wj < st.way.length; wj++) {
-          if (st.way[wj].room !== i) continue;
-          var leave = st.way[wj].t + 2.6;
-          var since = t - leave; if (since < 0) since += st.loop;
-          lit = Math.max(lit, Math.max(0, 1 - since / 1.6));
-        }
-      }
-      o += '<rect x="' + rm.x + '" y="' + rm.y + '" width="' + rm.w + '" height="' + rm.h + '" fill="' + floor + '" stroke="' + wall + '" stroke-width="2"/>';
-      if (lit > 0.02) {
-        o += '<circle cx="' + (rm.x + rm.w / 2) + '" cy="' + (rm.y + rm.h / 2) + '" r="' + (Math.min(rm.w, rm.h) * 0.42).toFixed(0) + '" fill="' + warm + '" fill-opacity="' + (lit * 0.22).toFixed(2) + '"/>';
-        o += '<circle cx="' + (rm.x + rm.w / 2) + '" cy="' + (rm.y + rm.h / 2) + '" r="3.4" fill="' + warm + '" fill-opacity="' + (0.25 + lit * 0.75).toFixed(2) + '"/>';
-      } else {
-        o += '<circle cx="' + (rm.x + rm.w / 2) + '" cy="' + (rm.y + rm.h / 2) + '" r="3.4" fill="none" stroke="' + wall + '"/>';
-      }
-    }
-    // CV camera: corner wedge sweeping; brightens when the visitor is near its aim
-    var camA = REDUCED ? 0.8 : 0.7 + Math.sin(ft * 0.6) * 0.5;
-    var camX = 396, camY = 22;
-    var a1 = Math.PI - camA - 0.3, a2 = Math.PI - camA + 0.3;
-    o += '<path d="M ' + camX + ' ' + camY + ' L ' + (camX + Math.cos(a1) * 70).toFixed(0) + ' ' + (camY + Math.sin(a1) * 70).toFixed(0) + ' A 70 70 0 0 1 ' + (camX + Math.cos(a2) * 70).toFixed(0) + ' ' + (camY + Math.sin(a2) * 70).toFixed(0) + ' Z" fill="#3dff88" fill-opacity="0.08"/>';
-    o += '<rect x="' + (camX - 7) + '" y="' + (camY - 5) + '" width="10" height="10" rx="2" fill="#3dff88" fill-opacity="0.7"/>';
-    // presence dot + trail
-    if (!REDUCED) {
-      for (var tr = 1; tr <= 4; tr++) {
-        var pp = hlPos(st, (t - tr * 0.12 + st.loop) % st.loop);
-        o += '<circle cx="' + pp.x.toFixed(1) + '" cy="' + pp.y.toFixed(1) + '" r="' + (3.5 - tr * 0.6).toFixed(1) + '" fill="#3dff88" fill-opacity="' + (0.4 - tr * 0.08).toFixed(2) + '"/>';
-      }
-    }
-    o += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4.5" fill="#3dff88"/>';
-    o += '<text x="24" y="' + (H - 8) + '" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">PRESENCE → LUMINAIRES · DECAY 1.6s</text>';
-    return o;
-  }
-
-  /* ---- synthetic_plant: BEAM phototropism — solar engine fires, stem follows the light ---- */
-  function spInit() {
-    var r = srnd(808);
-    var leaves = [];
-    for (var i = 0; i < 5; i++) leaves.push({ h: 0.3 + i * 0.15, side: i % 2 ? 1 : -1, len: 16 + r() * 10, ph: r() * Math.PI * 2 });
-    var trace = [];
-    for (var s2 = 0; s2 < 64; s2++) trace.push(r());
-    return { leaves: leaves, trace: trace, bx: 150, by: 196 };
-  }
-  function spDraw(st, ft, inv) {
-    var stemC = inv ? '#2f6b43' : '#3dff88';
-    var label = inv ? '#4a4a45' : '#9f9f98';
-    var wall = inv ? 'rgba(0,0,0,0.25)' : 'rgba(230,230,226,0.2)';
-    var sun = '#F0E442';
-    // light drifts across the top; capacitor charges ~2.4s then FIRES a twitch
-    var lx = REDUCED ? 300 : W / 2 + Math.sin(ft * 0.23) * 150;
-    var charge = REDUCED ? 0.7 : (ft % 2.4) / 2.4;
-    var fire = (!REDUCED && charge > 0.93) ? Math.sin(((charge - 0.93) / 0.07) * Math.PI) : 0;
-    // stem bends toward the light (slow) + twitch kick (fast, BEAM-style)
-    var bend = (lx - st.bx) * 0.22 * (REDUCED ? 1 : 0.8 + 0.2 * Math.sin(ft * 0.4));
-    bend += fire * 9 * (lx > st.bx ? 1 : -1);
-    var tipX = st.bx + bend, tipY = st.by - 132;
-    var o = '';
-    o += '<line x1="16" y1="' + st.by + '" x2="' + (W - 16) + '" y2="' + st.by + '" stroke="' + wall + '" stroke-width="2"/>';
-    o += '<circle cx="' + lx.toFixed(1) + '" cy="30" r="11" fill="' + sun + '" fill-opacity="0.9"/>';
-    o += '<circle cx="' + lx.toFixed(1) + '" cy="30" r="' + (17 + (REDUCED ? 0 : Math.sin(ft * 3) * 2)).toFixed(1) + '" fill="none" stroke="' + sun + '" stroke-opacity="0.35"/>';
-    var d = 'M ' + st.bx + ' ' + st.by + ' Q ' + (st.bx + bend * 0.25).toFixed(1) + ' ' + (st.by - 70) + ' ' + tipX.toFixed(1) + ' ' + tipY;
-    o += '<path d="' + d + '" fill="none" stroke="' + stemC + '" stroke-width="3.5" stroke-linecap="round"/>';
-    for (var i = 0; i < st.leaves.length; i++) {
-      var lf = st.leaves[i];
-      var qt = lf.h;
-      var px = (1 - qt) * (1 - qt) * st.bx + 2 * (1 - qt) * qt * (st.bx + bend * 0.25) + qt * qt * tipX;
-      var py = (1 - qt) * (1 - qt) * st.by + 2 * (1 - qt) * qt * (st.by - 70) + qt * qt * tipY;
-      var sway = REDUCED ? 0 : Math.sin(ft * 1.4 + lf.ph) * 4 + fire * 6;
-      var ang = lf.side * (34 + sway) + bend * 0.35;
-      o += '<ellipse cx="' + (px + lf.side * lf.len * 0.6).toFixed(1) + '" cy="' + (py - 3).toFixed(1) + '" rx="' + lf.len + '" ry="5.5" transform="rotate(' + ang.toFixed(1) + ' ' + px.toFixed(1) + ' ' + py.toFixed(1) + ')" fill="' + stemC + '" fill-opacity="0.55"/>';
-    }
-    o += '<circle cx="' + tipX.toFixed(1) + '" cy="' + tipY + '" r="6" fill="' + sun + '" fill-opacity="' + (0.35 + charge * 0.5).toFixed(2) + '" stroke="' + stemC + '"/>';
-    // solar-engine panel: charge bar + trace
-    o += '<text x="300" y="150" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">SOLAR ENGINE</text>';
-    o += '<rect x="300" y="156" width="90" height="6" rx="3" fill="' + (inv ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)') + '"/>';
-    o += '<rect x="300" y="156" width="' + (90 * charge).toFixed(0) + '" height="6" rx="3" fill="' + (fire > 0 ? sun : stemC) + '"/>';
-    var pts = '';
-    for (var s2 = 0; s2 < 64; s2++) {
-      var tx = 300 + s2 * 1.42;
-      var base = Math.sin((s2 / 64) * Math.PI * 4 + (REDUCED ? 0 : ft * 2.6));
-      var ty = 176 - base * 6 - st.trace[s2] * 2 - fire * 5;
-      pts += tx.toFixed(1) + ',' + ty.toFixed(1) + ' ';
-    }
-    o += '<polyline points="' + pts + '" fill="none" stroke="' + stemC + '" stroke-opacity="0.7"/>';
     return o;
   }
 
@@ -797,18 +737,51 @@
     return o;
   }
 
-  /* ---------- registry: 5 featured live previews + 6 recreated minis ---------- */
+  /* ---- grid_lamp: 4x4 kinetic bed, wave pattern, ember-to-cool coupling.
+     LIVE (not a recreation): same behavioral rules as the full sim on the
+     case-study page — level drives radius, brightness and warmth together. ---- */
+  function glampInit() {
+    var r = srnd(1616);
+    var jit = [];
+    for (var i = 0; i < 16; i++) jit.push(r() * 0.6);
+    return { jit: jit };
+  }
+  function glampDraw(st, ft, inv) {
+    var panel = inv ? '#ece9e2' : '#141317';
+    var strk = inv ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.14)';
+    var label = inv ? '#4a4a45' : '#9f9f98';
+    var o = '<rect x="52" y="14" width="236" height="200" rx="14" fill="' + panel + '" stroke="' + strk + '"/>';
+    var sum = 0;
+    for (var row = 0; row < 4; row++) for (var col = 0; col < 4; col++) {
+      var i = row * 4 + col;
+      var ph = REDUCED ? 1.1 : ft * 1.5;
+      var lv = 0.5 + 0.5 * Math.sin(ph - (col + row) * 0.85 + st.jit[i]);
+      sum += lv;
+      var cx = 88 + col * 55, cy = 50 + row * 44;
+      var wr = Math.round(255 - lv * 32), wg = Math.round(157 + lv * 74), wb = Math.round(84 + lv * 167);
+      var rad = 8 + lv * 11;
+      o += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rad.toFixed(1) + '" fill="rgb(' + wr + ',' + wg + ',' + wb + ')" fill-opacity="' + (0.25 + lv * 0.7).toFixed(2) + '" stroke="' + strk + '"/>';
+      o += '<circle cx="' + cx + '" cy="' + cy + '" r="19" fill="none" stroke="' + strk + '"/>';
+    }
+    var avg = sum / 16;
+    o += '<text x="300" y="30" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">WAVE</text>';
+    o += '<rect x="300" y="38" width="90" height="6" rx="3" fill="' + (inv ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)') + '"/>';
+    o += '<rect x="300" y="38" width="' + (90 * avg).toFixed(0) + '" height="6" rx="3" fill="#E69F00"/>';
+    o += '<text x="300" y="58" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">AVG ' + Math.round(avg * 100) + '%</text>';
+    o += '<text x="52" y="' + (H - 8) + '" font-family="monospace" font-size="6" letter-spacing="1.2" fill="' + label + '">HEIGHT = BRIGHTNESS = WARMTH · ONE NUMBER PER CYLINDER</text>';
+    return o;
+  }
+
+  /* ---------- registry: live previews + recreated minis ---------- */
   var V = {
+    'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · SCULPT-BY-TOUCH · EMBER COUPLING', aria: 'GRID kinetic lamp 4 by 4 bed running a wave pattern, live mini preview', paper: false, init: glampInit, draw: glampDraw },
     'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
     'futurity-engine': { name: 'futurity_engine_view · BATTERIES.scn', foot: 'SSE REPLAY · LIVE GRAPH · 5 PHASES', aria: 'Futurity Engine growing knowledge graph, live synthetic demo', paper: false, init: engInit, draw: engDraw },
-    'fast': { name: 'fast_view · SYNBIO.scn', foot: 'KNOWLEDGE GRAPH · SEMANTIC TYPES', aria: 'FAST clustered knowledge graph, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
+    'fast': { name: 'fast_view · INTERSTELLAR.scn', foot: 'SUBJECT PAGE → PATENT SNAPSHOT · TRAVERSAL', aria: 'FAST subject page traversing to a patent source snapshot and back, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
     'campus-ai': { name: 'campus_ai_view · INTERVIEWS.scn', foot: 'THEMATIC CODING · 42 SURVEYS · 8 INTERVIEWS', aria: 'Campus AI research thematic coding, live synthetic demo', paper: true, init: campInit, draw: campDraw },
     'carlton-dev': { name: 'carlton_dev_view · THE_PATCH', foot: 'SELF-PORTRAIT · OPERATORS · LIVE CABLES', aria: 'carlton.dev patch network drawing itself, live preview', paper: false, init: cdInit, draw: cdDraw },
-    'lab-equipment-portal': { name: 'lab_portal_view · EQUIP_BOARD', foot: 'RECREATION · REAL-TIME STATUS · RESERVATIONS', aria: 'Lab equipment portal status board, recreated mini preview', paper: false, init: lepInit, draw: lepDraw },
+    'lab-equipment-portal': { name: 'lab_portal_view · EQUIP_BOARD', foot: 'RECREATION · REAL-TIME STATUS · QR CHECK-OUT', aria: 'Lab equipment portal status board, recreated mini preview', paper: false, init: lepInit, draw: lepDraw },
     'futures-garden': { name: 'futures_garden_view · ORB', foot: 'RECREATION · DIGITAL SOULS · NFC ORB', aria: 'Futures Garden orb conversation, recreated mini preview', paper: false, init: fgInit, draw: fgDraw },
-    'biomimetic-eye': { name: 'biomimetic_eye_view · SERVO_RIG', foot: 'RECREATION · ANIMATRONIC GAZE · RGB', aria: 'Biomimetic animatronic eye saccading, recreated mini preview', paper: false, init: beInit, draw: beDraw },
-    'home-lighting': { name: 'home_lighting_view · FLOORPLAN', foot: 'RECREATION · CV PRESENCE → LIGHTS', aria: 'Home lighting presence-driven floorplan, recreated mini preview', paper: false, init: hlInit, draw: hlDraw },
-    'synthetic-plant': { name: 'synthetic_plant_view · BEAM', foot: 'RECREATION · ANALOG · PHOTOTROPISM', aria: 'Synthetic BEAM plant bending toward light, recreated mini preview', paper: false, init: spInit, draw: spDraw },
     'immersive-experience-builder': { name: 'ieb_view · ROOM_SENSORS', foot: 'RECREATION · SENSOR ZONES → MEDIA', aria: 'Immersive experience builder room with sensor zones, recreated mini preview', paper: false, init: iebInit, draw: iebDraw },
   };
 

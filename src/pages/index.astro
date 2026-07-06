@@ -88,7 +88,7 @@ const layout = {
 
 // Explicit narrative order (content.js array order is NOT the display order —
 // relying on filter() once put fast first while the viewer cooked futurescaper)
-const ORDER_SLUGS = ['futurescaper', 'futurity-engine', 'carlton-dev', 'fast', 'campus-ai'];
+const ORDER_SLUGS = ['futurescaper', 'futurity-engine', 'carlton-dev', 'fast', 'grid-lamp', 'campus-ai'];
 const indexRows = ORDER_SLUGS
   .map((slug) => projects.find((p) => p.slug === slug))
   .filter(Boolean)
@@ -100,7 +100,8 @@ const indexRows = ORDER_SLUGS
     year: (p.facts?.year ?? '').split('–').pop(),
   }));
 
-// the index shows the 5 featured networks; the rest live at /projects
+// the index shows the 6 featured networks (grid-lamp joined 2026-07-06,
+// between fast and campus-ai per Carlton); the rest live at /projects
 const moreCount = projects.length - indexRows.length;
 
 // tiny operator-glyphs per project (currentColor → inherits the row accent)
@@ -108,6 +109,7 @@ const ICONS: Record<string, string> = {
   'futurescaper': '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="6" stroke-dasharray="1.6 1.9"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="14" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="2" r="1" fill="currentColor" stroke="none"/></svg>',
   'futurity-engine': '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 12l4-5 3 3 3-6"/><circle cx="3" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="7" cy="7" r="1.4" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r="1.4" fill="currentColor" stroke="none"/><circle cx="13" cy="4" r="1.4" fill="currentColor" stroke="none"/></svg>',
   'fast': '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="none"><circle cx="4" cy="4" r="1"/><circle cx="6.2" cy="3" r="1"/><circle cx="3" cy="6.2" r="1"/><circle cx="12" cy="4" r="1"/><circle cx="13" cy="6.2" r="1"/><circle cx="10" cy="4" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="3" cy="10" r="1"/><circle cx="6.2" cy="13" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="10" cy="12" r="1"/></svg>',
+  'grid-lamp': '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="none"><circle cx="3" cy="3" r="0.9"/><circle cx="7" cy="3" r="1.2"/><circle cx="11" cy="3" r="0.9"/><circle cx="15" cy="3" r="0.7"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.6"/><circle cx="11" cy="7" r="1.2"/><circle cx="15" cy="7" r="0.9"/><circle cx="3" cy="11" r="0.9"/><circle cx="7" cy="11" r="1.2"/><circle cx="11" cy="11" r="0.9"/><circle cx="15" cy="11" r="0.7"/><circle cx="3" cy="15" r="0.7"/><circle cx="7" cy="15" r="0.9"/><circle cx="11" cy="15" r="0.7"/><circle cx="15" cy="15" r="0.6"/></svg>',
   'campus-ai': '<svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="none"><rect x="2" y="3" width="8" height="2" rx="1"/><rect x="2" y="7" width="12" height="2" rx="1"/><rect x="2" y="11" width="6" height="2" rx="1"/></svg>',
   'carlton-dev': '<svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1.5" y="2.5" width="6" height="4.5" rx="1"/><rect x="8.5" y="9" width="6" height="4.5" rx="1"/><path d="M7.5 4.8h2.2q1.3 0 1.3 1.3V9"/><circle cx="7.5" cy="4.8" r="1" fill="currentColor" stroke="none"/><circle cx="11" cy="9" r="1" fill="currentColor" stroke="none"/></svg>',
 };

@@ -135,7 +135,7 @@ const layout = {
                     <span class="idxname">{p.slug.replace(/-/g, '_')}</span>
                     <span class="idxmeta">{roleOf(p)}</span>
                   </span>
-                  <span class:list={['idxtag', p.featured ? 'live' : 'recr']}>{p.featured ? 'LIVE' : 'RECR'}</span>
+                  <span class:list={['idxtag', (p.live ?? p.featured) ? 'live' : 'recr']}>{(p.live ?? p.featured) ? 'LIVE' : 'RECR'}</span>
                   <span class="idxyear">{yearOf(p)}</span>
                   <span class="idxgo" aria-hidden="true">OPEN ↗</span>
                 </a>

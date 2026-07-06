@@ -690,7 +690,11 @@ const heightStyle =
     /* ---------- wires ---------- */
     function portPos(el, side) {
       const r = el.getBoundingClientRect(), h = host.getBoundingClientRect();
-      return { x: (side === 'out' ? r.right : r.left) - h.left, y: r.top + r.height / 2 - h.top };
+      if (el.dataset.flow === 'vertical') {
+        /* bus-bar ops: cables enter top center, leave bottom center */
+        return { x: r.left + r.width / 2 - h.left, y: (side === 'out' ? r.bottom : r.top) - h.top, v: 1 };
+      }
+      return { x: (side === 'out' ? r.right : r.left) - h.left, y: r.top + r.height / 2 - h.top, v: 0 };
     }
     let phase = 0;
     function cookWires() {
@@ -703,9 +707,12 @@ const heightStyle =
         const a = document.getElementById(LINKS[i][0]), b = document.getElementById(LINKS[i][1]);
         if (!a || !b) continue;
         const A = portPos(a, 'out'), Bp = portPos(b, 'in');
-        const dx = Math.max(60, Math.abs(Bp.x - A.x) * 0.5);
-        geo.push({ f: LINKS[i][0], t: LINKS[i][1], A, Bp, dx });
-        const d = `M ${A.x} ${A.y} C ${A.x + dx} ${A.y}, ${Bp.x - dx} ${Bp.y}, ${Bp.x} ${Bp.y}`;
+        const dx = Math.max(60, ((A.v || Bp.v) ? Math.abs(Bp.y - A.y) : Math.abs(Bp.x - A.x)) * 0.5);
+        /* control points follow each anchor's flow direction (h default, v for bus bars) */
+        const c1x = A.v ? A.x : A.x + dx, c1y = A.v ? A.y + dx : A.y;
+        const c2x = Bp.v ? Bp.x : Bp.x - dx, c2y = Bp.v ? Bp.y - dx : Bp.y;
+        geo.push({ f: LINKS[i][0], t: LINKS[i][1], A, Bp, dx, c1x, c1y, c2x, c2y });
+        const d = `M ${A.x} ${A.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${Bp.x} ${Bp.y}`;
         o += `<path d="${d}" fill="none" stroke="${sig}" stroke-opacity=".28" stroke-width="1.4"/>`;
         if (!REDUCED) {
           const tt = (phase + i * 0.22) % 1;
@@ -723,9 +730,9 @@ const heightStyle =
           if (p >= 1) { q.splice(i, 1); continue; }
           const g = geo.find((x) => x.f === q[i].f && x.t === q[i].t);
           if (!g) continue;
-          const u = 1 - p, c1x = g.A.x + g.dx, c2x = g.Bp.x - g.dx;
-          const x = u * u * u * g.A.x + 3 * u * u * p * c1x + 3 * u * p * p * c2x + p * p * p * g.Bp.x;
-          const y = u * u * u * g.A.y + 3 * u * u * p * g.A.y + 3 * u * p * p * g.Bp.y + p * p * p * g.Bp.y;
+          const u = 1 - p;
+          const x = u * u * u * g.A.x + 3 * u * u * p * g.c1x + 3 * u * p * p * g.c2x + p * p * p * g.Bp.x;
+          const y = u * u * u * g.A.y + 3 * u * u * p * g.c1y + 3 * u * p * p * g.c2y + p * p * p * g.Bp.y;
           o += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${sig}" opacity="${(1 - p * 0.45).toFixed(2)}"/>`;
         }
       }

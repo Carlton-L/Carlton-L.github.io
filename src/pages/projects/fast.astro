@@ -1,18 +1,29 @@
 ---
 /**
- * FAST — Custom Project Page (patch document).
+ * FAST — case-study network (v2, 2026-07-06).
  *
- * Bespoke operator chain; prose is fact-checked — do not embellish.
- * The full "viewer wall" network (3 VIEW nodes) lands in a later
- * demo session per live-demos/01_SESSION_PROMPTS.md.
+ * INPUT (problem) → PROCESS (subject page + traversal decisions) →
+ * PROCESS (lab flow) → VIEW slots (demos pending per live-demos/00_MASTER_PLAN §4.2,
+ * FAST is recreated-only) → OUT.
+ *
+ * The v1 access gate is REMOVED per Carlton (2026-07-06); it may return later
+ * on individual nodes (v1 code lives in git history).
+ * Prose comes from src/data/content.js — fact-checked against the FAST repos
+ * (see Carlton Portfolio/fast-case-study/ANALYSIS_2026-07-06.md). Do not embellish.
+ * Two VIEW ops are reserved poster slots until the demo session ships.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
-import PatchDoc from '../../components/PatchDoc.astro';
+import PatchField from '../../components/PatchField.astro';
+import FastHero from '../../components/react/demos/fast/FastHero.jsx';
+import FastGraphDemo from '../../components/react/demos/fast/FastGraphDemo.jsx';
+import FastGatherDemo from '../../components/react/demos/fast/FastGatherDemo.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const project = projects.find((p) => p.slug === 'fast');
+const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -24,287 +35,524 @@ const jsonLd = {
     ]),
   ],
 };
+
+const links: [string, string][] = [
+  ['fastTitle', 'fastHero'],
+  ['fastTitle', 'fastOwn'],
+  ['fastHero', 'fastWhat'],
+  ['fastWhat', 'fastRole'],
+  ['fastRole', 'fastFacts'],
+  ['fastRole', 'fastBreak1'],
+  ['fastBreak1', 'fastSubjSect'],
+  ['fastSubjSect', 'fastSubjTxt'],
+  ['fastSubjTxt', 'fastSubjView'],
+  ['fastSubjView', 'fastD1'],
+  ['fastD1', 'fastD2'],
+  ['fastD2', 'fastD3'],
+  ['fastD3', 'fastSources'],
+  ['fastSources', 'fastBreak2'],
+  ['fastBreak2', 'fastLabSect'],
+  ['fastLabSect', 'fastTabsView'],
+  ['fastTabsView', 'fastLabFlow'],
+  ['fastLabFlow', 'fastL1'],
+  ['fastL1', 'fastL2'],
+  ['fastL2', 'fastLabView'],
+  ['fastLabView', 'fastBreak3'],
+  ['fastBreak3', 'fastSystem'],
+  ['fastSystem', 'fastCapture'],
+  ['fastCapture', 'fastDemo'],
+  ['fastDemo', 'fastOutcome'],
+  ['fastOutcome', 'fastOut'],
+];
+
+// content mode: field height computed by the layout resolver.
+// Sections are separated by SYS break ops (br1/br2/br3) with blank rows
+// around them, so the network reads as clustered chapters, not one stream.
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title .     .     .     .     own   own   own
+      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
+      .     what  what  what  what  .     .     role  role  role  role  .
+      .     .     facts facts facts facts  .     .     .     .     .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     ssect ssect ssect ssect .     .     subj  subj  subj  subj  .
+      .     sview sview sview sview sview sview sview sview sview sview .
+      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
+      .     .     src   src   src   src   src   src   .     .     .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     lsect lsect lsect lsect .     .     ltabs ltabs ltabs ltabs .
+      .     lflow lflow lflow lflow .     .     l1    l1    l1    .     .
+      .     .     .     .     .     l2    l2    l2    .     .     .     .
+      .     lview lview lview lview lview lview lview lview lview lview .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     sys   sys   sys   sys   .     .     cap   cap   cap   cap   .
+      .     .     .     demo  demo  demo  demo  demo  demo  .     .     .
+      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+    `,
+  }],
+};
 ---
 
 <Base
-  title="FAST — Futures as a Service | Carlton Lindsay"
+  title="FAST — A Knowledge Network You Can Walk Through | Carlton Lindsay"
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchDoc meta="2025–2026">
-    <Operator id="fastBrief" name="input · the_brief" type="txt" ports="none">
-      <p class="cs-meta">{project.meta}</p>
-      <h1 class="cs-h">FAST</h1>
-      <p class="cs-desc">{project.description}</p>
-      <div class="cs-tags">
-        {project.tags.map((tag) => <span class="cs-chip">{tag}</span>)}
+  <PatchField id="fastNet" links={links} density={0.3} height="6200px" layout={layout} label="FAST case-study network — press P for reading mode">
+    <!-- INPUT -->
+    <Operator id="fastTitle" name="input · the_problem" type="txt" area="title" ports="out">
+      <p class="fs-meta">{project.meta}</p>
+      <h1 class="fs-h">A knowledge network you can <span class="amb">walk through</span></h1>
+      <p class="fs-sub">// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH. EVERY PAGE IS A CAMERA POSITION IN IT.</p>
+    </Operator>
+
+    <!-- VIEW (opener): the subject page, composed and self-playing -->
+    <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
+      <div class="fs-viewerwrap">
+        <FastHero client:only="react">
+          <div class="fs-poster fast" slot="fallback" aria-hidden="true">COOKING VIEWER · SELF-PLAYING SUBJECT PAGE…</div>
+        </FastHero>
       </div>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
+    <!-- OWNERSHIP (honest; only verified numbers get bars) -->
+    <Operator id="fastOwn" name="ownership_data" type="data" area="own" maxw={280}>
+      <div class="fs-meter">
+        <span>UX/UI DESIGN</span><div class="bar"><i style="width:100%"></i></div>
+        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span class="fs-meternote">EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET.</span>
+      </div>
+    </Operator>
 
-    <Operator id="fastFacts" name="facts_data" type="data" ports="none">
-      <dl class="cs-facts">
-        <div><dt>ROLE</dt><dd>Lead Frontend Engineer & Lead UX/UI Designer</dd></div>
-        <div><dt>YEAR</dt><dd>2025–2026</dd></div>
-        <div><dt>STACK</dt><dd>React, TypeScript, Chakra UI, Cosmograph, React Flow, D3</dd></div>
-        <div><dt>CONTEXT</dt><dd>Futurity Systems</dd></div>
+    <Operator id="fastWhat" name="txt · what_it_is" type="txt" area="what">
+      {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="fastRole" name="txt · my_role" type="txt" area="role" nudge="0 32">
+      {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="fastFacts" name="facts_data" type="data" area="facts">
+      <dl class="fs-facts">
+        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
+        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
+        <div><dt>STACK</dt><dd>{project.facts.stack}</dd></div>
+        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
       </dl>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <!-- ACCESS GATE: FAST is client-facing software — there is no public
-         build and no password. The gate is honest theater: any attempt
-         routes to a request-a-walkthrough CTA. Sections below blur while
-         body.fast-locked is set (JS-on only; no-JS visitors read freely,
-         which also keeps the content indexable). -->
-    <Operator id="fastGate" name="access_ctl · fast_network" type="sys" ports="none">
-      <div class="fg" id="fgRoot">
-        <p class="fg-line">// RESTRICTED NETWORK · CLIENT-FACING SOFTWARE</p>
-        <form class="fg-row" id="fgForm" autocomplete="off">
-          <label class="fg-lab" for="fgPass">PASSKEY</label>
-          <input class="fg-in" id="fgPass" type="password" placeholder="••••••••" aria-describedby="fgMsg" />
-          <button class="chipbtn fg-btn" type="submit">AUTH</button>
-        </form>
-        <p class="fg-msg" id="fgMsg" role="status">FULL CASE STUDY IS GATED WHILE THE PRODUCT IS CLIENT-FACING.</p>
-        <a class="fg-req" href="/contact">▸ CONTACT FOR MORE INFORMATION</a>
+    <!-- SECTION BREAK 01 -->
+    <Operator id="fastBreak1" name="section_break" type="sys" area="br1" ports="both">
+      <div class="fs-break">
+        <span class="fs-break-num">01</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
+        <span class="fs-break-label">THE SUBJECT PAGE</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
       </div>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="fastChallenge" name="txt_01 · the_challenge" type="txt" ports="none">
-      <h2 class="cs-h2">The Challenge</h2>
-      <p class="cs-p">
-        How do you make strategic foresight accessible to organizations that don't
-        have dedicated futures teams? FAST (Futurity Accelerated Science Tools) needed
-        to translate knowledge-graph science and LLM-driven analysis into an interface
-        that non-technical strategists could actually think with — dense enough for
-        researchers, legible enough for executives.
-      </p>
+    <!-- PROCESS: the hero surface -->
+    <Operator id="fastSubjSect" name="process · the_hero_surface" type="txt" area="ssect">
+      <p class="fs-meta">PROCESS · THE HERO SURFACE</p>
+      <h2 class="fs-h2">The subject page is a <span class="amb">portal</span></h2>
+      <p class="fs-sub">One page pattern carries the product: the live graph underneath, glass identity above, analytics below. Three decisions made it work.</p>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="fastRole" name="txt_02 · my_role" type="txt" ports="none">
-      <h2 class="cs-h2">My Role</h2>
-      <p class="cs-p">
-        As Lead Frontend Engineer and Lead UX/UI Designer on FAST, I owned both the
-        interaction model — how people explore a knowledge graph, compose analysis
-        workflows, and steer LLM tools — and the production React behind it: a
-        codebase of 400+ components on a Chakra-based design system with shared
-        theme tokens.
-      </p>
+    <Operator id="fastSubjTxt" name="txt · the_page_in_layers" type="txt" area="subj" nudge="0 24">
+      {cs['The subject page'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="fastSurfaces" name="txt_03 · key_surfaces" type="txt" ports="none">
-      <h2 class="cs-h2">Key Surfaces</h2>
-      <p class="cs-p">
-        <strong class="cs-strong">Knowledge graph explorer.</strong>
-        A GPU-accelerated Cosmograph visualization with eight-plus semantic node
-        types, real-time filtering, and interactions tuned so ten-thousand-node
-        graphs stay explorable rather than becoming hairballs.
-      </p>
-      <p class="cs-p">
-        <strong class="cs-strong">Visual analysis workflows.</strong>
-        A React Flow node editor where researchers compose analysis pipelines as
-        DAGs — custom nodes, auto-layout, and report generation wired into the
-        graph data underneath.
-      </p>
-      <p class="cs-p">
-        <strong class="cs-strong">LLM invention tools.</strong>
-        Multi-step generative tools that turn graph insights into structured
-        innovation concepts — the AI layer surfaces connections that would take
-        human researchers weeks to identify, and the UI keeps humans in control
-        of every step.
-      </p>
+    <!-- VIEW: the interactive graph — click a node, traverse to its subject -->
+    <Operator id="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
+      <div class="fs-viewerwrap">
+        <FastGraphDemo client:only="react">
+          <div class="fs-poster fast" style="height:640px" slot="fallback" aria-hidden="true">COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…</div>
+        </FastGraphDemo>
+      </div>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
+    <Operator id="fastD1" name="decision_01 · traversal" type="txt" area="d1">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">01</span>
+        <h3 class="fs-dh">Traversal, not search</h3>
+        <p class="fs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
+      </div>
+    </Operator>
 
-    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" ports="none">
-      <h2 class="cs-h2">Companion Tooling: Browser Extension</h2>
-      <p class="cs-p">
+    <Operator id="fastD2" name="decision_02 · honest_waiting" type="txt" area="d2" nudge="0 40">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">02</span>
+        <h3 class="fs-dh">Honest waiting</h3>
+        <p class="fs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
+      </div>
+    </Operator>
+
+    <Operator id="fastD3" name="decision_03 · one_click_deep" type="txt" area="d3" nudge="0 80">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">03</span>
+        <h3 class="fs-dh">Overview to detail in one click</h3>
+        <p class="fs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
+      </div>
+    </Operator>
+
+    <Operator id="fastSources" name="txt · source_pages" type="txt" area="src" maxw={600}>
+      <h2 class="fs-h2">One pattern, <span class="amb">five more citizens</span></h2>
+      {cs['Source pages'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
+    <!-- SECTION BREAK 02 -->
+    <Operator id="fastBreak2" name="section_break" type="sys" area="br2" ports="both">
+      <div class="fs-break">
+        <span class="fs-break-num">02</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
+        <span class="fs-break-label">THE LAB FLOW</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
+      </div>
+    </Operator>
+
+    <!-- PROCESS: the lab flow -->
+    <Operator id="fastLabSect" name="process · the_lab_flow" type="txt" area="lsect">
+      <p class="fs-meta">PROCESS · THE LAB FLOW</p>
+      <h2 class="fs-h2">Tabs that read like a <span class="amb">sentence</span></h2>
+      <p class="fs-sub">Plan, gather, analyze, forecast, invent. The first two shipped deep; the rest land on the same foundation.</p>
+    </Operator>
+
+    <!-- VIEW: the lab's process tabs — what each step is for -->
+    <Operator id="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs" nudge="0 24">
+      <div class="fs-labtabs" id="fastLabTabsWidget">
+        <div class="fs-lt-strip" role="tablist" aria-label="Lab process tabs">
+          <button type="button" class="fs-lt-tab" role="tab" data-tab="plan" aria-selected="true">PLAN</button>
+          <button type="button" class="fs-lt-tab" role="tab" data-tab="gather" aria-selected="false">GATHER</button>
+          <button type="button" class="fs-lt-tab" role="tab" data-tab="analyze" aria-selected="false">ANALYZE</button>
+          <button type="button" class="fs-lt-tab" role="tab" data-tab="forecast" aria-selected="false">FORECAST</button>
+          <button type="button" class="fs-lt-tab" role="tab" data-tab="invent" aria-selected="false">INVENT</button>
+        </div>
+        <div class="fs-lt-body">
+          <div class="fs-lt-pane" data-pane="plan">
+            <span class="fs-lt-chip">SHIPPED DEEP</span>
+            <p>Strategy becomes structured goals. A stepped wizard asks who is affected, how many people, in which regions, what problems, and what impact by which horizon year.</p>
+          </div>
+          <div class="fs-lt-pane" data-pane="gather" hidden>
+            <span class="fs-lt-chip">SHIPPED DEEP</span>
+            <p>A board where subjects found through web and curated-source searches get dragged into categories. Every action optimistic, undoable, and silently synced.</p>
+          </div>
+          <div class="fs-lt-pane" data-pane="analyze" hidden>
+            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
+            <p>Analysis tools that read the gathered corpus, horizon charts and cross-subject comparison among them.</p>
+          </div>
+          <div class="fs-lt-pane" data-pane="forecast" hidden>
+            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
+            <p>Per-source-type projections of network activity, showing where each signal in the corpus is heading.</p>
+          </div>
+          <div class="fs-lt-pane" data-pane="invent" hidden>
+            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
+            <p>LLM-driven invention tools that generate and structure new concepts from everything the lab gathered.</p>
+          </div>
+        </div>
+        <p class="fs-lt-note">THE PRODUCT'S REAL TAB ORDER — IT READS LIKE A SENTENCE.</p>
+      </div>
+      <script is:inline data-astro-rerun>
+        (function () {
+          var w = document.getElementById('fastLabTabsWidget');
+          if (!w) return;
+          var tabs = w.querySelectorAll('.fs-lt-tab');
+          var panes = w.querySelectorAll('.fs-lt-pane');
+          tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+              tabs.forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
+              panes.forEach(function (p) { p.hidden = p.getAttribute('data-pane') !== tab.getAttribute('data-tab'); });
+            });
+          });
+        })();
+      </script>
+    </Operator>
+
+    <Operator id="fastLabFlow" name="txt · plan_gather_analyze" type="txt" area="lflow" nudge="0 24">
+      {cs['The lab flow'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="fastL1" name="decision_04 · optimistic_undo" type="txt" area="l1">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">04</span>
+        <h3 class="fs-dh">Optimistic, with an undo</h3>
+        <p class="fs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
+      </div>
+    </Operator>
+
+    <Operator id="fastL2" name="decision_05 · wizards" type="txt" area="l2" nudge="0 40">
+      <div class="fs-dec">
+        <span class="fs-dnum" aria-hidden="true">05</span>
+        <h3 class="fs-dh">Wizards for hard questions</h3>
+        <p class="fs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
+      </div>
+    </Operator>
+
+    <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
+    <Operator id="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
+      <div class="fs-viewerwrap">
+        <FastGatherDemo client:only="react">
+          <div class="fs-poster fast" slot="fallback" aria-hidden="true">COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…</div>
+        </FastGatherDemo>
+      </div>
+    </Operator>
+
+    <!-- SECTION BREAK 03 -->
+    <Operator id="fastBreak3" name="section_break" type="sys" area="br3" ports="both">
+      <div class="fs-break">
+        <span class="fs-break-num">03</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
+        <span class="fs-break-label">THE SYSTEM AROUND IT</span>
+        <span class="fs-break-rule" aria-hidden="true"></span>
+      </div>
+    </Operator>
+
+    <Operator id="fastSystem" name="txt · design_system" type="txt" area="sys">
+      <h2 class="fs-h2">One token system <span class="amb">under everything</span></h2>
+      {cs['Design system'].map((p) => <p class="fs-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" area="cap" nudge="0 24">
+      <h2 class="fs-h2">Companion tooling: browser extension</h2>
+      <p class="fs-p">
         Research happens in the browser, but research platforms live in another tab.
-        I designed and built a companion browser extension that closes that gap:
-        it extracts structured content from the page a researcher is reading and
-        files it into the FAST knowledge base in one action — clean extraction,
-        sensible defaults, no context switch. Small surface, used constantly; the
-        kind of tooling that compounds.
+        I designed and built a companion extension that closes the gap: it extracts
+        structured content from the page a researcher is reading and files it into
+        the FAST knowledgebase in one action. Clean extraction, sensible defaults,
+        no context switch. Small surface, used constantly. The kind of tooling that
+        compounds.
       </p>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="fastLessons" name="txt_04 · what_it_taught_me" type="txt" ports="none">
-      <h2 class="cs-h2">What It Taught Me</h2>
-      <p class="cs-p">
-        Data-dense AI interfaces live or die on progressive disclosure. The craft
-        isn't rendering the graph — it's deciding what the user shouldn't see yet.
-        FAST is where I developed the patterns I now apply everywhere: semantic
-        visual encoding, incremental data loading, and treating LLM output as
-        material to be shaped rather than an answer to be displayed.
+    <Operator id="fastDemo" name="txt · deck_to_demo" type="txt" area="demo" maxw={600}>
+      <h2 class="fs-h2">The product that <span class="amb">demos itself</span></h2>
+      <p class="fs-p">
+        FAST also had to sell itself. I built a public demo explorer and the pitch
+        deck that hands off to it: the deck captures a visitor's industry, passes it
+        along in the URL, and the demo quietly floats matching content to the top.
+        No login, no form, no visible personalization. The pitch and the product are
+        one system.
       </p>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="fastOut" name="out · next_network" type="data" ports="none">
-      <a class="cs-next" href="/projects/campus-ai">
-        NEXT ▸ campus_ai
-        <span class="cs-nextsub">research on how people actually learn with AI</span>
-      </a>
+    <!-- OUT -->
+    <Operator id="fastOutcome" name="out · outcome" type="txt" area="outc" ports="in">
+      {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
-  </PatchDoc>
+
+    <Operator id="fastOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
+      <p class="fs-out">
+        THE PAGE IS A PLACE IN THE GRAPH.<br /><br />
+        <a href="/projects/campus-ai">NEXT ▸ campus_ai</a><br />
+        <span class="fs-outsub">research on how people actually learn with AI</span>
+      </p>
+    </Operator>
+  </PatchField>
 </Base>
 
-<script is:inline data-astro-rerun>
-/* FAST access gate — no password exists; every attempt converts to the
-   contact CTA. Lock only applies with JS (no-JS readers see everything). */
-(() => {
-  const form = document.getElementById('fgForm');
-  if (!form || form.dataset.booted) return;
-  form.dataset.booted = '1';
-  document.body.classList.add('fast-locked');
-  const msg = document.getElementById('fgMsg');
-  const root = document.getElementById('fgRoot');
-  const pass = document.getElementById('fgPass');
-  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let tries = 0;
-  const DENIALS = [
-    'ACCESS DENIED — NO PUBLIC BUILD OF FAST EXISTS.',
-    'STILL NO. THERE IS NO PASSWORD — THIS GATE IS HONEST THEATER.',
-    'PERSISTENT. I LIKE IT. HAPPY TO TALK ABOUT THE WORK ▸ CONTACT',
-  ];
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    msg.textContent = DENIALS[Math.min(tries, DENIALS.length - 1)];
-    msg.classList.add('deny');
-    tries++;
-    pass.value = '';
-    if (!REDUCED) {
-      root.classList.remove('shake');
-      void root.offsetWidth;
-      root.classList.add('shake');
-    }
-  });
-  document.addEventListener('astro:before-swap', () => document.body.classList.remove('fast-locked'), { once: true });
-})();
-</script>
-
-<style is:global>
-  /* gated sections: readable silhouette, no interaction, while locked */
-  body.fast-locked #fastChallenge .obody,
-  body.fast-locked #fastRole .obody,
-  body.fast-locked #fastSurfaces .obody,
-  body.fast-locked #fastCapture .obody,
-  body.fast-locked #fastLessons .obody {
-    filter: blur(7px) saturate(0.6);
-    pointer-events: none;
-    user-select: none;
-  }
-</style>
-
 <style>
-  .cs-meta {
+  .fs-meta {
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: 9.5px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
-  .cs-h {
+  .fs-h {
     font-family: var(--font-display);
     font-weight: 900;
     text-transform: uppercase;
-    font-size: clamp(26px, 3.4vw, 42px);
+    font-size: clamp(24px, 2.8vw, 38px);
     line-height: 0.98;
-    margin-bottom: 12px;
+    max-width: 16ch;
   }
-  .cs-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
-  .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cs-chip {
+  .fs-h .amb { color: var(--signal); }
+  .fs-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.7;
+    max-width: 42ch;
+  }
+
+  .fs-h2 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(18px, 2vw, 26px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .fs-h2 .amb { color: var(--signal); }
+
+  .fs-dec { position: relative; padding-top: 4px; }
+  .fs-dnum {
+    position: absolute; top: -6px; right: -2px;
+    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
+    pointer-events: none; user-select: none;
+  }
+  .fs-dh {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    padding-right: 52px;
+  }
+
+  .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
+  .fs-p:last-child { margin-bottom: 0; }
+
+  .fs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .fs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .fs-facts dd { font-size: 12.5px; color: var(--text); }
+  @media (max-width: 560px) { .fs-facts { grid-template-columns: 1fr; } }
+
+  .fs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
+  .fs-meter .bar {
+    height: 6px;
+    background: var(--bg-surface);
+    border: 1px solid #26262a;
+    margin: 4px 0 8px;
+    position: relative;
+  }
+  .fs-meter .bar i {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px);
+  }
+  .fs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
+
+  .fs-photoslot {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    padding: 10px;
+  }
+  .fs-photoslot.tall { aspect-ratio: 16 / 9; }
+  .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
+
+  /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */
+  .fs-viewerwrap { margin: -12px -14px; }
+  .fs-poster {
+    display: grid;
+    place-items: center;
+    height: 520px;
+    background: #111111;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  /* ── section breaks — interstitial SYS markers between chapters ── */
+  .fs-break {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 2px 0;
+  }
+  .fs-break-num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--signal-dim);
+    user-select: none;
+  }
+  .fs-break-rule {
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px);
+  }
+  .fs-break-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
     color: var(--text-muted);
     white-space: nowrap;
   }
+  /* READ mode: breaks carry the section spacing so topics visibly separate */
+  :global(body.perform) .fs-break { padding: 56px 0; }
+  :global(body.perform) .fs-break-num { font-size: 30px; }
 
-  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
-  .cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
-  .cs-facts dd { font-size: 12.5px; color: var(--text); }
-  @media (max-width: 560px) { .cs-facts { grid-template-columns: 1fr; } }
-
-  .cs-h2 {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--signal);
-    margin-bottom: 10px;
+  /* ── lab process tabs (VIEW) — the product's real tab order ── */
+  .fs-labtabs { font-size: 13px; }
+  .fs-lt-strip {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--border-color);
   }
-  .cs-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
-  .cs-p:last-child { margin-bottom: 0; }
-  .cs-strong { color: var(--text); font-weight: 500; }
-
-  .cs-next {
-    display: block;
+  .fs-lt-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 7px 10px 8px;
     font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--signal);
-    text-decoration: none;
-  }
-  .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
-
-  /* ---- access gate ---- */
-  .fg { font-family: var(--font-mono); }
-  .fg-line { font-size: 10px; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 10px; }
-  .fg-row { display: flex; align-items: center; gap: 8px; }
-  .fg-lab { font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-muted); }
-  .fg-in {
-    flex: 1;
-    min-width: 0;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    padding: 6px 10px;
-    outline: none;
-    transition: border-color var(--duration-normal);
-  }
-  .fg-in:focus { border-color: var(--signal); }
-  .fg-btn { flex: none; }
-  .fg-msg { font-size: 9.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
-  .fg-msg.deny { color: var(--signal); }
-  .fg-req {
-    display: inline-block;
-    margin-top: 10px;
     font-size: 10px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .fs-lt-tab:hover { color: var(--text); }
+  .fs-lt-tab[aria-selected='true'] {
     color: var(--signal);
-    text-decoration: none;
-    border: 1px solid var(--border-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: border-color var(--duration-normal), background var(--duration-normal);
+    border-bottom-color: var(--signal);
   }
-  .fg-req:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
-  .fg.shake { animation: fgshake 0.3s; }
-  @keyframes fgshake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(4px); }
-    75% { transform: translateX(-2px); }
+  .fs-lt-body { padding: 12px 2px 0; min-height: 108px; }
+  .fs-lt-pane p { font-size: 12.5px; color: var(--text); line-height: 1.65; margin-top: 8px; }
+  .fs-lt-chip {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    color: var(--signal);
+    border: 1px solid var(--signal-dim);
+    border-radius: 3px;
+    padding: 2px 7px;
   }
+  .fs-lt-chip.dim {
+    color: var(--text-dim);
+    border-color: var(--border-color);
+  }
+  .fs-lt-note {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-top: 10px;
+  }
+  @media (max-width: 560px) {
+    .fs-lt-tab { padding: 7px 6px 8px; font-size: 9px; }
+  }
+
+  .fs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+  .fs-out a { color: var(--signal); text-decoration: none; }
+  .fs-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .fs-outsub { color: var(--text-dim); }
 </style>

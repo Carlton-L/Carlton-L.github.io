@@ -75,7 +75,7 @@ export const projects = [
   {
     title: 'FAST',
     description:
-      'An AI-accelerated science and foresight platform — knowledge-graph visualization, node-based analysis workflows, and LLM-driven invention tools used by research and innovation teams.',
+      'Futurity Analysis & Synthesis Tools — an AI research and foresight platform with knowledge-graph visualization, node-based analysis workflows, and LLM-driven invention tools used by research and innovation teams.',
     meta: '2025–2026 — Lead Frontend Engineer & Lead UX/UI Designer · Futurity Systems',
     category: 'AI-Native Interfaces',
     categorySlug: 'apps-systems',
@@ -91,6 +91,51 @@ export const projects = [
       stack: 'React, TypeScript, Chakra UI, Cosmograph, React Flow, D3',
       company: 'Futurity Systems',
     },
+    caseStudy: [
+      {
+        heading: 'What it is',
+        body: [
+          'FAST is Futurity Analysis & Synthesis Tools, the research and foresight platform at the center of everything Futurity Systems ships. Underneath sits a knowledge network: subjects connected to the organizations, press, patents, papers and books that mention them. On top sit labs, collaborative workspaces where innovation teams plan goals, gather subjects, and run analysis and invention tools against the data. I owned the frontend end to end, around 350 TypeScript components, and led the UX and UI of the whole product.',
+        ],
+      },
+      {
+        heading: 'My role',
+        body: [
+          'Lead Frontend Engineer and Lead UX/UI Designer. Every screen went through my hands twice, once as a design problem and once as a React build. That double pass is the method: interaction ideas survived only if they could ship, and engineering decisions were made with the design intent in the room. Where the interface needed contracts that did not exist yet, I reached into the FastAPI backend and contributed them.',
+        ],
+      },
+      {
+        heading: 'The subject page',
+        body: [
+          'Every subject in the network has a page, and the page is built in layers. The ground layer is the network itself: a GPU-accelerated graph of everything connected to the subject, each entity type in its own color. Glass cards float above it carrying the subject’s identity and its three strategic indices. Below come the analytics: activity trends across decades, forecasts per source type, related subjects and related analyses. Each section loads independently, so a slow chart never holds the page hostage.',
+          'The move that makes it a portal is traversal. Click any node and the camera glides to it and an info card identifies it. If the node is another subject, a button appears: go to that subject. One tap and you are standing on its page, inside its own graph. Navigation is not a menu, it is walking the network one camera position at a time.',
+        ],
+      },
+      {
+        heading: 'Source pages',
+        body: [
+          'Subjects are not the only citizens with pages. Organizations, patents, press, papers and books each get one too, built from a single shared snapshot pattern: the same layered grammar and the same color system, configured per entity type. Learn to read one page and you can read the entire network. That sameness was a design decision, not a shortcut.',
+        ],
+      },
+      {
+        heading: 'The lab flow',
+        body: [
+          'Labs are where teams act on the network, and the tabs read like a sentence: plan, gather, analyze, forecast, invent. Plan turns strategy into structured goals through a stepped wizard that asks who is affected, how many people, in which regions, what problems, and what impact by which horizon year. Gather is a board where subjects found through web and curated-source searches get dragged into categories, with every action optimistic, undoable, and silently synced so teammates never collide. The later tabs land on the same foundation, each tool drawing on the corpus the team gathered.',
+        ],
+      },
+      {
+        heading: 'Design system',
+        body: [
+          'All of it stands on one Chakra-based token system. Semantic tokens for the three indices, one source-type palette shared by the graph, the stat cards and every chart, dark and light modes throughout, and a consistent feedback grammar: toasts with undo, per-section skeletons, and status copy that admits when a computation is slow instead of spinning forever.',
+        ],
+      },
+      {
+        heading: 'Outcome',
+        body: [
+          'FAST is in production with client innovation teams. For my own practice it is the project where the patterns I now use everywhere hardened: progressive disclosure for dense data, semantic visual encoding, optimistic interfaces that can apologize, and navigation treated as a spatial experience rather than a sitemap.',
+        ],
+      },
+    ],
   },
   {
     title: 'Futurity Engine',
@@ -270,6 +315,55 @@ export const projects = [
     ],
   },
   {
+    title: 'GRID — Kinetic Light',
+    description:
+      'A lamp you sculpt by touch: sixteen motorized cylinders, one number each driving height, brightness and warmth. Running here as a full working sim while the hardware build is in progress.',
+    meta: '2026 — Kinetic Light · Sim-First Hardware',
+    category: 'Experiences & Hardware',
+    categorySlug: 'experiences',
+    image: '/images/projects/grid-lamp/cover.jpg',
+    slug: 'grid-lamp',
+    accent: 'accent-2',
+    live: true,
+    tags: ['Kinetic Light', 'Three.js', 'Hardware', 'Simulation'],
+    facts: {
+      role: 'Design, simulation & hardware plan, solo',
+      year: '2026',
+      stack: 'Vanilla JS + Three.js sim · 28BYJ-48 steppers + tunable-white LEDs (planned)',
+      company: 'Personal project',
+    },
+    caseStudy: [
+      {
+        heading: 'What it is',
+        body: [
+          'GRID is a lamp: sixteen frosted cylinders in a 4×4 bed, each on its own lead screw with its own tunable-white LEDs. Hold a cylinder and it rises; hold it again quickly and it lowers. Each cylinder is one number: height, brightness and color temperature all come from it. Low cylinders glow like an 1800 K ember; the light only cools toward the slider ceiling as they rise.',
+          'There are static set-points (Full, Night, Off, plus anything you sculpt and save) and four motion patterns: wave, ripple, fireplace, noise. The motors are simulated too, 28BYJ-48 steppers with trapezoidal ramps, so everything on screen moves at the speed the real lamp would.',
+        ],
+      },
+      {
+        heading: 'Sim first, hardware second',
+        body: [
+          'Right now the lamp is a working simulation, on purpose. The sim is where the hardware decisions get made cheaply: jog feel, 60 versus 110 mm of travel, the shape of the warm-to-cool ramp, whether the patterns still read at real motor speed. All of it gets decided on screen before I commit to parts.',
+          'It started as an experiment in the lab on this site. Once the sim had two live views, one shared state and real motor physics, it had outgrown the lab, so it moved up here.',
+        ],
+      },
+      {
+        heading: 'Why the controls work this way',
+        body: [
+          'Jog, not slider. Hold means keep moving; release means stop. And the app draws where each cylinder actually is, not where you told it to go: anything still traveling gets a pulsing rim. I did not want a screen showing a lamp that does not exist yet.',
+          'One number per cylinder. Height, brightness and color are locked together on purpose. Dim light is always warm; there is no way to build a low, cold scene, and I consider that a feature. Night mode caps the ceiling at 2700 K, and the cap eases in rather than snapping, the way firmware would fade it.',
+          'The motors set the rules. Range clamps travel for everything: set-points, patterns, your fingers. And the patterns run through the same motor model as manual holds, so a fireplace flicker can only ever move as fast as a lead screw turns.',
+        ],
+      },
+      {
+        heading: 'What only the build can answer',
+        body: [
+          'How loud are sixteen steppers in a quiet room? Does real frosted plastic scatter anything like the shader? How low can the LEDs dim before the ember falls apart? Those questions are waiting on hardware, and build photos land here as it comes together.',
+        ],
+      },
+    ],
+  },
+  {
     title: 'Immersive Experience Builder',
     description:
       'A framework and visual tool for creating interactive, sensor-driven spatial experiences.',
@@ -280,11 +374,53 @@ export const projects = [
     slug: 'immersive-experience-builder',
     accent: 'accent-1',
     tags: ['Framework', 'Spatial Computing', 'Sensors', 'Interactive'],
+    facts: {
+      role: 'Independent project, solo',
+      year: '2024',
+      stack: 'React visual builder, 100+ component taxonomy',
+      company: 'Independent',
+    },
+    caseStudy: [
+      {
+        heading: 'The brief',
+        body: [
+          'Sensor-driven spatial experiences, rooms that notice you and respond, get designed from scratch every time. A motion sensor here, a projector there, some glue code, and none of it transfers to the next project. There was no shared vocabulary for what these experiences are made of, which meant every new one started at zero and non-engineers could not participate in the design at all.',
+          'So in 2024 I built one, as an independent project: a framework for describing these experiences as compositions of known parts, and a visual tool for assembling them.',
+        ],
+      },
+      {
+        heading: 'A grammar of parts',
+        body: [
+          'The core of the project is a taxonomy: a database of over 100 catalogued building blocks, the things an interactive space is actually made of. Things that perceive (sensors), things that respond (projectors, speakers, lights, behaviors), and the context they operate in. Instead of treating each installation as bespoke, the framework treats it as a sentence built from a known grammar.',
+          'Cataloguing the parts was most of the design work. Once the vocabulary existed, the tool was almost the easy part.',
+        ],
+      },
+      {
+        heading: 'Plate, brigade, restaurant',
+        body: [
+          'The framework organizes everything through a restaurant metaphor: Plate, Brigade, Restaurant, mapping to Perception, Responsiveness, and Context. The Plate is what the guest directly perceives. The Brigade is the machinery that responds behind the scenes. The Restaurant is the whole context the experience lives in.',
+          'The point of the metaphor is legibility. A producer or a spatial designer who has never wired a sensor can still reason about an experience in these terms, argue about it, and change it. Naming systems are interface design. This one was chosen so that the people who design experiences and the people who build them could look at the same structure.',
+        ],
+      },
+      {
+        heading: 'The visual builder',
+        body: [
+          'The framework ships with a visual tool, a React app for composing experiences from the component database. You lay out the space, place sensor zones, and wire perception to response. The output is a specification of the experience, not a runnable installation: it describes what to build and how the parts connect, for humans to execute.',
+          'Building the tool forced the taxonomy to be honest. Every component that could not be composed cleanly in the interface was a component that was defined wrong, so the database and the builder were designed against each other until both held up.',
+        ],
+      },
+      {
+        heading: 'Where it landed',
+        body: [
+          'The framework is complete as a design tool; no physical installation has run on it. What it settled for me is worth more than a single install: a good component grammar is a design deliverable, not an engineering byproduct, and giving non-engineers a legible model of a technical system changes who gets to design with it. That conviction runs through everything I have built since, including the design systems work at Futurity.',
+        ],
+      },
+    ],
   },
   {
     title: 'Lab Equipment Portal',
     description:
-      'Real-time equipment tracking and reservation system connecting digital interfaces to physical lab spaces — the project that pivoted my career from hardware to software.',
+      'Real-time equipment tracking with QR check-out, connecting a live status board to a physical lab. The project that pivoted my career from hardware to software.',
     meta: '2021 — Full Stack Development',
     category: 'AI-Native Interfaces',
     categorySlug: 'apps-systems',
@@ -292,54 +428,94 @@ export const projects = [
     slug: 'lab-equipment-portal',
     accent: 'accent-1',
     tags: ['Full Stack', 'React', 'Node.js', 'GraphQL'],
+    facts: {
+      role: 'Designer & Developer, solo',
+      year: '2021',
+      stack: 'React, Node.js, GraphQL',
+      company: 'Pensar Development',
+    },
+    caseStudy: [
+      {
+        heading: 'The brief',
+        body: [
+          'I ran the product-development lab at Pensar Development, a consultancy where engineering teams shared a finite pool of equipment: test gear, tools, benches. There was no formal tracking. In practice, finding an oscilloscope meant posting in a Teams group and hoping whoever had it read the message. I was the person that system failed on, because managing the equipment was my job.',
+        ],
+      },
+      {
+        heading: 'Asana before code',
+        body: [
+          'Before writing any software I bent an existing tool into shape: an Asana board with a task per equipment item, columns for status, borrowers as assignees, calibration documents attached to each task. It worked, and that was the point. The workaround proved what a real system needed: live status per item, a clear owner, and the paperwork attached to the thing itself.',
+          'It also showed where a workaround tops out. The board only agreed with the room if everyone did their Asana chores. The fix had to make updating the record part of physically taking the equipment.',
+        ],
+      },
+      {
+        heading: 'QR codes, one source of truth',
+        body: [
+          'So in 2021 I built the portal: every piece of equipment became a record with a live status, free or in use, and got a QR code on the device itself. Scanning it checks the item out or shows its status. The board on screen and the shelf in the lab describe the same reality because updating the record is part of picking the thing up.',
+          'A proper reservation system for future bookings stayed on the roadmap and never got built. The core loop, scan, take, return, was the product.',
+        ],
+      },
+      {
+        heading: 'Every layer at once',
+        body: [
+          'This was my first end-to-end full-stack product. My background to that point was electronics, prototyping labs, test fixtures, and factory floors. I chose React, Node.js, and GraphQL partly because I wanted to learn them, which meant every layer was new at once: component state, API design, the database, deployment.',
+          'The portal shipped to the whole engineering team, colleagues who would walk over to my desk when something broke. That compressed the feedback loop to hours, and there was no hiding behind a demo.',
+        ],
+      },
+      {
+        heading: 'The hinge',
+        body: [
+          'The portal did its job, but its real output was a career decision. Building it, I noticed the part I could not put down was not the plumbing. It was designing how people interact with a system: what the board shows, what checking something out feels like, where the interface and the physical room have to agree.',
+          'I left hardware, did a Master’s in Interaction Design in Barcelona, and became a design engineer. Every AI tool I have built since traces back to this internal tool for a room full of test equipment. It is the hinge of the whole portfolio.',
+        ],
+      },
+    ],
   },
   {
     title: 'Futures Garden',
     description:
-      'An EU initiative exploring life in 2040 through conversations with digital souls — LLM-powered archetypes accessed via a physical Orb with NFC-enabled phygital objects.',
-    meta: '2025 — Experience Design & Prototyping · Futurity Systems',
+      'An EU initiative exploring life in 2040 through conversations with digital souls: LLM-powered archetypes accessed via a physical Orb with NFC-enabled phygital objects.',
+    meta: '2025 — Concept & Interaction Design · Futurity Systems',
     category: 'Experiences & Hardware',
     categorySlug: 'experiences',
     image: '/images/projects/futures-garden/cover.jpg',
     slug: 'futures-garden',
     accent: 'accent-2',
     tags: ['LLM', 'NFC', 'Physical Computing', 'EU Commission'],
-  },
-  {
-    title: 'Biomimetic Eye Prototype',
-    description:
-      'An animatronic eye mechanism exploring expressive robotic movement through custom mechanics, RGB illumination, and modular assembly.',
-    meta: '2024 — Robotics & Prototyping',
-    category: 'Experiences & Hardware',
-    categorySlug: 'experiences',
-    image: '/images/projects/biomimetic-eye/cover.jpg',
-    slug: 'biomimetic-eye',
-    accent: 'accent-2',
-    tags: ['Robotics', 'CAD', 'Animatronics', 'Prototyping'],
-  },
-  {
-    title: 'Interactive Home Lighting',
-    description:
-      'A computer vision presence detection system that dynamically controls home lighting based on occupancy and movement.',
-    meta: '2024 — Systems Design',
-    category: 'Experiences & Hardware',
-    categorySlug: 'experiences',
-    image: '/images/projects/home-lighting/cover.jpg',
-    slug: 'home-lighting',
-    accent: 'accent-2',
-    tags: ['Computer Vision', 'IoT', 'Smart Home', 'Python'],
-  },
-  {
-    title: 'Synthetic Plant Exploration',
-    description:
-      'Revisiting BEAM robotics with modern components — creating simple, analog-driven robotic plants as an exploration of emergent behavior.',
-    meta: '2024 — Robotics & Exploration',
-    category: 'Experiences & Hardware',
-    categorySlug: 'experiences',
-    image: '/images/projects/synthetic-plant/cover.jpg',
-    slug: 'synthetic-plant',
-    accent: 'accent-2',
-    tags: ['BEAM Robotics', 'Analog', 'Emergent Behavior'],
+    facts: {
+      role: 'Concept & Interaction Design (team project)',
+      year: '2025',
+      stack: 'LLM voice agents (ElevenLabs), NFC phygital objects',
+      company: 'Futurity Systems · EU initiative',
+    },
+    caseStudy: [
+      {
+        heading: 'The brief',
+        body: [
+          'Futures Garden is an EU initiative about making 2040 discussable. Instead of another foresight report, the idea was an immersive exhibit: you meet the future by talking to characters who already live there, digital souls with their own voices and points of view.',
+          'This was a team project at Futurity Systems. My part was the concept stage; the build belongs to my colleagues.',
+        ],
+      },
+      {
+        heading: 'Objects as the interface',
+        body: [
+          'I worked on the shape of the exhibit as a whole and on the thread that ended up defining it: physical artefacts from the future as the interface. Early versions were wearable, backpacks and NFC-tagged objects that talked to your phone. The idea that survived every iteration was the tap: touch a future object and it starts a conversation. No screen, no menu, the tap carries all the meaning a UI would normally spell out.',
+        ],
+      },
+      {
+        heading: 'The Orb',
+        body: [
+          'The piece that resolved the concept came from a teammate: one physical Orb as the voice of the exhibit. The digital souls are LLM-powered archetypes speaking through voice agents built on ElevenLabs, and the NFC-tagged artefacts act as conversation keys. Tap an artefact on the Orb and its soul speaks.',
+          'By the time the build started I had moved almost fully onto FAST, so the Orb hardware, the voice-agent implementation, and the final exhibit are the team’s work. The concept of talking to the future through its objects is the part I can honestly claim a share of.',
+        ],
+      },
+      {
+        heading: 'What it settled',
+        body: [
+          'Phygital interfaces live or die on how much meaning one physical gesture can carry. Getting the artefact-tap to feel like addressing a person, not scanning a barcode, was the whole design problem, and it was solved in the concept, before any hardware existed. That lesson, that the interaction model is the product, is the same one that runs through my software work.',
+        ],
+      },
+    ],
   },
 ];
 

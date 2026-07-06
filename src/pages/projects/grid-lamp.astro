@@ -1,0 +1,561 @@
+---
+/**
+ * GRID — Kinetic Light: case-study network (promoted from /lab, 2026-07-06).
+ *
+ * INPUT (brief + facts) → PROCESS (what it is / how-to nodes) → VIEW × 2
+ * (the working sim: controller app + live 3D studio, one shared state) →
+ * PROCESS (control design) → OUT (what only the build can answer) → next.
+ *
+ * The sim IS the artifact: portfolio-owned code, honestly labeled sim-first
+ * hardware. Demo runtime kept verbatim in public/js/grid-lab.js (three.js
+ * r128 + postprocessing from CDN, lazy-loaded by the bootstrap below only
+ * when the sim ops approach the viewport).
+ * Prose comes from src/data/content.js — fact-checked, don't embellish.
+ */
+import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchField from '../../components/PatchField.astro';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'grid-lamp');
+const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+
+const idx = projects.findIndex((p) => p.slug === project.slug);
+const next = projects[(idx + 1) % projects.length];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: 'GRID — Kinetic Light' },
+    ]),
+  ],
+};
+
+const links: [string, string][] = [
+  ['glTitle', 'glWhat'],
+  ['glTitle', 'glFacts'],
+  ['glWhat', 'gridPhoto'],
+  ['glWhat', 'ctrlHelp'],
+  ['glWhat', 'studioHelp'],
+  ['ctrlHelp', 'gridApp'],
+  ['studioHelp', 'gridView'],
+  ['gridApp', 'gridView'],
+  ['gridApp', 'gridTelemetry'],
+  ['gridView', 'controlDesign'],
+  ['controlDesign', 'gridOut'],
+  ['gridOut', 'glNext'],
+];
+
+// layout: content mode — same GRID viewport band as the old lab layout,
+// wrapped in case-study chrome (title/facts up top, next-network at the end).
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title title .     .     facts facts facts facts
+      what  what  what  what  what  what  .     .     photo photo photo photo
+      chelp chelp chelp chelp .     .     .     .     shelp shelp shelp shelp
+      app   app   app   app   .     gview gview gview gview gview gview gview
+      .     .     .     .     .     .     .     .     .     tel   tel   tel
+      cdes  cdes  cdes  cdes  cdes  cdes  .     gout  gout  gout  gout  .
+      .     .     .     .     nxt   nxt   nxt   nxt   .     .     .     .
+    `,
+  }],
+};
+---
+
+<Base
+  title="GRID — Kinetic Light | Carlton Lindsay"
+  description={project.description}
+  jsonLd={jsonLd}
+>
+  <PatchField id="glNet" links={links} density={0.3} height="3200px" layout={layout} label="GRID case-study network — press P for reading mode">
+    <!-- INPUT -->
+    <Operator id="glTitle" name="input · the_brief" type="txt" area="title" ports="out">
+      <p class="gl-meta">{project.meta} · SIM FOR A HARDWARE BUILD IN PROGRESS</p>
+      <h1 class="gl-h1">GRID — a lamp you <span class="sig">sculpt</span></h1>
+      <p class="gl-desc">{project.description}</p>
+      <div class="gl-tags">
+        {project.tags.map((tag) => <span class="gl-chip">{tag}</span>)}
+      </div>
+    </Operator>
+
+    <Operator id="glFacts" name="facts_data" type="data" area="facts" maxw={300} ports="in">
+      <dl class="gl-facts">
+        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
+        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
+        <div><dt>STACK</dt><dd>{project.facts.stack}</dd></div>
+        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
+      </dl>
+    </Operator>
+
+    <Operator id="glWhat" name="txt · what_it_is" type="txt" area="what">
+      {cs['What it is'].map((p) => <p class="pd-p">{p}</p>)}
+      <p class="pd-p">
+        Both views below run off the same state. Change something in the app
+        and the lamp follows. Works the other way too.
+      </p>
+      <p class="gl-spec">16 PTS · Ø50MM COLUMNS · 60MM PITCH · TRAVEL 60/110MM · 1800–6500K</p>
+    </Operator>
+
+    <!-- reserved slot: photo of the physical build, once it exists -->
+    <Operator id="gridPhoto" name="grid_photo · build_log" type="view" area="photo" maxw={360} ports="in">
+      <div class="gl-photoslot">
+        <span>// BUILD PHOTO PENDING</span>
+        <span class="gl-photosub">HARDWARE IN PROGRESS · SLOT RESERVED</span>
+      </div>
+    </Operator>
+
+    <!-- how-to nodes sit on the cable feeding each surface -->
+    <Operator id="ctrlHelp" name="help · ctrl_howto" type="txt" area="chelp">
+      <ul class="gl-help">
+        <li><b>TAP</b> a pad and its cylinder steps 10 mm · <b>HOLD</b> and it travels until you release</li>
+        <li><b>RE-HOLD</b> quickly to reverse and lower</li>
+        <li><b>FULL / NIGHT / OFF</b> are set-points · sculpt something and <b>SAVE</b> it as P1–P3</li>
+        <li><b>MOTION</b> runs patterns (the grid becomes read-only) · <b>TEMP</b> sets the white-point ceiling · <b>RANGE</b> clamps travel</li>
+      </ul>
+    </Operator>
+
+    <!-- app + studio share one viewport band: sculpt on the left,
+         watch the lamp respond on the right -->
+    <Operator id="gridApp" name="grid_ctrl · app_sim" type="view" area="app">
+      <div class="gridlab glctr">
+        <!-- .glduo carries .gridlab so the demo's vars/selectors travel with it into the dock -->
+        <div class="gridlab glduo" data-duo="grid" data-duo-name="grid_ctrl">
+        <div class="phone">
+          <div class="bar">
+            <span class="lampname">Studio</span>
+            <div class="status"><span class="led"></span>connected</div>
+          </div>
+
+          <div class="core">
+            <div class="seg" id="seg">
+              <button data-fam="static" class="active">Static</button>
+              <button data-fam="motion">Motion</button>
+            </div>
+
+            <div class="setpoints" id="setpoints">
+              <button data-set="Full">Full</button>
+              <button data-set="Night">Night</button>
+              <button data-set="Off">Off</button>
+              <button data-set="Custom" class="custom">Custom</button>
+            </div>
+            <div class="setpoints presetrow" id="presets">
+              <button id="saveBtn" class="custom dim">Save</button>
+            </div>
+
+            <div class="modewrap" id="modewrap" style="display:none;">
+              <select class="mode-select" id="mode" aria-label="Motion pattern"></select>
+              <span class="chev">&#9662;</span>
+            </div>
+
+            <div class="device-frame">
+              <span class="tick tl"></span><span class="tick tr"></span>
+              <span class="tick bl"></span><span class="tick br"></span>
+              <span class="notch"></span>
+              <div class="device" id="device"></div>
+            </div>
+            <div class="holdhint" id="holdhint">Tap steps 10 mm &middot; hold to jog &middot; quick re-hold reverses</div>
+
+            <div class="speed" id="speed">
+              <span class="k">Speed</span>
+              <div class="strack" id="spdTrack"><div class="sfill" id="spdFill"></div><div class="sknob" id="spdKnob"></div></div>
+            </div>
+
+            <div class="speed show" id="tempRow">
+              <span class="k">Temp</span>
+              <div class="strack temptrack" id="tmpTrack"><div class="sknob" id="tmpKnob"></div></div>
+              <b class="kval" id="tempK">2700k</b>
+            </div>
+
+            <div class="limit">
+              <div class="lab"><span>Range</span><b><span id="lfloor">0</span> &ndash; <span id="lceil">100</span></b></div>
+              <div class="rtrack" id="rtrack">
+                <div class="rspan" id="rspan"></div>
+                <div class="rhandle" id="hfloor"></div>
+                <div class="rhandle" id="hceil"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="foot">
+            <span>16 pts</span>
+            <span id="avg">avg 0%</span>
+            <span id="ctemp">1800k</span>
+          </div>
+        </div>
+        </div>
+      </div>
+    </Operator>
+
+    <Operator id="studioHelp" name="help · studio_howto" type="txt" area="shelp">
+      <ul class="gl-help">
+        <li><b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>DOUBLE-CLICK</b> returns to the hero cam</li>
+        <li><b>TAP / HOLD</b> a cylinder in the scene for the same steps and jogs as the app</li>
+        <li><b>HERO / TOP / LOW</b> camera presets · <b>AUTO-ORBIT</b> spins the scene slowly</li>
+        <li><b>60 / 110&nbsp;MM</b> switches the build-plan travel · stroke time updates live</li>
+      </ul>
+    </Operator>
+
+    <Operator
+      id="gridView"
+      name="grid_view · studio_3d"
+      type="view"
+      area="gview"
+    >
+      <div class="gridlab glviewwrap" data-duo="grid" data-duo-name="grid_view">
+        <div class="viewcard" id="viewcard">
+          <canvas id="gl"></canvas>
+          <div class="vignette"></div>
+          <span class="vtick tl"></span><span class="vtick tr"></span>
+          <span class="vtick bl"></span><span class="vtick br"></span>
+          <div class="vtop"><span>Studio &middot; live</span></div>
+          <div class="vctrl">
+            <div class="vgroup">
+              <button class="vbtn on" data-view="hero">Hero</button>
+              <button class="vbtn" data-view="top">Top</button>
+              <button class="vbtn" data-view="low">Low</button>
+            </div>
+            <div class="vgroup">
+              <button class="vbtn" id="orbitBtn">Auto-orbit</button>
+            </div>
+            <div class="vgroup">
+              <button class="vbtn on" data-travel="6">60 mm</button>
+              <button class="vbtn" data-travel="11">110 mm</button>
+            </div>
+            <div class="vnote" id="travelNote"></div>
+          </div>
+          <div class="vhud"><span id="vhint">Drag to orbit &middot; scroll to zoom &middot; hold a cylinder to raise it</span></div>
+          <div class="glposter" id="glposter">COOKING SIM &middot; THREE.JS LOADS ON APPROACH&hellip;</div>
+        </div>
+      </div>
+    </Operator>
+
+    <!-- SYS: live readout tapped off the shared state (hidden on small screens) -->
+    <Operator id="gridTelemetry" name="sys · telemetry" type="sys" area="tel" maxw={260} ports="in">
+      <div class="gl-tel">
+        <span>AVG LEVEL</span><b id="telAvg">0%</b>
+        <span>AVG COLOR</span><b id="telK">1800K</b>
+        <span>IN TRANSIT</span><b id="telMove">0 / 16</b>
+        <span>MODE</span><b id="telMode">STATIC · OFF</b>
+      </div>
+    </Operator>
+
+    <!-- PROCESS: why the controls work the way they do — read after playing -->
+    <Operator id="controlDesign" name="process · control_design" type="txt" area="cdes">
+      <h3 class="gl-h3">Why the controls work this way</h3>
+      {cs['Why the controls work this way'].map((p) => <p class="pd-p">{p}</p>)}
+    </Operator>
+
+    <!-- OUT: sim-first method + what only hardware can answer -->
+    <Operator id="gridOut" name="out · the_build" type="txt" area="gout" ports="in">
+      {cs['Sim first, hardware second'].map((p) => <p class="pd-p">{p}</p>)}
+      {cs['What only the build can answer'].map((p) => <p class="pd-p">{p}</p>)}
+      <p class="gl-outnext">▸ NEXT · BUILD PHOTOS LAND IN grid_photo AS THE HARDWARE COMES TOGETHER</p>
+    </Operator>
+
+    <Operator id="glNext" name="out · next_network" type="data" area="nxt" maxw={300} ports="in">
+      <a class="gl-next" href={`/projects/${next.slug}`}>
+        NEXT ▸ {next.slug.replace(/-/g, '_')}
+        <span class="gl-nextsub">{next.title}</span>
+      </a>
+    </Operator>
+  </PatchField>
+
+  <!-- Lazy bootstrap: nothing GRID-related loads until a sim op nears the
+       viewport; then three r128 → postprocessing → grid-lab.js, in order.
+       Re-nav safe: CDN globals persist, GridLab.init() re-binds to fresh DOM. -->
+  <script is:inline data-astro-rerun>
+  (function () {
+    var view = document.getElementById('gridView');
+    var app = document.getElementById('gridApp');
+    if (!view || view.dataset.glBoot) return;
+    view.dataset.glBoot = '1';
+
+    var STEPS = [
+      // [global, url, required] — optional steps fail soft (grid-lab.js
+      // falls back to sprite halos when POSTPROCESSING is absent)
+      ['THREE', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', true],
+      ['POSTPROCESSING', 'https://cdn.jsdelivr.net/npm/postprocessing@6.22.2/build/postprocessing.min.js', false],
+      ['GridLab', '/js/grid-lab.js', true],
+    ];
+    function loadStep(i) {
+      if (i >= STEPS.length) { window.GridLab && window.GridLab.init(); return; }
+      if (window[STEPS[i][0]]) { loadStep(i + 1); return; }
+      var s = document.createElement('script');
+      s.src = STEPS[i][1];
+      s.onload = function () { loadStep(i + 1); };
+      s.onerror = function () {
+        if (STEPS[i][2]) { console.warn('GRID: failed to load ' + STEPS[i][1]); return; }
+        loadStep(i + 1);
+      };
+      document.head.appendChild(s);
+    }
+    var started = false;
+    function start() { if (started) return; started = true; loadStep(0); }
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
+      }, { rootMargin: '900px' });
+      io.observe(view);
+      if (app) io.observe(app);
+    } else {
+      start();
+    }
+  })();
+  </script>
+</Base>
+
+<style>
+  .gl-h1 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 0.98;
+    margin-bottom: 12px;
+  }
+  .gl-h1 .sig { color: var(--signal); }
+  .gl-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
+  .gl-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gl-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .gl-facts { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .gl-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .gl-facts dd { font-size: 12.5px; color: var(--text); }
+
+  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 8px; }
+  .pd-p:last-of-type { margin-bottom: 0; }
+  .pd-p b { color: var(--text); font-weight: 600; }
+
+  .gl-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .gl-spec {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+
+  /* reserved build-photo slot — swap the placeholder for an <img> when it lands */
+  .gl-photoslot {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+  .gl-photoslot .gl-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
+
+  .gl-help {
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .gl-help li { padding-left: 14px; position: relative; margin-bottom: 7px; }
+  .gl-help li:last-child { margin-bottom: 0; }
+  .gl-help li::before { content: '▸'; position: absolute; left: 0; color: var(--signal); }
+  .gl-help b { color: var(--text); font-weight: 600; }
+
+  .gl-h3 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .gl-tel {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 12px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .gl-tel b { color: var(--signal); font-weight: 400; text-align: right; }
+
+  .gl-outnext {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+
+  .gl-next {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    text-decoration: none;
+  }
+  .gl-next:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .gl-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+
+  /* telemetry is patch garnish — drop it on small screens to keep READ quiet */
+  @media (max-width: 767px) {
+    :global(#gridTelemetry) { display: none !important; }
+  }
+</style>
+
+<!-- GRID demo interiors — the experiment's own visual language, scoped under
+     .gridlab (its DOM is partly JS-generated, so these can't be Astro-scoped).
+     Palette is the prototype's warm studio gray; fonts map to site tokens. -->
+<style is:global>
+  .gridlab {
+    --bg: #46433e; --line: #726c63; --line-soft: #5b5650;
+    --ink: #e2ded6; --ink-dim: #a09a90; --ink-faint: #767066;
+  }
+  .glctr { display: flex; justify-content: center; }
+  .glduo { width: min(360px, 100%); }
+
+  /* ---------- controller ---------- */
+  .gridlab .phone {
+    width: min(360px, 100%); height: 740px; background: var(--bg); border-radius: 36px;
+    overflow: hidden; position: relative; display: flex; flex-direction: column;
+    box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .75); border: 1px solid #2e2b27;
+  }
+  .gridlab .bar { display: flex; align-items: center; justify-content: space-between; padding: 20px 26px 0; }
+  .gridlab .lampname { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+  .gridlab .status { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; color: var(--ink-faint); display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+  .gridlab .status .led { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 5px var(--ink); }
+
+  .gridlab .core { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 13px; padding: 0 24px; }
+
+  .gridlab .seg { display: flex; width: 100%; max-width: 300px; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+  .gridlab .seg button { flex: 1; background: transparent; border: none; color: var(--ink-dim); font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; padding: 9px 0; cursor: pointer; transition: all .2s; }
+  .gridlab .seg button + button { border-left: 1px solid var(--line); }
+  .gridlab .seg button.active { background: rgba(255, 255, 255, .08); color: var(--ink); }
+
+  .gridlab .modewrap { position: relative; width: 100%; max-width: 300px; }
+  .gridlab .mode-select { width: 100%; appearance: none; -webkit-appearance: none; background: transparent; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; padding: 10px 38px 10px 15px; cursor: pointer; text-align: center; }
+  .gridlab .mode-select:focus { outline: none; border-color: var(--ink-dim); }
+  .gridlab .modewrap .chev { position: absolute; right: 15px; top: 50%; transform: translateY(-32%); pointer-events: none; color: var(--ink-dim); font-size: 10px; }
+  .gridlab .mode-select option { background: #34383a; color: var(--ink); }
+
+  .gridlab .setpoints { display: flex; width: 100%; max-width: 300px; gap: 8px; }
+  .gridlab .setpoints button { flex: 1; background: transparent; border: 1px solid var(--line-soft); border-radius: 7px; color: var(--ink-dim); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; padding: 10px 0; cursor: pointer; transition: all .2s; }
+  .gridlab .setpoints button:hover { border-color: var(--line); color: var(--ink); }
+  .gridlab .setpoints button.active { background: rgba(255, 255, 255, .08); color: var(--ink); border-color: var(--line); }
+  .gridlab .setpoints button.custom { border-style: dashed; }
+  .gridlab .setpoints button.custom.active { background: rgba(255, 255, 255, .05); }
+  .gridlab .presetrow { margin-top: -5px; }
+  .gridlab .setpoints button.dim { opacity: .38; cursor: default; }
+
+  .gridlab .device-frame { width: 100%; max-width: 300px; aspect-ratio: 1/1; position: relative; border: 1px solid var(--line-soft); border-radius: 26px; padding: 6px; }
+  .gridlab .device { width: 100%; height: 100%; position: relative; border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); padding: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .06)); }
+  .gridlab .tick { position: absolute; width: 9px; height: 9px; border: 1px solid var(--line); z-index: 2; }
+  .gridlab .tick.tl { top: 18px; left: 18px; border-right: none; border-bottom: none; }
+  .gridlab .tick.tr { top: 18px; right: 18px; border-left: none; border-bottom: none; }
+  .gridlab .tick.bl { bottom: 18px; left: 18px; border-right: none; border-top: none; }
+  .gridlab .tick.br { bottom: 18px; right: 18px; border-left: none; border-top: none; }
+  .gridlab .notch { position: absolute; right: -1px; top: calc(50% - 10px); width: 6px; height: 20px; border: 1px solid var(--line-soft); border-right: none; border-radius: 3px 0 0 3px; background: var(--bg); }
+  .gridlab .cell { display: flex; align-items: center; justify-content: center; }
+  .gridlab .circle { width: 82%; aspect-ratio: 1/1; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .24); cursor: pointer; transition: box-shadow .25s; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .gridlab .circle.holding { box-shadow: 0 0 0 2px rgba(220, 223, 224, .55), 0 0 14px rgba(220, 223, 224, .3); }
+  .gridlab .circle.lowering { box-shadow: 0 0 0 2px rgba(150, 156, 158, .55), 0 0 10px rgba(0, 0, 0, .4) inset; }
+  /* in transit: motor position hasn't reached the target yet — pulsing rim */
+  .gridlab .circle.moving { border-color: rgba(255, 255, 255, .6); animation: gl-transit 0.9s ease-in-out infinite; }
+  @keyframes gl-transit {
+    50% { border-color: rgba(255, 255, 255, .24); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gridlab .circle.moving { animation: none; }
+  }
+  .gridlab .device.readout .circle { cursor: default; }
+
+  .gridlab .holdhint { width: 100%; max-width: 300px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+
+  .gridlab .temptrack { background: linear-gradient(90deg, #ff9d54, #ffdcae, #fdf3e3, #dfe7fb) !important; height: 4px !important; }
+  .gridlab .kval { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); font-weight: normal; width: 42px; text-align: right; flex-shrink: 0; }
+
+  .gridlab .speed { width: 100%; max-width: 300px; display: none; align-items: center; gap: 12px; }
+  .gridlab .speed.show { display: flex; }
+  .gridlab .speed .k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); width: 44px; flex-shrink: 0; }
+  .gridlab .strack { flex: 1; height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; cursor: pointer; }
+  .gridlab .sfill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
+  .gridlab .sknob { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 13px; height: 13px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); }
+  .gridlab .tdet { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 7px; background: rgba(0, 0, 0, .35); border-radius: 1px; pointer-events: none; }
+
+  .gridlab .limit { width: 100%; max-width: 300px; }
+  .gridlab .limit .lab { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .gridlab .limit .lab b { color: var(--ink); font-weight: normal; }
+  .gridlab .rtrack { height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; margin: 8px 6px; }
+  .gridlab .rspan { position: absolute; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
+  .gridlab .rhandle { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 15px; height: 15px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); cursor: grab; touch-action: none; }
+  .gridlab .rhandle:active { cursor: grabbing; }
+
+  .gridlab .foot { padding: 0 26px 20px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: var(--ink-faint); text-transform: uppercase; }
+
+  /* ---------- live 3D ---------- */
+  /* sits flush inside the VIEW op body, DemoFrame-style */
+  .glviewwrap { margin: -12px -14px; }
+  .gridlab .viewcard {
+    position: relative; overflow: hidden; background: #0b0c0d;
+    height: clamp(440px, 62vh, 620px);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+  .gridlab .viewcard canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .gridlab .viewcard canvas.grabbing { cursor: grabbing; }
+  .gridlab .viewcard .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(0, 0, 0, .42) 100%); }
+  .gridlab .vtick { position: absolute; width: 11px; height: 11px; border: 1px solid #524d45; z-index: 3; pointer-events: none; }
+  .gridlab .vtick.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+  .gridlab .vtick.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+  .gridlab .vtick.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+  .gridlab .vtick.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+  .gridlab .vhud { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
+  .gridlab .vhud span { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .18em; text-transform: uppercase; color: #67615a; background: rgba(11, 12, 13, .55); padding: 6px 14px; border-radius: 20px; border: 1px solid #292623; }
+  .gridlab .vtop { position: absolute; top: 20px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
+  .gridlab .vtop span { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: #767066; }
+
+  .gridlab .vctrl { position: absolute; top: 48px; right: 18px; display: flex; flex-direction: column; gap: 7px; z-index: 4; align-items: flex-end; }
+  .gridlab .vgroup { display: flex; gap: 6px; }
+  .gridlab .vbtn { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a847a; background: rgba(20, 18, 16, .55); border: 1px solid #383430; border-radius: 6px; padding: 5px 9px; cursor: pointer; transition: all .18s; }
+  .gridlab .vbtn:hover { color: #e2ded6; border-color: #524d45; }
+  .gridlab .vbtn.on { color: #e2ded6; border-color: #726c63; background: rgba(255, 255, 255, .07); }
+  .gridlab .vnote { font-family: var(--font-mono); font-size: 8px; color: #5d574f; letter-spacing: .12em; text-transform: uppercase; }
+
+  .gridlab .glposter {
+    position: absolute; inset: 0; z-index: 5;
+    display: grid; place-items: center;
+    background: #0b0c0d;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
+    color: #67615a;
+  }
+</style>

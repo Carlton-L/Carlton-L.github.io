@@ -2,15 +2,17 @@
 /**
  * Lab — a small network (converted from PatchDoc so the dither cooks here too).
  *
- * lab_txt → experiments_index → GRID experiment:
- * grid concept TXT → controller VIEW (the app sim) → studio VIEW (live 3D).
- * The cable between the two VIEW ops is literal: one shared state drives
- * both — sculpt on the controller, the lamp responds in the studio.
+ * lab_txt → experiments_index → PRESENCE (sim-first build) → EYE (CAD study,
+ * parked) → queue. Experiments are separated by full-width divider bars
+ * (labDiv ops — black, glowing border) that work in both modes.
  *
- * GRID demo: prototype code kept verbatim (public/js/grid-lab.js), three.js
- * r128 + postprocessing from CDN, all lazy-loaded by the bootstrap script
- * below only when the experiment ops approach the viewport. The homepage
- * and lab-above-the-fold ship none of it.
+ * GRID graduated to /projects/grid-lamp (2026-07-06). BEAM PLANT pulled
+ * 2026-07-06 (too early for the page — sim runtime retained at
+ * public/js/plant-lab.js for when it matures).
+ *
+ * Sims: public/js/presence-lab.js (A* click-anywhere pathfinding) +
+ * public/js/eye-lab.js — vanilla canvas, no CDN deps, lazy-loaded by the
+ * bootstrap below only when their ops approach the viewport.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
@@ -19,12 +21,20 @@ import { getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const experiments = [
   {
-    title: 'GRID — kinetic light',
+    title: 'PRESENCE — CV home lighting',
     description:
-      'A lamp you sculpt by touch: sixteen motorized cylinders, one shared state, two live views. Sim for a hardware build in progress.',
-    href: '#gridConcept',
-    tags: ['Three.js', 'Hardware', 'Kinetic light'],
-    status: 'building',
+      'Computer vision presence detection driving home lighting at fixture level: light follows people instead of switches. Sim running below; hardware phase next.',
+    href: '#hlConcept',
+    tags: ['Computer Vision', 'Python', 'Home'],
+    status: 'sim',
+  },
+  {
+    title: 'EYE — biomimetic mechanism',
+    description:
+      'An animatronic eye designed in SolidWorks: four servos, ball linkages, eyelids that follow the gaze. The eyeball got printed; the rig is parked.',
+    href: '#eyeConcept',
+    tags: ['SolidWorks', 'Servos', 'Arduino'],
+    status: 'parked',
   },
 ];
 
@@ -40,22 +50,22 @@ const jsonLd = {
 
 const links: [string, string][] = [
   ['labIntro', 'labIndex'],
-  ['labIndex', 'gridConcept'],
-  ['gridConcept', 'gridPhoto'],
-  ['gridConcept', 'ctrlHelp'],
-  ['gridConcept', 'studioHelp'],
-  ['ctrlHelp', 'gridApp'],
-  ['studioHelp', 'gridView'],
-  ['gridApp', 'gridView'],
-  ['gridApp', 'gridTelemetry'],
-  ['gridView', 'controlDesign'],
-  ['controlDesign', 'gridOut'],
-  ['gridOut', 'labSoon'],
+  ['labIndex', 'labDiv1'],
+  ['labDiv1', 'hlConcept'],
+  ['hlConcept', 'plView'],
+  ['plView', 'labDiv2'],
+  ['labDiv2', 'eyeConcept'],
+  ['eyeConcept', 'eyeHero'],
+  ['eyeHero', 'eyeRenders'],
+  ['eyeRenders', 'eyeLed'],
+  ['eyeRenders', 'eyeSim'],
+  ['eyeSim', 'eyeOut'],
+  ['eyeOut', 'labDiv3'],
+  ['labDiv3', 'labCook'],
 ];
 
-// layout: content mode — row heights measure the ops (the GRID app/studio row
-// is ~800px tall on its own), field height is computed (was a hardcoded
-// 2660px), and gridView's old `calc(94vw - 440px)` width is just "7 columns".
+// layout: content mode — concept text left, artifact (sim / renders) right,
+// per experiment. div rows are the full-width section bars.
 const layout = {
   mode: 'content',
   padTop: 24,
@@ -64,12 +74,20 @@ const layout = {
     cols: 12,
     areas: `
       intro intro intro intro intro .     .     .     index index index index
-      conc  conc  conc  conc  conc  conc  .     .     photo photo photo photo
-      chelp chelp chelp chelp .     .     .     .     shelp shelp shelp shelp
-      app   app   app   app   .     gview gview gview gview gview gview gview
-      .     .     .     .     .     .     .     .     .     tel   tel   tel
-      cdes  cdes  cdes  cdes  cdes  cdes  .     gout  gout  gout  gout  .
-      .     .     .     .     soon  soon  soon  soon  .     .     .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      div1  div1  div1  div1  div1  div1  div1  div1  div1  div1  div1  div1
+      .     .     .     .     .     .     .     .     .     .     .     .
+      hlc   hlc   hlc   hlc   hlc   .     plv   plv   plv   plv   plv   plv
+      .     .     .     .     .     .     .     .     .     .     .     .
+      div2  div2  div2  div2  div2  div2  div2  div2  div2  div2  div2  div2
+      .     .     .     .     .     .     .     .     .     .     .     .
+      econc econc econc econc econc .     ehero ehero ehero ehero ehero ehero
+      .     erend erend erend erend erend erend .     eled  eled  eled  .
+      esim  esim  esim  esim  esim  esim  .     eout  eout  eout  eout  .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     .     .     cook  cook  cook  cook  .     .     .     .
     `,
   }],
 };
@@ -84,8 +102,8 @@ const layout = {
     <Operator id="labIntro" name="input · lab_txt" type="txt" area="intro" ports="out">
       <h1 class="pd-h">Lab</h1>
       <p class="pd-p">
-        Interactive experiments and technical explorations: things I'm
-        building, testing, or just curious about.
+        Experiments and explorations: things I'm building, testing, or just
+        curious about. Each one says what's real and what isn't yet.
       </p>
     </Operator>
 
@@ -93,7 +111,7 @@ const layout = {
       <div class="pd-exps">
         {experiments.map((exp) => (
           <a href={exp.href} class="pd-exp">
-            <span class="pd-status" data-live={exp.status === 'live'}>● {exp.status.toUpperCase()}</span>
+            <span class="pd-status" data-live={exp.status === 'live'} data-st={exp.status}>● {exp.status.toUpperCase()}</span>
             <span class="pd-title">{exp.title}</span>
             <span class="pd-desc">{exp.description}</span>
             <span class="pd-tags">{exp.tags.join(' · ')}</span>
@@ -102,267 +120,302 @@ const layout = {
       </div>
     </Operator>
 
-    <!-- ============ EXPERIMENT 001 · GRID ============ -->
-    <Operator id="gridConcept" name="input · grid_txt" type="txt" area="conc">
-      <p class="gl-meta">EXPERIMENT 001 · KINETIC LIGHT · SIM FOR A HARDWARE BUILD IN PROGRESS</p>
-      <h2 class="gl-h">GRID — a lamp you <span class="sig">sculpt</span></h2>
-      <p class="pd-p">
-        GRID is a lamp: sixteen frosted cylinders in a 4×4 bed, each on its
-        own lead screw with its own tunable-white LEDs. Hold a cylinder, in
-        the app or straight in the 3D scene, and it rises. Hold it again
-        quickly and it lowers. Each cylinder is one number: height, brightness
-        and color temperature all come from it. Low cylinders glow like a
-        1800&nbsp;K ember; the light only cools toward the slider's ceiling as
-        they rise.
-      </p>
-      <p class="pd-p">
-        There are static set-points (Full, Night, Off, plus anything you
-        sculpt and save) and four motion patterns: wave, ripple, fireplace,
-        noise. The motors are simulated too, 28BYJ-48 steppers with
-        trapezoidal ramps, so everything on screen moves at the speed the
-        real lamp would.
-      </p>
-      <p class="pd-p">
-        Both views below run off the same state. Change something in the app
-        and the lamp follows. Works the other way too.
-      </p>
-      <p class="gl-spec">16 PTS · Ø50MM COLUMNS · 60MM PITCH · TRAVEL 60/110MM · 1800–6500K</p>
+    <!-- section bar · bus node: cables enter top, leave bottom -->
+    <Operator id="labDiv1" name="sys · break" type="sys" area="div1" ports="both" flow="vertical">
+      <span class="ldiv-label">▚ EXPERIMENT 001</span>
     </Operator>
 
-    <!-- reserved slot: photo of the physical build, once it exists -->
-    <Operator id="gridPhoto" name="grid_photo · build_log" type="view" area="photo" maxw={360} ports="in">
-      <div class="gl-photoslot">
-        <span>// BUILD PHOTO PENDING</span>
-        <span class="gl-photosub">HARDWARE IN PROGRESS · SLOT RESERVED</span>
-      </div>
-    </Operator>
-
-    <!-- how-to nodes sit on the cable feeding each surface -->
-    <Operator id="ctrlHelp" name="help · ctrl_howto" type="txt" area="chelp">
+    <!-- ============ EXPERIMENT 001 · PRESENCE (sim-first build) ============ -->
+    <Operator id="hlConcept" name="input · presence_txt" type="txt" area="hlc">
+      <p class="gl-meta">EXPERIMENT 001 · SIM-FIRST BUILD IN PROGRESS · NO HARDWARE INSTALLED YET</p>
+      <h2 class="gl-h">Lighting you never <span class="sig">operate</span></h2>
+      <p class="pd-p">
+        The plan is presence-aware lighting for my flat: a camera and some
+        Python deciding which lights should be on, fixture by fixture, based
+        on where people actually are. Motion sensors can't do this. They
+        treat stillness as absence, which is why they go dark on anyone
+        reading a book. Presence detection tracks the person, not the
+        movement, so the lights nearest to you stay with you.
+      </p>
+      <p class="pd-p">
+        The sim on the right runs the argument. Both detector models are
+        computed at once, so you can watch them disagree.
+      </p>
       <ul class="gl-help">
-        <li><b>TAP</b> a pad and its cylinder steps 10 mm · <b>HOLD</b> and it travels until you release</li>
-        <li><b>RE-HOLD</b> quickly to reverse and lower</li>
-        <li><b>FULL / NIGHT / OFF</b> are set-points · sculpt something and <b>SAVE</b> it as P1–P3</li>
-        <li><b>MOTION</b> runs patterns (the grid becomes read-only) · <b>TEMP</b> sets the white-point ceiling · <b>RANGE</b> clamps travel</li>
+        <li><b>TAP</b> anywhere on the plan · the person pathfinds there, around walls and furniture</li>
+        <li><b>READING</b> makes them sit still · under the <b>MOTION</b> policy, watch the room count down and go dark on them</li>
+        <li><b>PRESENCE</b> keeps the nearby fixtures lit no matter how still · <b>CUT / FADE</b> + <b>LINGER</b> shape how light leaves an empty spot</li>
       </ul>
-    </Operator>
-
-    <!-- app + studio share one viewport band: sculpt on the left,
-         watch the lamp respond on the right -->
-    <Operator id="gridApp" name="grid_ctrl · app_sim" type="view" area="app">
-      <div class="gridlab glctr">
-        <!-- .glduo carries .gridlab so the demo's vars/selectors travel with it into the dock -->
-        <div class="gridlab glduo" data-duo="grid" data-duo-name="grid_ctrl">
-        <div class="phone">
-          <div class="bar">
-            <span class="lampname">Studio</span>
-            <div class="status"><span class="led"></span>connected</div>
-          </div>
-
-          <div class="core">
-            <div class="seg" id="seg">
-              <button data-fam="static" class="active">Static</button>
-              <button data-fam="motion">Motion</button>
-            </div>
-
-            <div class="setpoints" id="setpoints">
-              <button data-set="Full">Full</button>
-              <button data-set="Night">Night</button>
-              <button data-set="Off">Off</button>
-              <button data-set="Custom" class="custom">Custom</button>
-            </div>
-            <div class="setpoints presetrow" id="presets">
-              <button id="saveBtn" class="custom dim">Save</button>
-            </div>
-
-            <div class="modewrap" id="modewrap" style="display:none;">
-              <select class="mode-select" id="mode" aria-label="Motion pattern"></select>
-              <span class="chev">&#9662;</span>
-            </div>
-
-            <div class="device-frame">
-              <span class="tick tl"></span><span class="tick tr"></span>
-              <span class="tick bl"></span><span class="tick br"></span>
-              <span class="notch"></span>
-              <div class="device" id="device"></div>
-            </div>
-            <div class="holdhint" id="holdhint">Tap steps 10 mm &middot; hold to jog &middot; quick re-hold reverses</div>
-
-            <div class="speed" id="speed">
-              <span class="k">Speed</span>
-              <div class="strack" id="spdTrack"><div class="sfill" id="spdFill"></div><div class="sknob" id="spdKnob"></div></div>
-            </div>
-
-            <div class="speed show" id="tempRow">
-              <span class="k">Temp</span>
-              <div class="strack temptrack" id="tmpTrack"><div class="sknob" id="tmpKnob"></div></div>
-              <b class="kval" id="tempK">2700k</b>
-            </div>
-
-            <div class="limit">
-              <div class="lab"><span>Range</span><b><span id="lfloor">0</span> &ndash; <span id="lceil">100</span></b></div>
-              <div class="rtrack" id="rtrack">
-                <div class="rspan" id="rspan"></div>
-                <div class="rhandle" id="hfloor"></div>
-                <div class="rhandle" id="hceil"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="foot">
-            <span>16 pts</span>
-            <span id="avg">avg 0%</span>
-            <span id="ctemp">1800k</span>
-          </div>
-        </div>
-        </div>
-      </div>
-    </Operator>
-
-    <Operator id="studioHelp" name="help · studio_howto" type="txt" area="shelp">
+      <h3 class="gl-h3">The build, so far</h3>
+      <p class="pd-p">
+        The sim is the first step of the build, same approach as GRID: work
+        out the behavior on screen before buying hardware. Whatever linger
+        and fade settings feel right here are what the real system will run.
+      </p>
       <ul class="gl-help">
-        <li><b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>DOUBLE-CLICK</b> returns to the hero cam</li>
-        <li><b>TAP / HOLD</b> a cylinder in the scene for the same steps and jogs as the app</li>
-        <li><b>HERO / TOP / LOW</b> camera presets · <b>AUTO-ORBIT</b> spins the scene slowly</li>
-        <li><b>60 / 110&nbsp;MM</b> switches the build-plan travel · stroke time updates live</li>
+        <li><b>DETECTION</b> · person detection on every frame (OpenCV, a small YOLO-class model) on a box in the closet. 1–2 fps is plenty for knowing where someone is</li>
+        <li><b>LOCAL ONLY</b> · no frames leave the machine. Rooms where a camera would feel wrong don't get one</li>
+        <li><b>CONTROL PATH</b> · probably Home Assistant with zigbee2mqtt. Wall switches always win, and if the camera or the process dies the lights fail on</li>
+        <li><b>FIRST POC</b> · one camera, one room, one lamp. Log every time a motion sensor would have gotten it wrong</li>
       </ul>
+      <p class="gl-spec">STILL OPEN: CAMERA PLACEMENT VS PRIVACY PER ROOM · FRIGATE VS HAND-ROLLED PIPELINE · WHICH ROOM GOES FIRST</p>
     </Operator>
 
-    <Operator
-      id="gridView"
-      name="grid_view · studio_3d"
-      type="view"
-      area="gview"
-    >
-      <div class="gridlab glviewwrap" data-duo="grid" data-duo-name="grid_view">
-        <div class="viewcard" id="viewcard">
-          <canvas id="gl"></canvas>
-          <div class="vignette"></div>
-          <span class="vtick tl"></span><span class="vtick tr"></span>
-          <span class="vtick bl"></span><span class="vtick br"></span>
-          <div class="vtop"><span>Studio &middot; live</span></div>
-          <div class="vctrl">
-            <div class="vgroup">
-              <button class="vbtn on" data-view="hero">Hero</button>
-              <button class="vbtn" data-view="top">Top</button>
-              <button class="vbtn" data-view="low">Low</button>
-            </div>
-            <div class="vgroup">
-              <button class="vbtn" id="orbitBtn">Auto-orbit</button>
-            </div>
-            <div class="vgroup">
-              <button class="vbtn on" data-travel="6">60 mm</button>
-              <button class="vbtn" data-travel="11">110 mm</button>
-            </div>
-            <div class="vnote" id="travelNote"></div>
-          </div>
-          <div class="vhud"><span id="vhint">Drag to orbit &middot; scroll to zoom &middot; hold a cylinder to raise it</span></div>
-          <div class="glposter" id="glposter">COOKING SIM &middot; THREE.JS LOADS ON APPROACH&hellip;</div>
+    <Operator id="plView" name="presence_view · floorplan_sim" type="view" area="plv">
+      <div class="simlab">
+        <canvas id="plCv" class="sl-cv" aria-label="Interactive floorplan simulation comparing motion sensing to presence detection: click anywhere and the person pathfinds there around walls and furniture; toggle reading mode to make them still"></canvas>
+        <div class="sl-row">
+          <span class="sl-k">POLICY</span>
+          <button id="plPolicyMotion" class="sl-chip">MOTION</button>
+          <button id="plPolicyPresence" class="sl-chip on">PRESENCE</button>
+          <button id="plReading" class="sl-chip sl-chip-amber">READING</button>
+        </div>
+        <div class="sl-row">
+          <span class="sl-k">DECAY</span>
+          <button id="plCut" class="sl-chip">CUT</button>
+          <button id="plFade" class="sl-chip on">FADE</button>
+          <span class="sl-k sl-k2">LINGER</span>
+          <input id="plLinger" class="sl-range" type="range" min="0" max="100" value="10" aria-label="Linger time before lights decay" />
+        </div>
+        <div class="sl-tel">
+          <span>ROOM</span><b id="plTelRoom">—</b>
+          <span>STILLNESS</span><b id="plTelStill">—</b>
+          <span>MOTION SAYS</span><b id="plTelMotion">—</b>
+          <span>PRESENCE SAYS</span><b id="plTelPresence">—</b>
         </div>
       </div>
     </Operator>
 
-    <!-- SYS: live readout tapped off the shared state (hidden on small screens) -->
-    <Operator id="gridTelemetry" name="sys · telemetry" type="sys" area="tel" maxw={260} ports="in">
-      <div class="gl-tel">
-        <span>AVG LEVEL</span><b id="telAvg">0%</b>
-        <span>AVG COLOR</span><b id="telK">1800K</b>
-        <span>IN TRANSIT</span><b id="telMove">0 / 16</b>
-        <span>MODE</span><b id="telMode">STATIC · OFF</b>
+    <!-- section bar · bus node -->
+    <Operator id="labDiv2" name="sys · break" type="sys" area="div2" ports="both" flow="vertical">
+      <span class="ldiv-label">▚ EXPERIMENT 002</span>
+    </Operator>
+
+    <!-- ============ EXPERIMENT 002 · EYE ============ -->
+    <Operator id="eyeConcept" name="input · eye_txt" type="txt" area="econc">
+      <p class="gl-meta">EXPERIMENT 002 · ANIMATRONIC MECHANISM · DESIGNED IN CAD, BUILD PARKED</p>
+      <h2 class="gl-h">EYE — a machine that <span class="sig">looks</span></h2>
+      <p class="pd-p">
+        Pure exploration, started after falling down the rabbit hole of Will
+        Cogley's animatronics videos. An eye that only rotates reads as a
+        camera on a gimbal. The parts around the rotation are what make it a
+        look: lids that follow the gaze, an iris that catches the light.
+      </p>
+      <p class="pd-p">
+        The design runs on four servos. Two point the eyeball through ball
+        linkages. The other two run the eyelids: one slides a carriage along
+        two rods, moving both lids toward or away from the eye to close and
+        open them, and one tilts a straight horn with a lid coupled to each
+        end, so when the eye points down the top lid follows it down, the way
+        yours does. Control is an Arduino and a joystick.
+      </p>
+      <p class="pd-p">
+        The eyeball itself is a three-part printed assembly. The iris clicks
+        into the eyeball shell on cantilever snaps, a transparent pupil seats
+        in front of an RGB LED breakout, and the shell carries molded-in
+        mounting datums for the little board plus channels that route its
+        wires out the back.
+      </p>
+      <p class="gl-spec">4 SERVOS · BALL LINKAGES · LID CARRIAGE + TILT HORN · CANTILEVER SNAPS · 3D PRINT · SOLIDWORKS · ARDUINO</p>
+    </Operator>
+
+    <Operator id="eyeHero" name="eye_cad · full_assembly" type="view" area="ehero" ports="in">
+      <figure class="eye-hero">
+        <img src="/images/lab/biomimetic-eye/full-assembly.png" alt="CAD render of the complete single-eye mechanism: eyeball assembly with iris and pupil, separate eyelid shells, the eyelid carriage on two rods, four servos with linkages, all on a printed base" loading="lazy" />
+        <figcaption>FULL SINGLE-EYE MECHANISM · EXISTS IN CAD ONLY</figcaption>
+      </figure>
+    </Operator>
+
+    <Operator id="eyeRenders" name="eye_cad · parts" type="view" area="erend" ports="in">
+      <div class="eye-grid">
+        <figure><img src="/images/lab/biomimetic-eye/eyeball.png" alt="CAD render of the assembled eyeball from the front: iris snapped in, RGB LED board visible through the transparent pupil" loading="lazy" /><figcaption>EYEBALL ASSEMBLY · LED THROUGH THE PUPIL</figcaption></figure>
+        <figure><img src="/images/lab/biomimetic-eye/iris.png" alt="CAD render of the iris with its cutout pattern and cantilever snap arms" loading="lazy" /><figcaption>IRIS · CANTILEVER SNAPS</figcaption></figure>
+        <figure><img src="/images/lab/biomimetic-eye/pupil.png" alt="CAD render of the transparent pupil lens" loading="lazy" /><figcaption>PUPIL · TRANSPARENT</figcaption></figure>
+        <figure><img src="/images/lab/biomimetic-eye/section.png" alt="3D section view of the assembled eye showing how the snaps seat in their receptacles and the wire channels feeding the LED board" loading="lazy" /><figcaption>SECTION · SNAPS + WIRE CHANNELS</figcaption></figure>
+        <figure><img src="/images/lab/biomimetic-eye/eyelids-closed.png" alt="CAD render of the two eyelid shells shown closed" loading="lazy" /><figcaption>EYELIDS · CLOSED</figcaption></figure>
+        <figure><img src="/images/lab/biomimetic-eye/assembly-front.png" alt="CAD render of the eyeball mounted in its frame with the eyelid shells wrapped around it" loading="lazy" /><figcaption>IN THE FRAME · EYELIDS AROUND THE EYE</figcaption></figure>
+      </div>
+      <p class="eye-gridnote">CAD RENDERS · THE EYEBALL ASSEMBLY IS THE PART THAT GOT PRINTED</p>
+    </Operator>
+
+    <Operator id="eyeLed" name="eye_part · the_led" type="view" area="eled" maxw={320} ports="in">
+      <figure class="eye-photo">
+        <img src="/images/lab/biomimetic-eye/led-pcba.jpeg" alt="The RGB LED used in the pupil: a 5050 package held in tweezers above its Adafruit carrier board" loading="lazy" />
+        <figcaption>THE LED · 5050 ON AN ADAFRUIT CARRIER · PHOTO: ADAFRUIT</figcaption>
+      </figure>
+    </Operator>
+
+    <Operator id="eyeSim" name="eye_sim · design_intent" type="view" area="esim">
+      <div class="simlab">
+        <canvas id="eyCv" class="sl-cv sl-cv-tall" aria-label="Animated simulation of the eye mechanism's design intent: the eye saccades and blinks in a front view while a side schematic shows the eyelid carriage sliding and the tilt horn rotating in sync. Move the pointer to steer the gaze, click to blink"></canvas>
+        <div class="sl-row">
+          <span class="sl-k">MODE</span>
+          <button id="eyAuto" class="sl-chip on">AUTO</button>
+          <span class="sl-note">POINTER STEERS THE GAZE · CLICK TO BLINK</span>
+        </div>
+        <div class="sl-tel">
+          <span>GAZE</span><b id="eyTelGaze">—</b>
+          <span>CARRIAGE</span><b id="eyTelCarriage">—</b>
+          <span>TILT HORN</span><b id="eyTelHorn">—</b>
+          <span>LIDS</span><b id="eyTelLids">—</b>
+        </div>
+        <p class="eye-gridnote">SIMULATED FROM THE CAD · DESIGN INTENT, NOT HARDWARE · ONLY THE EYEBALL WAS PRINTED</p>
       </div>
     </Operator>
 
-    <!-- PROCESS: why the controls work the way they do — read after playing -->
-    <Operator id="controlDesign" name="process · control_design" type="txt" area="cdes">
-      <h3 class="gl-h3">Why the controls work this way</h3>
+    <Operator id="eyeOut" name="out · parked" type="txt" area="eout" ports="in">
       <p class="pd-p">
-        <b>Jog, not slider.</b> Hold means keep moving; release means stop.
-        And the app draws where each cylinder actually is, not where you told
-        it to go: anything still traveling gets a pulsing rim. I didn't want
-        a screen showing a lamp that doesn't exist yet.
+        The full single-eye mechanism is modeled, base, carriage, servos and
+        all. Only the eyeball assembly ever got printed; the budget ran out
+        before the servos and linkages did. There's no working rig, and
+        everything past the eyeball exists in CAD and nowhere else.
       </p>
       <p class="pd-p">
-        <b>One number per cylinder.</b> Height, brightness and color are
-        locked together on purpose. Dim light is always warm; there's no way
-        to build a low, cold scene, and I consider that a feature. Night mode
-        caps the ceiling at 2700&nbsp;K, and the cap eases in rather than
-        snapping, the way firmware would fade it.
+        It stays in the lab because the design still holds up. The eyelid
+        carriage is my favorite part of it, one degree of freedom doing two
+        jobs, and the build is waiting on a parts budget, nothing else.
       </p>
-      <p class="pd-p">
-        <b>The motors set the rules.</b> Range clamps travel for everything:
-        set-points, patterns, your fingers. And the patterns run through the
-        same motor model as manual holds, so a fireplace flicker can only
-        ever move as fast as a lead screw turns.
-      </p>
+      <p class="gl-outnext">▸ NEXT · SERVOS AND LINKAGES, WHEN THE PARTS BUDGET RETURNS</p>
     </Operator>
 
-    <!-- OUT: what the sim settles, and what only hardware can answer -->
-    <Operator id="gridOut" name="out · the_build" type="txt" area="gout" ports="in">
-      <p class="pd-p">
-        The sim exists so the hardware decisions get made cheaply. Jog feel,
-        60 vs 110&nbsp;mm of travel, the shape of the warm-to-cool ramp,
-        whether the patterns still read at real motor speed: all decided
-        here, before committing to parts.
-      </p>
-      <p class="pd-p">
-        Some questions only the build can answer. How loud are sixteen
-        steppers in a quiet room? Does real frosted plastic scatter anything
-        like the shader? How low can the LEDs dim before the ember falls
-        apart?
-      </p>
-      <p class="gl-outnext">▸ NEXT · BUILD PHOTOS LAND IN grid_photo AS THE HARDWARE COMES TOGETHER</p>
+    <!-- section bar · bus node: the queue, collapsed into the bar itself -->
+    <Operator id="labDiv3" name="sys · break" type="sys" area="div3" ports="both" flow="vertical">
+      <span class="ldiv-label">MORE COOKING<i class="gl-cursor">▮</i></span>
     </Operator>
 
-    <!-- placeholder for the next experiment -->
-    <Operator id="labSoon" name="queue · exp_002" type="sys" area="soon" maxw={300} ports="in">
-      <div class="gl-soon">
-        <span class="gl-soonline">MORE COOKING<i class="gl-cursor">▮</i></span>
-        <span class="gl-soonsub">NEXT EXPERIMENT LANDS HERE</span>
+    <!-- the next experiment, cooking: mini dither-cook (campus-ai grammar, lab scene) -->
+    <Operator id="labCook" name="queue · exp_003" type="sys" area="cook" maxw={324} ports="in">
+      <div class="lq-wrap">
+        <canvas id="lqCv" width="288" height="132" aria-label="The next lab experiment cooking into view through a dither pattern; it never quite finishes. Cursor heat resolves it locally"></canvas>
+        <span class="lq-sub">NEXT EXPERIMENT LANDS HERE · COOK <b id="lqPct">0%</b></span>
       </div>
     </Operator>
   </PatchField>
 
-  <!-- Lazy bootstrap: nothing GRID-related loads until an experiment op nears
-       the viewport; then three r128 → postprocessing → grid-lab.js, in order.
-       Re-nav safe: CDN globals persist, GridLab.init() re-binds to fresh DOM. -->
+  <!-- Lazy bootstrap: each sim's runtime loads only when its op nears the
+       viewport. No CDN deps — both are self-contained vanilla canvas.
+       Re-nav safe: globals persist, init() re-binds to fresh DOM. -->
   <script is:inline data-astro-rerun>
   (function () {
-    var view = document.getElementById('gridView');
-    var app = document.getElementById('gridApp');
-    if (!view || view.dataset.glBoot) return;
-    view.dataset.glBoot = '1';
-
-    var STEPS = [
-      // [global, url, required] — optional steps fail soft (grid-lab.js
-      // falls back to sprite halos when POSTPROCESSING is absent)
-      ['THREE', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', true],
-      ['POSTPROCESSING', 'https://cdn.jsdelivr.net/npm/postprocessing@6.22.2/build/postprocessing.min.js', false],
-      ['GridLab', '/js/grid-lab.js', true],
+    var SIMS = [
+      ['plView', 'PresenceLab', '/js/presence-lab.js'],
+      ['eyeSim', 'EyeLab', '/js/eye-lab.js'],
     ];
-    function loadStep(i) {
-      if (i >= STEPS.length) { window.GridLab && window.GridLab.init(); return; }
-      if (window[STEPS[i][0]]) { loadStep(i + 1); return; }
-      var s = document.createElement('script');
-      s.src = STEPS[i][1];
-      s.onload = function () { loadStep(i + 1); };
-      s.onerror = function () {
-        if (STEPS[i][2]) { console.warn('GRID: failed to load ' + STEPS[i][1]); return; }
-        loadStep(i + 1);
-      };
-      document.head.appendChild(s);
-    }
-    var started = false;
-    function start() { if (started) return; started = true; loadStep(0); }
+    SIMS.forEach(function (sim) {
+      var op = document.getElementById(sim[0]);
+      if (!op || op.dataset.slBoot) return;
+      op.dataset.slBoot = '1';
+      function start() {
+        if (window[sim[1]]) { window[sim[1]].init(); return; }
+        var s = document.createElement('script');
+        s.src = sim[2];
+        s.onload = function () { window[sim[1]] && window[sim[1]].init(); };
+        s.onerror = function () { console.warn('LAB: failed to load ' + sim[2]); };
+        document.head.appendChild(s);
+      }
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (es) {
+          if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
+        }, { rootMargin: '600px' });
+        io.observe(op);
+      } else {
+        start();
+      }
+    });
+  })();
+  </script>
 
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (es) {
-        if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
-      }, { rootMargin: '900px' });
-      io.observe(view);
-      if (app) io.observe(app);
-    } else {
-      start();
+  <!-- queue cook — the next experiment resolving through a Bayer threshold,
+       looping without ever finishing (it's a queue, not a promise). Same
+       dither grammar as the campus-ai under-construction node, lab scene. -->
+  <script is:inline data-astro-rerun>
+  (() => {
+    const cv = document.getElementById('lqCv');
+    if (!cv || cv.dataset.booted) return;
+    cv.dataset.booted = '1';
+    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const CW = 96, CH = 44, CELL = 3;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    /* target scene at cell resolution: a flask on the bench, contents unknown */
+    const off = document.createElement('canvas');
+    off.width = CW; off.height = CH;
+    const oc = off.getContext('2d');
+    oc.fillStyle = '#15140f'; oc.fillRect(0, 0, CW, CH);
+    oc.strokeStyle = '#3dff88'; oc.lineWidth = 1;
+    oc.beginPath();                       // erlenmeyer: neck + shoulders + base
+    oc.moveTo(14, 8); oc.lineTo(14, 16); oc.lineTo(7, 32); oc.lineTo(25, 32); oc.lineTo(18, 16); oc.lineTo(18, 8);
+    oc.closePath(); oc.stroke();
+    oc.fillStyle = 'rgba(61,255,136,0.35)';
+    oc.fillRect(9, 26, 14, 5);            // the brew
+    oc.fillStyle = '#3dff88';
+    oc.fillRect(13, 22, 2, 2); oc.fillRect(17, 19, 2, 2); oc.fillRect(15, 13, 2, 2);  // bubbles
+    oc.fillRect(4, 34, 24, 1);            // bench
+    oc.fillStyle = '#e6e6e2';
+    oc.font = '900 10px monospace';
+    oc.fillText('EXP_003', 36, 20);
+    oc.fillStyle = '#3dff88';
+    oc.font = '700 6px monospace';
+    oc.fillText('CONTENTS UNKNOWN', 36, 29);
+    oc.fillText('STILL COOKING', 36, 37);
+    const scene = oc.getImageData(0, 0, CW, CH);
+
+    const B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    const out = ctx.createImageData(CW, CH);
+    const heat = new Float32Array(CW * CH);
+    const pct = document.getElementById('lqPct');
+
+    let t0 = performance.now();
+    /* cook loops and never lands: up to 92%, simmer back, try again */
+    function cookLevel(now) {
+      const t = ((now - t0) / 1000) % 9;
+      if (t < 3.6) return (t / 3.6) * 0.92;
+      if (t < 5.2) return 0.92;
+      return 0.92 - ((t - 5.2) / 3.8) * 0.72;
     }
+    cv.addEventListener('pointermove', (e) => {
+      const r = cv.getBoundingClientRect();
+      const mx = (e.clientX - r.left) / r.width * CW, my = (e.clientY - r.top) / r.height * CH;
+      for (let dy = -7; dy <= 7; dy++) for (let dx = -7; dx <= 7; dx++) {
+        const x = Math.round(mx + dx), y = Math.round(my + dy);
+        if (x < 0 || y < 0 || x >= CW || y >= CH) continue;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 49) heat[y * CW + x] = Math.min(1, heat[y * CW + x] + 0.1 * (1 - d2 / 49));
+      }
+    }, { passive: true });
+
+    function render(p) {
+      const sd = scene.data, od = out.data;
+      for (let y = 0; y < CH; y++) {
+        for (let x = 0; x < CW; x++) {
+          const i = y * CW + x, i4 = i * 4;
+          const local = Math.min(1, p + heat[i]);
+          const th = (B4[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+          if (local > th) { od[i4] = sd[i4]; od[i4 + 1] = sd[i4 + 1]; od[i4 + 2] = sd[i4 + 2]; }
+          else { od[i4] = 21; od[i4 + 1] = 20; od[i4 + 2] = 15; }
+          od[i4 + 3] = 255;
+          if (!REDUCED) heat[i] *= 0.98;
+        }
+      }
+      const tmp = document.createElement('canvas');
+      tmp.width = CW; tmp.height = CH;
+      tmp.getContext('2d').putImageData(out, 0, 0);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(tmp, 0, 0, CW, CH, 0, 0, CW * CELL, CH * CELL);
+    }
+
+    if (REDUCED) { render(0.85); if (pct) pct.textContent = '85%'; return; }
+    let fc = 0;
+    (function frame(now) {
+      if (!cv.isConnected) return;
+      if ((fc++ & 1) === 0) {
+        const p = cookLevel(now);
+        render(p);
+        if (pct) pct.textContent = Math.round(p * 100) + '%';
+      }
+      requestAnimationFrame(frame);
+    })(performance.now());
   })();
   </script>
 </Base>
@@ -384,6 +437,7 @@ const layout = {
   .pd-exp:last-child { border-bottom: none; }
   .pd-status { display: block; font-family: var(--font-mono); font-size: 9.5px; color: #e8c34a; margin-bottom: 4px; }
   .pd-status[data-live='true'] { color: var(--signal); }
+  .pd-status[data-st='parked'] { color: var(--text-dim); }
   .pd-title { display: block; font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; transition: color var(--duration-fast); }
   .pd-exp:hover .pd-title { color: var(--signal); }
   .pd-desc { display: block; font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px; }
@@ -406,6 +460,13 @@ const layout = {
     margin-bottom: 10px;
   }
   .gl-h .sig { color: var(--signal); }
+  .gl-h3 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 15px;
+    margin: 18px 0 8px;
+  }
   .gl-spec {
     font-family: var(--font-mono);
     font-size: 9.5px;
@@ -415,53 +476,18 @@ const layout = {
     line-height: 1.7;
   }
 
-  /* reserved build-photo slot — swap the placeholder for an <img> when it lands */
-  .gl-photoslot {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    text-align: center;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-  }
-  .gl-photoslot .gl-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
-
   .gl-help {
     list-style: none;
     font-family: var(--font-mono);
     font-size: 10.5px;
     line-height: 1.7;
     color: var(--text-muted);
+    margin-top: 10px;
   }
   .gl-help li { padding-left: 14px; position: relative; margin-bottom: 7px; }
   .gl-help li:last-child { margin-bottom: 0; }
   .gl-help li::before { content: '▸'; position: absolute; left: 0; color: var(--signal); }
   .gl-help b { color: var(--text); font-weight: 600; }
-
-  .gl-h3 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  .pd-p b { color: var(--text); font-weight: 600; }
-
-  .gl-tel {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 5px 12px;
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-  }
-  .gl-tel b { color: var(--signal); font-weight: 400; text-align: right; }
 
   .gl-outnext {
     font-family: var(--font-mono);
@@ -472,153 +498,232 @@ const layout = {
     line-height: 1.7;
   }
 
-  .gl-soon {
-    display: grid;
-    gap: 5px;
-    justify-items: center;
-    padding: 10px 4px;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    letter-spacing: 0.12em;
-    text-align: center;
-  }
-  .gl-soonline { font-size: 10.5px; color: var(--text-muted); }
-  .gl-soonsub { font-size: 8.5px; color: var(--text-dim); }
   .gl-cursor { font-style: normal; color: var(--signal); animation: gl-blink 1.1s steps(1) infinite; }
   @keyframes gl-blink { 50% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) {
     .gl-cursor { animation: none; }
   }
 
-  /* telemetry is patch garnish — drop it on small screens to keep READ quiet */
-  @media (max-width: 767px) {
-    :global(#gridTelemetry) { display: none !important; }
+  /* ---------- section bars — the big black dividers between experiments.
+     Full-width BUS NODES (span all 12 cols, flow="vertical"): cables enter
+     at the top port and leave at the bottom port. Header hidden, glowing
+     signal border. Work in both modes. ---------- */
+  :global(#labDiv1), :global(#labDiv2), :global(#labDiv3) {
+    background: var(--bg-elevated);
+    border: 1px solid var(--signal);
+    border-radius: 3px;
+    box-shadow:
+      0 0 18px rgba(61, 255, 136, 0.22),
+      0 0 60px rgba(61, 255, 136, 0.08),
+      inset 0 0 30px rgba(61, 255, 136, 0.05);
+    min-width: 0;
   }
-</style>
-
-<!-- GRID demo interiors — the experiment's own visual language, scoped under
-     .gridlab (its DOM is partly JS-generated, so these can't be Astro-scoped).
-     Palette is the prototype's warm studio gray; fonts map to site tokens. -->
-<style is:global>
-  .gridlab {
-    --bg: #46433e; --line: #726c63; --line-soft: #5b5650;
-    --ink: #e2ded6; --ink-dim: #a09a90; --ink-faint: #767066;
+  :global(#labDiv1 .ohead), :global(#labDiv2 .ohead), :global(#labDiv3 .ohead) { display: none; }
+  :global(#labDiv1 .obody), :global(#labDiv2 .obody), :global(#labDiv3 .obody) {
+    padding: 30px 18px;
+    display: flex;
+    justify-content: center;
   }
-  .glctr { display: flex; justify-content: center; }
-  .glduo { width: min(360px, 100%); }
-
-  /* ---------- controller ---------- */
-  .gridlab .phone {
-    width: min(360px, 100%); height: 740px; background: var(--bg); border-radius: 36px;
-    overflow: hidden; position: relative; display: flex; flex-direction: column;
-    box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .75); border: 1px solid #2e2b27;
+  /* ports ride the bus vertically: in on top, out underneath */
+  :global(#labDiv1 .port-in), :global(#labDiv2 .port-in), :global(#labDiv3 .port-in) {
+    left: 50%; right: auto; top: -5px; transform: translateX(-50%);
   }
-  .gridlab .bar { display: flex; align-items: center; justify-content: space-between; padding: 20px 26px 0; }
-  .gridlab .lampname { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
-  .gridlab .status { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; color: var(--ink-faint); display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
-  .gridlab .status .led { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 5px var(--ink); }
-
-  .gridlab .core { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 13px; padding: 0 24px; }
-
-  .gridlab .seg { display: flex; width: 100%; max-width: 300px; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
-  .gridlab .seg button { flex: 1; background: transparent; border: none; color: var(--ink-dim); font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; padding: 9px 0; cursor: pointer; transition: all .2s; }
-  .gridlab .seg button + button { border-left: 1px solid var(--line); }
-  .gridlab .seg button.active { background: rgba(255, 255, 255, .08); color: var(--ink); }
-
-  .gridlab .modewrap { position: relative; width: 100%; max-width: 300px; }
-  .gridlab .mode-select { width: 100%; appearance: none; -webkit-appearance: none; background: transparent; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; padding: 10px 38px 10px 15px; cursor: pointer; text-align: center; }
-  .gridlab .mode-select:focus { outline: none; border-color: var(--ink-dim); }
-  .gridlab .modewrap .chev { position: absolute; right: 15px; top: 50%; transform: translateY(-32%); pointer-events: none; color: var(--ink-dim); font-size: 10px; }
-  .gridlab .mode-select option { background: #34383a; color: var(--ink); }
-
-  .gridlab .setpoints { display: flex; width: 100%; max-width: 300px; gap: 8px; }
-  .gridlab .setpoints button { flex: 1; background: transparent; border: 1px solid var(--line-soft); border-radius: 7px; color: var(--ink-dim); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; padding: 10px 0; cursor: pointer; transition: all .2s; }
-  .gridlab .setpoints button:hover { border-color: var(--line); color: var(--ink); }
-  .gridlab .setpoints button.active { background: rgba(255, 255, 255, .08); color: var(--ink); border-color: var(--line); }
-  .gridlab .setpoints button.custom { border-style: dashed; }
-  .gridlab .setpoints button.custom.active { background: rgba(255, 255, 255, .05); }
-  .gridlab .presetrow { margin-top: -5px; }
-  .gridlab .setpoints button.dim { opacity: .38; cursor: default; }
-
-  .gridlab .device-frame { width: 100%; max-width: 300px; aspect-ratio: 1/1; position: relative; border: 1px solid var(--line-soft); border-radius: 26px; padding: 6px; }
-  .gridlab .device { width: 100%; height: 100%; position: relative; border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); padding: 12px; background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .06)); }
-  .gridlab .tick { position: absolute; width: 9px; height: 9px; border: 1px solid var(--line); z-index: 2; }
-  .gridlab .tick.tl { top: 18px; left: 18px; border-right: none; border-bottom: none; }
-  .gridlab .tick.tr { top: 18px; right: 18px; border-left: none; border-bottom: none; }
-  .gridlab .tick.bl { bottom: 18px; left: 18px; border-right: none; border-top: none; }
-  .gridlab .tick.br { bottom: 18px; right: 18px; border-left: none; border-top: none; }
-  .gridlab .notch { position: absolute; right: -1px; top: calc(50% - 10px); width: 6px; height: 20px; border: 1px solid var(--line-soft); border-right: none; border-radius: 3px 0 0 3px; background: var(--bg); }
-  .gridlab .cell { display: flex; align-items: center; justify-content: center; }
-  .gridlab .circle { width: 82%; aspect-ratio: 1/1; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .24); cursor: pointer; transition: box-shadow .25s; touch-action: none; user-select: none; -webkit-user-select: none; }
-  .gridlab .circle.holding { box-shadow: 0 0 0 2px rgba(220, 223, 224, .55), 0 0 14px rgba(220, 223, 224, .3); }
-  .gridlab .circle.lowering { box-shadow: 0 0 0 2px rgba(150, 156, 158, .55), 0 0 10px rgba(0, 0, 0, .4) inset; }
-  /* in transit: motor position hasn't reached the target yet — pulsing rim */
-  .gridlab .circle.moving { border-color: rgba(255, 255, 255, .6); animation: gl-transit 0.9s ease-in-out infinite; }
-  @keyframes gl-transit {
-    50% { border-color: rgba(255, 255, 255, .24); }
+  :global(#labDiv1 .port-out), :global(#labDiv2 .port-out), :global(#labDiv3 .port-out) {
+    left: 50%; right: auto; top: auto; bottom: -5px; transform: translateX(-50%);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .gridlab .circle.moving { animation: none; }
+  :global(body:not(.perform)) :global(#labDiv1),
+  :global(body:not(.perform)) :global(#labDiv2),
+  :global(body:not(.perform)) :global(#labDiv3) { margin: 48px 0; }
+  .ldiv-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--signal);
+    opacity: 0.85;
   }
-  .gridlab .device.readout .circle { cursor: default; }
 
-  .gridlab .holdhint { width: 100%; max-width: 300px; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
-
-  .gridlab .temptrack { background: linear-gradient(90deg, #ff9d54, #ffdcae, #fdf3e3, #dfe7fb) !important; height: 4px !important; }
-  .gridlab .kval { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); font-weight: normal; width: 42px; text-align: right; flex-shrink: 0; }
-
-  .gridlab .speed { width: 100%; max-width: 300px; display: none; align-items: center; gap: 12px; }
-  .gridlab .speed.show { display: flex; }
-  .gridlab .speed .k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); width: 44px; flex-shrink: 0; }
-  .gridlab .strack { flex: 1; height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; cursor: pointer; }
-  .gridlab .sfill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
-  .gridlab .sknob { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 13px; height: 13px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); }
-  .gridlab .tdet { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 2px; height: 7px; background: rgba(0, 0, 0, .35); border-radius: 1px; pointer-events: none; }
-
-  .gridlab .limit { width: 100%; max-width: 300px; }
-  .gridlab .limit .lab { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
-  .gridlab .limit .lab b { color: var(--ink); font-weight: normal; }
-  .gridlab .rtrack { height: 3px; background: rgba(0, 0, 0, .28); border-radius: 2px; position: relative; margin: 8px 6px; }
-  .gridlab .rspan { position: absolute; top: 0; bottom: 0; background: var(--ink-dim); border-radius: 2px; }
-  .gridlab .rhandle { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 15px; height: 15px; border-radius: 50%; background: var(--ink); border: 1px solid var(--bg); cursor: grab; touch-action: none; }
-  .gridlab .rhandle:active { cursor: grabbing; }
-
-  .gridlab .foot { padding: 0 26px 20px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: var(--ink-faint); text-transform: uppercase; }
-
-  /* ---------- live 3D ---------- */
-  /* sits flush inside the VIEW op body, DemoFrame-style */
-  .glviewwrap { margin: -12px -14px; }
-  .gridlab .viewcard {
-    position: relative; overflow: hidden; background: #0b0c0d;
-    height: clamp(440px, 62vh, 620px);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  /* queue cook node — the next experiment dithering into being */
+  .lq-wrap { display: grid; gap: 8px; justify-items: start; }
+  .lq-wrap canvas {
+    display: block;
+    width: 100%;
+    image-rendering: pixelated;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #15140f;
   }
-  .gridlab .viewcard canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-  .gridlab .viewcard canvas.grabbing { cursor: grabbing; }
-  .gridlab .viewcard .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(0, 0, 0, .42) 100%); }
-  .gridlab .vtick { position: absolute; width: 11px; height: 11px; border: 1px solid #524d45; z-index: 3; pointer-events: none; }
-  .gridlab .vtick.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-  .gridlab .vtick.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-  .gridlab .vtick.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-  .gridlab .vtick.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-  .gridlab .vhud { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
-  .gridlab .vhud span { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .18em; text-transform: uppercase; color: #67615a; background: rgba(11, 12, 13, .55); padding: 6px 14px; border-radius: 20px; border: 1px solid #292623; }
-  .gridlab .vtop { position: absolute; top: 20px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; z-index: 3; }
-  .gridlab .vtop span { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: #767066; }
+  .lq-sub {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+  }
+  .lq-sub b { color: var(--signal); font-weight: 400; }
 
-  .gridlab .vctrl { position: absolute; top: 48px; right: 18px; display: flex; flex-direction: column; gap: 7px; z-index: 4; align-items: flex-end; }
-  .gridlab .vgroup { display: flex; gap: 6px; }
-  .gridlab .vbtn { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; color: #8a847a; background: rgba(20, 18, 16, .55); border: 1px solid #383430; border-radius: 6px; padding: 5px 9px; cursor: pointer; transition: all .18s; }
-  .gridlab .vbtn:hover { color: #e2ded6; border-color: #524d45; }
-  .gridlab .vbtn.on { color: #e2ded6; border-color: #726c63; background: rgba(255, 255, 255, .07); }
-  .gridlab .vnote { font-family: var(--font-mono); font-size: 8px; color: #5d574f; letter-spacing: .12em; text-transform: uppercase; }
+  /* EYE renders — CAD on their SolidWorks-white ground */
+  .eye-hero { margin: 0; }
+  .eye-hero img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 894 / 673; /* reserve height pre-load — late growth shifted the resolved layout */
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #e8eaed;
+  }
+  .eye-hero figcaption {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .eye-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  /* small screens: the grid becomes a swipeable carousel (scroll-snap, no JS) */
+  @media (max-width: 640px) {
+    .eye-grid {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+    .eye-grid figure {
+      flex: 0 0 74%;
+      scroll-snap-align: start;
+    }
+  }
+  .eye-grid figure { margin: 0; }
+  .eye-grid img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #e8eaed;
+  }
+  .eye-grid figcaption {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .eye-gridnote {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-top: 10px;
+  }
+  .eye-photo { margin: 0; }
+  .eye-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: #2a2a2e;
+  }
+  .eye-photo figcaption {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
 
-  .gridlab .glposter {
-    position: absolute; inset: 0; z-index: 5;
-    display: grid; place-items: center;
-    background: #0b0c0d;
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
-    color: #67615a;
+  /* ---------- sim interiors (shared visual key) ---------- */
+  .simlab { display: grid; gap: 10px; }
+  .sl-cv {
+    display: block;
+    width: 100%;
+    aspect-ratio: 42 / 23;
+    background: #141317;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    touch-action: manipulation;
+  }
+  .sl-cv-tall { aspect-ratio: 4 / 3; }
+
+  .sl-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sl-k {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .sl-k2 { margin-left: 10px; }
+  .sl-note {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+  .sl-chip {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 99px;
+    padding: 4px 11px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .sl-chip:hover { color: var(--text); border-color: var(--text-dim); }
+  .sl-chip.on { color: var(--signal); border-color: var(--signal); }
+  .sl-chip-amber.on { color: #e8c34a; border-color: #e8c34a; }
+
+  .sl-range {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    min-width: 80px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--signal) calc(var(--p, 0.1) * 100%), rgba(255, 255, 255, 0.12) 0);
+    outline: none;
+  }
+  .sl-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--text);
+    border-radius: 1px;
+    cursor: pointer;
+  }
+  .sl-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--text);
+    border: none;
+    border-radius: 1px;
+    cursor: pointer;
+  }
+
+  .sl-tel {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    gap: 5px 12px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .sl-tel b { color: var(--signal); font-weight: 400; }
+  @media (max-width: 560px) {
+    .sl-tel { grid-template-columns: auto 1fr; }
   }
 </style>
