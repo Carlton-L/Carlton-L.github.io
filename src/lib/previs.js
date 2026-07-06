@@ -441,32 +441,58 @@
     return o + '</g>';
   }
 
-  /* ---------- viewer: campus_ai — thematic coding over transcripts ---------- */
-  var THEME = ['#CC79A7', '#56B4E9', '#E69F00', '#009E73'];
-  function campInit() {
-    var r = srnd(2024);
-    var segs = [];
-    for (var row = 0; row < 9; row++) {
-      var x = 22;
-      while (x < 360) {
-        var w = 14 + r() * 34;
-        segs.push({ x: x, w: w, y: 26 + row * 22, hl: r() < 0.24 ? Math.floor(r() * 4) : -1 });
-        x += w + 7;
-      }
-    }
-    var k = 0;
-    segs.forEach(function (s) { if (s.hl >= 0) s.k = k++; });
-    segs.total = k;
-    return segs;
+  /* ---------- viewer: campus_ai — FUNNEL.scn, the research pipeline cooking
+       42 screened → 8 seats → 1,117 coded moments → 7 themes → 4 recs.
+       Real study numbers; 9s loop; REDUCED renders the finished state. ---------- */
+  var FWONG = ['#CC79A7', '#F0E442', '#56B4E9', '#E69F00', '#009E73', '#0072B2', '#D55E00'];
+  var FBARS = [11, 44, 77, 17, 41, 72, 41];
+  var FRECS = ['HUMAN FACE', 'PROXY FEEDBK', 'GPS ROUTE', 'JOB MARKET'];
+  var FSTAGES = [['SCREENED', 46], ['SEATS', 132], ['HIGHLIGHTS', 214], ['THEMES', 300], ['RECS', 376]];
+  function funInit() {
+    var dots = [];
+    for (var d = 0; d < 42; d++) dots.push([24 + (d % 6) * 9, 104 + Math.floor(d / 6) * 9]);
+    var seats = [];
+    for (var s2 = 0; s2 < 8; s2++) seats.push([118 + (s2 % 2) * 26, 90 + Math.floor(s2 / 2) * 22]);
+    return { dots: dots, seats: seats };
   }
-  function campDraw(st, ft, inv) {
-    var kShow = REDUCED ? st.total : Math.floor((ft % ((st.total + 10) * 0.35)) / 0.35);
-    var base = inv ? '#34322a' : '#DAD3C1';
+  function funDraw(st, ft, inv) {
+    var t = REDUCED ? 99 : ft % 9;
+    var fg = inv ? '#2a2a26' : '#e6e6e2';
+    var dim = inv ? 'rgba(0,0,0,0.45)' : '#6b6b66';
+    var seat0 = inv ? 'rgba(0,0,0,0.15)' : 'rgba(61,255,136,0.15)';
     var o = '';
-    for (var i = 0; i < st.length; i++) {
-      var s = st[i];
-      var lit = s.hl >= 0 && s.k < kShow;
-      o += '<rect x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="9" rx="2" fill="' + (lit ? THEME[s.hl] : base) + '" fill-opacity="' + (lit ? 0.85 : 1) + '"/>';
+    var i;
+    for (i = 0; i < FSTAGES.length; i++) {
+      o += '<text x="' + FSTAGES[i][1] + '" y="26" text-anchor="middle" font-family="monospace" font-size="7" letter-spacing="1" fill="' + dim + '">' + FSTAGES[i][0] + '</text>';
+    }
+    var AX = [88, 172, 256, 338];
+    for (i = 0; i < 4; i++) {
+      o += '<text x="' + AX[i] + '" y="128" text-anchor="middle" font-family="monospace" font-size="9" fill="#3dff88">&#9472;&#9656;</text>';
+    }
+    for (i = 0; i < st.dots.length; i++) {
+      var dOp = t > 0.4 + i * 0.028 ? 0.18 : 0.85;
+      o += '<circle cx="' + st.dots[i][0] + '" cy="' + st.dots[i][1] + '" r="2.6" fill="' + (inv ? '#4a4a45' : '#9f9f98') + '" opacity="' + dOp + '"/>';
+    }
+    for (i = 0; i < st.seats.length; i++) {
+      var lit = t > 1.7 + i * 0.14;
+      o += '<circle cx="' + st.seats[i][0] + '" cy="' + st.seats[i][1] + '" r="7" fill="none" stroke="' + (lit ? '#3dff88' : seat0) + '"/>';
+    }
+    var n = Math.max(0, Math.min(1, (t - 3.1) / 2.4));
+    var cn = Math.floor(n * 1117);
+    var cs = cn >= 1000 ? '1,' + ('00' + (cn - 1000)).slice(-3) : String(cn);
+    o += '<text x="214" y="124" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" fill="' + fg + '">' + cs + '</text>';
+    o += '<text x="214" y="140" text-anchor="middle" font-family="monospace" font-size="6" letter-spacing="1" fill="' + dim + '">CODED MOMENTS</text>';
+    for (i = 0; i < 7; i++) {
+      var by = 66 + i * 15;
+      var bp = Math.max(0, Math.min(1, (t - 5.6 - i * 0.14) / 0.5));
+      o += '<rect x="282" y="' + by + '" width="40" height="8" rx="2" fill="' + (inv ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)') + '"/>';
+      if (bp > 0) o += '<rect x="282" y="' + by + '" width="' + (bp * (FBARS[i] / 77) * 40).toFixed(1) + '" height="8" rx="2" fill="' + FWONG[i] + '"/>';
+    }
+    for (i = 0; i < 4; i++) {
+      var rOp = t > 7.1 + i * 0.3 ? 1 : 0.12;
+      var ry = 62 + i * 26;
+      o += '<g opacity="' + rOp + '"><rect x="346" y="' + ry + '" width="62" height="16" rx="3" fill="none" stroke="#3dff88"/>';
+      o += '<text x="377" y="' + (ry + 10.5) + '" text-anchor="middle" font-family="monospace" font-size="6" letter-spacing="0.5" fill="#3dff88">' + FRECS[i] + '</text></g>';
     }
     return o;
   }
@@ -739,7 +765,11 @@
 
   /* ---- grid_lamp: 4x4 kinetic bed, wave pattern, ember-to-cool coupling.
      LIVE (not a recreation): same behavioral rules as the full sim on the
-     case-study page — level drives radius, brightness and warmth together. ---- */
+     case-study page — level drives radius, brightness and warmth together.
+     Since 2026-07-06 this svg mini is the FALLBACK only: the reg entry is
+     gl:true, so the engine overlays the case study's real three.js studio
+     view (public/js/previs-gl.js, lazy). The mini still covers reduced
+     motion, WebGL/CDN failure, and the load gap before the canvas is live. ---- */
   function glampInit() {
     var r = srnd(1616);
     var jit = [];
@@ -774,11 +804,11 @@
 
   /* ---------- registry: live previews + recreated minis ---------- */
   var V = {
-    'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · SCULPT-BY-TOUCH · EMBER COUPLING', aria: 'GRID kinetic lamp 4 by 4 bed running a wave pattern, live mini preview', paper: false, init: glampInit, draw: glampDraw },
+    'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · 3D STUDIO · WAVE · AUTO-ORBIT', aria: 'GRID kinetic lamp, the case study 3D studio view with the wave pattern running and a slow orbit, live preview', paper: false, gl: true, init: glampInit, draw: glampDraw },
     'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
     'futurity-engine': { name: 'futurity_engine_view · BATTERIES.scn', foot: 'SSE REPLAY · LIVE GRAPH · 5 PHASES', aria: 'Futurity Engine growing knowledge graph, live synthetic demo', paper: false, init: engInit, draw: engDraw },
     'fast': { name: 'fast_view · INTERSTELLAR.scn', foot: 'SUBJECT PAGE → PATENT SNAPSHOT · TRAVERSAL', aria: 'FAST subject page traversing to a patent source snapshot and back, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
-    'campus-ai': { name: 'campus_ai_view · INTERVIEWS.scn', foot: 'THEMATIC CODING · 42 SURVEYS · 8 INTERVIEWS', aria: 'Campus AI research thematic coding, live synthetic demo', paper: true, init: campInit, draw: campDraw },
+    'campus-ai': { name: 'campus_ai_view · FUNNEL.scn', foot: '42 → 8 → 1,117 → 7 → 4 · THE PIPELINE COOKS', aria: 'Campus AI research pipeline: 42 screened become 8 interviews, 1,117 coded moments, 7 themes and 4 recommendations, animated with the real study numbers', paper: false, init: funInit, draw: funDraw },
     'carlton-dev': { name: 'carlton_dev_view · THE_PATCH', foot: 'SELF-PORTRAIT · OPERATORS · LIVE CABLES', aria: 'carlton.dev patch network drawing itself, live preview', paper: false, init: cdInit, draw: cdDraw },
     'lab-equipment-portal': { name: 'lab_portal_view · EQUIP_BOARD', foot: 'RECREATION · REAL-TIME STATUS · QR CHECK-OUT', aria: 'Lab equipment portal status board, recreated mini preview', paper: false, init: lepInit, draw: lepDraw },
     'futures-garden': { name: 'futures_garden_view · ORB', foot: 'RECREATION · DIGITAL SOULS · NFC ORB', aria: 'Futures Garden orb conversation, recreated mini preview', paper: false, init: fgInit, draw: fgDraw },
@@ -856,7 +886,67 @@
       var paper = inv ? !reg[cur].paper : reg[cur].paper;
       svg.style.background = paper ? '#F4F1EA' : '#15140F';
     }
-    function draw() { svg.innerHTML = reg[cur].draw(state, ft, inv); }
+
+    /* ---------- 3D overlay (reg entries with gl:true — grid_lamp) ----------
+       A WebGL canvas slotted between the svg and the dither canvas runs the
+       case study's real three.js studio scene (window.PrevisGL, defined in
+       public/js/previs-gl.js — that file also pulls THREE + POSTPROCESSING
+       from CDN). Everything loads lazily on first selection, so pages that
+       never select grid_lamp ship nothing. The svg mini keeps cooking
+       underneath until the canvas is live, and stays the whole story under
+       prefers-reduced-motion or any load failure. The dither dissolve sits
+       above the canvas, so scene transitions keep working. INVERT rides a
+       css filter (invert + hue-rotate keeps the ember family warm). */
+    var glc = null, glh = null, glWant = false, glFail = false;
+    function glCanvas() {
+      if (glc) return glc;
+      glc = document.createElement('canvas');
+      glc.className = 'viewer-gl';
+      glc.setAttribute('aria-hidden', 'true');
+      glc.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;';
+      svg.parentNode.insertBefore(glc, svg.nextSibling);
+      return glc;
+    }
+    function glOn() { return !!(glh && glc && glc.style.display !== 'none'); }
+    function glRunner(cb) {
+      if (window.PrevisGL) { cb(); return; }
+      var ex = document.querySelector('script[data-previs-gl]');
+      if (ex) { ex.addEventListener('load', cb); ex.addEventListener('error', cb); return; }
+      var s = document.createElement('script');
+      s.setAttribute('data-previs-gl', '1');
+      s.src = '/js/previs-gl.js';
+      s.onload = cb;
+      s.onerror = function () { glFail = true; };
+      document.head.appendChild(s);
+    }
+    function glShow() {
+      glRunner(function () {
+        if (!window.PrevisGL) { glFail = true; return; }
+        window.PrevisGL.ready(function (ok) {
+          if (!ok) { glFail = true; return; }
+          if (!glWant || !glc || !glc.isConnected) return;
+          if (!glh) glh = window.PrevisGL.attach(glc);
+          if (!glh) { glFail = true; return; }
+          glc.style.display = 'block';
+          glh.start();
+          draw();
+        });
+      });
+    }
+    function glSync() {
+      glWant = !!(reg[cur].gl && !REDUCED && !glFail);
+      if (glWant) { glCanvas(); glShow(); }
+      else if (glc) {
+        glc.style.display = 'none';
+        if (glh) glh.stop();
+      }
+      if (glc) glc.style.filter = inv ? 'invert(1) hue-rotate(180deg)' : '';
+    }
+
+    function draw() {
+      if (glOn()) { if (svg.firstChild) svg.innerHTML = ''; return; }
+      svg.innerHTML = reg[cur].draw(state, ft, inv);
+    }
 
     function select(slug, invert) {
       if (!reg[slug]) slug = cur;
@@ -868,6 +958,7 @@
         beginTransition();
       }
       bg();
+      glSync();
       if (REDUCED) draw();
       return changed;
     }
@@ -877,6 +968,7 @@
       state = reg[cur].init();
       svg.setAttribute('aria-label', reg[cur].aria);
       bg();
+      glSync();
       if (REDUCED) { draw(); return; }
       beginTransition();
       var vfc = 0;

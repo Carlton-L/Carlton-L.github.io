@@ -1,19 +1,30 @@
 ---
 /**
- * Campus AI — under-construction state (patch document).
+ * Campus AI — case-study network v2.1 (2026-07-06).
  *
- * The full research write-up is being rebuilt as a proper network page.
- * Until then: the brief, the facts, and a SYS operator that cooks the
- * case study into focus with a Bayer-dither reveal (TouchDesigner
- * grammar: the page is literally still cooking). Cursor heat resolves
- * the image locally; the COOK slider drives the threshold by hand.
- * Reduced motion → fully cooked static frame.
+ * Four chapters: 01 THE STUDY (methodology: research questions → screener
+ * quotas → protocol waterfall → analysis pipeline) → 02 THE EVIDENCE
+ * (coded_transcripts viewer: featured star quote + bipartite EVIDENCE MAP
+ * + excerpt cards) → 03 WHAT WE FOUND (seven insight cards with SVG
+ * vignettes) → 04 WHAT WE RECOMMENDED (four recs with recreated deck
+ * diagrams).
+ *
+ * v2.1: quotes presented as engine-style agent cards (theme badge + name +
+ * shift meta in a header strip, quote as card body — Carlton's call);
+ * ALL styles for script-built DOM use the `.parent :global(.child)` idiom
+ * (Astro scoping does NOT reach createElement'd nodes — v2 shipped
+ * unstyled cards because of this); SVG text never sets font-family as an
+ * attribute (presentation attributes can't resolve var()) — CSS does it.
+ *
+ * Signature move unchanged: insight ─selection→ viewer over the patch bus.
+ * Data: src/data/demos/campus-ai/coded-excerpts.json (sanitized; README).
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
-import PatchDoc from '../../components/PatchDoc.astro';
+import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+import CA from '../../data/demos/campus-ai/coded-excerpts.json';
 
 const project = projects.find((p) => p.slug === 'campus-ai');
 const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
@@ -29,27 +40,167 @@ const jsonLd = {
     ]),
   ],
 };
+
+const RQS = [
+  ['What must shifters know before the learning starts?', 'path choice · investigation · what to learn'],
+  ['How do they prefer to learn, and how do they judge each method?', 'structure · tools · value of artifacts'],
+  ['How do they maintain motivation over months of self-directed work?', 'life factors · learning factors'],
+  ['Which tools and strategies worked, and which wasted their time?', 'challenges · pain points · dead ends'],
+];
+
+/* the 90-minute protocol, in order (minutes) */
+const PROTO = [
+  ['INTRO + SETUP', 10],
+  ['GET TO KNOW', 14],
+  ['RESEARCHING THE SHIFT', 12],
+  ['LEARNING METHODS', 12],
+  ['CHALLENGES', 10],
+  ['QUALITY OF LEARNING', 14],
+  ['AFTER THE SHIFT', 8],
+  ['STAKEHOLDER Q&A', 8],
+];
+const PROTO_MAX = Math.max(...PROTO.map((s) => s[1]));
+
+const INSIGHTS = [
+  { id: 'caIns1', num: '01', theme: 'discovery', heading: 'Shifts start with people, not job boards', chips: ['11 MOMENTS · 7 OF 8', 'NAMED STUDY INSIGHT'], vig: 'discovery' },
+  { id: 'caIns2', num: '02', theme: 'transfer', heading: 'Transferable skills point, personal interest pulls', chips: ['44 MOMENTS · 8 OF 8'], vig: 'transfer' },
+  { id: 'caIns3', num: '03', theme: 'proxy', heading: 'Proxy communities do the validating', chips: ['77 MOMENTS · 8 OF 8 · DENSEST THEME'], vig: 'proxy' },
+  { id: 'caIns4', num: '04', theme: 'roadmap', heading: 'They want a playbook for the whole shift', chips: ['17 MOMENTS · 5 OF 8'], vig: 'roadmap' },
+  { id: 'caIns5', num: '05', theme: 'artifacts', heading: 'Progress is something you can show', chips: ['41 MOMENTS · 7 OF 8', 'CERTS: 11 OF 1,117'], vig: 'artifacts' },
+  { id: 'caIns6', num: '06', theme: 'human', heading: 'Human contact: most valued, least supplied', chips: ['72 MOMENTS · 7 OF 8'], vig: 'human' },
+  { id: 'caIns7', num: '07', theme: 'time', heading: 'Time is the currency of the shift', chips: ['41 MOMENTS · 8 OF 8'], vig: 'time' },
+];
+
+const RECS = [
+  { id: 'caRec1', num: '01', heading: 'Give the AI a human face', ev: 'FROM ▸ CREDIBILITY + INSTRUCTOR-EXPERIENCE TAGS · INSIGHTS 03 + 06', vig: 'persona' },
+  { id: 'caRec2', num: '02', heading: 'Proxy feedback in the peer gap', ev: 'FROM ▸ LACK-OF-PEERS + FEEDBACK-LOOP TAGS · INSIGHT 06', vig: 'loop' },
+  { id: 'caRec3', num: '03', heading: 'Destination on screen from day one', ev: 'FROM ▸ ROADMAP + TIME THEMES · INSIGHTS 04 + 07', vig: 'gps' },
+  { id: 'caRec4', num: '04', heading: 'Build the roadmap against the live job market', ev: 'FROM ▸ JOB-DESCRIPTION SELF-ASSESSMENT · INSIGHTS 04 + 05', vig: 'market' },
+];
+
+/* SVG vignettes — deck diagrams recreated in site grammar. Text nodes carry
+   NO font-family attribute (attrs can't resolve var()); .ca-vig CSS sets it. */
+const VIGS = {
+  discovery: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="26" cy="30" r="9" fill="none" stroke="#CC79A7" stroke-width="1.5"/><circle cx="26" cy="23" r="4" fill="#CC79A7"/><path d="M44 30 H118" stroke="var(--text-dim)" stroke-dasharray="3 4"/><path d="M112 26 l8 4 -8 4z" fill="var(--text-dim)"/><g stroke="var(--text-dim)" fill="none"><circle cx="146" cy="18" r="6"/><circle cx="168" cy="32" r="6"/><circle cx="146" cy="46" r="6"/></g><text x="26" y="58" text-anchor="middle" font-size="7" fill="var(--text-dim)">A PERSON</text><text x="157" y="60" text-anchor="middle" font-size="7" fill="var(--text-dim)">THE PATHS</text></svg>`,
+  transfer: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="80" cy="30" r="20" fill="none" stroke="var(--text-dim)"/><circle cx="116" cy="30" r="20" fill="none" stroke="#F0E442"/><path d="M98 13 a20 20 0 0 1 0 34 a20 20 0 0 1 0 -34z" fill="#F0E442" opacity="0.25"/><text x="52" y="60" font-size="6.5" fill="var(--text-dim)">WHAT CARRIES</text><text x="106" y="60" font-size="6.5" fill="#F0E442">WHAT PULLS</text></svg>`,
+  proxy: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="30" cy="30" r="8" fill="none" stroke="#56B4E9" stroke-width="1.5"/><g stroke="#56B4E9" stroke-dasharray="2 4" fill="none"><path d="M38 26 C 80 8, 120 8, 158 16"/><path d="M38 30 H150"/><path d="M38 34 C 80 52, 120 52, 158 44"/></g><g fill="none" stroke="var(--text-dim)"><circle cx="166" cy="14" r="5"/><circle cx="158" cy="30" r="5"/><circle cx="166" cy="46" r="5"/></g><text x="30" y="54" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">LEARNER</text><text x="130" y="62" font-size="6.5" fill="var(--text-dim)">STRANGERS AHEAD</text></svg>`,
+  roadmap: `<svg viewBox="0 0 200 64" aria-hidden="true"><path d="M14 44 C 60 44, 60 20, 104 20 S 168 32, 186 28" fill="none" stroke="#E69F00" stroke-width="1.5"/><g fill="#E69F00"><circle cx="14" cy="44" r="3.5"/><circle cx="66" cy="29" r="3.5"/><circle cx="120" cy="20" r="3.5"/><circle cx="186" cy="28" r="3.5"/></g><g font-size="6.5" fill="var(--text-dim)"><text x="8" y="57">BREAK OUT</text><text x="50" y="14">LEARN · BUILD</text><text x="134" y="48">LAND THE JOB</text></g></svg>`,
+  artifacts: `<svg viewBox="0 0 200 64" aria-hidden="true"><g fill="none" stroke="#009E73" stroke-width="1.5"><rect x="24" y="36" width="44" height="12" rx="2"/><rect x="30" y="22" width="38" height="12" rx="2"/><rect x="36" y="8" width="30" height="12" rx="2"/></g><path d="M50 52 l5 5 9 -10" fill="none" stroke="#009E73" stroke-width="1.5"/><rect x="128" y="16" width="48" height="28" rx="3" fill="none" stroke="var(--text-dim)" stroke-dasharray="3 3"/><text x="152" y="33" text-anchor="middle" font-size="7.5" fill="var(--text-dim)">CERT</text><text x="46" y="63" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">THINGS BUILT</text><text x="152" y="57" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">DOOR PASS ONLY</text></svg>`,
+  human: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="46" cy="30" r="12" fill="none" stroke="#0072B2" stroke-width="1.5"/><circle cx="154" cy="30" r="12" fill="#0072B2" opacity="0.28"/><circle cx="154" cy="30" r="12" fill="none" stroke="#0072B2" stroke-width="1.5"/><path d="M62 22 C 90 10, 116 10, 140 20" fill="none" stroke="var(--text-dim)"/><path d="M134 16 l8 4 -9 3z" fill="var(--text-dim)"/><path d="M138 40 C 112 50, 88 50, 64 40" fill="none" stroke="var(--text-dim)"/><path d="M70 44 l-8 -4 9 -3z" fill="var(--text-dim)"/><g font-size="6.5" fill="var(--text-dim)"><text x="46" y="58" text-anchor="middle">MENTOR · PEER</text><text x="154" y="58" text-anchor="middle">LEARNER</text></g></svg>`,
+  time: `<svg viewBox="0 0 200 64" aria-hidden="true"><g stroke="var(--text-dim)" fill="none"><rect x="30" y="8" width="140" height="42" rx="3"/><path d="M30 20 H170"/><path d="M58 20 V50 M86 20 V50 M114 20 V50 M142 20 V50"/></g><g fill="var(--text-dim)" opacity="0.55"><rect x="33" y="23" width="22" height="12"/><rect x="61" y="23" width="22" height="24"/><rect x="89" y="23" width="22" height="18"/><rect x="117" y="23" width="22" height="24"/><rect x="145" y="23" width="22" height="14"/></g><g fill="#D55E00"><rect x="33" y="37" width="22" height="10"/><rect x="89" y="44" width="22" height="3"/><rect x="145" y="40" width="22" height="7"/></g><text x="100" y="61" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">LEARNING LIVES IN THE MARGINS</text></svg>`,
+  persona: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="44" cy="24" r="12" fill="none" stroke="var(--signal)" stroke-width="1.5"/><circle cx="44" cy="19" r="4" fill="var(--signal)"/><path d="M36 30 a8 6 0 0 1 16 0" fill="var(--signal)"/><rect x="14" y="42" width="60" height="12" rx="6" fill="none" stroke="var(--signal)"/><text x="44" y="50.5" text-anchor="middle" font-size="6" fill="var(--signal)">PROFESSOR AI</text><g fill="none" stroke="var(--text-dim)"><rect x="96" y="10" width="86" height="12" rx="3"/><rect x="96" y="26" width="86" height="12" rx="3"/><rect x="96" y="42" width="60" height="12" rx="3"/></g><text x="96" y="63" font-size="6" fill="var(--text-dim)">PINNED TO A FACE</text></svg>`,
+  loop: `<svg viewBox="0 0 200 64" aria-hidden="true"><circle cx="44" cy="30" r="12" fill="var(--signal)" opacity="0.22"/><circle cx="44" cy="30" r="12" fill="none" stroke="var(--signal)" stroke-width="1.5"/><text x="44" y="33" text-anchor="middle" font-size="8" fill="var(--signal)">AI</text><circle cx="156" cy="30" r="12" fill="none" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M58 22 C 88 10, 114 10, 142 20" fill="none" stroke="var(--text-dim)"/><path d="M136 16 l8 4 -9 3z" fill="var(--text-dim)"/><text x="100" y="9" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">FEEDBACK</text><path d="M142 40 C 114 50, 88 50, 62 40" fill="none" stroke="var(--text-dim)"/><path d="M68 44 l-8 -4 9 -3z" fill="var(--text-dim)"/><text x="100" y="61" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">QUESTIONS · ARTIFACTS</text><text x="156" y="52" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">LEARNER</text></svg>`,
+  gps: `<svg viewBox="0 0 200 64" aria-hidden="true"><path d="M14 48 C 50 48, 60 20, 96 20 S 160 28, 178 20" fill="none" stroke="var(--signal)" stroke-width="1.5"/><path d="M60 34 C 74 46, 96 50, 116 42 C 130 36, 138 26, 148 23" fill="none" stroke="var(--text-dim)" stroke-dasharray="3 3"/><circle cx="60" cy="34" r="3" fill="var(--text-dim)"/><path d="M178 20 v-11 h9 l-3 3 3 3 h-6" fill="none" stroke="var(--signal)" stroke-width="1.5"/><text x="60" y="60" text-anchor="middle" font-size="6.5" fill="var(--text-dim)">WRONG TURN → RE-ROUTE</text><text x="150" y="49" text-anchor="middle" font-size="6.5" fill="var(--signal)">SAME DESTINATION</text></svg>`,
+  market: `<svg viewBox="0 0 200 64" aria-hidden="true"><g fill="none" stroke="var(--text-dim)"><rect x="10" y="8" width="58" height="12" rx="6"/><rect x="10" y="25" width="62" height="12" rx="6"/><rect x="10" y="42" width="46" height="12" rx="6"/></g><g font-size="6.5" fill="var(--text-dim)"><text x="16" y="16.5">REACT · 1.2K</text><text x="16" y="33.5">FIGMA · 2.4K</text><text x="16" y="50.5">SQL · 890</text></g><path d="M82 31 H120" stroke="var(--text-dim)"/><path d="M114 27 l8 4 -8 4z" fill="var(--text-dim)"/><path d="M134 42 C 148 42, 148 18, 164 18 S 186 28, 192 26" fill="none" stroke="var(--signal)" stroke-width="1.5"/><g fill="var(--signal)"><circle cx="134" cy="42" r="3"/><circle cx="164" cy="18" r="3"/></g><text x="104" y="61" font-size="6" fill="var(--text-dim)">LIVE POSTINGS → WAYPOINTS</text></svg>`,
+};
+
+/* FUNNEL.scn — the same scene as the homepage previs preview, hosted at the
+   top of the page. Static SVG in the template (scoped CSS reaches it);
+   the script only mutates attributes. Real study numbers. */
+const FUN = {
+  stages: [['SCREENED', 46], ['SEATS', 132], ['HIGHLIGHTS', 214], ['THEMES', 300], ['RECS', 376]],
+  arrows: [88, 172, 256, 338],
+  dots: Array.from({ length: 42 }, (_, d) => [24 + (d % 6) * 9, 104 + Math.floor(d / 6) * 9]),
+  seats: Array.from({ length: 8 }, (_, s) => [118 + (s % 2) * 26, 90 + Math.floor(s / 2) * 22]),
+  bars: [
+    ['#CC79A7', 11], ['#F0E442', 44], ['#56B4E9', 77], ['#E69F00', 17],
+    ['#009E73', 41], ['#0072B2', 72], ['#D55E00', 41],
+  ],
+  recs: ['HUMAN FACE', 'PROXY FEEDBK', 'GPS ROUTE', 'JOB MARKET'],
+};
+
+const links: [string, string][] = [
+  ['caTitle', 'caFacts'],
+  ['caTitle', 'caFunView'],
+  ['caFunView', 'caBreak1'],
+  ['caBreak1', 'caQ'],
+  ['caQ', 'caBuilt'],
+  ['caBuilt', 'caProto'],
+  ['caProto', 'caScreen'],
+  ['caScreen', 'caPipe'],
+  ['caPipe', 'caBreak2'],
+  ['caBreak2', 'caMethod'],
+  ['caMethod', 'caViewer'],
+  ['caViewer', 'caBreak3'],
+  ['caBreak3', 'caIns1'],
+  ['caIns1', 'caIns2'],
+  ['caIns2', 'caIns3'],
+  ['caIns3', 'caIns4'],
+  ['caIns4', 'caIns5'],
+  ['caIns5', 'caIns6'],
+  ['caIns6', 'caIns7'],
+  ['caIns1:selection', 'caViewer'],
+  ['caIns2:selection', 'caViewer'],
+  ['caIns3:selection', 'caViewer'],
+  ['caIns4:selection', 'caViewer'],
+  ['caIns5:selection', 'caViewer'],
+  ['caIns6:selection', 'caViewer'],
+  ['caIns7:selection', 'caViewer'],
+  ['caIns7', 'caBreak4'],
+  ['caBreak4', 'caRec1'],
+  ['caRec1', 'caRec2'],
+  ['caRec2', 'caRec3'],
+  ['caRec3', 'caRec4'],
+  ['caRec4', 'caOutc'],
+  ['caOutc', 'caOut'],
+];
+
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title .     .     .     .     facts facts facts
+      .     .     fv    fv    fv    fv    fv    fv    fv    fv    .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     q     q     q     q     .     .     built built built built .
+      .     proto proto proto proto proto .     scr   scr   scr   scr   .
+      .     .     .     pipe  pipe  pipe  pipe  pipe  pipe  .     .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     meth  meth  meth  meth  .     .     .     .     .     .     .
+      .     view  view  view  view  view  view  view  view  view  view  .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     i1    i1    i1    .     i2    i2    i2    .     i3    i3    i3
+      .     i4    i4    i4    .     i5    i5    i5    .     i6    i6    i6
+      .     .     .     .     i7    i7    i7    i7    .     .     .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br4   br4   br4   br4   br4   br4   br4   br4   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     r1    r1    r1    r1    .     .     r2    r2    r2    r2    .
+      .     r3    r3    r3    r3    .     .     r4    r4    r4    r4    .
+      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+    `,
+  }],
+};
+
+const AREA_INS = ['i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7'];
+const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 ---
 
 <Base
-  title="Campus AI — Learning Research | Carlton Lindsay"
+  title="Campus AI — Claims With Receipts | Carlton Lindsay"
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchDoc meta="2024">
-    <Operator id="caBrief" name="input · the_brief" type="txt" ports="none">
-      <p class="cs-meta">{project.meta}</p>
-      <h1 class="cs-h">Campus AI</h1>
-      <p class="cs-desc">{project.description}</p>
-      <div class="cs-tags">
-        {project.tags.map((tag) => <span class="cs-chip">{tag}</span>)}
-      </div>
+  <PatchField id="caNet" links={links} density={0.3} height="7900px" layout={layout} label="Campus AI case-study network — press P for reading mode">
+    <!-- INPUT -->
+    <Operator id="caTitle" name="input · the_brief" type="txt" area="title" ports="out">
+      <p class="ca-meta">{project.meta}</p>
+      <h1 class="ca-h">Claims with <span class="sig">receipts</span></h1>
+      <p class="ca-sub">// 42 SURVEYED · 8 INTERVIEWED · 1,117 CODED MOMENTS. PICK ANY CLAIM AND WALK TO THE EVIDENCE IT STANDS ON.</p>
+      {cs['The question'].map((p) => <p class="ca-p">{p}</p>)}
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="caFacts" name="facts_data" type="data" ports="none">
-      <dl class="cs-facts">
+    <Operator id="caFacts" name="facts_data" type="data" area="facts" maxw={300}>
+      <dl class="ca-facts">
         <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
         <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
         <div><dt>METHOD</dt><dd>{project.facts.stack}</dd></div>
@@ -57,167 +208,492 @@ const jsonLd = {
       </dl>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="caCook" name="under_construction · dither_cook" type="sys" ports="none">
-      <div class="ca-cookwrap">
-        <canvas id="caCv" width="840" height="480" aria-label="Case study cooking into focus through a dither pattern — move the cursor over it to resolve it locally"></canvas>
-        <div class="ca-cookbar">
-          <span class="ca-cooklab">COOK</span>
-          <input type="range" class="prange ca-range" id="caCook" min="0" max="100" value="0" aria-label="Manually cook the preview into focus" />
-          <span class="ca-cookpct" id="caPct">0%</span>
-        </div>
-        <p class="ca-cooknote">// FULL CASE STUDY UNDER CONSTRUCTION — THE NETWORK PAGE IS STILL COOKING. CURSOR HEAT RESOLVES IT EARLY.</p>
+    <!-- VIEW: FUNNEL.scn — the pipeline cooking (same scene as the homepage preview) -->
+    <Operator id="caFunView" name="campus_ai_view · FUNNEL.scn" type="view" area="fv" maxw={680}>
+      <div class="ca-funwrap">
+        <svg id="caFun" viewBox="0 0 420 240" aria-label="The research pipeline animated: 42 screened become 8 interviews, 1,117 coded moments, 7 themes and 4 recommendations">
+          {FUN.stages.map(([lab, x]) => <text x={x} y="26" text-anchor="middle" font-size="7" letter-spacing="1" fill="#6b6b66">{lab}</text>)}
+          {FUN.arrows.map((x) => <text x={x} y="128" text-anchor="middle" font-size="9" fill="#3dff88">─▸</text>)}
+          {FUN.dots.map(([cx, cy]) => <circle class="cafdot" cx={cx} cy={cy} r="2.6" fill="#9f9f98" opacity="0.85" />)}
+          {FUN.seats.map(([cx, cy]) => <circle class="cafseat" cx={cx} cy={cy} r="7" fill="none" stroke="rgba(61,255,136,0.15)" />)}
+          <text id="caFunCnt" x="214" y="124" text-anchor="middle" font-size="20" font-weight="700" fill="#e6e6e2">1,117</text>
+          <text x="214" y="140" text-anchor="middle" font-size="6" letter-spacing="1" fill="#6b6b66">CODED MOMENTS</text>
+          {FUN.bars.map(([col, n], i) => (
+            <g>
+              <rect x="282" y={66 + i * 15} width="40" height="8" rx="2" fill="rgba(255,255,255,0.06)" />
+              <rect class="cafbar" x="282" y={66 + i * 15} width="0" height="8" rx="2" fill={col} data-w={(n / 77) * 40} />
+            </g>
+          ))}
+          {FUN.recs.map((lab, i) => (
+            <g class="cafrec" opacity="0.12">
+              <rect x="346" y={62 + i * 26} width="62" height="16" rx="3" fill="none" stroke="#3dff88" />
+              <text x="377" y={72.5 + i * 26} text-anchor="middle" font-size="6" letter-spacing="0.5" fill="#3dff88">{lab}</text>
+            </g>
+          ))}
+        </svg>
+        <p class="ca-funfoot">42 SCREENED → 8 INTERVIEWED → 1,117 CODED → 7 THEMES → 4 RECOMMENDATIONS · REAL STUDY NUMBERS</p>
       </div>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
-
-    <Operator id="caWhat" name="txt_01 · what_this_is" type="txt" ports="none">
-      <h2 class="cs-h2">What this is</h2>
-      {cs['The question'].map((p) => <p class="cs-p">{p}</p>)}
-      <p class="cs-p">
-        The headline finding: career shifters don’t job hunt — they stumble into
-        paths through people, validate them through proxy communities, and trust
-        outputs over certificates. The full write-up (method, coded themes, and
-        the strategic recommendations that came out of it) lands here as a proper
-        network page.
-      </p>
-      <a class="ca-req" href="/contact">▸ WANT THE FINDINGS EARLY? CONTACT ME</a>
+    <!-- CHAPTER 01 · THE STUDY -->
+    <Operator id="caBreak1" name="section_break" type="sys" area="br1" ports="both">
+      <div class="ca-break">
+        <span class="ca-break-num">01</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+        <span class="ca-break-label">THE STUDY</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+      </div>
     </Operator>
 
-    <div class="oplink" aria-hidden="true"></div>
+    <Operator id="caQ" name="process · research_questions" type="txt" area="q">
+      <h2 class="ca-h2">Four research questions</h2>
+      <div class="ca-rqs">
+        {RQS.map(([q, sub], i) => (
+          <div class="ca-rq">
+            <span class="ca-rqn">RQ{i + 1}</span>
+            <div>
+              <p class="ca-rqq">{q}</p>
+              <p class="ca-rqsub">{sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Operator>
 
-    <Operator id="caOut" name="out · next_network" type="data" ports="none">
-      <a class="cs-next" href="/lab">
+    <Operator id="caBuilt" name="process · how_it_was_built" type="txt" area="built" nudge="0 40">
+      <h2 class="ca-h2">How the study was built</h2>
+      {cs['How the study was built'].map((p) => <p class="ca-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="caProto" name="process · how_a_session_ran" type="txt" area="proto" maxw={620}>
+      <h2 class="ca-h2">How a session ran</h2>
+      {cs['How a session ran'].map((p) => <p class="ca-p">{p}</p>)}
+      <div class="ca-proto" role="img" aria-label="The 90-minute interview protocol: eight movements from intro to stakeholder questions, sized by minutes">
+        {PROTO.map(([label, min], i) => (
+          <div class="ca-prow">
+            <span class="ca-plab">{label}</span>
+            <span class="ca-pbar"><i style={`width:${Math.round((min / PROTO_MAX) * 100)}%`} data-alt={i % 2 ? '1' : undefined}></i></span>
+            <span class="ca-pmin">{min}′</span>
+          </div>
+        ))}
+        <p class="ca-ptotal">Σ 88′ IN THE GUIDE · 90′ ON THE CALENDAR — THE BUFFER WAS REAL</p>
+      </div>
+    </Operator>
+
+    <Operator id="caScreen" name="data · screener_quotas" type="data" area="scr" maxw={360} nudge="0 40">
+      <h2 class="ca-h2">Who got a seat</h2>
+      <ul class="ca-quota">
+        <li><b>42</b> SCREENED → <b>8</b> SEATS</li>
+        <li>GENDER BALANCE <b>4M / 4F</b></li>
+        <li>AGES <b>20s–40s</b> · HIGHER-ED</li>
+        <li>SHIFTED IN LAST 2 YRS <b>4–6</b></li>
+        <li>CONSIDERING A SHIFT <b>2–4</b></li>
+        <li>PLATFORM DIVERSITY REQUIRED</li>
+      </ul>
+      <p class="ca-quotanote">RECRUITED VIA RESPONDENT + PERSONAL NETWORKS · CONSENT + NDA SIGNED AHEAD · GIFT-CARD INCENTIVES</p>
+    </Operator>
+
+    <Operator id="caPipe" name="sys · analysis_pipeline" type="sys" area="pipe" maxw={640}>
+      <div class="ca-pipe" role="img" aria-label="Analysis pipeline: pilot, eight interviews, daily debriefs, topline report in days, formal Dovetail coding, seven themes, four recommendations">
+        <span class="ca-pchip">PILOT ×1</span><i>─▸</i>
+        <span class="ca-pchip">INTERVIEWS ×8</span><i>─▸</i>
+        <span class="ca-pchip">DAILY DEBRIEF</span><i>─▸</i>
+        <span class="ca-pchip">TOPLINE · DAYS</span><i>─▸</i>
+        <span class="ca-pchip">DOVETAIL CODING · WEEKS</span><i>─▸</i>
+        <span class="ca-pchip sig">7 THEMES</span><i>─▸</i>
+        <span class="ca-pchip sig">4 RECS</span>
+      </div>
+    </Operator>
+
+    <!-- CHAPTER 02 · THE EVIDENCE -->
+    <Operator id="caBreak2" name="section_break" type="sys" area="br2" ports="both">
+      <div class="ca-break">
+        <span class="ca-break-num">02</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+        <span class="ca-break-label">THE EVIDENCE</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+      </div>
+    </Operator>
+
+    <Operator id="caMethod" name="process · the_coding" type="txt" area="meth">
+      <h2 class="ca-h2">Method</h2>
+      {cs['Method'].map((p) => <p class="ca-p">{p}</p>)}
+    </Operator>
+
+    <!-- VIEW: featured quote + evidence map + coded excerpts -->
+    <Operator id="caViewer" name="campus_ai_view · coded_transcripts" type="view" area="view" maxw={900}>
+      <div class="ca-viewwrap" id="caVwrap">
+        <div class="ca-strip">
+          <span class="ca-vtheme" id="caVTheme">STAR QUOTES · ALL THEMES</span>
+          <span class="ca-lbl">REAL STUDY DATA · FIRST-NAME-ONLY · EXCERPTED</span>
+        </div>
+        <figure class="ca-feat" id="caFeat">
+          <figcaption class="ca-feathead">
+            <span class="ca-featbadge" id="caFeatB">STAR</span>
+            <b id="caFeatN"></b>
+            <span class="ca-featmeta" id="caFeatM"></span>
+          </figcaption>
+          <blockquote id="caFeatQ"></blockquote>
+        </figure>
+        <div class="ca-vgrid">
+          <div class="ca-mapcol">
+            <p class="ca-maplab">
+              <span>EVIDENCE MAP <span class="dim">· EDGE = TAGGED MOMENTS</span></span>
+              <button class="ca-back" id="caReset" hidden>◂ BACK TO STARS</button>
+            </p>
+            <svg id="caMap" viewBox="0 0 420 460" aria-label="Bipartite map of seven coded themes and eight participants; edge thickness is the number of tagged moments; click a node to filter"></svg>
+          </div>
+          <div class="ca-streamcol">
+            <div class="ca-excerpts" id="caExcerpts" aria-live="polite"></div>
+            <div class="ca-vfoot">
+              <span id="caVCount"></span>
+              <span class="ca-vfootnote">CODED IN DOVETAIL BY A TEAM OF 4 · QUOTES VERBATIM, FILLER TRIMMED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Operator>
+
+    <!-- CHAPTER 03 · WHAT WE FOUND -->
+    <Operator id="caBreak3" name="section_break" type="sys" area="br3" ports="both">
+      <div class="ca-break">
+        <span class="ca-break-num">03</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+        <span class="ca-break-label">WHAT WE FOUND</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+      </div>
+    </Operator>
+
+    {INSIGHTS.map((ins, i) => (
+      <Operator id={ins.id} name={`insight_${ins.num}`} type="txt" area={AREA_INS[i]} nudge={['', '0 40', '0 80', '', '0 40', '0 80', ''][i] || undefined}>
+        <div class="ca-ins">
+          <span class="ca-inum" aria-hidden="true">{ins.num}</span>
+          <h3 class="ca-ih">{ins.heading}</h3>
+          <div class="ca-vig" set:html={VIGS[ins.vig]} />
+          {cs[ins.heading].map((p) => <p class="ca-p">{p}</p>)}
+          <div class="ca-chips">
+            {ins.chips.map((c) => <span class="ca-chip">{c}</span>)}
+          </div>
+          <button class="chipbtn ca-evbtn" data-theme={ins.theme} data-node={ins.id}>▸ READ THE EVIDENCE</button>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- CHAPTER 04 · WHAT WE RECOMMENDED -->
+    <Operator id="caBreak4" name="section_break" type="sys" area="br4" ports="both">
+      <div class="ca-break">
+        <span class="ca-break-num">04</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+        <span class="ca-break-label">WHAT WE RECOMMENDED</span>
+        <span class="ca-break-rule" aria-hidden="true"></span>
+      </div>
+    </Operator>
+
+    {RECS.map((rec, i) => (
+      <Operator id={rec.id} name={`rec_${rec.num}`} type="txt" area={AREA_REC[i]} nudge={i % 2 ? '0 40' : undefined}>
+        <div class="ca-ins">
+          <span class="ca-inum ca-rnum" aria-hidden="true">{rec.num}</span>
+          <h3 class="ca-ih">{rec.heading}</h3>
+          <div class="ca-vig" set:html={VIGS[rec.vig]} />
+          {cs[rec.heading].map((p) => <p class="ca-p">{p}</p>)}
+          <p class="ca-ev">{rec.ev}</p>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- OUT -->
+    <Operator id="caOutc" name="out · what_it_settled" type="txt" area="outc" ports="in">
+      <h2 class="ca-h2">What it settled</h2>
+      {cs['What it settled'].map((p) => <p class="ca-p">{p}</p>)}
+      <a class="ca-req" href="/contact">▸ WANT THE FULL WRITE-UP? CONTACT ME</a>
+    </Operator>
+
+    <Operator id="caOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
+      <a class="ca-next" href="/lab">
         NEXT ▸ lab
-        <span class="cs-nextsub">experiments and things in progress</span>
+        <span class="ca-nextsub">experiments and things in progress</span>
       </a>
     </Operator>
-  </PatchDoc>
+  </PatchField>
 </Base>
 
-<script is:inline data-astro-rerun>
-/* dither_cook — the case study resolving through a Bayer threshold.
-   Offscreen scene (thematic-coding rows + type) sampled at cell resolution,
-   revealed by cook level + cursor heat. Deterministic; reduced-motion →
-   fully cooked. No product data — this is the site's own dither grammar. */
+<script is:inline data-astro-rerun define:vars={{ CA }}>
+/* coded_transcripts viewer. Quotes render as engine-style agent cards:
+   theme badge + participant name + shift meta in the card head, verbatim
+   quote as the body, Dovetail tag pills in the foot. The evidence map is
+   a bipartite svg of the real coding matrix. Interaction-driven only. */
 (() => {
-  const cv = document.getElementById('caCv');
-  if (!cv || cv.dataset.booted) return;
-  cv.dataset.booted = '1';
+  const wrap = document.getElementById('caVwrap');
+  if (!wrap || wrap.dataset.booted) return;
+  wrap.dataset.booted = '1';
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const CW = 210, CH = 120, CELL = 4;
-  const ctx = cv.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
 
-  /* target scene at cell resolution */
-  const off = document.createElement('canvas');
-  off.width = CW; off.height = CH;
-  const oc = off.getContext('2d');
-  const THEME = ['#CC79A7', '#56B4E9', '#E69F00', '#009E73'];
-  let seed = 2024;
-  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  oc.fillStyle = '#15140F'; oc.fillRect(0, 0, CW, CH);
-  for (let row = 0; row < 7; row++) {
-    let x = 8;
-    while (x < CW - 10) {
-      const w = 7 + rnd() * 17;
-      const hl = rnd() < 0.24 ? THEME[Math.floor(rnd() * 4)] : '#3a382f';
-      oc.fillStyle = hl;
-      oc.fillRect(x, 14 + row * 9, w, 4);
-      x += w + 4;
+  const svg = document.getElementById('caMap');
+  const exEl = document.getElementById('caExcerpts');
+  const countEl = document.getElementById('caVCount');
+  const titleEl = document.getElementById('caVTheme');
+  const featQ = document.getElementById('caFeatQ');
+  const featB = document.getElementById('caFeatB');
+  const featN = document.getElementById('caFeatN');
+  const featM = document.getElementById('caFeatM');
+  const feat = document.getElementById('caFeat');
+  const resetBtn = document.getElementById('caReset');
+
+  const P = Object.fromEntries(CA.participants.map((p) => [p.id, p]));
+  const T = Object.fromEntries(CA.themes.map((t) => [t.id, t]));
+  const SHORT = {
+    discovery: 'DISCOVERY', transfer: 'SKILLS × INTEREST', proxy: 'PROXY COMMUNITIES',
+    roadmap: 'ROADMAP', artifacts: 'ARTIFACTS', human: 'HUMAN CONTACT', time: 'TIME',
+  };
+  const tint = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  };
+  const shiftOf = (p) => (p.from || '') + ' → ' + (p.to || '?') + (p.country ? ' · ' + p.country : '');
+
+  let sel = { mode: 'all', id: null };
+
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  /* ---- excerpt card (engine agent-card grammar) ---- */
+  function card(theme, x) {
+    const p = P[x.p] || {};
+    const c = el('article', 'ca-x');
+    c.style.borderColor = tint(theme.wong, 0.45);
+    const head = el('div', 'ca-xhead');
+    const badge = el('span', 'ca-xbadge', x.voice === 'researcher-summary' ? 'RESEARCHER NOTE' : SHORT[theme.id]);
+    badge.style.color = theme.wong;
+    badge.style.background = tint(theme.wong, 0.12);
+    head.appendChild(badge);
+    head.appendChild(el('b', 'ca-xname', p.name || '?'));
+    head.appendChild(el('span', 'ca-xmeta', shiftOf(p)));
+    c.appendChild(head);
+    const body = el('div', 'ca-xbody');
+    const q = el('p', 'ca-xq' + (x.voice === 'researcher-summary' ? ' rs' : ''), x.voice === 'researcher-summary' ? x.text : '“' + x.text + '”');
+    body.appendChild(q);
+    const tr = el('div', 'ca-xtags');
+    (x.tags || []).forEach((t) => tr.appendChild(el('span', 'ca-xtag', t)));
+    body.appendChild(tr);
+    c.appendChild(body);
+    return c;
+  }
+
+  /* ---- featured quote (same grammar, promoted) ---- */
+  function feature(theme, x, label) {
+    const p = P[x.p] || {};
+    featB.textContent = label || SHORT[theme.id];
+    featB.style.color = theme.wong;
+    featB.style.background = tint(theme.wong, 0.12);
+    featN.textContent = p.name || '?';
+    featM.textContent = shiftOf(p);
+    featQ.textContent = x.voice === 'researcher-summary' ? x.text : '“' + x.text + '”';
+    feat.style.borderColor = tint(theme.wong, 0.45);
+    /* fit the quote inside the FIXED-height box (op height must never
+       change — a resized op re-resolves the layout and re-cooks the
+       background dither) */
+    const sizes = [17, 15, 13.5, 12, 10.5];
+    for (let i = 0; i < sizes.length; i++) {
+      featQ.style.fontSize = sizes[i] + 'px';
+      if (featQ.scrollHeight <= featQ.clientHeight + 2) break;
     }
   }
-  oc.fillStyle = '#e6e6e2';
-  oc.font = '900 16px monospace';
-  oc.fillText('CAMPUS_AI', 8, 96);
-  oc.fillStyle = '#3dff88';
-  oc.font = '700 7px monospace';
-  oc.fillText('CASE_STUDY // UNDER CONSTRUCTION', 8, 108);
-  oc.fillText('42 SURVEYS · 8 INTERVIEWS · 4 COUNTRIES', 8, 117);
-  const scene = oc.getImageData(0, 0, CW, CH);
 
-  const B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  const out = ctx.createImageData(CW, CH);
-  const heat = new Float32Array(CW * CH);
-  const slider = document.getElementById('caCook');
-  const pct = document.getElementById('caPct');
-
-  let t0 = performance.now(), manualUntil = 0, manualV = 0;
-  function cookLevel(now) {
-    if (now < manualUntil) return manualV;
-    /* auto: cook up → hold → fall back to a simmer → up again (12s loop) */
-    const t = ((now - t0) / 1000) % 12;
-    if (t < 4.2) return t / 4.2;
-    if (t < 6.4) return 1;
-    if (t < 8.4) return 1 - (t - 6.4) / 2 * 0.75;
-    return 0.25 + (t - 8.4) / 3.6 * 0.75;
+  /* ---- stream ---- */
+  function render() {
+    exEl.textContent = '';
+    let items = [];
+    if (sel.mode === 'theme') {
+      const t = T[sel.id];
+      exEl.appendChild(el('p', 'ca-tnote', t.note + ' (' + t.taggedMoments + ' tagged moments, ' + t.participantCount + ' of 8 interviews.)'));
+      items = t.excerpts.map((x) => [t, x]);
+      titleEl.textContent = SHORT[sel.id];
+      const star = t.excerpts.filter((x) => x.star)[0] || t.excerpts[0];
+      feature(t, star, SHORT[sel.id] + ' · STAR');
+    } else if (sel.mode === 'p') {
+      const p = P[sel.id];
+      CA.themes.forEach((t) => t.excerpts.forEach((x) => { if (x.p === sel.id) items.push([t, x]); }));
+      titleEl.textContent = (p.name || '?').toUpperCase();
+      if (items.length) feature(items[0][0], items[0][1], items[0][0] && SHORT[items[0][0].id]);
+    } else {
+      CA.themes.forEach((t) => {
+        const star = t.excerpts.filter((x) => x.star)[0];
+        if (star) items.push([t, star]);
+      });
+      titleEl.textContent = 'STAR QUOTES · ALL THEMES';
+      feature(T.discovery, T.discovery.excerpts[0], 'DISCOVERY · STAR');
+    }
+    items.forEach(([t, x]) => exEl.appendChild(card(t, x)));
+    countEl.textContent = items.length + ' EXCERPT' + (items.length === 1 ? '' : 'S') +
+      (sel.mode === 'all' ? ' · ONE STAR PER THEME · CLICK THE MAP FOR MORE' : '');
+    resetBtn.hidden = sel.mode === 'all';
+    paintMap();
+    if (!REDUCED) exEl.scrollTop = 0;
   }
-  slider.addEventListener('input', () => {
-    manualV = slider.value / 100;
-    manualUntil = performance.now() + 4000;
-    slider.style.setProperty('--p', slider.value + '%');
+
+  function doSelect(next) {
+    if (next.mode === sel.mode && next.id === sel.id) return;
+    sel = next;
+    render();
+  }
+
+  /* ---- evidence map ---- */
+  const NS = 'http://www.w3.org/2000/svg';
+  const S = (tag, attrs) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  };
+  const TX = 160, PX = 330;
+  const themeY = {}, partY = {};
+  CA.themes.forEach((t, i) => { themeY[t.id] = 52 + i * 58; });
+  CA.participants.forEach((p, i) => { partY[p.id] = 42 + i * 54; });
+  let maxW = 1;
+  CA.themes.forEach((t) => Object.values(t.by || {}).forEach((v) => { if (v > maxW) maxW = v; }));
+
+  const edges = [];
+  CA.themes.forEach((t) => {
+    Object.entries(t.by || {}).forEach(([pid, w]) => {
+      const e = S('path', {
+        d: 'M' + (TX + 10) + ' ' + themeY[t.id] + ' C ' + (TX + 70) + ' ' + themeY[t.id] + ', ' + (PX - 70) + ' ' + partY[pid] + ', ' + (PX - 12) + ' ' + partY[pid],
+        fill: 'none',
+        stroke: t.wong,
+        'stroke-width': (0.6 + 2.6 * (w / maxW)).toFixed(2),
+        opacity: '0.3',
+        'data-t': t.id,
+        'data-p': pid,
+      });
+      svg.appendChild(e);
+      edges.push(e);
+    });
   });
-  cv.addEventListener('pointermove', (e) => {
-    const r = cv.getBoundingClientRect();
-    const mx = (e.clientX - r.left) / r.width * CW, my = (e.clientY - r.top) / r.height * CH;
-    for (let dy = -9; dy <= 9; dy++) for (let dx = -9; dx <= 9; dx++) {
-      const x = Math.round(mx + dx), y = Math.round(my + dy);
-      if (x < 0 || y < 0 || x >= CW || y >= CH) continue;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < 81) heat[y * CW + x] = Math.min(1, heat[y * CW + x] + 0.09 * (1 - d2 / 81));
-    }
-  }, { passive: true });
 
-  function render(p) {
-    const sd = scene.data, od = out.data;
-    for (let y = 0; y < CH; y++) {
-      for (let x = 0; x < CW; x++) {
-        const i = (y * CW + x), i4 = i * 4;
-        const local = Math.min(1, p + heat[i]);
-        const th = (B4[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
-        const on = local > th;
-        if (on) { od[i4] = sd[i4]; od[i4 + 1] = sd[i4 + 1]; od[i4 + 2] = sd[i4 + 2]; }
-        else { od[i4] = 21; od[i4 + 1] = 20; od[i4 + 2] = 15; }
-        od[i4 + 3] = 255;
-        if (!REDUCED) heat[i] *= 0.985;
-      }
-    }
-    /* blit cell-res → display-res, crisp */
-    const tmp = document.createElement('canvas');
-    tmp.width = CW; tmp.height = CH;
-    tmp.getContext('2d').putImageData(out, 0, 0);
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    ctx.drawImage(tmp, 0, 0, CW, CH, 0, 0, CW * CELL, CH * CELL);
+  const nodeGs = [];
+  CA.themes.forEach((t) => {
+    const g = S('g', { role: 'button', tabindex: '0', cursor: 'pointer', 'data-t': t.id, 'aria-label': 'Show theme: ' + t.title });
+    g.appendChild(S('circle', { cx: TX, cy: themeY[t.id], r: 7, fill: t.wong }));
+    const lab = S('text', { x: TX - 14, y: themeY[t.id] + 3, 'text-anchor': 'end', 'font-size': '8', fill: 'currentColor' });
+    lab.textContent = SHORT[t.id] + ' · ' + t.taggedMoments;
+    g.appendChild(lab);
+    const act = () => doSelect({ mode: 'theme', id: t.id });
+    g.addEventListener('click', act);
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+    svg.appendChild(g);
+    nodeGs.push(g);
+  });
+  CA.participants.forEach((p) => {
+    const g = S('g', { role: 'button', tabindex: '0', cursor: 'pointer', 'data-p': p.id, 'aria-label': 'Show participant: ' + p.name });
+    g.appendChild(S('circle', { cx: PX, cy: partY[p.id], r: 9, fill: 'none', stroke: 'currentColor', 'stroke-width': '1' }));
+    const ini = S('text', { x: PX, y: partY[p.id] + 3, 'text-anchor': 'middle', 'font-size': '8.5', fill: 'currentColor' });
+    ini.textContent = p.name[0];
+    g.appendChild(ini);
+    const lab = S('text', { x: PX + 16, y: partY[p.id] + 3, 'font-size': '8.5', fill: 'currentColor' });
+    lab.textContent = p.name.toUpperCase();
+    g.appendChild(lab);
+    const act = () => doSelect({ mode: 'p', id: p.id });
+    g.addEventListener('click', act);
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+    svg.appendChild(g);
+    nodeGs.push(g);
+  });
+
+  function paintMap() {
+    edges.forEach((e) => {
+      const on = sel.mode === 'all' ||
+        (sel.mode === 'theme' && e.dataset.t === sel.id) ||
+        (sel.mode === 'p' && e.dataset.p === sel.id);
+      e.setAttribute('opacity', on ? (sel.mode === 'all' ? '0.3' : '0.75') : '0.06');
+    });
+    nodeGs.forEach((g) => {
+      const on = sel.mode === 'all' ||
+        (sel.mode === 'theme' && g.dataset.t === sel.id) ||
+        (sel.mode === 'p' && g.dataset.p === sel.id) ||
+        (sel.mode === 'theme' && g.dataset.p && T[sel.id].by[g.dataset.p]) ||
+        (sel.mode === 'p' && g.dataset.t && T[g.dataset.t].by[sel.id]);
+      g.setAttribute('opacity', on ? '1' : '0.28');
+    });
   }
 
-  if (REDUCED) {
-    render(1);
-    if (pct) pct.textContent = '100%';
-    slider.value = 100;
-    slider.style.setProperty('--p', '100%');
+  resetBtn.addEventListener('click', () => doSelect({ mode: 'all', id: null }));
+  render();
+
+  /* ---- patch bus ---- */
+  const net = window.Patch ? window.Patch.field('caNet') : null;
+  const NOOP = function () {};
+  const N = (id, spec) => (net ? net.node(id, spec) : { el: null, emit: NOOP, listen: NOOP, timeout: NOOP });
+
+  const view = N('caViewer', {
+    ins: {
+      selection: (m) => {
+        doSelect({ mode: 'theme', id: m.theme });
+        const op = view.el;
+        if (op) {
+          op.classList.add('cooking');
+          view.timeout(450, () => op.classList.remove('cooking'));
+        }
+      },
+    },
+  });
+
+  document.querySelectorAll('.ca-evbtn').forEach((btn) => {
+    const nid = btn.dataset.node;
+    const theme = btn.dataset.theme;
+    const node = N(nid, { outs: { selection: 'object' } });
+    node.listen(btn, 'click', () => {
+      node.emit('selection', { theme });
+      if (!net || net.stub) doSelect({ mode: 'theme', id: theme });
+      wrap.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' });
+    });
+  });
+})();
+
+/* FUNNEL.scn animator — template SVG, attribute mutations only (op height
+   never changes). 9s loop, half-rate frames, self-terminating. */
+(() => {
+  const svg = document.getElementById('caFun');
+  if (!svg || svg.dataset.booted) return;
+  svg.dataset.booted = '1';
+  const R = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dots = Array.from(svg.querySelectorAll('.cafdot'));
+  const seats = Array.from(svg.querySelectorAll('.cafseat'));
+  const bars = Array.from(svg.querySelectorAll('.cafbar'));
+  const recs = Array.from(svg.querySelectorAll('.cafrec'));
+  const cnt = document.getElementById('caFunCnt');
+  if (R) {
+    dots.forEach((d) => d.setAttribute('opacity', '0.18'));
+    seats.forEach((s) => s.setAttribute('stroke', '#3dff88'));
+    bars.forEach((b) => b.setAttribute('width', b.dataset.w));
+    recs.forEach((r) => r.setAttribute('opacity', '1'));
     return;
   }
+  const t0 = performance.now();
   let fc = 0;
   (function frame(now) {
-    if (!cv.isConnected) return;
+    if (!svg.isConnected) return;
     if ((fc++ & 1) === 0) {
-      const p = cookLevel(now);
-      render(p);
-      if (pct) pct.textContent = Math.round(p * 100) + '%';
-      if (now >= manualUntil) {
-        slider.value = Math.round(p * 100);
-        slider.style.setProperty('--p', slider.value + '%');
-      }
+      const t = ((now - t0) / 1000) % 9;
+      dots.forEach((d, i) => d.setAttribute('opacity', t > 0.4 + i * 0.028 ? '0.18' : '0.85'));
+      seats.forEach((s, i) => s.setAttribute('stroke', t > 1.7 + i * 0.14 ? '#3dff88' : 'rgba(61,255,136,0.15)'));
+      const n = Math.max(0, Math.min(1, (t - 3.1) / 2.4));
+      cnt.textContent = Math.floor(n * 1117).toLocaleString();
+      bars.forEach((b, i) => {
+        const p = Math.max(0, Math.min(1, (t - 5.6 - i * 0.14) / 0.5));
+        b.setAttribute('width', (p * b.dataset.w).toFixed(1));
+      });
+      recs.forEach((r, i) => r.setAttribute('opacity', t > 7.1 + i * 0.3 ? '1' : '0.12'));
     }
     requestAnimationFrame(frame);
-  })(performance.now());
+  })(t0);
 })();
 </script>
 
 <style>
-  .cs-meta {
+  .sig { color: var(--signal); }
+  .ca-meta {
     font-family: var(--font-mono);
     font-size: 10.5px;
     letter-spacing: 0.1em;
@@ -225,30 +701,23 @@ const jsonLd = {
     color: var(--text-dim);
     margin-bottom: 10px;
   }
-  .cs-h {
+  .ca-h {
     font-family: var(--font-display);
     font-weight: 900;
     text-transform: uppercase;
-    font-size: clamp(26px, 3.4vw, 42px);
+    font-size: clamp(24px, 2.8vw, 38px);
     line-height: 0.98;
     margin-bottom: 12px;
   }
-  .cs-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
-  .cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cs-chip {
+  .ca-sub {
     font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
     color: var(--text-muted);
-    white-space: nowrap;
+    line-height: 1.7;
+    margin-bottom: 12px;
   }
-  .cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
-  .cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
-  .cs-facts dd { font-size: 12.5px; color: var(--text); }
-  @media (max-width: 560px) { .cs-facts { grid-template-columns: 1fr; } }
-  .cs-h2 {
+  .ca-h2 {
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
@@ -256,34 +725,249 @@ const jsonLd = {
     color: var(--signal);
     margin-bottom: 10px;
   }
-  .cs-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
-  .cs-p:last-child { margin-bottom: 0; }
-  .cs-next {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--signal);
-    text-decoration: none;
-  }
-  .cs-next:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .cs-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
+  .ca-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+  .ca-p:last-of-type { margin-bottom: 0; }
 
-  /* ---- dither cook ---- */
-  .ca-cookwrap { font-family: var(--font-mono); }
-  #caCv {
+  .ca-facts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .ca-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+  .ca-facts dd { font-size: 12px; color: var(--text); }
+
+  /* ── chapter 01: research questions ── */
+  .ca-rqs { display: grid; gap: 12px; }
+  .ca-rq { display: flex; gap: 12px; align-items: flex-start; }
+  .ca-rqn {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--signal);
+    border: 1px solid var(--signal-dim);
+    border-radius: 3px;
+    padding: 3px 6px;
+    flex: none;
+    margin-top: 1px;
+  }
+  .ca-rqq { font-size: 13px; color: var(--text); line-height: 1.5; margin: 0 0 3px; }
+  .ca-rqsub { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin: 0; }
+
+  /* ── chapter 01: protocol waterfall ── */
+  .ca-proto { margin-top: 14px; }
+  .ca-prow { display: grid; grid-template-columns: 150px 1fr 30px; align-items: center; gap: 10px; padding: 3px 0; }
+  .ca-plab { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--text-muted); text-align: right; }
+  .ca-pbar { height: 10px; background: rgba(255, 255, 255, 0.04); border-radius: 2px; overflow: hidden; }
+  .ca-pbar i { display: block; height: 100%; background: var(--signal); opacity: 0.75; border-radius: 2px; }
+  .ca-pbar i[data-alt] { opacity: 0.4; }
+  .ca-pmin { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); }
+  .ca-ptotal { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 8px; }
+  @media (max-width: 560px) { .ca-prow { grid-template-columns: 108px 1fr 28px; } }
+
+  .ca-quota { list-style: none; margin: 0; padding: 0; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em; color: var(--text-muted); }
+  .ca-quota li { padding: 4px 0; border-bottom: 1px dashed var(--border-color); }
+  .ca-quota li:last-child { border-bottom: none; }
+  .ca-quota b { color: var(--signal); font-weight: 700; }
+  .ca-quotanote { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.06em; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
+
+  .ca-pipe { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--font-mono); }
+  .ca-pipe i { font-style: normal; font-size: 9px; color: var(--text-dim); }
+  .ca-pchip {
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .ca-pchip.sig { border-color: var(--signal); color: var(--signal); }
+
+  /* ── section breaks ── */
+  .ca-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
+  .ca-break-num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--signal-dim);
+    user-select: none;
+  }
+  .ca-break-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px); }
+  .ca-break-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--text-muted); white-space: nowrap; }
+  :global(body.perform) .ca-break { padding: 56px 0; }
+  :global(body.perform) .ca-break-num { font-size: 30px; }
+
+  /* ── insight / rec cards ── */
+  .ca-ins { position: relative; }
+  .ca-inum {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--signal-dim);
+    display: block;
+    margin-bottom: 8px;
+    user-select: none;
+  }
+  .ca-rnum { -webkit-text-stroke-color: var(--border-color); }
+  .ca-ih { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 15px; line-height: 1.15; margin-bottom: 10px; }
+  .ca-vig { margin: 0 0 10px; color: var(--text-muted); }
+  .ca-vig :global(svg) { display: block; width: 100%; max-width: 240px; height: auto; }
+  .ca-vig :global(text) { font-family: var(--font-mono); letter-spacing: 0.06em; }
+  .ca-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .ca-chip {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .ca-evbtn { margin-top: 10px; font-size: 9.5px; }
+  .ca-ev { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
+
+  /* ── FUNNEL.scn ── */
+  .ca-funwrap { font-family: var(--font-mono); }
+  #caFun {
     display: block;
     width: 100%;
     height: auto;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    image-rendering: pixelated;
-    cursor: crosshair;
+    background: rgba(0, 0, 0, 0.12);
   }
-  .ca-cookbar { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-  .ca-cooklab { font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-muted); }
-  .ca-range { flex: 1; }
-  .ca-cookpct { font-size: 9.5px; color: var(--signal); min-width: 4ch; text-align: right; }
-  .ca-cooknote { font-size: 9.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 8px; line-height: 1.6; }
+  #caFun text { font-family: var(--font-mono); }
+  .ca-funfoot { font-size: 8.5px; letter-spacing: 0.1em; color: var(--text-dim); margin: 8px 0 0; line-height: 1.6; }
+
+  /* ── viewer chrome (template elements) ── */
+  .ca-viewwrap { font-family: var(--font-mono); }
+  .ca-strip { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+  .ca-vtheme { font-size: 11px; letter-spacing: 0.12em; color: var(--signal); }
+  .ca-lbl { font-size: 8.5px; letter-spacing: 0.1em; color: var(--text-dim); text-align: right; }
+
+  /* featured = promoted agent card */
+  .ca-feat {
+    margin: 0 0 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+    transition: border-color 0.4s;
+  }
+  .ca-feathead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .ca-featbadge { font-size: 9px; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .ca-feathead b {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--text);
+  }
+  .ca-featmeta { font-size: 9.5px; color: var(--text-dim); margin-left: auto; text-align: right; }
+  /* FIXED height: the op must never change size on selection (a resized op
+     re-resolves the layout and re-cooks the background). JS steps the
+     font-size down until the quote fits. */
+  .ca-feat blockquote {
+    margin: 0;
+    padding: 0 16px;
+    height: 118px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .ca-vgrid { display: grid; grid-template-columns: minmax(300px, 5fr) 6fr; gap: 14px; align-items: stretch; }
+  @media (max-width: 860px) { .ca-vgrid { grid-template-columns: 1fr; } }
+  .ca-mapcol { display: flex; flex-direction: column; }
+  .ca-maplab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 8.5px; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 6px; }
+  .ca-maplab .dim { color: var(--text-dim); }
+  .ca-back {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: var(--signal);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  .ca-back:hover { text-decoration: underline; text-underline-offset: 3px; }
+  #caMap { width: 100%; flex: 1; min-height: 420px; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 4px; background: rgba(0, 0, 0, 0.12); }
+  @media (max-width: 860px) { #caMap { min-height: 0; height: 380px; flex: none; } }
+  #caMap :global(text) { font-family: var(--font-mono); letter-spacing: 0.04em; }
+  #caMap :global([role='button']:focus) { outline: 1px dashed var(--signal); }
+  #caMap :global([role='button']) { transition: opacity 0.3s; }
+  #caMap :global(path) { transition: opacity 0.3s; }
+
+  /* ── excerpt stream (script-built — every child selector uses :global) ── */
+  .ca-excerpts {
+    max-height: 480px;
+    overflow-y: auto;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    scrollbar-width: thin;
+    padding-right: 2px;
+  }
+  .ca-excerpts :global(.ca-tnote) { font-size: 10px; letter-spacing: 0.04em; color: var(--text-muted); line-height: 1.6; margin: 0; }
+  .ca-excerpts :global(.ca-x) {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+  }
+  .ca-excerpts :global(.ca-xhead) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .ca-excerpts :global(.ca-xbadge) { font-size: 8px; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .ca-excerpts :global(.ca-xname) {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--text);
+  }
+  .ca-excerpts :global(.ca-xmeta) { font-size: 8.5px; color: var(--text-dim); margin-left: auto; text-align: right; }
+  .ca-excerpts :global(.ca-xbody) { padding: 10px 12px; }
+  .ca-excerpts :global(.ca-xq) {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+  .ca-excerpts :global(.ca-xq.rs) { font-style: italic; }
+  .ca-excerpts :global(.ca-xtags) { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .ca-excerpts :global(.ca-xtag) {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0.06em;
+    padding: 1px 6px;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .ca-vfoot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 10px; font-size: 9px; letter-spacing: 0.08em; color: var(--text-muted); }
+  .ca-vfootnote { color: var(--text-dim); text-align: right; }
+
   .ca-req {
     display: inline-block;
     margin-top: 12px;
@@ -298,4 +982,7 @@ const jsonLd = {
     transition: border-color var(--duration-normal), background var(--duration-normal);
   }
   .ca-req:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+  .ca-next { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--signal); text-decoration: none; }
+  .ca-next:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .ca-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
 </style>

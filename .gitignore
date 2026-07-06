@@ -3,3 +3,6 @@ dist
 .astro
 .DS_Store
 .cache
+
+# licensed HTF font source distribution — webfont subset lives in public/fonts/
+gotham-fonts/

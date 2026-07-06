@@ -106,12 +106,16 @@ const layout = {
       <p class="gl-spec">16 PTS · Ø50MM COLUMNS · 60MM PITCH · TRAVEL 60/110MM · 1800–6500K</p>
     </Operator>
 
-    <!-- reserved slot: photo of the physical build, once it exists -->
+    <!-- build-photo slot: AI placeholder render until real hardware photos land -->
     <Operator id="gridPhoto" name="grid_photo · build_log" type="view" area="photo" maxw={360} ports="in">
-      <div class="gl-photoslot">
-        <span>// BUILD PHOTO PENDING</span>
-        <span class="gl-photosub">HARDWARE IN PROGRESS · SLOT RESERVED</span>
-      </div>
+      <figure class="gl-photoslot has-img">
+        <img
+          src="/images/grid/build-photo-01.png"
+          alt="A hand holding one thermoformed UHMW PE lamp column in a dark workshop, warm LEDs glowing through the frosted wall, wires trailing from the open bottom"
+          loading="lazy"
+        />
+        <figcaption class="gl-photosub">AI RENDER · PLACEHOLDER · REAL BUILD PHOTOS TO COME</figcaption>
+      </figure>
     </Operator>
 
     <!-- how-to nodes sit on the cable feeding each surface -->
@@ -362,7 +366,8 @@ const layout = {
     line-height: 1.7;
   }
 
-  /* reserved build-photo slot — swap the placeholder for an <img> when it lands */
+  /* build-photo slot — currently an honestly-labeled AI placeholder render;
+     swap the src (and drop the AI label) when real hardware photos land */
   .gl-photoslot {
     aspect-ratio: 4 / 3;
     display: grid;
@@ -377,6 +382,14 @@ const layout = {
     color: var(--text-dim);
   }
   .gl-photoslot .gl-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
+  .gl-photoslot.has-img {
+    aspect-ratio: auto;
+    display: block;
+    margin: 0;
+    border: 1px solid var(--border-color);
+  }
+  .gl-photoslot.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
+  .gl-photoslot.has-img .gl-photosub { display: block; padding: 6px 8px; text-align: left; }
 
   .gl-help {
     list-style: none;

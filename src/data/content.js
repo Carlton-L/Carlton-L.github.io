@@ -7,7 +7,7 @@ export const siteConfig = {
   // Tagline decided 2026-07-02. Alternates Carlton is still considering:
   // "Designer who debugs. Engineer who dreams." / "Designer who deploys. Engineer who delights."
   description:
-    'Designer who deploys. Engineer who dreams. I build what I design. Carlton Lindsay is a Design Engineer building AI-native interfaces — knowledge graphs, multi-agent pipeline UIs, and research tools — at Futurity Systems.',
+    'Designer who deploys. Engineer who dreams. I build what I design. Carlton Lindsay is a Design Engineer building AI-native interfaces at Futurity Systems: knowledge graphs, multi-agent pipeline UIs, and research tools.',
   url: 'https://carlton.dev',
   social: {
     linkedin: 'https://linkedin.com/in/carltonl',
@@ -36,7 +36,7 @@ export const categories = [
   {
     number: '01',
     title: 'AI-Native Interfaces',
-    subtitle: 'Production tools where humans steer AI systems — graphs, pipelines, and research platforms',
+    subtitle: 'Production tools where humans steer AI systems: graphs, pipelines, and research platforms',
     description:
       'Production React applications for working with AI systems: knowledge-graph visualization, multi-agent pipeline UIs, and tools that turn LLM output into something people can actually reason about.',
     count: '5 projects',
@@ -49,7 +49,7 @@ export const categories = [
     title: 'Experiences & Hardware',
     subtitle: 'Installations, robotics, and interactions that bridge physical and digital space',
     description:
-      'A decade of hardware prototyping — Apple Vision Pro labs, robotics, sensor-driven installations. The build-first instinct behind the software work.',
+      'A decade of hardware prototyping: Apple Vision Pro labs, robotics, sensor-driven installations. The build-first instinct behind the software work.',
     count: '4 projects',
     slug: 'experiences',
     accent: 'accent-2',
@@ -60,7 +60,7 @@ export const categories = [
     title: 'Research & Writing',
     subtitle: 'Qualitative research and thinking on AI, learning, and human capability',
     description:
-      'Design research and writing on how AI should augment human capability — from qualitative studies on skill development to notes on AI-native workflows.',
+      'Design research and writing on how AI should augment human capability, from qualitative studies on skill development to notes on AI-native workflows.',
     count: '1 project',
     slug: 'research',
     accent: 'accent-3',
@@ -75,7 +75,7 @@ export const projects = [
   {
     title: 'FAST',
     description:
-      'Futurity Analysis & Synthesis Tools — an AI research and foresight platform with knowledge-graph visualization, node-based analysis workflows, and LLM-driven invention tools used by research and innovation teams.',
+      'Futurity Analysis & Synthesis Tools: an AI research and foresight platform with knowledge-graph visualization, node-based analysis workflows, and LLM-driven invention tools used by research and innovation teams.',
     meta: '2025–2026 — Lead Frontend Engineer & Lead UX/UI Designer · Futurity Systems',
     category: 'AI-Native Interfaces',
     categorySlug: 'apps-systems',
@@ -140,7 +140,7 @@ export const projects = [
   {
     title: 'Futurity Engine',
     description:
-      'A multi-agent research engine that streams its reasoning into a live, GPU-accelerated knowledge graph — watch AI agents gather papers, patents, and signals in real time.',
+      'A multi-agent research engine that streams its reasoning into a live, GPU-accelerated knowledge graph. Watch AI agents gather papers, patents, and signals in real time.',
     meta: '2026 — UI Concept, Frontend & Backend Contributions · Futurity Systems',
     category: 'AI-Native Interfaces',
     categorySlug: 'apps-systems',
@@ -180,13 +180,13 @@ export const projects = [
       {
         heading: 'The hard interaction problem',
         body: [
-          'Streaming an unbounded agent process into a graph without drowning the user is a real interaction problem. Nodes arrive continuously for minutes, the layout wants to shift under your cursor, and you still need to know where you are. The answers were concrete: ingest incrementally so the map never rebuilds, encode node types by shape and color so the picture reads at a glance, and keep the noisy machinery in the graph but hidden until someone asks for it.',
+          'Streaming an unbounded agent process into a graph without drowning the user is a real interaction problem. Nodes arrive continuously for minutes, the layout wants to shift under your cursor, and you still need to know where you are. The fixes were concrete: ingest incrementally so the map never rebuilds, encode node types by shape and color so the picture reads at a glance, and keep the noisy machinery in the graph but hidden until someone asks for it.',
         ],
       },
       {
         heading: 'Outcome',
         body: [
-          'The Engine runs today as a Dockerized multi-service stack with resumable checkpoints, and the frontend stays responsive through runs that take the better part of an hour. It is the clearest statement of the thesis that runs through all my work: an AI system earns trust when its process is legible.',
+          'The Engine runs today as a Dockerized multi-service stack with resumable checkpoints, and the frontend stays responsive through runs that take the better part of an hour. It is where the thesis behind all my work gets its hardest test: an AI system earns trust when its process is legible, and an hour of process is a lot of trust to earn.',
         ],
       },
     ],
@@ -271,7 +271,7 @@ export const projects = [
   {
     title: 'Campus AI — Learning Research',
     description:
-      'Qualitative design research for an LLM-guided learning platform: 42 surveys and 8 depth interviews with career shifters, synthesized into strategic product recommendations.',
+      'Design research for an LLM learning platform: 42 surveys and 8 depth interviews with people changing careers, turned into product recommendations Campus AI could act on.',
     meta: '2024 — Design Research · Harbour.Space × Campus AI',
     category: 'Research & Writing',
     categorySlug: 'research',
@@ -283,33 +283,104 @@ export const projects = [
     facts: {
       role: 'Design Researcher (team of 4)',
       year: '2024',
-      stack: '42-respondent survey, 8 × 90-min depth interviews, thematic coding',
+      stack: '42-respondent survey, 8 × 90-min interviews, 1,117 highlights coded across 182 tags',
       company: 'Harbour.Space × Campus AI',
     },
     caseStudy: [
       {
         heading: 'The question',
         body: [
-          'Campus AI was building an LLM tool for structured learning and needed to know: who is the most motivated user? We studied mid-career professionals changing careers — how they choose paths, learn, stay motivated, and validate progress.',
+          'Campus AI was building an LLM tool for structured learning and wanted to know who their most motivated users would be. That pointed us at career shifters: mid-career professionals leaving one field for another. Our job was to understand how they pick a new path, how they learn, what keeps them going, and how they know they are making progress.',
         ],
       },
       {
         heading: 'Method',
         body: [
-          'A 42-respondent screening survey of current and recent career changers, followed by eight 90-minute open-ended interviews across four countries, coded thematically as a team of four.',
+          'A 42-respondent screener found the shifters; eight became 90-minute open-ended interviews across four countries. The four of us coded the transcripts in Dovetail, 1,117 highlighted moments across 182 tags, and built the findings from the patterns that held up across interviews. The excerpts below are the real data, first names only, with the coding intact.',
         ],
       },
       {
-        heading: 'Key insights',
+        heading: 'How the study was built',
         body: [
-          'Career shifters don’t job hunt — they stumble into paths through people, then validate them through "proxy communities" of strangers who’ve made the same move. They want a career-shift playbook, not a skill list. They validate learning through outputs — projects and portfolios, not certificates. And most digital learning tools fail them on the one thing they value most: direct human communication.',
+          'The research questions came first, four of them, drafted as a team: how shifters choose a path, how they prefer to learn, how they stay motivated, and which tools worked or wasted their time. Everything else was built to answer them. The screener enforced quotas, gender balance, ages 20s through 40s, mostly already mid-shift, so the eight seats went to exactly the people the product bet depended on. We piloted the protocol on a representative participant before running it for real, and we cut screener questions we liked because they would not change who got a seat.',
         ],
       },
       {
-        heading: 'Strategic recommendations',
+        heading: 'How a session ran',
         body: [
-          'Give AI-generated content a human face — learners trust content anchored to people, so design the AI as visible personas rather than an anonymous engine. Let AI act as proxy feedback where peers are absent. Show learning outcomes up front, like a GPS destination: even when the learner takes a wrong route, the system re-routes toward a visible goal. And ground the roadmap in the live job market, because employability is the real outcome career shifters are buying.',
-          'These findings — capability over engagement, AI as a partner that makes people more able rather than more retained — continue to shape how I design AI products.',
+          'Each interview was a 90-minute protocol in seven timed movements: rapport and a typical weekday, the shift story, researching the new career, learning methods, challenges, quality of learning, and life after the shift. Stakeholders shadowed with cameras off and asked questions only at the end. After every day of sessions the team debriefed on a fixed template, what surprised us, what mattered to this person, what we would ask differently, and the guide was adjusted between sessions. A topline report shipped within days for fast product decisions; formal coding came after, so speed never substituted for rigor.',
+        ],
+      },
+      {
+        heading: 'Shifts start with people, not job boards',
+        body: [
+          'Nobody described searching for a new life. Shifters keep an open ear: a person, a post, a story of someone who already made the move arrives first, and then the research starts. A learning tool that assumes the journey begins at a search box has missed the first chapter.',
+        ],
+      },
+      {
+        heading: 'Transferable skills point, personal interest pulls',
+        body: [
+          'Every participant weighed the same two factors: what carries over from the old career, and what they actually want to do. Transferable skills made a shift feel feasible and shortened the imagined roadmap. When interest and skills disagreed, interest won, and the extra learning was accepted as the price.',
+        ],
+      },
+      {
+        heading: 'Proxy communities do the validating',
+        body: [
+          'Before anyone paid for a course or quit anything, they checked the move against strangers who had already made it: Reddit threads, reviews, testimony from people one field ahead. It is the densest theme in our coding, and it is how shifters without a network borrow one.',
+        ],
+      },
+      {
+        heading: 'They want a playbook for the whole shift',
+        body: [
+          'Skills were one chapter of the ask. The recurring request was the whole route, phase by phase: what to learn, what to build, who to talk to, when to start applying. Nobody had found the hub that covers breaking out of one career and landing in another, so everyone was assembling it by hand.',
+        ],
+      },
+      {
+        heading: 'Progress is something you can show',
+        body: [
+          'Progress was measured in artifacts: a project that works, a design you can show, a thing carried from course to practice. Certificates surfaced in 11 of 1,117 highlights, almost always as a door pass for specific fields, proof for an interview rather than proof of learning.',
+        ],
+      },
+      {
+        heading: 'Human contact: most valued, least supplied',
+        body: [
+          'What shifters valued most is what self-serve learning supplies least: a person who knows them, looking at their work. Feedback, immediate clarification, personalized guidance, motivation. Participants with mentors moved with confidence; the ones without described submitting work into a void.',
+        ],
+      },
+      {
+        heading: 'Time is the currency of the shift',
+        body: [
+          'Every hour of learning came out of the margins of a full life: around jobs, families, savings runway. Participants defended it with calendars, spreadsheets and self-imposed deadlines. A wrong turn does not cost a learner content, it costs months they had already counted.',
+        ],
+      },
+      {
+        heading: 'Give the AI a human face',
+        body: [
+          'Learners trusted content they could pin to a person: an instructor with a track record, a founder teaching their own product, a face in the comments. So present the AI through visible personas instead of an anonymous engine. We sketched two: Professor AI, the authored voice behind learning guides, and Students AI, the comment layer of other learners. The trust cue that costs nothing: the persona remembers your past sessions and says so.',
+        ],
+      },
+      {
+        heading: 'Proxy feedback in the peer gap',
+        body: [
+          'The peer gap was not abstract: participants submitted work into a void and studied alone across language barriers. Use the AI where the learner has no one to ask: prompts that check in during learning, immediate correction with explanation when a test goes wrong, and critique flows where submitting an artifact returns feedback in the register of a senior peer. Honestly labeled as a stand-in.',
+        ],
+      },
+      {
+        heading: 'Destination on screen from day one',
+        body: [
+          'Learning outcomes are the destination for a GPS: show what the learner will be able to make at the end of each section, up front. And when they take a wrong turn, re-route to the same destination instead of failing them; no red X states, only recalculated routes. Time is why this matters: a wrong turn that costs a month is how shifts die.',
+        ],
+      },
+      {
+        heading: 'Build the roadmap against the live job market',
+        body: [
+          'A job is what career shifters are actually paying for, and the job market is the context employability is measured against. So gather the user\'s career goal, derive waypoints from live posting data, explain how each step serves the goal, and let users nudge the journey with suggested tags. The same mechanism can suggest entirely new paths when performance says the learner is suited to one.',
+        ],
+      },
+      {
+        heading: 'What it settled',
+        body: [
+          'The study still shapes how I design AI products: I optimize for what the person can do afterwards and treat engagement as a side effect, not the goal.',
         ],
       },
     ],
@@ -555,9 +626,9 @@ export const aboutContent = {
     },
   ],
   bio: [
-    'I spent a decade in hardware before I ever shipped a web app: component-level electronics repair, then prototyping labs for medical devices, VR hardware, and consumer electronics, then building out product-design labs at Apple, where I worked on Vision Pro. Hardware taught me that ideas are cheap and prototypes are truth — you find out what works by building it.',
-    "A lab-equipment portal I built in React was the hinge: designing how people interact with systems turned out to be the part I couldn't put down. I did a Master's in Interaction Design in Barcelona, then joined Futurity Systems as Design Technologist and Product Lead, where I now build AI research tools — knowledge-graph interfaces, multi-agent pipeline UIs, and the design systems behind them.",
-    'The through-line is making AI systems legible. Agent pipelines, research engines, and LLM tools are only trustworthy when people can see what they’re doing and steer them. That’s the problem I keep choosing: the seam where interaction design meets production engineering — and where I work daily with AI coding agents as genuine collaborators in how I build.',
+    'I spent a decade in hardware before I ever shipped a web app: component-level electronics repair, then prototyping labs for medical devices, VR hardware, and consumer electronics, then building out product-design labs at Apple, where I worked on Vision Pro. Hardware taught me that ideas are cheap and prototypes are truth: you find out what works by building it.',
+    "A lab-equipment portal I built in React was the hinge: designing how people interact with systems turned out to be the part I couldn't put down. I did a Master's in Interaction Design in Barcelona, then joined Futurity Systems as Design Technologist and Product Lead, where I now build AI research tools: knowledge-graph interfaces, multi-agent pipeline UIs, and the design systems behind them.",
+    'The through-line is making AI systems legible. Agent pipelines, research engines, and LLM tools are only trustworthy when people can see what they’re doing and steer them. That’s the problem I keep choosing: the seam where interaction design meets production engineering, and where I work daily with AI coding agents as genuine collaborators in how I build.',
   ],
   experience: [
     { role: 'Design Engineer & Product Lead', company: 'Futurity Systems', dates: 'Feb 2025 — Present' },

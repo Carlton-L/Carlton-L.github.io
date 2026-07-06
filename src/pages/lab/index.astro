@@ -8,11 +8,12 @@
  *
  * GRID graduated to /projects/grid-lamp (2026-07-06). BEAM PLANT pulled
  * 2026-07-06 (too early for the page — sim runtime retained at
- * public/js/plant-lab.js for when it matures).
+ * public/js/plant-lab.js for when it matures). EYE sim removed 2026-07-06
+ * (CAD renders carry the section; runtime retained at public/js/eye-lab.js).
  *
- * Sims: public/js/presence-lab.js (A* click-anywhere pathfinding) +
- * public/js/eye-lab.js — vanilla canvas, no CDN deps, lazy-loaded by the
- * bootstrap below only when their ops approach the viewport.
+ * Sims: public/js/presence-lab.js (A* click-anywhere pathfinding) —
+ * vanilla canvas, no CDN deps, lazy-loaded by the bootstrap below only
+ * when its op approaches the viewport.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
@@ -58,8 +59,7 @@ const links: [string, string][] = [
   ['eyeConcept', 'eyeHero'],
   ['eyeHero', 'eyeRenders'],
   ['eyeRenders', 'eyeLed'],
-  ['eyeRenders', 'eyeSim'],
-  ['eyeSim', 'eyeOut'],
+  ['eyeRenders', 'eyeOut'],
   ['eyeOut', 'labDiv3'],
   ['labDiv3', 'labCook'],
 ];
@@ -83,7 +83,7 @@ const layout = {
       .     .     .     .     .     .     .     .     .     .     .     .
       econc econc econc econc econc .     ehero ehero ehero ehero ehero ehero
       .     erend erend erend erend erend erend .     eled  eled  eled  .
-      esim  esim  esim  esim  esim  esim  .     eout  eout  eout  eout  .
+      .     .     .     eout  eout  eout  eout  eout  eout  .     .     .
       .     .     .     .     .     .     .     .     .     .     .     .
       div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3
       .     .     .     .     .     .     .     .     .     .     .     .
@@ -98,7 +98,7 @@ const layout = {
   description="Interactive experiments, generative sketches, and technical explorations."
   jsonLd={jsonLd}
 >
-  <PatchField id="labNet" links={links} density={0.3} height="2660px" layout={layout} label="Lab network — press P for reading mode">
+  <PatchField id="labNet" links={links} density={0.3} height="2300px" layout={layout} label="Lab network — press P for reading mode">
     <Operator id="labIntro" name="input · lab_txt" type="txt" area="intro" ports="out">
       <h1 class="pd-h">Lab</h1>
       <p class="pd-p">
@@ -245,37 +245,18 @@ const layout = {
       </figure>
     </Operator>
 
-    <Operator id="eyeSim" name="eye_sim · design_intent" type="view" area="esim">
-      <div class="simlab">
-        <canvas id="eyCv" class="sl-cv sl-cv-tall" aria-label="Animated simulation of the eye mechanism's design intent: the eye saccades and blinks in a front view while a side schematic shows the eyelid carriage sliding and the tilt horn rotating in sync. Move the pointer to steer the gaze, click to blink"></canvas>
-        <div class="sl-row">
-          <span class="sl-k">MODE</span>
-          <button id="eyAuto" class="sl-chip on">AUTO</button>
-          <span class="sl-note">POINTER STEERS THE GAZE · CLICK TO BLINK</span>
-        </div>
-        <div class="sl-tel">
-          <span>GAZE</span><b id="eyTelGaze">—</b>
-          <span>CARRIAGE</span><b id="eyTelCarriage">—</b>
-          <span>TILT HORN</span><b id="eyTelHorn">—</b>
-          <span>LIDS</span><b id="eyTelLids">—</b>
-        </div>
-        <p class="eye-gridnote">SIMULATED FROM THE CAD · DESIGN INTENT, NOT HARDWARE · ONLY THE EYEBALL WAS PRINTED</p>
-      </div>
-    </Operator>
-
     <Operator id="eyeOut" name="out · parked" type="txt" area="eout" ports="in">
       <p class="pd-p">
-        The full single-eye mechanism is modeled, base, carriage, servos and
-        all. Only the eyeball assembly ever got printed; the budget ran out
-        before the servos and linkages did. There's no working rig, and
-        everything past the eyeball exists in CAD and nowhere else.
+        The whole mechanism is modeled in SolidWorks, but the eyeball
+        assembly is the only part I printed before the budget ran out. No
+        servos, no linkages, no working rig yet.
       </p>
       <p class="pd-p">
-        It stays in the lab because the design still holds up. The eyelid
-        carriage is my favorite part of it, one degree of freedom doing two
-        jobs, and the build is waiting on a parts budget, nothing else.
+        I'm keeping it here because I still like the design, especially the
+        eyelid carriage. When I have spare money for parts I'll build the
+        rest.
       </p>
-      <p class="gl-outnext">▸ NEXT · SERVOS AND LINKAGES, WHEN THE PARTS BUDGET RETURNS</p>
+      <p class="gl-outnext">▸ NEXT · PRINT THE REST AND BUY THE SERVOS</p>
     </Operator>
 
     <!-- section bar · bus node: the queue, collapsed into the bar itself -->
@@ -293,13 +274,12 @@ const layout = {
   </PatchField>
 
   <!-- Lazy bootstrap: each sim's runtime loads only when its op nears the
-       viewport. No CDN deps — both are self-contained vanilla canvas.
+       viewport. No CDN deps — self-contained vanilla canvas.
        Re-nav safe: globals persist, init() re-binds to fresh DOM. -->
   <script is:inline data-astro-rerun>
   (function () {
     var SIMS = [
       ['plView', 'PresenceLab', '/js/presence-lab.js'],
-      ['eyeSim', 'EyeLab', '/js/eye-lab.js'],
     ];
     SIMS.forEach(function (sim) {
       var op = document.getElementById(sim[0]);
@@ -651,8 +631,6 @@ const layout = {
     border-radius: 4px;
     touch-action: manipulation;
   }
-  .sl-cv-tall { aspect-ratio: 4 / 3; }
-
   .sl-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .sl-k {
     font-family: var(--font-mono);

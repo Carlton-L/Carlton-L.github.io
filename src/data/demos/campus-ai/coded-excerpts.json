@@ -1,0 +1,134 @@
+{
+  "study": {
+    "surveyRespondents": 42,
+    "interviews": 8,
+    "interviewMinutes": 90,
+    "countries": ["United States", "United Kingdom", "Canada", "Japan"],
+    "totalHighlights": 1117,
+    "totalTags": 182,
+    "researchers": 4,
+    "tool": "Dovetail",
+    "label": "REAL STUDY DATA · PARTICIPANTS FIRST-NAME-ONLY · EXCERPTED"
+  },
+  "participants": [
+    { "id": "amy", "name": "Amy", "from": "Learning & technology specialist", "to": "Instructional designer", "country": "Canada" },
+    { "id": "darren", "name": "Darren", "from": "Tech consulting", "to": "Business", "country": "US" },
+    { "id": "erica", "name": "Erica", "from": "Project development coordination", "to": "Government analyst", "country": "US" },
+    { "id": "liz", "name": "Liz", "from": "Spanish teacher", "to": "Consultant", "country": "US" },
+    { "id": "mayowa", "name": "Mayowa", "from": "Teacher", "to": "Automation control & robotics", "country": "UK" },
+    { "id": "pao", "name": "Pao", "from": "English teacher", "to": "UX/UI design", "country": "Japan" },
+    { "id": "pravan", "name": "Pravan", "from": "Customer success manager", "to": "Product management", "country": "UK" },
+    { "id": "uche", "name": "Uche", "from": "Data analyst", "to": "UX/UI design", "country": "Canada" }
+  ],
+  "themes": [
+    {
+      "id": "discovery",
+      "title": "Shifts start with people, not job boards",
+      "wong": "#CC79A7",
+      "taggedMoments": 11,
+      "participantCount": 7,
+      "by": { "amy": 1, "darren": 3, "erica": 2, "mayowa": 1, "pao": 1, "pravan": 1, "uche": 2 },
+      "note": "No one described an active search for a new career. They kept an open ear, and a person or a story arrived first.",
+      "excerpts": [
+        { "p": "uche", "star": true, "tags": ["Social Media", "Opportunity"], "text": "I went to UX/UI recently... because I stumbled on someone on social media who mentioned it... I saw a girl who switched from pharmacist to UX/UI and she works remote. She has a family and she did it in three months by herself." },
+        { "p": "liz", "tags": ["Networking", "Referrals"], "text": "I got up the nerve to call her and say: listen, you may think I'm crazy, but I really have enjoyed engaging in this work with you... do you see any potential opportunity for someone like me? ... So she talked to her boss." },
+        { "p": "erica", "tags": ["Work Connections"], "text": "Talking with two of the consultants... one of them did advise, if you will, or suggest that it would be helpful to learn, educate, bring yourself up to speed with legal jargon, legal actual law, things like that." },
+        { "p": "mayowa", "tags": ["Career choice"], "text": "He consulted with mentors who advised him that the field of automation and robotics was a promising career path.", "voice": "researcher-summary" }
+      ]
+    },
+    {
+      "id": "transfer",
+      "title": "Transferable skills point, personal interest pulls",
+      "wong": "#F0E442",
+      "taggedMoments": 44,
+      "participantCount": 8,
+      "by": { "amy": 2, "darren": 11, "erica": 10, "liz": 2, "mayowa": 10, "pao": 2, "pravan": 5, "uche": 2 },
+      "note": "The two factors every participant weighed: what carries over, and what they actually want. When interest won, extra learning was the accepted price.",
+      "excerpts": [
+        { "p": "pao", "star": true, "tags": ["Personal interest"], "text": "I was struck by that project because a website can literally touch people's lives. And in that moment I realized: oh, I wanna make that thing too. I wanna make an impact to people's lives and make websites." },
+        { "p": "amy", "tags": ["Skill transferability"], "text": "Working with people probably is a huge one. And then communications and relationship building, those are the soft skills... aside from that I have a lot of technical skills I can offer when I do become an instructional designer." },
+        { "p": "erica", "tags": ["Skill transferability", "Personal interest"], "text": "Erica acknowledged a knowledge gap in psychology specific to jury consulting; her interest in the new field motivated her to bridge it through additional learning.", "voice": "researcher-summary" },
+        { "p": "darren", "tags": ["Skill transferability"], "text": "Coming from a STEM background, just coming from an engineering mathematics background, makes a lot of the other topics a lot easier." }
+      ]
+    },
+    {
+      "id": "proxy",
+      "title": "Proxy communities do the validating",
+      "wong": "#56B4E9",
+      "taggedMoments": 77,
+      "participantCount": 8,
+      "by": { "amy": 3, "darren": 33, "erica": 2, "liz": 15, "mayowa": 7, "pao": 5, "pravan": 3, "uche": 9 },
+      "note": "The densest theme in the coding: strangers one field ahead stand in for the community shifters don't have yet.",
+      "excerpts": [
+        { "p": "darren", "star": true, "tags": ["Networking"], "text": "I think the simplest way is to find someone who is a couple of steps ahead of you, who faced the same exact problem, to tell you how they solved it." },
+        { "p": "pao", "tags": ["Learn from Other People's Experiences"], "text": "I look for experiences of people, how they started in design and frontend development. And then I started from reading people's experiences on the internet, especially in Reddit." },
+        { "p": "uche", "tags": ["Reviews and Testimonies"], "text": "My money, I work [for] my money. So any money I spend, I want to be sure. I do my research... I'm going to get reviews, to check for information... I have to ask: is it worth it?" },
+        { "p": "mayowa", "tags": ["Reviews and Testimonies"], "text": "There are testimonies about that, because a lot of people have gotten into that, they've gained a lot from it... those online courses are created by someone who has the experience, both hands-on and the teaching." },
+        { "p": "uche", "tags": ["Credibility"], "text": "Their case studies are actually more practical, because most of the people who create those courses are actually the founders of those softwares... so you're sure to have a more tangible case study." },
+        { "p": "amy", "tags": ["Network"], "text": "I like the fact that I get to collaborate with various experts in the field, to learn from them... and create trust and respect." }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "A playbook for the whole shift",
+      "wong": "#E69F00",
+      "taggedMoments": 17,
+      "participantCount": 5,
+      "by": { "darren": 10, "erica": 1, "liz": 2, "pao": 1, "uche": 3 },
+      "note": "Skills were one chapter; the ask was the entire route to a job, phase by phase.",
+      "excerpts": [
+        { "p": "liz", "star": true, "tags": ["Roadmapping"], "text": "It would have been very handy if I had found the holy grail of hubs that had resources starting from breaking out of a current career and transitioning to another one." },
+        { "p": "uche", "tags": ["Roadmapping", "Coaching/Mentorship"], "text": "I don't mind paying for a coach who's gonna hold my hands and walk me through this thing... give me a guideline, give me like a map, and then let me go, and then come back to you after a certain period of time [with] my results, my findings." },
+        { "p": "erica", "tags": ["Roadmapping"], "text": "There was one article that I read that kind of gave an overview of what to do if you want to become a consultant... it even included reaching out and doing some potential shadowing or internship." },
+        { "p": "erica", "tags": ["Job Hunting"], "text": "I quickly found out... that looking for a full-time job is a full-time job. Not only do your research, but be very responsive as opportunities present themselves." }
+      ]
+    },
+    {
+      "id": "artifacts",
+      "title": "Progress is something you can show",
+      "wong": "#009E73",
+      "taggedMoments": 41,
+      "participantCount": 7,
+      "by": { "darren": 16, "erica": 2, "liz": 2, "mayowa": 5, "pao": 10, "pravan": 1, "uche": 5 },
+      "note": "Making something is the unit of forward motion. Certificates: 11 mentions in 1,117 highlights, mostly as door passes.",
+      "excerpts": [
+        { "p": "pao", "star": true, "tags": ["Projects", "Self-Talk"], "text": "When I'm able to create a project, that's the time I would feel satisfied... that will make me feel like, oh, I'm making a progress. So yeah: when I'm able to make something." },
+        { "p": "mayowa", "tags": ["Practical Application"], "text": "Proving proficiency is when you put it into practice and you are able to get it right... We take it to the programming and it's worked. So that is proven and it's working. That's it." },
+        { "p": "uche", "tags": ["Projects"], "text": "The projects... I'm volunteering, I'm also working part time for a friend. So those little project assignments just keep me on my toes. So that motivates me." },
+        { "p": "pao", "tags": ["Certifications"], "text": "I cannot just show someone that I can do something, I have to show them a proof at least... basically certification is to get your foot in the door." }
+      ]
+    },
+    {
+      "id": "human",
+      "title": "Human contact: most valued, least supplied",
+      "wong": "#0072B2",
+      "taggedMoments": 72,
+      "participantCount": 7,
+      "by": { "darren": 15, "erica": 9, "liz": 15, "mayowa": 1, "pao": 17, "pravan": 8, "uche": 7 },
+      "note": "Feedback, immediate clarification, personalized guidance, motivation: the loop most learning tools don't close.",
+      "excerpts": [
+        { "p": "darren", "star": true, "tags": ["Coaching/Mentorship"], "text": "A mentor who knows what would be valuable to you at this moment right now, and being able to tell you: forget this, forget that, just focus on this. That's clarity. That's what mentors are able to create for their apprentices." },
+        { "p": "darren", "tags": ["Coaching/Mentorship"], "text": "I think the future of education is one-to-one." },
+        { "p": "pao", "tags": ["Lack of peers"], "text": "I don't have any peers, like in person, that I can brainstorm with or ask questions. It's a challenge for me, just working alone or studying alone in front of my computer with no interactions with other people." },
+        { "p": "uche", "tags": ["Networking"], "text": "People [on bootcamps] tell you tips on how to get jobs, you know, you fill up with people... In the bootcamp you're working side by side with someone and have that type of connection." },
+        { "p": "pao", "tags": ["Lack of Feedback Loops"], "text": "I tried submitting my projects in the Udemy site and I asked for feedback... not getting feedback, that's something that I found [hard]." }
+      ]
+    },
+    {
+      "id": "time",
+      "title": "Time is the currency of the shift",
+      "wong": "#D55E00",
+      "taggedMoments": 41,
+      "participantCount": 8,
+      "by": { "amy": 1, "darren": 7, "erica": 6, "liz": 4, "mayowa": 7, "pao": 9, "pravan": 6, "uche": 1 },
+      "note": "Learning happens in the margins of a full life; wrong turns are paid for in months.",
+      "excerpts": [
+        { "p": "mayowa", "star": true, "tags": ["Time pressure"], "text": "Taking me away from the family, lots of time [gone], sleepless nights... I won't sleep for like 24 hours. Sometimes you just have to meet deadlines." },
+        { "p": "liz", "tags": ["Time pressure"], "text": "When you're either looking to leave a job and jump to a new one... time is your resource." },
+        { "p": "erica", "tags": ["Time management"], "text": "A lot of this I have to do outside of work hours, and I have two teenage boys and other commitments... that can even be truly putting it on the calendar, scheduling time out of the house." },
+        { "p": "pravan", "tags": ["Time commitment"], "text": "I aim to do it within the next year and a half... I have like a full list laid out on an Excel [of] which resources I need to complete by when." },
+        { "p": "darren", "tags": ["Time pressure"], "text": "There is a timeline that I'm following... I graduate in August and then I have a three-month period to either find a job or decide to go back." }
+      ]
+    }
+  ]
+}

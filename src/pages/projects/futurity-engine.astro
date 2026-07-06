@@ -41,7 +41,8 @@ const links: [string, string][] = [
   ['engSect', 'engWhat'],
   ['engSect', 'engRole'],
   ['engWhat', 'engHow'],
-  ['engHow', 'engD1'],
+  ['engHow', 'engHard'],
+  ['engHard', 'engD1'],
   ['engD1', 'engD2'],
   ['engD2', 'engD3'],
   ['engD3', 'engView'],
@@ -61,6 +62,7 @@ const layout = {
       .     sect  sect  sect  sect  sect  sect  .     .     .     .     .
       .     what  what  what  what  .     .     role  role  role  role  .
       .     .     .     how   how   how   how   how   how   .     .     .
+      .     .     hard  hard  hard  hard  hard  hard  hard  .     .     .
       .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
       .     view  view  view  view  view  view  view  view  view  view  .
       outc  outc  outc  outc  outc  .     .     .     .     out   out   out
@@ -124,6 +126,11 @@ const layout = {
 
     <Operator id="engHow" name="process · how_it_works" type="txt" area="how" maxw={600}>
       {cs['How it works'].map((p) => <p class="eng-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="engHard" name="process · the_hard_problem" type="txt" area="hard" maxw={620}>
+      <h3 class="eng-dh">The hard interaction problem</h3>
+      {cs['The hard interaction problem'].map((p) => <p class="eng-p">{p}</p>)}
     </Operator>
 
     <!-- PROCESS: the three design decisions -->
