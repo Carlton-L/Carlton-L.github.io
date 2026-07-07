@@ -2,36 +2,12 @@
 @import './tokens.css';
 
 /* ============================================
-   Gotham (self-hosted, display face)
+   Display face: Proxima Nova via Adobe Fonts
+   (kit linked in Base.astro — use.typekit.net/pxz7fsi.css).
+   Licensed through Carlton's Creative Cloud plan; replaced the
+   unlicensed self-hosted Gotham 2026-07-06. Weights used:
+   400 / 500 / 700 / 900 (Regular, Medium, Bold, Black).
    ============================================ */
-@font-face {
-  font-family: 'Gotham';
-  src: url('/fonts/gothambook-webfont.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Gotham';
-  src: url('/fonts/gothammedium-webfont.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Gotham';
-  src: url('/fonts/gothambold-webfont.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Gotham';
-  src: url('/fonts/gothamblack-webfont.woff2') format('woff2');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* ============================================
    Base Styles

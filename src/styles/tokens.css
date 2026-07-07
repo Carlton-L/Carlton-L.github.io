@@ -80,13 +80,13 @@
   --space-2xl: 8rem;
 
   /* Typography
-     Display: Gotham (self-hosted, /public/fonts).
-     Mono: TESTING — candidates are 'Courier Prime', 'IBM Plex Mono',
-     'Fira Code' (all loaded in Base.astro during the trial; prune the
-     losers + this note once decided). JetBrains Mono stays loaded at
-     400 for Futurescaper viewer interiors (that product's real mono). */
-  --font-display: 'Gotham', 'Inter', -apple-system, sans-serif;
-  --font-sans: 'Gotham', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+     Display + sans: Proxima Nova via Adobe Fonts kit (Base.astro;
+     replaced unlicensed Gotham 2026-07-06; 400/500/700/900 in use).
+     Mono: IBM Plex Mono (trial winner, 2026-07; Courier Prime + Fira Code
+     pruned from Base.astro). JetBrains Mono stays loaded at 400 for
+     Futurescaper viewer interiors (that product's real mono). */
+  --font-display: 'proxima-nova', 'Inter', -apple-system, sans-serif;
+  --font-sans: 'proxima-nova', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

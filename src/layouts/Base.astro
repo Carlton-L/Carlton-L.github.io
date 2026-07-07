@@ -81,18 +81,19 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={fullOgImage} />
 
-    <!-- Fonts. Gotham (display) is self-hosted — see global.css.
-         Mono trial: Courier Prime (ACTIVE) + IBM Plex Mono + Fira Code;
-         prune once a winner is picked. JetBrains Mono @400 kept for
-         Futurescaper viewer interiors. -->
+    <!-- Fonts. Display + sans: Proxima Nova via Adobe Fonts (Carlton's CC
+         license; replaced unlicensed Gotham 2026-07-06; weights 400/500/700/900).
+         Mono: IBM Plex Mono (winner of the 2026-07 trial; Courier Prime +
+         Fira Code pruned). JetBrains Mono @400 kept for Futurescaper
+         viewer interiors. -->
+    <link rel="preconnect" href="https://use.typekit.net" crossorigin />
+    <link rel="stylesheet" href="https://use.typekit.net/pxz7fsi.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fira+Code:wght@300..700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap"
       rel="stylesheet"
     />
-    <link rel="preload" href="/fonts/gothamblack-webfont.woff2" as="font" type="font/woff2" crossorigin />
-
     <!-- Favicon (patch mark) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
