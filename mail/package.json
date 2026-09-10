@@ -1,0 +1,17 @@
+{
+  "name": "carlton-dev-mail",
+  "private": true,
+  "type": "module",
+  "description": "Serverless mail surface for carlton.dev (contact endpoint + Resend webhook receiver). Deployed on Vercel, root directory = mail/.",
+  "scripts": {
+    "dev": "vercel dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "resend": "^6.27.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.3.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -739,12 +739,20 @@ const heightStyle =
       svg.innerHTML = o;
     }
 
-    /* ---------- main loop (dither cooks at half rate) ---------- */
-    let fc = 0;
+    /* ---------- main loop (dither cooks at half rate) ----------
+       Both cooks yield during scroll: the per-frame canvas blit + SVG
+       rebuild were starving Chrome's tile rasterizer on long scrolls,
+       leaving freshly exposed viewport unpainted (black) until the next
+       input. Wires are field-anchored and the dither is a noise field,
+       so a ~150ms pause is imperceptible; raster wins the thread. */
+    let fc = 0, lastScrollT = -1e4;
+    on(window, 'scroll', () => { lastScrollT = performance.now(); }, { passive: true });
     function frame() {
       if (!host.isConnected) return;
-      if ((fc++ & 1) === 0) cookDither();
-      cookWires();
+      if (performance.now() - lastScrollT > 150) {
+        if ((fc++ & 1) === 0) cookDither();
+        cookWires();
+      }
       requestAnimationFrame(frame);
     }
     if (REDUCED) {
