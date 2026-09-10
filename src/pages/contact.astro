@@ -15,14 +15,28 @@ const jsonLd = getBreadcrumbJsonLd([
 ]);
 
 const channelIds = contactLinks.map((_, i) => `ctCh${i}`);
-const links = channelIds.map((id) => ['ctHi', id] as [string, string]);
+// say_hi fans out to the channels AND to the message input; the input's
+// `message` out-port is a real subscription into the relay (the cable carries
+// the actual submission — see the script at the bottom).
+const links = [
+  ...channelIds.map((id) => ['ctHi', id] as [string, string]),
+  ['ctHi', 'ctMsg'] as [string, string],
+  ['ctMsg:message', 'ctRelay'] as [string, string],
+];
+
+// Public endpoint of the serverless mail surface (repo: mail/, deployed on
+// Vercel). The Resend API key lives there as an env var; the browser only
+// ever sees this URL.
+const MAIL_ENDPOINT = 'https://carlton-dev.vercel.app/api/contact';
 
 // layout: say_hi holds the left column beside the channel stack (one row per
 // channel; hi spans all but the last so the columns balance). Content mode —
 // the field height is computed from the ops.
-const areas = channelIds
-  .map((id, i) => `${i < channelIds.length - 1 ? 'hi hi hi hi hi' : '.  .  .  .  .'} . . ${id} ${id} ${id} ${id} .`)
-  .join('\n');
+const areas = [
+  ...channelIds.map((id, i) => `${i < channelIds.length - 1 ? 'hi hi hi hi hi' : '.  .  .  .  .'} . . ${id} ${id} ${id} ${id} .`),
+  '. . . . . . . . . . . .',
+  'msg msg msg msg msg msg . relay relay relay relay .',
+].join('\n');
 const layout = {
   mode: 'content',
   padTop: 48,
@@ -64,8 +78,131 @@ const layout = {
         </a>
       </Operator>
     ))}
+
+    <Operator id="ctMsg" name="input · send_message" type="txt" area="msg" ports="both">
+      <form class="ct-form" id="ctForm" data-endpoint={MAIL_ENDPOINT} novalidate>
+        <label class="ct-f">
+          <span class="ct-label">name</span>
+          <input class="ct-in" name="name" type="text" autocomplete="name" maxlength="120" required />
+        </label>
+        <label class="ct-f">
+          <span class="ct-label">email</span>
+          <input class="ct-in" name="email" type="email" autocomplete="email" maxlength="254" required />
+        </label>
+        <label class="ct-f">
+          <span class="ct-label">message</span>
+          <textarea class="ct-in ct-ta" name="message" rows="5" maxlength="4000" required></textarea>
+        </label>
+        <!-- honeypot: invisible to people, irresistible to bots; server drops any submission that fills it -->
+        <label class="ct-hp" aria-hidden="true">
+          <span>website</span>
+          <input name="website" type="text" tabindex="-1" autocomplete="off" />
+        </label>
+        <div class="ct-row">
+          <button class="chip chipbtn ct-send" type="submit"><span class="ct-spin" aria-hidden="true"></span><span class="ct-send-l">▶ send</span></button>
+          <span class="ct-hint">a receipt lands in your inbox</span>
+        </div>
+      </form>
+      <div class="ct-done" id="ctDone" hidden>
+        <p class="ct-done-h">sent ✓</p>
+        <p class="ct-done-p">Thanks. It's in my inbox and a receipt is on its way to yours.</p>
+        <button class="chip chipbtn" type="button" id="ctAgain">▶ send another</button>
+      </div>
+    </Operator>
+
+    <Operator id="ctRelay" name="sys · resend_relay" type="sys" area="relay" ports="in">
+      <pre class="ct-log" id="ctLog" aria-live="polite">state    idle
+via      resend api · eu-west-1
+receipt  reports on send
+</pre>
+    </Operator>
   </PatchField>
 </Base>
+
+<script is:inline data-astro-rerun>
+(function () {
+  const form = document.getElementById('ctForm');
+  if (!form || form.dataset.init) return;
+  form.dataset.init = '1';
+  const log = document.getElementById('ctLog');
+  const relayOp = document.getElementById('ctRelay');
+  const msgOp = document.getElementById('ctMsg');
+  const done = document.getElementById('ctDone');
+  const again = document.getElementById('ctAgain');
+  const btn = form.querySelector('.ct-send');
+  const endpoint = form.dataset.endpoint;
+  const IDLE = [['state', 'idle'], ['via', 'resend api · eu-west-1'], ['receipt', 'reports on send']];
+
+  /* ---- the network: send_message ─message→ resend_relay ----
+     Submitting emits on the message port; the runtime routes it along the
+     cable (pulse) into the relay's in-port, which does the fetch. Under
+     ?nopatch=1 the stub path calls the relay directly. */
+  const net = window.Patch ? window.Patch.field('contactNet') : null;
+  const LIVE = !!(net && !net.stub);
+  const NOOP = function () {};
+  const N = (id, spec) => (net ? net.node(id, spec) : { el: null, emit: NOOP, every: NOOP, timeout: NOOP, observe: NOOP, listen: NOOP, cleanup: NOOP });
+
+  const line = (k, v) => k.padEnd(9) + v;
+  const show = (rows) => { if (log) log.textContent = rows.map((r) => line(r[0], r[1])).join('\n') + '\n'; };
+  const glow = () => { if (!relayOp) return; relayOp.classList.add('cooking'); relay.timeout(600, () => relayOp.classList.remove('cooking')); };
+
+  let busy = false;
+  const setBusy = (on) => {
+    busy = on;
+    form.classList.toggle('busy', on);
+    if (btn) btn.disabled = on;
+    form.querySelectorAll('.ct-in').forEach((el) => { el.disabled = on; });
+  };
+  const reset = () => {
+    form.reset();
+    form.querySelectorAll('.ct-in').forEach((el) => el.classList.remove('bad'));
+    form.hidden = false;
+    if (done) done.hidden = true;
+    show(IDLE);
+    form.querySelector('[name="name"]') && form.querySelector('[name="name"]').focus();
+  };
+  const deliver = async (p) => {
+    if (busy) return;
+    setBusy(true);
+    form.querySelectorAll('.ct-in').forEach((el) => el.classList.remove('bad'));
+    show([['state', 'cooking ⟳'], ['call', 'POST /api/contact'], ['reply_to', p.email]]);
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (j.field) { const f = form.querySelector('[name="' + j.field + '"]'); f && f.classList.add('bad'); f && f.focus(); }
+        show([['state', 'error ' + res.status], ['msg', j.error || 'send failed'], ['reply_to', p.email]]);
+      } else {
+        glow();
+        show([['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + p.email : 'off'], ['next', 'I read everything.']]);
+        form.hidden = true;
+        if (done) { done.hidden = false; again && again.focus(); }
+      }
+    } catch (e) {
+      show([['state', 'error'], ['msg', 'network — try mailto instead'], ['reply_to', p.email]]);
+    }
+    setBusy(false);
+  };
+
+  const relay = N('ctRelay', { ins: { message: deliver } });
+  const input = N('ctMsg', { outs: { message: 'object' } });
+
+  input.listen(form, 'submit', (ev) => {
+    ev.preventDefault();
+    const fd = new FormData(form);
+    const p = { name: String(fd.get('name') || '').trim(), email: String(fd.get('email') || '').trim(), message: String(fd.get('message') || '').trim(), website: String(fd.get('website') || '') };
+    /* client-side shape check mirrors the server so most mistakes never leave the page */
+    const bad = !p.name ? 'name' : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email) ? 'email' : p.message.length < 10 ? 'message' : null;
+    if (bad) { const f = form.querySelector('[name="' + bad + '"]'); f && f.classList.add('bad'); f && f.focus(); show([['state', 'blocked'], ['field', bad + ' needs a look']]); return; }
+    if (LIVE) input.emit('message', p); else deliver(p);
+  });
+  if (again) input.listen(again, 'click', reset);
+})();
+</script>
 
 <style>
   .ct-h {
@@ -109,4 +246,54 @@ const layout = {
     white-space: nowrap;
   }
   .ct-link:hover .ct-value { color: var(--signal); }
+
+  /* send_message form */
+  .ct-form { display: flex; flex-direction: column; gap: 10px; }
+  .ct-f { display: flex; flex-direction: column; gap: 4px; }
+  .ct-in {
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 9px;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .ct-in:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 2px var(--signal-dim); }
+  .ct-in.bad { border-color: #ff5d5d; }
+  .ct-ta { resize: vertical; min-height: 96px; line-height: 1.5; }
+  .ct-hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+  .ct-row { display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+  .chip { border: 1px solid #2c2c30; padding: 4px 9px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; }
+  .ct-send { display: inline-flex; align-items: center; gap: 6px; }
+  .ct-send:disabled { cursor: wait; opacity: 1; }
+  .ct-spin {
+    display: none; width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid var(--signal-dim); border-top-color: var(--signal);
+    animation: ct-spin 0.7s linear infinite;
+  }
+  .ct-form.busy .ct-spin { display: inline-block; }
+  .ct-form.busy .ct-send-l { opacity: 0.6; }
+  .ct-form.busy .ct-in { opacity: 0.55; }
+  @keyframes ct-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .ct-spin { animation: none; border-top-color: var(--signal-dim); } }
+
+  .ct-done { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .ct-done-h { font-family: var(--font-mono); font-size: 12px; color: var(--signal); }
+  .ct-done-p { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 40ch; margin-bottom: 4px; }
+  .ct-hint { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+
+  /* resend_relay readout */
+  .ct-log {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    min-width: 230px;
+  }
+  :global(#ctRelay.cooking) { border-color: var(--signal); box-shadow: 0 14px 50px rgba(61, 255, 136, 0.22); }
 </style>
