@@ -80,6 +80,7 @@ const layout = {
     ))}
 
     <Operator id="ctMsg" name="input · send_message" type="txt" area="msg" ports="both">
+      <div class="ct-stage">
       <form class="ct-form" id="ctForm" data-endpoint={MAIL_ENDPOINT} novalidate>
         <label class="ct-f">
           <span class="ct-label">name</span>
@@ -104,9 +105,10 @@ const layout = {
         </div>
       </form>
       <div class="ct-done" id="ctDone" hidden>
-        <p class="ct-done-h">sent ✓</p>
-        <p class="ct-done-p">Thanks. It's in my inbox and a receipt is on its way to yours.</p>
+        <p class="ct-done-h" id="ctDoneH">sent ✓</p>
+        <p class="ct-done-p" id="ctDoneP">Thanks. It's in my inbox and a receipt is on its way to yours.</p>
         <button class="chip chipbtn" type="button" id="ctAgain">▶ send another</button>
+      </div>
       </div>
     </Operator>
 
@@ -128,9 +130,12 @@ receipt  reports on send
   const relayOp = document.getElementById('ctRelay');
   const msgOp = document.getElementById('ctMsg');
   const done = document.getElementById('ctDone');
+  const doneH = document.getElementById('ctDoneH');
+  const doneP = document.getElementById('ctDoneP');
   const again = document.getElementById('ctAgain');
   const btn = form.querySelector('.ct-send');
   const endpoint = form.dataset.endpoint;
+  const statusUrl = endpoint.replace(/\/contact$/, '/status');
   const IDLE = [['state', 'idle'], ['via', 'resend api · eu-west-1'], ['receipt', 'reports on send']];
 
   /* ---- the network: send_message ─message→ resend_relay ----
@@ -143,7 +148,8 @@ receipt  reports on send
   const N = (id, spec) => (net ? net.node(id, spec) : { el: null, emit: NOOP, every: NOOP, timeout: NOOP, observe: NOOP, listen: NOOP, cleanup: NOOP });
 
   const line = (k, v) => k.padEnd(9) + v;
-  const show = (rows) => { if (log) log.textContent = rows.map((r) => line(r[0], r[1])).join('\n') + '\n'; };
+  /* readout is always 4 lines so the op never changes height between states */
+  const show = (rows) => { if (!log) return; const r = rows.slice(0, 4); while (r.length < 4) r.push(['', '']); log.textContent = r.map((x) => line(x[0], x[1])).join('\n') + '\n'; };
   const glow = () => { if (!relayOp) return; relayOp.classList.add('cooking'); relay.timeout(600, () => relayOp.classList.remove('cooking')); };
 
   let busy = false;
@@ -153,10 +159,41 @@ receipt  reports on send
     if (btn) btn.disabled = on;
     form.querySelectorAll('.ct-in').forEach((el) => { el.disabled = on; });
   };
+  /* ---- receipt tracking: poll /api/status for the auto-reply's last_event.
+          Hard bounces (typo'd address) usually come back within seconds because
+          the receiving server refuses during the SMTP conversation itself.
+          Vocabulary: "accepted" = their server took it (SMTP 250), never "in inbox". ---- */
+  let pollGen = 0, sentRows = null;
+  const receiptLine = (v) => { if (!sentRows) return; sentRows[2] = ['receipt', v]; show(sentRows); };
+  const track = (id, email) => {
+    const gen = ++pollGen;
+    const t0 = Date.now();
+    const tick = async () => {
+      if (gen !== pollGen) return;
+      let ev = null;
+      try { const r = await fetch(statusUrl + '?id=' + encodeURIComponent(id)); const j = await r.json(); ev = j.last_event || null; } catch (e) {}
+      if (gen !== pollGen) return;
+      if (ev === 'delivered') { receiptLine('accepted by their server ✓'); return; }
+      if (ev === 'bounced' || ev === 'failed' || ev === 'suppressed') {
+        receiptLine('bounced ✗ · check the address');
+        if (doneH) doneH.textContent = 'sent ✓ · receipt bounced';
+        if (doneP) doneP.textContent = 'Your message reached me, but the receipt to ' + email + ' bounced. If that address has a typo, send again with the right one so I can reply.';
+        return;
+      }
+      if (ev === 'delivery_delayed') receiptLine('delayed · their server is slow');
+      if (Date.now() - t0 < 45000) relay.timeout(3000, tick); else receiptLine('queued → ' + email + ' (no word yet)');
+    };
+    relay.timeout(2500, tick);
+  };
+
   const reset = () => {
+    pollGen++; sentRows = null;
+    if (doneH) doneH.textContent = 'sent ✓';
+    if (doneP) doneP.textContent = "Thanks. It's in my inbox and a receipt is on its way to yours.";
     form.reset();
     form.querySelectorAll('.ct-in').forEach((el) => el.classList.remove('bad'));
-    form.hidden = false;
+    form.classList.remove('sent');
+    form.removeAttribute('inert');
     if (done) done.hidden = true;
     show(IDLE);
     form.querySelector('[name="name"]') && form.querySelector('[name="name"]').focus();
@@ -178,8 +215,12 @@ receipt  reports on send
         show([['state', 'error ' + res.status], ['msg', j.error || 'send failed'], ['reply_to', p.email]]);
       } else {
         glow();
-        show([['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + p.email : 'off'], ['next', 'I read everything.']]);
-        form.hidden = true;
+        sentRows = [['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + p.email : 'off'], ['next', 'I read everything.']];
+        show(sentRows);
+        if (j.ack) track(j.ack, p.email);
+        /* overlay the sent panel; the form keeps its size underneath so the op (and the dither gutter behind it) never reflows */
+        form.classList.add('sent');
+        form.setAttribute('inert', '');
         if (done) { done.hidden = false; again && again.focus(); }
       }
     } catch (e) {
@@ -280,7 +321,17 @@ receipt  reports on send
   @keyframes ct-spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .ct-spin { animation: none; border-top-color: var(--signal-dim); } }
 
-  .ct-done { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .ct-stage { position: relative; }
+  .ct-form.sent { visibility: hidden; }
+  .ct-done {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-start; justify-content: center;
+    background: var(--bg-elevated);
+    animation: ct-in var(--duration-normal) var(--ease-out);
+  }
+  .ct-done[hidden] { display: none; }
+  @keyframes ct-in { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .ct-done { animation: none; } }
   .ct-done-h { font-family: var(--font-mono); font-size: 12px; color: var(--signal); }
   .ct-done-p { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 40ch; margin-bottom: 4px; }
   .ct-hint { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
