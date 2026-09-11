@@ -148,6 +148,15 @@ receipt  reports on send
   const N = (id, spec) => (net ? net.node(id, spec) : { el: null, emit: NOOP, every: NOOP, timeout: NOOP, observe: NOOP, listen: NOOP, cleanup: NOOP });
 
   const line = (k, v) => k.padEnd(9) + v;
+  /* readout lines never wrap (op height is fixed); long addresses get a middle ellipsis */
+  const short = (email, max) => {
+    max = max || 22;
+    if (!email || email.length <= max) return email;
+    const at = email.lastIndexOf('@');
+    if (at < 0) return email.slice(0, max - 1) + '…';
+    const dom = email.slice(at), keep = Math.max(3, max - dom.length - 1);
+    return email.slice(0, keep) + '…' + dom;
+  };
   /* readout is always 4 lines so the op never changes height between states */
   const show = (rows) => { if (!log) return; const r = rows.slice(0, 4); while (r.length < 4) r.push(['', '']); log.textContent = r.map((x) => line(x[0], x[1])).join('\n') + '\n'; };
   const glow = () => { if (!relayOp) return; relayOp.classList.add('cooking'); relay.timeout(600, () => relayOp.classList.remove('cooking')); };
@@ -181,7 +190,7 @@ receipt  reports on send
         return;
       }
       if (ev === 'delivery_delayed') receiptLine('delayed · their server is slow');
-      if (Date.now() - t0 < 45000) relay.timeout(3000, tick); else receiptLine('queued → ' + email + ' (no word yet)');
+      if (Date.now() - t0 < 45000) relay.timeout(3000, tick); else receiptLine('queued · no word yet');
     };
     relay.timeout(2500, tick);
   };
@@ -202,7 +211,7 @@ receipt  reports on send
     if (busy) return;
     setBusy(true);
     form.querySelectorAll('.ct-in').forEach((el) => el.classList.remove('bad'));
-    show([['state', 'cooking ⟳'], ['call', 'POST /api/contact'], ['reply_to', p.email]]);
+    show([['state', 'cooking ⟳'], ['call', 'POST /api/contact'], ['reply_to', short(p.email)]]);
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -212,10 +221,10 @@ receipt  reports on send
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (j.field) { const f = form.querySelector('[name="' + j.field + '"]'); f && f.classList.add('bad'); f && f.focus(); }
-        show([['state', 'error ' + res.status], ['msg', j.error || 'send failed'], ['reply_to', p.email]]);
+        show([['state', 'error ' + res.status], ['msg', j.error || 'send failed'], ['reply_to', short(p.email)]]);
       } else {
         glow();
-        sentRows = [['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + p.email : 'off'], ['next', 'I read everything.']];
+        sentRows = [['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + short(p.email) : 'off'], ['next', 'I read everything.']];
         show(sentRows);
         if (j.ack) track(j.ack, p.email);
         /* overlay the sent panel; the form keeps its size underneath so the op (and the dither gutter behind it) never reflows */
@@ -224,7 +233,7 @@ receipt  reports on send
         if (done) { done.hidden = false; again && again.focus(); }
       }
     } catch (e) {
-      show([['state', 'error'], ['msg', 'network — try mailto instead'], ['reply_to', p.email]]);
+      show([['state', 'error'], ['msg', 'network, try the email link'], ['reply_to', short(p.email)]]);
     }
     setBusy(false);
   };
@@ -237,8 +246,11 @@ receipt  reports on send
     const fd = new FormData(form);
     const p = { name: String(fd.get('name') || '').trim(), email: String(fd.get('email') || '').trim(), message: String(fd.get('message') || '').trim(), website: String(fd.get('website') || '') };
     /* client-side shape check mirrors the server so most mistakes never leave the page */
-    const bad = !p.name ? 'name' : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email) ? 'email' : p.message.length < 10 ? 'message' : null;
-    if (bad) { const f = form.querySelector('[name="' + bad + '"]'); f && f.classList.add('bad'); f && f.focus(); show([['state', 'blocked'], ['field', bad + ' needs a look']]); return; }
+    const bad = !p.name ? ['name', 'name is empty']
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email) ? ['email', 'email does not look valid']
+      : p.message.length < 10 ? ['message', 'message needs 10+ chars (' + p.message.length + ')']
+      : null;
+    if (bad) { const f = form.querySelector('[name="' + bad[0] + '"]'); f && f.classList.add('bad'); f && f.focus(); show([['state', 'blocked'], ['field', bad[0]], ['why', bad[1]]]); return; }
     if (LIVE) input.emit('message', p); else deliver(p);
   });
   if (again) input.listen(again, 'click', reset);
@@ -343,7 +355,9 @@ receipt  reports on send
     font-size: 11px;
     line-height: 1.7;
     color: var(--text-muted);
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
     min-width: 230px;
   }
   :global(#ctRelay.cooking) { border-color: var(--signal); box-shadow: 0 14px 50px rgba(61, 255, 136, 0.22); }
