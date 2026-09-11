@@ -256,7 +256,7 @@ receipt  reports on send
       const pal = PALS[P.pal];
       const field = pal[0] + ' · ' + NOISE[P.noiseT] + ' · ' + DITH[P.ditherT] + ' · density ' + (+P.density).toFixed(2);
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return { field };
-      const W = 600, H = 220, FW = Math.ceil(W / s), FH = Math.ceil(H / s);
+      const W = 600, H = 320, FW = Math.ceil(W / s), FH = Math.ceil(H / s);
       const oc = document.createElement('canvas'); oc.width = FW; oc.height = FH;
       const octx = oc.getContext('2d'); if (!octx) return { field };
       const img = octx.createImageData(FW, FH), d = img.data;

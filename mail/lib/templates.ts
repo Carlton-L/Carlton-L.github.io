@@ -16,7 +16,7 @@ export const esc = (s: string) =>
 function op(name: string, typ: keyof typeof TYP, body: string) {
   const [tb, tf] = TYP[typ];
   return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0 0 14px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0 0 26px;">
   <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">${esc(name)}</td>
@@ -38,7 +38,7 @@ const linkRow = (href: string, label: string, hint: string, col: string, icon = 
   `<tr><td style="padding:4px 0;font-family:${F_MONO};font-size:11px;">${icon}<a href="${href}" style="color:${col};text-decoration:none;">${label} &rarr;</a> <span style="color:${C.dim};">${hint}</span></td></tr>`;
 
 const strip = (sig: string, k: string, v: string, id: string, when: string, field: string) =>
-  `<div style="margin:2px 0 14px;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
+  `<div style="margin:14px 0 0;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
 
 const channels = () =>
   op('data · channels', 'data', `<table role="presentation" cellpadding="0" cellspacing="0" style="font-family:${F_MONO};font-size:11px;line-height:1.9;">
@@ -60,10 +60,11 @@ function shell(o: { preheader: string; bg: boolean; sig: string; ops: string; fo
     .pm-ground, .pm-ground td.pm-g { background-color: ${C.bg} !important; }
     .pm-op { background-color: ${C.el} !important; border-color: ${C.border} !important; }
     .pm-text, .pm-text p, .pm-text div { color: ${C.text} !important; }
-    .pm-muted { color: ${C.muted} !important; }
+    .pm-text p.pm-muted, .pm-muted { color: ${C.muted} !important; }
   }
   [data-ogsc] .pm-op { background-color: ${C.el} !important; }
   [data-ogsc] .pm-text { color: ${C.text} !important; }
+  [data-ogsc] .pm-text p.pm-muted { color: ${C.muted} !important; }
 </style>
 </head>
 <body class="pm-ground" bgcolor="${C.bg}" style="margin:0;padding:0;background:${C.bg};background-color:${C.bg};">
@@ -77,7 +78,7 @@ function shell(o: { preheader: string; bg: boolean; sig: string; ops: string; fo
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${o.sig};">&#9679; COOKED</td>
     </tr></table>
   </td></tr>
-  <tr><td${bgAttr} bgcolor="${C.bg}" style="${bgCss}background-color:${C.bg};padding:22px 22px 8px;">
+  <tr><td${bgAttr} bgcolor="${C.bg}" style="${bgCss}background-color:${C.bg};padding:44px 44px 22px;">
     ${o.ops}
   </td></tr>
   <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:10px 14px;border-top:1px solid ${C.border};background:${C.bg};background-color:${C.bg};">
@@ -99,7 +100,7 @@ export type Ctx = { name: string; email: string; message: string; id: string; wh
 export function receiptHtml(c: Ctx) {
   const note = `<p style="margin:0 0 12px;font-size:17px;line-height:1.5;">Hi ${esc(c.name)},</p>
 <p style="margin:0 0 12px;font-size:15px;">Your message reached me on carlton.dev. I read everything and reply to most things within a couple of days. If it&rsquo;s time-sensitive, reply to this email and it lands in the same inbox.</p>
-${c.field ? `<p style="margin:0;color:${C.muted};font-size:13px;">The field behind this card is the one you left the site on.</p>` : ''}
+${c.field ? `<p class="pm-muted" style="margin:0;color:${C.muted};font-size:13px;">The field behind this card is the one you left the site on.</p>` : ''}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;">
 ${linkRow('mailto:carlton@carlton.dev?subject=' + encodeURIComponent('Re: my message on carlton.dev'), 'Reply to add to your message', 'same thread, same inbox', c.sig)}
 ${linkRow('https://carlton.dev/carlton.vcf', 'Save my contact', 'vCard', c.sig)}
