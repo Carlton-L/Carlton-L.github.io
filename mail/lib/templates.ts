@@ -16,14 +16,14 @@ export const esc = (s: string) =>
 function op(name: string, typ: keyof typeof TYP, body: string) {
   const [tb, tf] = TYP[typ];
   return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0 0 14px;">
-  <tr><td style="padding:6px 10px;border-bottom:1px solid ${C.border};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0 0 14px;">
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">${esc(name)}</td>
       <td align="right" style="font-family:${F_MONO};font-size:9px;letter-spacing:1.5px;"><span style="display:inline-block;padding:1px 6px;border-radius:3px;background:${tb};color:${tf};font-weight:700;">${typ.toUpperCase()}</span></td>
     </tr></table>
   </td></tr>
-  <tr><td style="padding:12px 14px;font-family:${F_SANS};font-size:14px;line-height:1.6;color:${C.text};">${body}</td></tr>
+  <tr><td class="pm-text" bgcolor="${C.el}" style="padding:12px 14px;font-family:${F_SANS};font-size:14px;line-height:1.6;color:${C.text};background-color:${C.el};">${body}</td></tr>
 </table>`;
 }
 
@@ -50,22 +50,37 @@ function shell(o: { preheader: string; bg: boolean; sig: string; ops: string; fo
   const bgCss = o.bg ? `background:${C.bg} url('cid:patchbg') repeat-y top center;` : `background:${C.bg};`;
   const bgAttr = o.bg ? ` background="cid:patchbg"` : '';
   return `<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>carlton.dev</title></head>
-<body style="margin:0;padding:0;background:${C.bg};">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark">
+<title>carlton.dev</title>
+<style>
+  :root { color-scheme: dark; supported-color-schemes: dark; }
+  /* Pins for clients that still transform colours in dark mode (Apple Mail, Outlook, Proton apps). The email is authored dark; keep it dark. */
+  @media (prefers-color-scheme: dark) {
+    .pm-ground, .pm-ground td.pm-g { background-color: ${C.bg} !important; }
+    .pm-op { background-color: ${C.el} !important; border-color: ${C.border} !important; }
+    .pm-text, .pm-text p, .pm-text div { color: ${C.text} !important; }
+    .pm-muted { color: ${C.muted} !important; }
+  }
+  [data-ogsc] .pm-op { background-color: ${C.el} !important; }
+  [data-ogsc] .pm-text { color: ${C.text} !important; }
+</style>
+</head>
+<body class="pm-ground" bgcolor="${C.bg}" style="margin:0;padding:0;background:${C.bg};background-color:${C.bg};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(o.preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
-<tr><td align="center" style="padding:18px 8px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;border:1px solid ${C.border};border-radius:9px;overflow:hidden;background:${C.bg};">
-  <tr><td style="padding:9px 14px;background:${C.bg};border-bottom:1px solid ${C.border};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-ground" bgcolor="${C.bg}" style="background:${C.bg};background-color:${C.bg};">
+<tr><td align="center" class="pm-g" bgcolor="${C.bg}" style="padding:18px 8px;background-color:${C.bg};">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" class="pm-ground" bgcolor="${C.bg}" style="width:600px;max-width:600px;border:1px solid ${C.border};border-radius:9px;overflow:hidden;background:${C.bg};background-color:${C.bg};">
+  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:9px 14px;background:${C.bg};background-color:${C.bg};border-bottom:1px solid ${C.border};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_SANS};font-size:13px;font-weight:700;letter-spacing:1px;color:${C.text};">CARLTON.DEV <span style="display:inline-block;margin-left:8px;padding:2px 7px;border:1px solid ${C.border};border-radius:3px;font-family:${F_MONO};font-size:10px;font-weight:400;letter-spacing:1px;color:${C.muted};">/contact</span></td>
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${o.sig};">&#9679; COOKED</td>
     </tr></table>
   </td></tr>
-  <tr><td${bgAttr} style="${bgCss}padding:22px 22px 8px;">
+  <tr><td${bgAttr} bgcolor="${C.bg}" style="${bgCss}background-color:${C.bg};padding:22px 22px 8px;">
     ${o.ops}
   </td></tr>
-  <tr><td style="padding:10px 14px;border-top:1px solid ${C.border};background:${C.bg};">
+  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:10px 14px;border-top:1px solid ${C.border};background:${C.bg};background-color:${C.bg};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${o.footer}</td>
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1px;"><a href="https://carlton.dev" style="color:${o.sig};text-decoration:none;">carlton.dev &rarr;</a></td>
