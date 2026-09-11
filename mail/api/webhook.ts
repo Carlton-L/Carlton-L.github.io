@@ -44,22 +44,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const d = event.data as unknown as Record<string, unknown>;
+  const tags = (d.tags ?? {}) as Record<string, string>;
+  const to = Array.isArray(d.to) ? (d.to as string[]) : [];
+  const bounce = d.bounce as { message?: string; type?: string; subType?: string } | undefined;
   console.log(
     JSON.stringify({
       at: event.created_at,
       type: event.type,
       email_id: d.email_id,
-      to: d.to,
+      to,
       subject: d.subject,
+      kind: tags.kind,
       svix_id: headers.id,
-      // bounce/complaint specifics when present
-      bounce: d.bounce,
-      click: d.click,
+      bounce,
     }),
   );
 
-  // Always 200 quickly; do real work async in a real app. A slow or failing
-  // handler makes Resend retry and can create duplicates.
+  // The one action worth taking for a contact form: a receipt that bounced or
+  // was reported as spam means the visitor's address is wrong (or hostile).
+  // Tell Carlton, since the only reply channel he had just failed.
+  const isReceipt = tags.kind === 'contact-ack';
+  const isTrouble = event.type === 'email.bounced' || event.type === 'email.complained';
+  if (isReceipt && isTrouble) {
+    const owner = process.env.CONTACT_TO;
+    const from = process.env.CONTACT_FROM;
+    const apiKey = process.env.RESEND_API_KEY;
+    if (owner && from && apiKey) {
+      const what = event.type === 'email.bounced' ? 'bounced' : 'was reported as spam';
+      const why = bounce ? ` (${bounce.type ?? ''}${bounce.subType ? '/' + bounce.subType : ''}: ${bounce.message ?? ''})` : '';
+      const r = await new Resend(apiKey).emails.send({
+        from,
+        to: owner,
+        subject: `carlton.dev: receipt to ${to.join(', ')} ${what}`,
+        text: `The auto-reply for a contact-form message ${what}${why}.\n\nVisitor address: ${to.join(', ')}\nReceipt email id: ${d.email_id}\n\nTheir address may be mistyped. Check the original notification (same time, subject "carlton.dev: <name>") for context, and find another way to reach them if it matters.`,
+        tags: [{ name: 'kind', value: 'contact-alert' }],
+      });
+      if (r.error) console.error('webhook: alert failed', r.error);
+      else console.log('webhook: alert sent', r.data?.id);
+    }
+  }
+
+  // 200 quickly. A slow or non-2xx handler makes Resend retry (same svix-id),
+  // which is where idempotency matters in a real receiver.
   return res.status(200).json({ received: true });
 }
 
