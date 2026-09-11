@@ -211,7 +211,7 @@ receipt  reports on send
     if (busy) return;
     setBusy(true);
     form.querySelectorAll('.ct-in').forEach((el) => el.classList.remove('bad'));
-    show([['state', 'cooking ⟳'], ['call', 'POST /api/contact'], ['reply_to', short(p.email)]]);
+    show([['state', 'cooking ⟳'], ['call', 'POST /api/contact'], ['reply_to', short(p.email)], ['field', p.bg ? 'snapshot attached' : 'default']]);
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -238,6 +238,56 @@ receipt  reports on send
     setBusy(false);
   };
 
+  /* ---- field snapshot: one still frame of the visitor's dither field, with
+          THEIR patch-bg settings, as a small PNG. Rides along with the message
+          and becomes the inline background of both emails (cid:patchbg). A
+          port of PatchField's pass minus heat/feedback; never blocks a send. ---- */
+  const PALS = [['GRN', '#233b2c', '#3dff88'], ['AMB', '#3a2c14', '#e8a317'], ['CYN', '#15303d', '#56b4e9'], ['MONO', '#26262a', '#9f9f98']];
+  const NOISE = ['FBM', 'RIDGE', 'PLASMA'], DITH = ['BAYER4', 'BAYER2', 'SCAN', 'STATIC'];
+  const B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], B2 = [[0, 2], [3, 1]];
+  const snapshot = () => {
+    try {
+      const P = { density: 0.77, scale: 3, pal: 0, noiseT: 1, ditherT: 1 };
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem('patch-bg') || '{}') || {}; } catch (e) {}
+      Object.keys(P).forEach((k) => { if (typeof saved[k] === 'number' && isFinite(saved[k])) P[k] = saved[k]; });
+      P.pal = ((P.pal % 4) + 4) % 4; P.noiseT = ((P.noiseT | 0) % 3 + 3) % 3; P.ditherT = ((P.ditherT | 0) % 4 + 4) % 4;
+      const s = Math.max(2, Math.min(6, Math.round(P.scale)));
+      const pal = PALS[P.pal];
+      const field = pal[0] + ' · ' + NOISE[P.noiseT] + ' · ' + DITH[P.ditherT] + ' · density ' + (+P.density).toFixed(2);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return { field };
+      const W = 600, H = 220, FW = Math.ceil(W / s), FH = Math.ceil(H / s);
+      const oc = document.createElement('canvas'); oc.width = FW; oc.height = FH;
+      const octx = oc.getContext('2d'); if (!octx) return { field };
+      const img = octx.createImageData(FW, FH), d = img.data;
+      const h2 = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+      const [br, bgc, bb] = h2(pal[1]), [hr, hg, hb] = h2(pal[2]);
+      const seed = (Date.now() / 1000) | 0;
+      const hash = (x, y, z) => { let h = (x * 374761393 + y * 668265263 + z * 982451653) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+      const sm = (t) => t * t * (3 - 2 * t);
+      const vn = (x, y, z) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi; const a = hash(xi, yi, z), b = hash(xi + 1, yi, z), c = hash(xi, yi + 1, z), e = hash(xi + 1, yi + 1, z); const u = sm(xf), v = sm(yf); return a + (b - a) * u + (c - a) * v + (a - b - c + e) * u * v; };
+      const f1 = 0.012 * s, f2 = 0.027 * s, t = (seed % 1000) * 0.37;
+      for (let gy = 0; gy < FH; gy++) for (let gx = 0; gx < FW; gx++) {
+        const px = gx * s, py = gy * s; let n;
+        if (P.noiseT === 2) { n = 0.5 + (Math.sin(px * 0.018 + t * 1.2) + Math.sin(py * 0.023 - t * 0.8) + Math.sin((px + py) * 0.011 + t * 0.5)) / 6; n = Math.max(0, (n - 0.35) * 1.6); }
+        else { let n1 = vn(gx * f1 + t * 0.55, gy * f1 + t * 0.18, seed), n2 = vn(gx * f2 - t * 0.35 + 40.7, gy * f2 + 11.3, seed + 7); if (P.noiseT === 1) { n1 = 1 - Math.abs(2 * n1 - 1); n2 = 1 - Math.abs(2 * n2 - 1); n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.45) * 1.7); } else n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.32) * 1.55); }
+        const L = n * P.density * 1.2; let th;
+        if (P.ditherT === 1) th = (B2[gy & 1][gx & 1] + 0.5) / 4; else if (P.ditherT === 2) th = ((gy & 3) + 0.5) / 4.4; else if (P.ditherT === 3) { const hh = ((gx * 73856093) ^ (gy * 19349663)) >>> 0; th = ((hh >>> 8) & 1023) / 1024; } else th = (B4[gy & 3][gx & 3] + 0.5) / 16;
+        const o = (gy * FW + gx) * 4;
+        if (L > th) { const hot = L - 0.55 > th; d[o] = hot ? hr : br; d[o + 1] = hot ? hg : bgc; d[o + 2] = hot ? hb : bb; } else { d[o] = 10; d[o + 1] = 10; d[o + 2] = 11; }
+        d[o + 3] = 255;
+      }
+      octx.putImageData(img, 0, 0);
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const ctx = c.getContext('2d'); if (!ctx) return { field };
+      ctx.fillStyle = '#0a0a0b'; ctx.fillRect(0, 0, W, H); ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(oc, 0, 0, FW, FH, 0, 0, FW * s, FH * s);
+      if (s > 2) { ctx.fillStyle = '#0a0a0b'; for (let x = s - 1; x < W; x += s) ctx.fillRect(x, 0, 1, H); for (let y = s - 1; y < H; y += s) ctx.fillRect(0, y, W, 1); }
+      const b64 = c.toDataURL('image/png').split(',')[1] || '';
+      return b64.length <= 90 * 1024 ? { field, bg: b64 } : { field };
+    } catch (e) { return {}; }
+  };
+
   const relay = N('ctRelay', { ins: { message: deliver } });
   const input = N('ctMsg', { outs: { message: 'object' } });
 
@@ -245,6 +295,7 @@ receipt  reports on send
     ev.preventDefault();
     const fd = new FormData(form);
     const p = { name: String(fd.get('name') || '').trim(), email: String(fd.get('email') || '').trim(), message: String(fd.get('message') || '').trim(), website: String(fd.get('website') || '') };
+    Object.assign(p, snapshot());
     /* client-side shape check mirrors the server so most mistakes never leave the page */
     const bad = !p.name ? ['name', 'name is empty']
       : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p.email) ? ['email', 'email does not look valid']

@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Lindsay;Carlton;;;
+FN:Carlton Lindsay
+TITLE:Design Engineer
+EMAIL;TYPE=INTERNET,PREF:carlton@carlton.dev
+URL:https://carlton.dev
+URL;TYPE=LinkedIn:https://linkedin.com/in/carltonl
+ADR;TYPE=WORK:;;;Barcelona;;;Spain
+END:VCARD
