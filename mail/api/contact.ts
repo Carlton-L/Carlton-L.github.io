@@ -19,7 +19,9 @@ import { receiptHtml, receiptText, notifyHtml, notifyText, PALETTE_HOT, type Ctx
  *      reply_to = Carlton. Carries List-Unsubscribe so mail clients offer
  *      their own one-click "stop", same endpoint as "This wasn't me".
  *
- * Both carry the visitor's field snapshot as an inline attachment (cid:patchbg).
+ * Both carry the visitor's field snapshot as an inline attachment (cid:hero),
+ * rendered by the templates as a `view · your_field` / `view · their_field` op.
+ * The response { ok, id, ack } lets the form poll /api/status for the receipt.
  * Why `from` can't be the visitor: SPF/DKIM/DMARC authenticate the From domain;
  * we can only sign for carlton.dev. reply_to carries no such rule.
  */

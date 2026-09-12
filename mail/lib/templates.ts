@@ -1,8 +1,26 @@
 /**
- * Email templates in the site's patch grammar. Table-based, inline styles,
- * 600px, system font fallbacks. Every word sits in a solid operator card on
- * a #0a0a0b ground; the visitor's dither snapshot (inline image, cid:patchbg)
- * only ever paints the gutters, so a blocked image gives the READ-mode look.
+ * Email templates in the site's patch grammar: a stack of operator cards
+ * (TXT / VIEW / DATA / SYS) on a #0a0a0b ground, 600px, tables + inline styles.
+ *
+ * Two emails share one shell:
+ *   receiptHtml  → the visitor: note, their field, channels, receipt strip
+ *   notifyHtml   → Carlton: the message (reply-to is the visitor), their field,
+ *                  input readout, relay strip
+ * Each has a plain-text twin (receiptText / notifyText) for the multipart body.
+ *
+ * The visitor's field: the contact page renders one 600x120 frame of the
+ * dither background with the visitor's own settings and sends it as base64;
+ * contact.ts attaches it inline as cid:hero and viewOp() frames it as a VIEW
+ * operator. No image → same-height dark box, nothing shifts.
+ *
+ * Client constraints baked in (learned the hard way, see mail/README.md):
+ *   - no CSS backgrounds on cells (Outlook web drops them); art is an <img>
+ *   - dividers are 1px bgcolor rows, not borders (Outlook dark mode inverts borders)
+ *   - spacing is spacer rows, not margins/padding on wrappers (same reason)
+ *   - color-scheme meta + bgcolor attrs + !important pins keep Apple Mail and
+ *     Proton from lightening the dark ground; p.pm-muted keeps muted text muted
+ *   - <img> carries a dark background so a slow load never flashes white
+ *   - no emoji: the stop marker is a CSS square, identical everywhere
  */
 const F_SANS = "'proxima-nova','Inter',Helvetica,Arial,sans-serif";
 const F_MONO = "'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace";
