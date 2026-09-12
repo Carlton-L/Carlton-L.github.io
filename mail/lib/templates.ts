@@ -13,16 +13,21 @@ export const PALETTE_HOT: Record<string, string> = { GRN: '#3dff88', AMB: '#e8a3
 export const esc = (s: string) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
+/** 1px divider drawn as a cell background (not a CSS border): Outlook dark mode treats
+ *  cell borders as foreground and inverts them to white; backgrounds it greys evenly. */
+const rule = (bg = C.border) => `<tr><td bgcolor="${bg}" height="1" style="height:1px;line-height:1px;font-size:0;padding:0;background-color:${bg};">&nbsp;</td></tr>`;
+
 function op(name: string, typ: keyof typeof TYP, body: string) {
   const [tb, tf] = TYP[typ];
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0;">
-  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;background-color:${C.el};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">${esc(name)}</td>
       <td align="right" style="font-family:${F_MONO};font-size:9px;letter-spacing:1.5px;"><span style="display:inline-block;padding:1px 6px;border-radius:3px;background:${tb};color:${tf};font-weight:700;">${typ.toUpperCase()}</span></td>
     </tr></table>
   </td></tr>
+  ${rule()}
   <tr><td class="pm-text" bgcolor="${C.el}" style="padding:12px 14px;font-family:${F_SANS};font-size:14px;line-height:1.6;color:${C.text};background-color:${C.el};">${body}</td></tr>
 </table>`;
 }
@@ -38,7 +43,7 @@ const linkRow = (href: string, label: string, hint: string, col: string, icon = 
   `<tr><td style="padding:4px 0;font-family:${F_MONO};font-size:11px;">${icon}<a href="${href}" style="color:${col};text-decoration:none;">${label} &rarr;</a> <span style="color:${C.dim};">${hint}</span></td></tr>`;
 
 const statusLine = (sig: string, k: string, v: string, id: string, when: string, field: string) =>
-  `<div style="margin:0;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
+  `<div bgcolor="${C.bg}" style="margin:0;padding:0;background-color:${C.bg};font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
 
 const channels = () =>
   op('data · channels', 'data', `<table role="presentation" cellpadding="0" cellspacing="0" style="font-family:${F_MONO};font-size:11px;line-height:1.9;">
@@ -59,17 +64,22 @@ function viewOp(who: 'your' | 'their', field: string, has: boolean) {
     : `<div style="height:${HERO_H}px;line-height:${HERO_H}px;font-size:0;">&nbsp;</div>`;
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0;">
-  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;background-color:${C.el};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">view · ${who}_field</td>
       <td align="right" style="font-family:${F_MONO};font-size:9px;letter-spacing:1.5px;"><span style="display:inline-block;padding:1px 6px;border-radius:3px;background:${tb};color:${tf};font-weight:700;">VIEW</span></td>
     </tr></table>
   </td></tr>
+  ${rule()}
   <tr><td bgcolor="${C.bg}" style="padding:0;font-size:0;line-height:0;background-color:${C.bg};">${art}</td></tr>
-  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-top:1px solid ${C.border};font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};background-color:${C.el};">${esc(field || 'default field')} &middot; the settings ${who === 'their' ? 'they' : 'you'} left the site on</td></tr>
+  ${rule()}
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};background-color:${C.el};">${esc(field || 'default field')} &middot; the settings ${who === 'their' ? 'they' : 'you'} left the site on</td></tr>
 </table>`;
 }
-const stack = (blocks: string[]) => blocks.map((b, i) => (i ? `<div style="height:${GAP}px;line-height:${GAP}px;font-size:0;">&nbsp;</div>` : '') + b).join('');
+const stack = (blocks: string[]) =>
+  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${C.bg}" style="background-color:${C.bg};">${blocks
+    .map((b, i) => (i ? `<tr><td bgcolor="${C.bg}" height="${GAP}" style="height:${GAP}px;line-height:${GAP}px;font-size:0;padding:0;background-color:${C.bg};">&nbsp;</td></tr>` : '') + `<tr><td bgcolor="${C.bg}" style="padding:0;background-color:${C.bg};">${b}</td></tr>`)
+    .join('')}</table>`;
 
 function shell(o: { preheader: string; sig: string; blocks: string[]; footer: string }) {
   return `<!doctype html>
@@ -84,9 +94,8 @@ function shell(o: { preheader: string; sig: string; blocks: string[]; footer: st
     .pm-text, .pm-text p, .pm-text div { color: ${C.text} !important; }
     .pm-text p.pm-muted, .pm-muted { color: ${C.muted} !important; }
   }
-  /* Outlook.com dark mode hooks: data-ogsb = backgrounds, data-ogsc = text */
-  [data-ogsb] .pm-ground, [data-ogsb] .pm-g, [data-ogsb] body { background-color: ${C.bg} !important; }
-  [data-ogsb] .pm-op { background-color: ${C.el} !important; border-color: ${C.border} !important; }
+  /* Outlook.com dark mode: the new engine ignores the old data-ogsb background hooks and
+     recolours every cell to its own grey; we keep the layout uniform so it greys evenly. */
   [data-ogsc] .pm-text, [data-ogsc] .pm-text p, [data-ogsc] .pm-text div { color: ${C.text} !important; }
   [data-ogsc] .pm-text p.pm-muted, [data-ogsc] .pm-muted { color: ${C.muted} !important; }
 </style>
@@ -96,14 +105,16 @@ function shell(o: { preheader: string; sig: string; blocks: string[]; footer: st
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-ground" bgcolor="${C.bg}" style="background:${C.bg};background-color:${C.bg};">
 <tr><td align="center" class="pm-g" bgcolor="${C.bg}" style="padding:18px 8px;background-color:${C.bg};">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="pm-ground" bgcolor="${C.bg}" style="width:600px;max-width:600px;border:1px solid ${C.border};border-radius:9px;overflow:hidden;background:${C.bg};background-color:${C.bg};">
-  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:9px 14px;background:${C.bg};background-color:${C.bg};border-bottom:1px solid ${C.border};">
+  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:9px 14px;background:${C.bg};background-color:${C.bg};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_SANS};font-size:13px;font-weight:700;letter-spacing:1px;color:${C.text};">CARLTON.DEV <span style="display:inline-block;margin-left:8px;padding:2px 7px;border:1px solid ${C.border};border-radius:3px;font-family:${F_MONO};font-size:10px;font-weight:400;letter-spacing:1px;color:${C.muted};">/contact</span></td>
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${o.sig};">&#9679; COOKED</td>
     </tr></table>
   </td></tr>
+  ${rule()}
   <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:${GAP}px ${SIDE}px;background-color:${C.bg};">${stack(o.blocks)}</td></tr>
-  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:10px 14px;border-top:1px solid ${C.border};background:${C.bg};background-color:${C.bg};">
+  ${rule()}
+  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:10px 14px;background:${C.bg};background-color:${C.bg};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${o.footer}</td>
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1px;"><a href="https://carlton.dev" style="color:${o.sig};text-decoration:none;">carlton.dev &rarr;</a></td>
