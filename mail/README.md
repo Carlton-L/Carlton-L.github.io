@@ -12,11 +12,11 @@ not part of that build. Mail goes out through Resend (eu-west-1, domain `carlton
 | `/api/contact` | POST | Contact form. Honeypot, validation, suppression-list gate, then two sends: notification to Carlton (reply-to = visitor) and a receipt to the visitor (reply-to = Carlton, `List-Unsubscribe` headers). Returns `{ ok, id, ack }`. |
 | `/api/status` | GET `?id=` | Proxies `emails.get(id)` and returns only `{ last_event }`, so the form can show whether the receipt was accepted or bounced. |
 | `/api/webhook` | POST | Resend event receiver. Verifies the Svix signature over the raw body, logs one JSON line per event, and emails Carlton when a receipt bounces or is reported as spam. |
-| `/api/unsubscribe` | GET / POST `?t=` | "This wasn't me" link in the receipt and the one-click `List-Unsubscribe-Post` target. Adds the address to the Resend suppression list. |
-| `/api/block` | GET `?t=` | "Block this sender" link in Carlton's notification. Same suppression list; `/api/contact` refuses suppressed addresses with a fake 200. |
+| `/api/unsubscribe` | GET / POST `?t=` | "This wasn't me" link in the receipt and the one-click `List-Unsubscribe-Post` target. GET only shows a confirm page; POST (the page's button, or the RFC 8058 one-click body) adds the address to the Resend suppression list. |
+| `/api/block` | GET / POST `?t=` | "Block this sender" link in Carlton's notification. GET confirms, POST blocks. Same suppression list; `/api/contact` refuses suppressed addresses with a fake 200. |
 
 `lib/` holds the shared pieces: `cors.ts` (origin allowlist, preflight), `validate.ts` (field
-rules + `esc`), `unsub.ts` (HMAC tokens), `templates.ts` (the two emails, HTML + text).
+rules + `esc`), `unsub.ts` (HMAC tokens), `page.ts` (the SYS-op confirm/result pages), `templates.ts` (the two emails, HTML + text).
 
 ## The flow
 
@@ -86,6 +86,14 @@ curl -i -X POST https://api.carlton.dev/api/contact \
 
 curl -s 'https://api.carlton.dev/api/status?id=<uuid>' -H 'Origin: https://carlton.dev'
 ```
+
+## Links in email are fetched without a click
+
+Apple Mail's link preview, Outlook Safe Links, Proofpoint and Gmail's scanners all GET
+links in an email before or without anyone clicking. A GET with a side effect gets
+triggered by a hover (this happened: one hover suppressed an address). So every link in
+these emails is safe on GET and acts on POST, which is also why RFC 8058 one-click
+unsubscribe is a POST.
 
 ## Known gaps
 
