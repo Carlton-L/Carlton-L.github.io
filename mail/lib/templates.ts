@@ -44,7 +44,7 @@ const channels = () =>
   op('data · channels', 'data', `<table role="presentation" cellpadding="0" cellspacing="0" style="font-family:${F_MONO};font-size:11px;line-height:1.9;">
 <tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">EMAIL</td><td><a href="mailto:carlton@carlton.dev" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">carlton@carlton.dev &rarr;</a></td></tr>
 <tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">LINKEDIN</td><td><a href="https://linkedin.com/in/carltonl" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">linkedin.com/in/carltonl &rarr;</a></td></tr>
-<tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">WORK</td><td><a href="https://carlton.dev/projects" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">carlton.dev/projects &rarr;</a></td></tr></table>`);
+<tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">WORK</td><td><a href="https://carlton.dev/projects/" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">carlton.dev/projects/ &rarr;</a></td></tr></table>`);
 
 /** The visitor's field as a VIEW operator: one 600x120 frame (cid:hero) framed with
  *  op chrome and the settings as its footer line. A plain <img>, so it renders in
@@ -55,7 +55,7 @@ const SIDE = 22, GAP = 26;
 function viewOp(who: 'your' | 'their', field: string, has: boolean) {
   const [tb, tf] = TYP.view;
   const art = has
-    ? `<img src="cid:hero" width="600" height="${HERO_H}" alt="" style="display:block;width:100%;height:auto;border:0;outline:0;" />`
+    ? `<img src="cid:hero" width="600" height="${HERO_H}" alt="" border="0" style="display:block;width:100%;height:auto;border:0;outline:0;background:${C.bg};background-color:${C.bg};color:${C.bg};" />`
     : `<div style="height:${HERO_H}px;line-height:${HERO_H}px;font-size:0;">&nbsp;</div>`;
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0;">
@@ -84,9 +84,11 @@ function shell(o: { preheader: string; sig: string; blocks: string[]; footer: st
     .pm-text, .pm-text p, .pm-text div { color: ${C.text} !important; }
     .pm-text p.pm-muted, .pm-muted { color: ${C.muted} !important; }
   }
-  [data-ogsc] .pm-op { background-color: ${C.el} !important; }
-  [data-ogsc] .pm-text { color: ${C.text} !important; }
-  [data-ogsc] .pm-text p.pm-muted { color: ${C.muted} !important; }
+  /* Outlook.com dark mode hooks: data-ogsb = backgrounds, data-ogsc = text */
+  [data-ogsb] .pm-ground, [data-ogsb] .pm-g, [data-ogsb] body { background-color: ${C.bg} !important; }
+  [data-ogsb] .pm-op { background-color: ${C.el} !important; border-color: ${C.border} !important; }
+  [data-ogsc] .pm-text, [data-ogsc] .pm-text p, [data-ogsc] .pm-text div { color: ${C.text} !important; }
+  [data-ogsc] .pm-text p.pm-muted, [data-ogsc] .pm-muted { color: ${C.muted} !important; }
 </style>
 </head>
 <body class="pm-ground" bgcolor="${C.bg}" style="margin:0;padding:0;background:${C.bg};background-color:${C.bg};">
@@ -130,7 +132,7 @@ ${linkRow(c.unsubUrl, 'This wasn&rsquo;t me', 'stops any further email to this a
 }
 
 export function receiptText(c: Ctx) {
-  return `Hi ${c.name},\n\nYour message reached me on carlton.dev. I read everything and reply to most things within a couple of days. If it's time-sensitive, reply to this email and it lands in the same inbox.\n\nReply to add to your message: carlton@carlton.dev\nSave my contact: https://carlton.dev/carlton.vcf\nThis wasn't me (stops any further email to this address): ${c.unsubUrl}\n\nEmail    carlton@carlton.dev\nLinkedIn https://linkedin.com/in/carltonl\nWork     https://carlton.dev/projects\n\nreceipt ${c.id.slice(0, 8)}… · ${c.when}${c.field ? ' · ' + c.field : ''}\nsent via resend · carlton.dev`;
+  return `Hi ${c.name},\n\nYour message reached me on carlton.dev. I read everything and reply to most things within a couple of days. If it's time-sensitive, reply to this email and it lands in the same inbox.\n\nReply to add to your message: carlton@carlton.dev\nSave my contact: https://carlton.dev/carlton.vcf\nThis wasn't me (stops any further email to this address): ${c.unsubUrl}\n\nEmail    carlton@carlton.dev\nLinkedIn https://linkedin.com/in/carltonl\nWork     https://carlton.dev/projects/\n\nreceipt ${c.id.slice(0, 8)}… · ${c.when}${c.field ? ' · ' + c.field : ''}\nsent via resend · carlton.dev`;
 }
 
 /** Notification → Carlton. Message first, options list, greyed form details, relay strip. */
