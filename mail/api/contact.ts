@@ -9,7 +9,7 @@ import { receiptHtml, receiptText, notifyHtml, notifyText, PALETTE_HOT, type Ctx
  * POST /api/contact
  * Body: { name, email, message, website?, bg?, field? }
  *   website = honeypot, must be empty
- *   bg      = base64 PNG, one still frame of the visitor's dither field (600x220), ≤ 90 KB
+ *   bg      = base64 PNG, one 600x120 frame of the visitor's dither field, shown as a VIEW op (cid:hero)
  *   field   = short label of their settings, e.g. "GRN · RIDGE · BAYER2 · density 0.77"
  *
  * Sends two emails:
@@ -23,7 +23,7 @@ import { receiptHtml, receiptText, notifyHtml, notifyText, PALETTE_HOT, type Ctx
  * Why `from` can't be the visitor: SPF/DKIM/DMARC authenticate the From domain;
  * we can only sign for carlton.dev. reply_to carries no such rule.
  */
-const BG_MAX = 90 * 1024; // base64 chars; ~68 KB of PNG
+const BG_MAX = 60 * 1024; // base64 chars (~45 KB of PNG)
 const PNG_B64 = /^iVBORw0KGgo/; // base64 of the PNG signature
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const field = typeof body?.field === 'string' ? body.field.replace(/[^\w .·:-]/g, '').slice(0, 60) : '';
   const palName = (field.match(/^(GRN|AMB|CYN|MONO)/) || [])[1] || 'GRN';
   const sig = PALETTE_HOT[palName] || PALETTE_HOT.GRN;
-  const attachments = bg ? [{ filename: 'field.png', content: bg, contentType: 'image/png', contentId: 'patchbg' }] : undefined;
+  const attachments = bg ? [{ filename: 'field.png', content: bg, contentType: 'image/png', contentId: 'hero' }] : undefined;
 
   const resend = new Resend(apiKey);
 

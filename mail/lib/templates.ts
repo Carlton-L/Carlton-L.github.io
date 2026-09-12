@@ -16,7 +16,7 @@ export const esc = (s: string) =>
 function op(name: string, typ: keyof typeof TYP, body: string) {
   const [tb, tf] = TYP[typ];
   return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0 0 26px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0;">
   <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">${esc(name)}</td>
@@ -37,8 +37,8 @@ const STOP = `<span style="display:inline-block;width:8px;height:8px;background:
 const linkRow = (href: string, label: string, hint: string, col: string, icon = '') =>
   `<tr><td style="padding:4px 0;font-family:${F_MONO};font-size:11px;">${icon}<a href="${href}" style="color:${col};text-decoration:none;">${label} &rarr;</a> <span style="color:${C.dim};">${hint}</span></td></tr>`;
 
-const strip = (sig: string, k: string, v: string, id: string, when: string, field: string) =>
-  `<div style="margin:14px 0 0;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
+const statusLine = (sig: string, k: string, v: string, id: string, when: string, field: string) =>
+  `<div style="margin:0;font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${k} <span style="color:${sig};">${v}</span> &middot; ${esc(id.slice(0, 8))}&hellip; &middot; ${esc(when)}${field ? ' &middot; ' + esc(field) : ''}</div>`;
 
 const channels = () =>
   op('data · channels', 'data', `<table role="presentation" cellpadding="0" cellspacing="0" style="font-family:${F_MONO};font-size:11px;line-height:1.9;">
@@ -46,16 +46,38 @@ const channels = () =>
 <tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">LINKEDIN</td><td><a href="https://linkedin.com/in/carltonl" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">linkedin.com/in/carltonl &rarr;</a></td></tr>
 <tr><td style="padding-right:18px;color:${C.dim};font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;">WORK</td><td><a href="https://carlton.dev/projects" style="color:${C.text};text-decoration:none;font-family:${F_MONO};font-size:11px;">carlton.dev/projects &rarr;</a></td></tr></table>`);
 
-function shell(o: { preheader: string; bg: boolean; sig: string; ops: string; footer: string }) {
-  const bgCss = o.bg ? `background:${C.bg} url('cid:patchbg') repeat-y top center;` : `background:${C.bg};`;
-  const bgAttr = o.bg ? ` background="cid:patchbg"` : '';
+/** The visitor's field as a VIEW operator: one 600x120 frame (cid:hero) framed with
+ *  op chrome and the settings as its footer line. A plain <img>, so it renders in
+ *  every client that shows images (Outlook included); blocked images leave a
+ *  same-height dark box so nothing shifts. */
+export const HERO_H = 120;
+const SIDE = 22, GAP = 26;
+function viewOp(who: 'your' | 'their', field: string, has: boolean) {
+  const [tb, tf] = TYP.view;
+  const art = has
+    ? `<img src="cid:hero" width="600" height="${HERO_H}" alt="" style="display:block;width:100%;height:auto;border:0;outline:0;" />`
+    : `<div style="height:${HERO_H}px;line-height:${HERO_H}px;font-size:0;">&nbsp;</div>`;
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="pm-op" bgcolor="${C.el}" style="border-collapse:separate;background:${C.el};background-color:${C.el};border:1px solid ${C.border};border-radius:7px;margin:0;">
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-bottom:1px solid ${C.border};background-color:${C.el};">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${C.muted};">view · ${who}_field</td>
+      <td align="right" style="font-family:${F_MONO};font-size:9px;letter-spacing:1.5px;"><span style="display:inline-block;padding:1px 6px;border-radius:3px;background:${tb};color:${tf};font-weight:700;">VIEW</span></td>
+    </tr></table>
+  </td></tr>
+  <tr><td bgcolor="${C.bg}" style="padding:0;font-size:0;line-height:0;background-color:${C.bg};">${art}</td></tr>
+  <tr><td bgcolor="${C.el}" style="padding:6px 10px;border-top:1px solid ${C.border};font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};background-color:${C.el};">${esc(field || 'default field')} &middot; the settings ${who === 'their' ? 'they' : 'you'} left the site on</td></tr>
+</table>`;
+}
+const stack = (blocks: string[]) => blocks.map((b, i) => (i ? `<div style="height:${GAP}px;line-height:${GAP}px;font-size:0;">&nbsp;</div>` : '') + b).join('');
+
+function shell(o: { preheader: string; sig: string; blocks: string[]; footer: string }) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark">
 <title>carlton.dev</title>
 <style>
   :root { color-scheme: dark; supported-color-schemes: dark; }
-  /* Pins for clients that still transform colours in dark mode (Apple Mail, Outlook, Proton apps). The email is authored dark; keep it dark. */
   @media (prefers-color-scheme: dark) {
     .pm-ground, .pm-ground td.pm-g { background-color: ${C.bg} !important; }
     .pm-op { background-color: ${C.el} !important; border-color: ${C.border} !important; }
@@ -78,9 +100,7 @@ function shell(o: { preheader: string; bg: boolean; sig: string; ops: string; fo
       <td align="right" style="font-family:${F_MONO};font-size:10px;letter-spacing:1.5px;color:${o.sig};">&#9679; COOKED</td>
     </tr></table>
   </td></tr>
-  <tr><td${bgAttr} bgcolor="${C.bg}" style="${bgCss}background-color:${C.bg};padding:44px 44px 22px;">
-    ${o.ops}
-  </td></tr>
+  <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:${GAP}px ${SIDE}px;background-color:${C.bg};">${stack(o.blocks)}</td></tr>
   <tr><td class="pm-g" bgcolor="${C.bg}" style="padding:10px 14px;border-top:1px solid ${C.border};background:${C.bg};background-color:${C.bg};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
       <td style="font-family:${F_MONO};font-size:10px;letter-spacing:1px;color:${C.dim};">${o.footer}</td>
@@ -100,14 +120,13 @@ export type Ctx = { name: string; email: string; message: string; id: string; wh
 export function receiptHtml(c: Ctx) {
   const note = `<p style="margin:0 0 12px;font-size:17px;line-height:1.5;">Hi ${esc(c.name)},</p>
 <p style="margin:0 0 12px;font-size:15px;">Your message reached me on carlton.dev. I read everything and reply to most things within a couple of days. If it&rsquo;s time-sensitive, reply to this email and it lands in the same inbox.</p>
-${c.field ? `<p class="pm-muted" style="margin:0;color:${C.muted};font-size:13px;">The field behind this card is the one you left the site on.</p>` : ''}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;">
 ${linkRow('mailto:carlton@carlton.dev?subject=' + encodeURIComponent('Re: my message on carlton.dev'), 'Reply to add to your message', 'same thread, same inbox', c.sig)}
 ${linkRow('https://carlton.dev/carlton.vcf', 'Save my contact', 'vCard', c.sig)}
 ${linkRow(c.unsubUrl, 'This wasn&rsquo;t me', 'stops any further email to this address', C.bad, STOP)}
 </table>`;
-  const ops = op('txt · from_carlton', 'txt', note) + channels() + strip(c.sig, 'receipt', '&#10003; received', c.id, c.when, c.field);
-  return shell({ preheader: 'Your message reached Carlton. Receipt inside.', bg: c.bg, sig: c.sig, ops, footer: viaResend });
+  const blocks = [op('txt · from_carlton', 'txt', note), viewOp('your', c.field, c.bg), channels(), statusLine(c.sig, 'receipt', '&#10003; received', c.id, c.when, '')];
+  return shell({ preheader: 'Your message reached Carlton. Receipt inside.', sig: c.sig, blocks, footer: viaResend });
 }
 
 export function receiptText(c: Ctx) {
@@ -118,16 +137,18 @@ export function receiptText(c: Ctx) {
 export function notifyHtml(c: Ctx & { ackId?: string; ackState: string; resendUrl: string }) {
   const msg = `<p style="margin:0 0 10px;font-size:15px;"><strong>${esc(c.name)}</strong> <span style="color:${C.muted};font-family:${F_MONO};font-size:11px;">&lt;${esc(c.email)}&gt;</span></p>
 <div style="border-left:3px solid ${c.sig};padding:2px 0 2px 12px;white-space:pre-wrap;font-size:15px;line-height:1.6;">${esc(c.message)}</div>
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:12px;">
-${linkRow('mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent('Re: your message on carlton.dev'), 'Reply', 'goes to them via reply-to', c.sig)}
+<p class="pm-muted" style="margin:10px 0 0;color:${C.muted};font-size:12px;">Reply to this email to answer them (reply-to is set).</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:8px;">
 ${linkRow(c.resendUrl, 'Open in Resend', 'events, headers, receipt status', C.muted)}
 ${linkRow(c.blockUrl, 'Block this sender', 'they can&rsquo;t use the form again; undo in Resend &rarr; Suppressions', C.bad, STOP)}
 </table>`;
-  const ops =
-    op('txt · message', 'txt', msg) +
-    op('input · send_message', 'txt', readout([['name', esc(c.name)], ['email', esc(c.email)], ['reply_to', 'set &rarr; them'], ['field', c.field ? esc(c.field) : 'default']], c.sig, C.muted)) +
-    strip(c.sig, 'relay', `&#10003; sent &middot; receipt ${esc(c.ackState)}`, c.id, c.when, '');
-  return shell({ preheader: `${c.name} wrote via carlton.dev`, bg: c.bg, sig: c.sig, ops, footer: 'reply to answer them directly' });
+  const blocks = [
+    op('txt · message', 'txt', msg),
+    viewOp('their', c.field, c.bg),
+    op('input · send_message', 'txt', readout([['name', esc(c.name)], ['email', esc(c.email)], ['reply_to', 'set &rarr; them']], c.sig, C.muted)),
+    statusLine(c.sig, 'relay', `&#10003; sent &middot; receipt ${esc(c.ackState)}`, c.id, c.when, ''),
+  ];
+  return shell({ preheader: `${c.name} wrote via carlton.dev`, sig: c.sig, blocks, footer: 'reply to answer them directly' });
 }
 
 export function notifyText(c: Ctx & { ackState: string }) {
