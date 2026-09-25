@@ -802,9 +802,308 @@
     return o;
   }
 
+  /* ---------- viewer: domainclaim — VERIFY.scn: the product's own home page demo in miniature.
+     Claim acme.dev, the nameservers pass, copy the record, check once too early (waiting, never
+     a fault), the next check passes 03 to 05, verified, loop. Copy and timing follow
+     SignInDemo.tsx; palette from its globals.css @theme. Pure function of time, so it scrubs. */
+  var DCP = {
+    bg: '#0a0a0b', s1: '#101013', s2: '#161619', s3: '#1c1c20', ln: '#232326', lc: '#2a2a2e', l2: '#3a3a3e',
+    fg: '#e6e6e2', f2: '#b3b3ad', f3: '#8f8f8a', f4: '#6a6a66', f5: '#5c5c58',
+    sg: '#3dff88', on: '#05140b', wt: '#56b4e9', dot: 'rgba(230,230,226,0.07)',
+  };
+  var DCPI = {
+    bg: '#f3f3ef', s1: '#ffffff', s2: '#f6f6f2', s3: '#ebebe6', ln: '#dddbd4', lc: '#d0cec7', l2: '#bcbab3',
+    fg: '#141416', f2: '#35353a', f3: '#5c5c58', f4: '#76766f', f5: '#8c8c86',
+    sg: '#0f9a4a', on: '#ffffff', wt: '#1b76ad', dot: 'rgba(20,20,22,0.08)',
+  };
+  var DC_SANS = 'Inter,-apple-system,Helvetica,Arial,sans-serif';
+  var DC_MONO = 'IBM Plex Mono,ui-monospace,Menlo,monospace';
+  var DC_NAME = 'acme.dev';
+  var DC_T = {
+    focus: 0.4, type0: 0.5, typeStep: 0.08, press: 1.3, swap: 1.6, swapDur: 0.35,
+    r0: 2.05, d0: 2.47, r1: 2.63, d1: 3.05, card2: 3.4, copy: 4.2, copied: 5.1,
+    press2: 5.7, card3: 5.86, r2: 6.16, w2: 6.61, tick: 0.48, recheck: 9.01,
+    d2: 9.46, r3: 9.66, d3: 10.11, r4: 10.31, d4: 10.76, clear: 10.96, ver: 11.26,
+    fade: 13.86, fadeDur: 0.6, loop: 14.6, still: 12.6,
+  };
+  var DC_STEPS = [
+    ['01', 'Find the zone', 'Looking up the zone', 'acme.dev, served by Cloudflare'],
+    ['02', 'Reach the nameservers', 'Asking the nameservers', '2 of 2 answered in 38ms'],
+    ['03', 'Find the TXT record', 'Looking for the record', '1 claim record at the name'],
+    ['04', 'Match the token', 'Comparing the value', 'token matches'],
+    ['05', 'Record the claim', 'Saving the claim', 'acme.dev is yours'],
+  ];
+  var DC_H = [64, 94, 104, 58], DC_GAP = 10, DC_TOP = 62;
+
+  function dcClamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+  function dcEase(v) { v = dcClamp(v); return 1 - Math.pow(1 - v, 3); }
+  function dcAttr(o) { var s = ''; for (var k in o) s += ' ' + k + '="' + o[k] + '"'; return s; }
+  function dcText(x, y, str, size, fill, extra) {
+    extra = extra || {};
+    var fam = extra.mono ? DC_MONO : DC_SANS;
+    return '<text x="' + x + '" y="' + y + '" font-family="' + fam + '" font-size="' + size + '" fill="' + fill + '"'
+      + (extra.w ? ' font-weight="' + extra.w + '"' : '')
+      + (extra.a ? ' text-anchor="' + extra.a + '"' : '')
+      + (extra.ls ? ' letter-spacing="' + extra.ls + '"' : '')
+      + (extra.op !== undefined ? ' opacity="' + extra.op + '"' : '')
+      + '>' + esc(str) + '</text>';
+  }
+  function dcTone(c, tone) { return tone === 'good' ? c.sg : (tone === 'wait' ? c.wt : c.f4); }
+  function dcBadge(c, x, y, word, tone) {
+    var col = dcTone(c, tone), w = 6 + word.length * 2.75;
+    return '<rect x="' + x + '" y="' + (y - 5) + '" width="' + w.toFixed(1) + '" height="7.4" rx="1.4" fill="' + col + '" fill-opacity="0.1" stroke="' + col + '" stroke-opacity="0.45" stroke-width="0.6"/>'
+      + dcText(x + w / 2, y + 0.6, word, 4.1, col, { mono: 1, a: 'middle', ls: 0.5 });
+  }
+  function dcPill(c, x, cy, word, tone, busy, t) {
+    var col = dcTone(c, tone), w = 14 + word.length * 3.05;
+    var dotOp = busy ? (0.35 + 0.65 * (0.5 + 0.5 * Math.cos(t * 7))).toFixed(2) : '1';
+    return '<rect x="' + x + '" y="' + (cy - 5.2) + '" width="' + w.toFixed(1) + '" height="10.4" rx="5.2" fill="' + col + '" fill-opacity="0.1" stroke="' + col + '" stroke-opacity="0.35" stroke-width="0.6"/>'
+      + '<circle cx="' + (x + 6) + '" cy="' + cy + '" r="1.5" fill="' + col + '" opacity="' + dotOp + '"/>'
+      + dcText(x + 10, cy + 1.9, word, 5.4, col);
+  }
+  function dcCard(c, x, y, w, h, label, badge, tone, right, glow) {
+    var o = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="' + c.s1 + '" stroke="' + (glow ? c.sg : c.ln) + '" stroke-opacity="' + (glow ? '0.55' : '1') + '" stroke-width="0.8"/>';
+    o += '<line x1="' + x + '" y1="' + (y + 13) + '" x2="' + (x + w) + '" y2="' + (y + 13) + '" stroke="' + c.ln + '" stroke-width="0.8"/>';
+    o += dcText(x + 8, y + 8.6, label, 4.3, c.f4, { mono: 1, ls: 0.9 });
+    o += dcBadge(c, x + 8 + label.length * 3.45 + 4, y + 7.4, badge, tone);
+    if (right) o += dcText(x + w - 8, y + 8.6, right, 4.3, c.f5, { mono: 1, a: 'end', ls: 0.4 });
+    return o;
+  }
+  function dcCopyIcon(c, x, y, hot) {
+    var s = hot ? c.fg : c.f4;
+    return '<rect x="' + (x + 1.6) + '" y="' + (y - 1.6) + '" width="4.6" height="5.2" rx="0.9" fill="none" stroke="' + s + '" stroke-width="0.6"/>'
+      + '<rect x="' + x + '" y="' + y + '" width="4.6" height="5.2" rx="0.9" fill="' + c.s1 + '" stroke="' + s + '" stroke-width="0.6"/>';
+  }
+
+  function dcStep(i, t) {
+    var T = DC_T, d = DC_STEPS[i];
+    function st(s, a, since) { return { st: s, ans: a, since: since }; }
+    if (i === 0) return t < T.r0 ? st('queued', '', 0) : (t < T.d0 ? st('run', d[2], T.r0) : st('done', d[3], T.d0));
+    if (i === 1) return t < T.r1 ? st('queued', '', 0) : (t < T.d1 ? st('run', d[2], T.r1) : st('done', d[3], T.d1));
+    if (i === 2) {
+      if (t < T.r2) return st('queued', '', 0);
+      if (t < T.w2) return st('run', d[2], T.r2);
+      if (t < T.recheck) return st('wait', 'no claim record at this name yet', T.w2);
+      if (t < T.d2) return st('run', d[2], T.recheck);
+      return st('done', d[3], T.d2);
+    }
+    if (i === 3) return t < T.r3 ? st('queued', '', 0) : (t < T.d3 ? st('run', d[2], T.r3) : st('done', d[3], T.d3));
+    return t < T.r4 ? st('queued', '', 0) : (t < T.d4 ? st('run', d[2], T.r4) : st('done', d[3], T.d4));
+  }
+
+  function dcStepRow(c, x, y, w, first, count, t) {
+    var xs = [], i, o = '';
+    for (i = 0; i < count; i++) xs.push(x + w * (2 * i + 1) / (2 * count));
+    var sts = [];
+    for (i = 0; i < count; i++) sts.push(dcStep(first + i, t));
+    var fillTo = x, fillCol = c.sg, all = true;
+    for (i = 0; i < count; i++) {
+      if (sts[i].st === 'done') fillTo = xs[i];
+      else { all = false; if (sts[i].st === 'wait') { fillTo = xs[i]; fillCol = c.wt; } break; }
+    }
+    if (all) fillTo = x + w;
+    o += '<line x1="' + x + '" y1="' + y + '" x2="' + (x + w) + '" y2="' + y + '" stroke="' + c.ln + '" stroke-width="0.9"/>';
+    if (fillTo > x) {
+      var doneTo = fillCol === c.wt ? (i > 0 ? xs[i - 1] : x) : fillTo;
+      if (doneTo > x) o += '<line x1="' + x + '" y1="' + y + '" x2="' + doneTo + '" y2="' + y + '" stroke="' + c.sg + '" stroke-width="1.1"/>';
+      if (fillCol === c.wt) o += '<line x1="' + doneTo + '" y1="' + y + '" x2="' + fillTo + '" y2="' + y + '" stroke="' + c.wt + '" stroke-width="1.1"/>';
+    }
+    for (i = 0; i < count; i++) {
+      var s = sts[i], nx = xs[i], age = t - s.since;
+      if (s.st === 'run' && !REDUCED) {
+        var from = i > 0 ? xs[i - 1] : x, p = (age % 0.42) / 0.42;
+        var px = from + (nx - 6 - from) * dcEase(p);
+        o += '<line x1="' + from + '" y1="' + y + '" x2="' + px.toFixed(1) + '" y2="' + y + '" stroke="' + c.sg + '" stroke-width="1.1" opacity="0.55"/>';
+        o += '<circle cx="' + px.toFixed(1) + '" cy="' + y + '" r="3.2" fill="' + c.sg + '" opacity="0.18"/><circle cx="' + px.toFixed(1) + '" cy="' + y + '" r="1.5" fill="' + c.sg + '"/>';
+      }
+      if (s.st === 'done') {
+        if (!REDUCED && age < 0.5) {
+          var q = age / 0.5;
+          o += '<circle cx="' + nx + '" cy="' + y + '" r="' + (5.5 + q * 6).toFixed(2) + '" fill="none" stroke="' + c.sg + '" stroke-width="1" opacity="' + (0.7 * (1 - q)).toFixed(2) + '"/>';
+        }
+        o += '<circle cx="' + nx + '" cy="' + y + '" r="5.2" fill="' + c.sg + '"/>';
+        o += '<path d="M' + (nx - 2.3) + ' ' + (y + 0.1) + 'l1.6 1.6 3.1-3.3" fill="none" stroke="' + c.on + '" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>';
+      } else if (s.st === 'wait') {
+        o += '<circle cx="' + nx + '" cy="' + y + '" r="5.2" fill="' + c.bg + '" stroke="' + c.wt + '" stroke-width="1"/><circle cx="' + nx + '" cy="' + y + '" r="1.8" fill="' + c.wt + '"/>';
+      } else if (s.st === 'run') {
+        var a = REDUCED ? 0 : (t * 6) % (Math.PI * 2);
+        var ax = nx + 5.2 * Math.cos(a), ay = y + 5.2 * Math.sin(a), bx = nx + 5.2 * Math.cos(a + 1.9), by = y + 5.2 * Math.sin(a + 1.9);
+        o += '<circle cx="' + nx + '" cy="' + y + '" r="5.2" fill="' + c.bg + '" stroke="' + c.lc + '" stroke-width="0.9"/>';
+        o += '<path d="M' + ax.toFixed(2) + ' ' + ay.toFixed(2) + 'A5.2 5.2 0 0 1 ' + bx.toFixed(2) + ' ' + by.toFixed(2) + '" fill="none" stroke="' + c.f2 + '" stroke-width="1.1" stroke-linecap="round"/>';
+      } else {
+        o += '<circle cx="' + nx + '" cy="' + y + '" r="4" fill="' + c.s1 + '" stroke="' + c.lc + '" stroke-width="0.9"/>';
+      }
+      var dim = s.st === 'queued';
+      o += dcText(nx, y + 12, DC_STEPS[first + i][0], 4, c.f5, { mono: 1, a: 'middle' });
+      o += dcText(nx, y + 19.5, DC_STEPS[first + i][1], 5.6, dim ? c.f4 : c.fg, { a: 'middle' });
+      if (s.ans) o += dcText(nx, y + 26.5, s.ans, 4.9, s.st === 'wait' ? c.wt : c.f3, { a: 'middle' });
+    }
+    return o;
+  }
+
+  function dcList(c, t) {
+    var T = DC_T, o = '';
+    o += dcText(16, 40, 'Domains', 13, c.fg, { w: 600 });
+    o += dcCard(c, 16, 48, 388, 46, 'CLAIM A DOMAIN', 'INPUT', 'neutral', '');
+    var focused = t >= T.focus;
+    o += '<rect x="25" y="68" width="296" height="17" rx="2.6" fill="' + c.bg + '" stroke="' + (focused ? c.l2 : c.lc) + '" stroke-width="0.7"/>';
+    var n = t < T.type0 ? 0 : Math.min(DC_NAME.length, Math.floor((t - T.type0) / T.typeStep) + 1);
+    var typed = DC_NAME.slice(0, n);
+    o += dcText(31, 79, typed, 6.4, c.fg, { mono: 1 });
+    if (focused && (REDUCED || (t * 2.2) % 1 < 0.6)) {
+      var cx = 31 + typed.length * 3.86 + 0.6;
+      o += '<rect x="' + cx.toFixed(1) + '" y="72.5" width="0.7" height="8" fill="' + c.fg + '"/>';
+    }
+    var pr = t >= T.press && t < T.press + 0.16;
+    o += '<rect x="329" y="68" width="66" height="17" rx="2.6" fill="' + (pr ? '#2bd873' : c.sg) + '"/>';
+    o += dcText(362, 78.8, 'Claim', 6, c.on, { a: 'middle', w: 500 });
+    o += dcCard(c, 16, 102, 388, 66, 'CLAIMS', '2', 'neutral', '');
+    var rows = [
+      ['carlton.dev', 'Squarespace', 'Verified', 'good', 'Verified Sep 13'],
+      ['futurity.science', 'Namecheap', 'Pending', 'wait', 'Checked 2 min ago'],
+    ];
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i], ry = 115 + i * 26;
+      if (i > 0) o += '<line x1="16" y1="' + ry + '" x2="404" y2="' + ry + '" stroke="' + c.ln + '" stroke-width="0.7"/>';
+      o += '<rect x="26" y="' + (ry + 7.5) + '" width="11" height="11" rx="2.5" fill="' + c.s3 + '"/>';
+      o += '<circle cx="31.5" cy="' + (ry + 13) + '" r="2.3" fill="none" stroke="' + c.f3 + '" stroke-width="0.7"/>';
+      if (r[3] === 'wait') o += '<circle cx="37" cy="' + (ry + 18.5) + '" r="2.3" fill="' + c.bg + '" stroke="' + c.wt + '" stroke-width="0.7"/><path d="M36 ' + (ry + 17.4) + 'h2l-2 2.2h2" fill="none" stroke="' + c.wt + '" stroke-width="0.45"/>';
+      o += dcText(46, ry + 11.8, r[0], 7, c.fg, { w: 500 });
+      o += dcText(46, ry + 19.6, 'DNS at ' + r[1], 4.5, c.f5, { mono: 1 });
+      o += dcPill(c, 196, ry + 13, r[2], r[3], false, t);
+      o += dcText(300, ry + 15, r[4], 5.4, c.f3);
+      o += dcText(394, ry + 15.4, '›', 7, c.f5, { a: 'end' });
+    }
+    return o;
+  }
+
+  function dcShift(t) {
+    var T = DC_T, h = DC_H, g = DC_GAP;
+    var y2 = h[0] + g, y3 = y2 + h[1] + g;
+    var h3 = t < T.clear ? h[2] : 64;
+    var y4 = y3 + h3 + g;
+    var stops = [[T.card2, y2], [T.card3, y3], [T.ver, y4 + h[3] - (236 - DC_TOP)]];
+    var s = 0, prev = 0;
+    for (var i = 0; i < stops.length; i++) {
+      if (t >= stops[i][0]) { var p = REDUCED ? 1 : dcEase((t - stops[i][0]) / 0.55); s = prev + (stops[i][1] - prev) * p; prev = stops[i][1]; }
+    }
+    return { s: s, y: [0, y2, y3, y4], h3: h3 };
+  }
+
+  function dcClaim(c, t) {
+    var T = DC_T, o = '', X = 16, W = 388;
+    var sh = dcShift(t), cur = t >= T.ver ? 3 : (t >= T.card3 ? 2 : (t >= T.card2 ? 1 : 0));
+    var pill = ['Checking', 'wait', true];
+    if (t >= T.card2) pill = ['Pending', 'wait', false];
+    if ((t >= T.card3 && t < T.w2) || (t >= T.recheck && t < T.clear)) pill = ['Checking', 'wait', true];
+    if (t >= T.ver) pill = ['Verified', 'good', false];
+    o += '<g clip-path="url(#dcclip)">';
+    function enter(since) { var p = REDUCED ? 1 : dcEase((t - since) / 0.4); return 'opacity="' + p.toFixed(3) + '" transform="translate(0 ' + ((1 - p) * 7).toFixed(2) + ')"'; }
+    function dimOp(k) { return k < cur ? '0.42' : '1'; }
+    var y = DC_TOP - sh.s;
+    var y1 = y + sh.y[0];
+    o += '<g opacity="' + dimOp(0) + '">';
+    o += dcCard(c, X, y1, W, DC_H[0], '01 · NAMESERVERS', t < T.d1 ? 'LIVE' : 'DONE', t < T.d1 ? 'good' : 'neutral', '');
+    o += dcStepRow(c, X, y1 + 30, W, 0, 2, t);
+    o += '</g>';
+    if (t >= T.card2) {
+      var y2 = y + sh.y[1], X2 = X + 9;
+      o += '<g ' + enter(T.card2) + '><g opacity="' + dimOp(1) + '">';
+      o += dcCard(c, X, y2, W, DC_H[1], '02 · RECORD', 'TXT', 'wait', 'Add in Cloudflare');
+      o += '<text x="' + X2 + '" y="' + (y2 + 26) + '" font-family="' + DC_SANS + '" font-size="5.8" fill="' + c.f2 + '">Your nameservers are at <tspan font-weight="600" fill="' + c.fg + '">Cloudflare</tspan>. Add the record there.</text>';
+      o += '<rect x="' + (X + W - 82) + '" y="' + (y2 + 18) + '" width="73" height="12" rx="2.4" fill="none" stroke="' + c.lc + '" stroke-width="0.7"/>';
+      o += dcText(X + W - 45.5, y2 + 25.9, 'Open Cloudflare DNS ↗', 5, c.fg, { a: 'middle' });
+      var ly = y2 + 40;
+      o += dcText(X2, ly, 'TYPE', 3.9, c.f4, { mono: 1, ls: 0.6 }) + dcText(X2 + 34, ly, 'NAME', 3.9, c.f4, { mono: 1, ls: 0.6 })
+        + dcText(X2 + 142, ly, 'VALUE', 3.9, c.f4, { mono: 1, ls: 0.6 }) + dcText(X2 + 292, ly, 'TTL', 3.9, c.f4, { mono: 1, ls: 0.6 });
+      var fy = y2 + 44;
+      o += '<rect x="' + X2 + '" y="' + fy + '" width="27" height="13" rx="2.4" fill="' + c.bg + '" stroke="' + c.lc + '" stroke-width="0.7"/>' + dcText(X2 + 13.5, fy + 8.6, 'TXT', 5.2, c.fg, { a: 'middle' });
+      o += '<rect x="' + (X2 + 34) + '" y="' + fy + '" width="100" height="13" rx="2.4" fill="' + c.bg + '" stroke="' + c.lc + '" stroke-width="0.7"/>' + dcText(X2 + 38, fy + 8.6, '_domainclaim-challenge', 4.9, c.fg, { mono: 1 }) + dcCopyIcon(c, X2 + 124, fy + 4.4, false);
+      var hot = t >= T.copy && t < T.copied;
+      o += '<rect x="' + (X2 + 142) + '" y="' + fy + '" width="142" height="13" rx="2.4" fill="' + c.bg + '" stroke="' + (hot ? c.l2 : c.lc) + '" stroke-width="0.7"/>' + dcText(X2 + 146, fy + 8.6, 'domainclaim-token=Q8V3N6TK2MX9…', 4.9, c.fg, { mono: 1 }) + dcCopyIcon(c, X2 + 274, fy + 4.4, hot);
+      o += dcText(X2 + 292, fy + 8.6, 'Leave the default', 5.6, c.fg);
+      o += dcText(X2 + 34, fy + 21, 'Paste the short form.', 4.6, c.f4) + dcText(X2 + 142, fy + 21, 'Token and expiry, in one value.', 4.6, c.f4) + dcText(X2 + 292, fy + 21, 'Any value works.', 4.6, c.f4);
+      var by = y2 + 74, pr = t >= T.press2 && t < T.press2 + 0.16;
+      o += '<rect x="' + X2 + '" y="' + by + '" width="46" height="13" rx="2.4" fill="' + (pr ? '#2bd873' : c.sg) + '"/>' + dcText(X2 + 23, by + 8.5, 'Check now', 5.4, c.on, { a: 'middle', w: 500 });
+      var gate = hot ? 'Copied' : dcTimer(t);
+      if (gate) o += dcText(X2 + 54, by + 8.5, gate, 5, c.f3, { mono: 1 });
+      o += '</g></g>';
+    }
+    if (t >= T.card3) {
+      var y3 = y + sh.y[2], live = (t < T.w2) || (t >= T.recheck && t < T.clear);
+      var waiting = t >= T.w2 && t < T.recheck;
+      o += '<g ' + enter(T.card3) + '><g opacity="' + dimOp(2) + '">';
+      o += dcCard(c, X, y3, W, sh.h3, '03 · CHECK', live ? 'LIVE' : (t >= T.clear ? 'DONE' : 'WAITING'), live ? 'good' : (t >= T.clear ? 'neutral' : 'wait'), '');
+      o += dcStepRow(c, X, y3 + 30, W, 2, 3, t);
+      if (t < T.clear) {
+        var ny = y3 + 64, tone = waiting ? c.wt : c.sg;
+        o += '<rect x="' + (X + 9) + '" y="' + ny + '" width="' + (W - 18) + '" height="32" rx="3" fill="' + c.bg + '" stroke="' + c.ln + '" stroke-width="0.7"/>';
+        o += '<circle cx="' + (X + 18) + '" cy="' + (ny + 9) + '" r="3" fill="none" stroke="' + tone + '" stroke-width="0.8"/><circle cx="' + (X + 18) + '" cy="' + (ny + 9) + '" r="1.1" fill="' + tone + '"/>';
+        o += dcText(X + 25, ny + 11, waiting ? 'No record found yet' : 'Checking ' + DC_NAME, 6, c.fg, { w: 600 });
+        o += dcText(X + 25, ny + 19.5, waiting ? 'New records usually appear within a few minutes of saving.' : 'We ask Cloudflare directly, so there’s no cache in the way. Each step shows what it found as it lands.', 4.9, c.f3);
+        if (waiting) o += dcText(X + 25, ny + 27, dcTimer(t), 4.7, c.f3, { mono: 1 });
+      }
+      o += '</g></g>';
+    }
+    if (t >= T.ver) {
+      var y4 = y + sh.y[3], age = t - T.ver, cx = X + 30, cy = y4 + DC_H[3] / 2 + 3;
+      o += '<g ' + enter(T.ver) + '>';
+      o += dcCard(c, X, y4, W, DC_H[3], '04 · VERIFIED', 'OUTPUT', 'good', '', !REDUCED && age < 2.4);
+      if (!REDUCED && age < 0.9) {
+        var q = age / 0.9;
+        o += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (13 + q * 12).toFixed(2) + '" fill="none" stroke="' + c.sg + '" stroke-width="1.2" opacity="' + (0.6 * (1 - q)).toFixed(2) + '"/>';
+      }
+      o += '<circle cx="' + cx + '" cy="' + cy + '" r="17" fill="' + c.sg + '" opacity="0.12"/><circle cx="' + cx + '" cy="' + cy + '" r="13" fill="' + c.sg + '"/>';
+      o += '<path d="M' + (cx - 5) + ' ' + (cy + 0.5) + 'l3.4 3.4 6.6-7" fill="none" stroke="' + c.on + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      o += dcText(X + 54, cy - 1.5, DC_NAME + ' is verified', 8.5, c.fg, { w: 600 });
+      o += dcText(X + 54, cy + 8, 'Keep the TXT record in place. Removing it puts the claim at risk.', 5.2, c.f3);
+      o += '</g>';
+    }
+    o += '</g>';
+    o += '<rect x="0" y="18" width="420" height="38" fill="' + c.bg + '"/>';
+    o += dcText(16, 39, DC_NAME, 14, c.fg, { w: 600 });
+    o += dcPill(c, 88, 34.6, pill[0], pill[1], pill[2] && !REDUCED, t);
+    o += dcText(16, 50, 'Claimed Sep 24 · DNS at Cloudflare · Record valid until Oct 1', 5.2, c.f5);
+    return o;
+  }
+
+  function dcTimer(t) {
+    var T = DC_T;
+    if (t >= T.card3 && t < T.w2) return 'Checking now';
+    if (t >= T.w2 && t < T.recheck) {
+      var left = 5 - Math.floor((t - T.w2) / T.tick);
+      if (left < 1) left = 1;
+      return 'Next check in ' + left + 's · last checked just now';
+    }
+    if (t >= T.recheck && t < T.clear) return 'Checking now';
+    return '';
+  }
+
+  function dcInit() { return {}; }
+  function dcDraw(st, ft, inv) {
+    var T = DC_T, c = inv ? DCPI : DCP;
+    var t = REDUCED ? T.still : (ft % T.loop);
+    var o = '<defs><pattern id="dcdots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.6" fill="' + c.dot + '"/></pattern>'
+      + '<clipPath id="dcclip"><rect x="0" y="56" width="' + W + '" height="' + (H - 56) + '"/></clipPath></defs>';
+    o += '<rect width="' + W + '" height="' + H + '" fill="' + c.bg + '"/><rect width="' + W + '" height="' + H + '" fill="url(#dcdots)"/>';
+    var gOp = (!REDUCED && t > T.fade) ? Math.max(0, 1 - (t - T.fade) / T.fadeDur) : 1;
+    var sw = REDUCED ? 1 : dcEase((t - T.swap) / T.swapDur), onClaim = sw > 0;
+    o += '<g opacity="' + gOp.toFixed(3) + '">';
+    if (sw < 1) o += '<g opacity="' + (1 - sw).toFixed(3) + '" transform="translate(' + (-40 * sw).toFixed(2) + ' 0)">' + dcList(c, t) + '</g>';
+    if (onClaim) o += '<g opacity="' + sw.toFixed(3) + '" transform="translate(' + (40 * (1 - sw)).toFixed(2) + ' 0)">' + dcClaim(c, t) + '</g>';
+    o += '<rect width="' + W + '" height="18" fill="' + c.bg + '" fill-opacity="0.92"/><line x1="0" y1="18" x2="' + W + '" y2="18" stroke="' + c.ln + '" stroke-width="0.8"/>';
+    o += dcText(16, 11.6, 'Domains', 5.8, onClaim ? c.f3 : c.fg);
+    if (onClaim) o += '<g opacity="' + sw.toFixed(3) + '">' + dcText(43, 11.6, '/', 5.8, c.f5) + dcText(50, 11.6, DC_NAME, 5.6, c.fg, { mono: 1, w: 500 }) + '</g>';
+    o += dcText(386, 11.6, 'carlton', 5.4, c.f3, { a: 'end' });
+    o += '<circle cx="397" cy="9.5" r="5.2" fill="' + c.s3 + '" stroke="' + c.lc + '" stroke-width="0.6"/>' + dcText(397, 11, 'CL', 3.8, c.fg, { mono: 1, a: 'middle' });
+    o += '</g>';
+    return o;
+  }
+
   /* ---------- registry: live previews + recreated minis ---------- */
   var V = {
     'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · 3D STUDIO · WAVE · AUTO-ORBIT', aria: 'GRID kinetic lamp, the case study 3D studio view with the wave pattern running and a slow orbit, live preview', paper: false, gl: true, init: glampInit, draw: glampDraw },
+    'domainclaim': { name: 'domainclaim_view · VERIFY.scn', foot: 'CLAIM → RECORD → FIVE STEPS → VERIFIED', aria: 'DomainClaim claiming acme.dev: the record is added, the five steps of the check land one by one, and the name verifies. Recreated preview of the product demo', paper: false, init: dcInit, draw: dcDraw },
     'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
     'futurity-engine': { name: 'futurity_engine_view · BATTERIES.scn', foot: 'SSE REPLAY · LIVE GRAPH · 5 PHASES', aria: 'Futurity Engine growing knowledge graph, live synthetic demo', paper: false, init: engInit, draw: engDraw },
     'fast': { name: 'fast_view · INTERSTELLAR.scn', foot: 'SUBJECT PAGE → PATENT SNAPSHOT · TRAVERSAL', aria: 'FAST subject page traversing to a patent source snapshot and back, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
