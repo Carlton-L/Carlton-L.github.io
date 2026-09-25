@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /demos/
+Disallow: /projects/domainclaim/proto/
 
 Sitemap: https://carlton.dev/sitemap-index.xml

@@ -1,0 +1,41 @@
+{
+  "source": "github.com/Carlton-L/resend-take-home",
+  "alias": {
+    "@/": "src/"
+  },
+  "entries": [
+    "src/screens/SignInDemo/SignInDemo.tsx",
+    "src/screens/AppShell/AppShell.tsx",
+    "src/screens/DomainsScreen/DomainsScreen.tsx",
+    "src/screens/ClaimScreen/ClaimScreen.tsx",
+    "src/client/api.ts",
+    "src/app/api/me/route.ts",
+    "src/app/api/claims/route.ts",
+    "src/app/api/claims/[id]/route.ts",
+    "src/app/api/claims/[id]/check/route.ts",
+    "src/app/api/claims/[id]/release/route.ts"
+  ],
+  "include": [
+    "src/app/globals.css",
+    "src/app/motion.css",
+    "src/lib/claims/store.ts",
+    "src/lib/claims/rateLimit.ts",
+    "src/lib/claims/token.ts",
+    "src/lib/dns/types.ts"
+  ],
+  "seams": {
+    "server-only": "shims/server-only.ts",
+    "next/server": "shims/next-server.ts",
+    "next/link": "shims/next-link.tsx",
+    "next/navigation": "shims/next-navigation.ts",
+    "node:crypto": "shims/node-crypto.ts",
+    "@/lib/claims/store": "shims/store.ts",
+    "@/lib/claims/rateLimit": "shims/rate-limit.ts",
+    "@/lib/auth/supabase/route": "shims/supabase-route.ts",
+    "@/lib/dns/nodeResolver": "shims/node-resolver.ts",
+    "@/lib/claims/check": "shims/check-tap.ts"
+  },
+  "env": {
+    "DOMAINCLAIM_TEST_NAMESPACE": "on"
+  }
+}

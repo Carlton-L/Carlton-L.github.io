@@ -1,0 +1,30 @@
+---
+/**
+ * The DomainClaim demo document. Case-study pages embed it in a scaled frame; it is never a page
+ * to land on (noindex, left out of the sitemap).
+ *
+ * Its own document on purpose: the product's layout reads the window (media queries at 720px, the
+ * page scroll, the sticky header), so it needs a window of its own at the width it is drawn at.
+ * The body mirrors the product's root layout. Everything inside is the product's code: see
+ * src/components/react/demos/domainclaim/PORT.md.
+ */
+import FrameEntry from '../../components/react/demos/domainclaim/runtime/FrameEntry.tsx';
+---
+
+<html lang="en" style="--font-inter: 'Inter'; --font-plex-mono: 'IBM Plex Mono';">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>DomainClaim demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-bg font-sans text-fg antialiased">
+    <FrameEntry client:only="react" />
+  </body>
+</html>

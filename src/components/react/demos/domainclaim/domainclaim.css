@@ -1,0 +1,68 @@
+/* DomainClaim demos: the frame box, and the explorer's picker and panes.
+   Site chrome in site tokens; the product itself draws inside the frame in its own. */
+
+.dcf { position: relative; overflow: hidden; background: #0a0a0b; }
+.dcf-frame { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b; }
+
+.dcx { display: flex; flex-direction: column; }
+
+.dcx-picker {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 22px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border-color);
+}
+.dcx-group { display: grid; gap: 6px; }
+.dcx-glab { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--text-dim); }
+.dcx-group.m-you .dcx-glab { color: #e8a317; }
+.dcx-group.m-time .dcx-glab { color: #56b4e9; }
+.dcx-group.m-done .dcx-glab { color: var(--signal); }
+.dcx-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.dcx-chip {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.02em;
+  padding: 3px 8px; border-radius: 3px; cursor: pointer;
+  background: transparent; color: var(--signal); border: 1px solid rgba(61, 255, 136, 0.35);
+  transition: border-color var(--duration-normal, 0.2s), background var(--duration-normal, 0.2s);
+}
+.dcx-chip:hover { border-color: var(--signal); }
+.dcx-chip[aria-pressed='true'] { background: rgba(61, 255, 136, 0.12); border-color: var(--signal); color: var(--text); }
+.dcx-chip:disabled { opacity: 0.45; cursor: default; }
+.dcx-chip:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.dcx-auto {
+  margin-left: auto; align-self: flex-end;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim);
+}
+
+.dcx-panes { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); border-top: 1px solid var(--border-color); }
+.dcx-pane { padding: 12px 14px 14px; min-width: 0; }
+.dcx-pane + .dcx-pane { border-left: 1px solid var(--border-color); }
+@media (max-width: 720px) {
+  .dcx-panes { grid-template-columns: minmax(0, 1fr); }
+  .dcx-pane + .dcx-pane { border-left: 0; border-top: 1px solid var(--border-color); }
+  .dcx-auto { margin-left: 0; }
+}
+.dcx-h { font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: 0.12em; color: var(--text-dim); margin: 0 0 8px; }
+.dcx-code {
+  margin: 0 0 10px; padding: 10px 12px; overflow-x: auto; white-space: pre;
+  font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--text-muted);
+  background: #0a0a0b; border: 1px solid var(--border-color); border-radius: 4px;
+  min-height: 7.5em;
+}
+.dcx-c { color: var(--text-dim); }
+.dcx-p { color: #56b4e9; }
+.dcx-s { color: var(--signal); }
+.dcx-k { color: #e8a317; }
+.dcx-wait { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); min-height: 7.5em; margin: 0 0 10px; }
+.dcx-line { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 0 0 6px; font-family: var(--font-mono); font-size: 10px; }
+.dcx-lab { font-size: 9px; letter-spacing: 0.12em; color: var(--text-dim); margin-right: 4px; min-width: 42px; }
+.dcx-status, .dcx-flag, .dcx-step { padding: 1px 6px; border-radius: 2px; border: 1px solid var(--border-color); color: var(--text-muted); }
+.dcx-status.s-verified { color: var(--signal); border-color: rgba(61, 255, 136, 0.4); }
+.dcx-status.s-pending { color: #56b4e9; border-color: rgba(86, 180, 233, 0.4); }
+.dcx-status.s-at_risk { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
+.dcx-flag { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
+.dcx-step.t-done { color: var(--signal); border-color: rgba(61, 255, 136, 0.35); }
+.dcx-step.t-wrong { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
+.dcx-step.t-wait { color: #56b4e9; border-color: rgba(86, 180, 233, 0.4); }
+.dcx-step.t-idle { color: var(--text-dim); }
+.dcx-name { font-family: var(--font-mono); font-size: 11px; color: var(--text); margin: 0 0 6px; }
+.dcx-from { font-size: 13px; line-height: 1.6; color: var(--text); margin: 0 0 8px; }
+.dcx-src { font-size: 12px; line-height: 1.55; color: var(--text-muted); margin: 0 0 8px; }
+.dcx-tests { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin: 0; }
