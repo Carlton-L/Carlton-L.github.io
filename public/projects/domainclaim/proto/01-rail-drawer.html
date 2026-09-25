@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DomainClaim · Rail + Drawer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b; --el:#101013; --sf:#161619; --bd:#232326; --bd2:#2a2a2e;
+  --tx:#e6e6e2; --mu:#8f8f8a; --dim:#5c5c58;
+  --sig:#3dff88; --cy:#56b4e9; --am:#e8a317;
+  --sig-a:rgba(61,255,136,.14); --cy-a:rgba(86,180,233,.14); --am-a:rgba(232,163,23,.14);
+  --r:7px; --ease:cubic-bezier(.2,.8,.2,1);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --col:760px; --top:52px;
+  --dots:radial-gradient(circle at 1px 1px,#17171a 1px,transparent 1.4px) 0 0/26px 26px fixed, var(--bg);
+}
+*{box-sizing:border-box}
+html{color-scheme:dark;scrollbar-gutter:stable}
+body{margin:0;background:var(--dots);color:var(--tx);font:14px/1.45 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+code,.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+
+/* ───────── layout ───────── */
+.wrap{max-width:calc(var(--col) + 32px);margin:0 auto;padding:0 16px}
+.topbar{position:sticky;top:0;z-index:30;height:var(--top);background:var(--dots);border-bottom:1px solid transparent;opacity:0;pointer-events:none;transition:opacity .26s var(--ease),border-color .2s}
+body.authed .topbar{opacity:1;pointer-events:auto}
+body.scrolled .topbar{border-bottom-color:var(--bd)}
+.topbar .wrap{height:100%;display:flex;align-items:center;justify-content:space-between}
+.wordmark{font:500 12px/1 var(--mono);letter-spacing:.02em;display:inline-flex;align-items:center;gap:8px;color:var(--tx)}
+.wordmark i{width:7px;height:7px;border-radius:2px;background:var(--sig);box-shadow:0 0 10px rgba(61,255,136,.5)}
+.acct{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mu)}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--sf);border:1px solid var(--bd2);display:grid;place-items:center;font:500 11px var(--mono);color:var(--tx)}
+.stage{display:grid;padding-bottom:96px;overflow-x:clip;overflow-y:visible}
+.screen{grid-area:1/1;min-width:0;transition:transform .26s var(--ease),opacity .26s var(--ease)}
+.screen[hidden]{display:none}
+.screen.from-right{transform:translateX(40px);opacity:0;transition:none}
+.screen.from-left{transform:translateX(-40px);opacity:0;transition:none}
+.screen.to-left{transform:translateX(-40px);opacity:0;pointer-events:none}
+.screen.to-right{transform:translateX(40px);opacity:0;pointer-events:none}
+
+/* ───────── generic controls ───────── */
+.btn{height:36px;padding:0 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--sf);display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:500;font-size:13.5px;transition:background .15s,border-color .15s,transform .1s;white-space:nowrap}
+.btn:hover{background:#1c1c20;border-color:#35353a}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--tx);color:#0a0a0b;border-color:var(--tx)}
+.btn.primary:hover{background:#fff}
+.btn[disabled]{opacity:.5;cursor:default;transform:none}
+.btn.ghost{background:transparent}
+.iconbtn{width:32px;height:32px;border-radius:var(--r);border:1px solid var(--bd);background:transparent;display:grid;place-items:center;color:var(--mu);transition:color .15s,background .15s,border-color .15s}
+.iconbtn:hover{color:var(--tx);background:var(--sf);border-color:var(--bd2)}
+kbd{font:500 10.5px/1 var(--mono);min-width:18px;height:18px;padding:0 4px;border-radius:4px;border:1px solid var(--bd2);background:var(--bg);color:var(--mu);display:inline-grid;place-items:center}
+.field{height:38px;width:100%;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg);padding:0 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.field::placeholder{color:var(--dim)}
+.field:focus{border-color:#45454b;box-shadow:0 0 0 3px rgba(86,180,233,.12)}
+.label{font:500 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.copy{height:22px;width:54px;flex:none;border-radius:5px;border:1px solid var(--bd2);background:var(--sf);font:500 11px/1 var(--mono);color:var(--mu);transition:color .15s,border-color .15s,background .15s}
+.copy:hover{color:var(--tx);border-color:#3a3a40}
+.copy.done{color:var(--tx);background:var(--bd);border-color:var(--bd)}
+
+/* tooltips */
+.tip{position:relative;display:inline-flex;vertical-align:middle;margin-left:5px}
+.q{width:15px;height:15px;border-radius:50%;border:1px solid var(--bd2);background:transparent;color:var(--dim);font:500 9.5px/1 var(--mono);display:grid;place-items:center;padding:0;transition:color .15s,border-color .15s}
+.q:hover,.q:focus-visible{color:var(--tx);border-color:var(--mu)}
+.tt{position:absolute;left:50%;bottom:calc(100% + 8px);width:250px;transform:translate(-50%,4px);background:#1b1b1f;border:1px solid var(--bd2);border-radius:var(--r);padding:9px 11px;font:400 12.5px/1.45 var(--sans);letter-spacing:0;text-transform:none;color:var(--tx);box-shadow:0 12px 32px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s var(--ease);z-index:50;text-align:left}
+.tt b{font-family:var(--mono);font-weight:500;font-size:11.5px;color:var(--cy);display:block;margin-bottom:3px}
+.tip.l .tt{left:-8px;transform:translate(0,4px)}
+.tip:hover .tt,.q:focus-visible+.tt,.q:focus+.tt{opacity:1;transform:translate(-50%,0)}
+.tip.l:hover .tt,.tip.l .q:focus+.tt{transform:translate(0,0)}
+
+/* status dots & pills */
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.dot[data-s=verified]{background:var(--sig);box-shadow:0 0 0 3px var(--sig-a)}
+.dot[data-s=waiting]{border:1.5px solid var(--cy)}
+.dot[data-s=checking]{border:1.5px solid var(--cy);animation:breathe 1.4s ease-in-out infinite}
+.dot[data-s=wrong],.dot[data-s=risk]{background:var(--am);box-shadow:0 0 0 3px var(--am-a)}
+.pill{height:26px;padding:0 11px 0 9px;border-radius:13px;display:inline-flex;align-items:center;gap:8px;font:500 12px/1 var(--mono);border:1px solid var(--bd2);background:var(--el);white-space:nowrap}
+.pill[data-s=verified]{color:var(--sig);border-color:rgba(61,255,136,.3);background:rgba(61,255,136,.06)}
+.pill[data-s=waiting],.pill[data-s=checking]{color:var(--cy);border-color:rgba(86,180,233,.28);background:rgba(86,180,233,.05)}
+.pill[data-s=wrong],.pill[data-s=risk]{color:var(--am);border-color:rgba(232,163,23,.32);background:rgba(232,163,23,.06)}
+.pill.pop{animation:pop .5s var(--ease)}
+
+/* ───────── sign in ───────── */
+.auth{min-height:100vh;margin-top:calc(var(--top) * -1);display:grid;place-items:center;padding:40px 0}
+.card{width:100%;max-width:380px;background:var(--el);border:1px solid var(--bd);border-radius:10px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.card h1{font:600 19px/1.3 var(--sans);margin:22px 0 6px;letter-spacing:-.01em}
+.card p.lede{margin:0 0 22px;color:var(--mu);font-size:13.5px}
+.card .stack{display:grid;gap:8px}
+.card .btn{height:40px;width:100%}
+.or{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--dim);font:500 10.5px var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.or::before,.or::after{content:"";height:1px;flex:1;background:var(--bd)}
+.hint{min-height:18px;margin-top:6px;font-size:12.5px;color:var(--am)}
+.fine{margin-top:18px;font-size:12px;color:var(--dim)}
+.btn .spin{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+.inbox-ic{width:40px;height:40px;border-radius:10px;border:1px solid var(--bd2);background:var(--sf);display:grid;place-items:center;color:var(--cy);margin-top:22px}
+.inbox-ic+h1{margin-top:16px}
+.proto-btn{border-style:dashed !important;border-color:#3a3a40 !important;background:transparent !important;color:var(--mu) !important}
+.proto-btn:hover{color:var(--tx) !important;border-color:var(--mu) !important}
+.linkbtn{background:none;border:0;padding:0;color:var(--mu);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--bd2)}
+.linkbtn:hover{color:var(--tx)}
+
+/* ───────── domain list ───────── */
+.listhead{display:flex;align-items:flex-end;justify-content:space-between;padding:28px 0 18px}
+.listhead h1{margin:0;font:600 22px/1.2 var(--sans);letter-spacing:-.015em}
+.listhead .count{color:var(--dim);font:500 12px var(--mono)}
+.claimbox{background:var(--el);border:1px solid var(--bd);border-radius:10px;padding:14px 14px 10px}
+.claimbox .label{display:block;margin-bottom:10px}
+.claimrow{display:flex;gap:8px}
+.claimrow .field{font-family:var(--mono);font-size:13px}
+.vmsg{height:20px;margin-top:8px;font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.vmsg[data-k=ok]{color:var(--mu)}
+.vmsg[data-k=err],.vmsg[data-k=warn]{color:var(--am)}
+.vmsg[data-k=exists]{color:var(--mu)}
+.vmsg code{color:var(--tx);font-size:12px}
+.vmsg .linkbtn{font-size:12.5px;color:var(--tx)}
+.dlist{margin:14px 0 0;padding:0;list-style:none;background:var(--el);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.dlist li{display:grid;grid-template-rows:1fr;transition:grid-template-rows .36s var(--ease)}
+.dlist li+li{border-top:1px solid var(--bd)}
+.dlist li.enter{grid-template-rows:0fr}
+.dlist li.enter .drow{opacity:0;transform:translateY(-6px)}
+.drow{min-height:0;overflow:hidden;width:100%;display:grid;grid-template-columns:9px minmax(0,1fr) auto 16px;align-items:center;gap:14px;padding:0 16px;height:60px;background:none;border:0;text-align:left;transition:background .15s,opacity .36s var(--ease),transform .36s var(--ease)}
+.drow:hover{background:var(--sf)}
+.drow .dn{font:500 14px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drow .ds{display:block;font:400 12.5px var(--sans);color:var(--mu);margin-top:2px}
+.drow .ds[data-s=verified]{color:var(--sig)}
+.drow .ds[data-s=waiting],.drow .ds[data-s=checking]{color:var(--cy)}
+.drow .ds[data-s=wrong],.drow .ds[data-s=risk]{color:var(--am)}
+.drow .dm{font:400 12px var(--mono);color:var(--dim);white-space:nowrap}
+.drow .chev{color:var(--dim)}
+.dlist li.flash .drow{animation:rowflash 1.2s var(--ease)}
+
+/* ───────── claim screen ───────── */
+.claimbar{display:flex;align-items:center;gap:8px;padding:18px 0 18px;min-height:32px}
+.claimbar .crumb{color:var(--dim);font:400 16px var(--mono);margin:0 4px}
+.claimbar h1{margin:0;font:500 20px/1.2 var(--mono);letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.claimbar .pill{margin-left:auto}
+.drawerbtn{height:32px;border-radius:var(--r);border:1px solid var(--bd);background:transparent;display:inline-flex;align-items:center;gap:8px;padding:0 8px 0 10px;color:var(--mu);font-size:13px;font-weight:500;transition:color .15s,background .15s,border-color .15s}
+.drawerbtn:hover{color:var(--tx);background:var(--sf);border-color:var(--bd2)}
+
+.rail{position:relative;list-style:none;margin:0;padding:0}
+.track{position:absolute;left:10px;width:2px;background:var(--bd);border-radius:1px}
+.fill{position:absolute;left:0;top:0;width:100%;height:0;background:linear-gradient(var(--sig),var(--sig));border-radius:1px;box-shadow:0 0 8px rgba(61,255,136,.35);transition:height .6s var(--ease)}
+.it{position:relative;padding-left:36px}
+.node{position:absolute;left:2px;top:6px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1.5px solid var(--bd2);transition:background .25s,border-color .25s,box-shadow .25s}
+.node svg{opacity:0;transition:opacity .2s}
+
+.it.compact{height:26px;display:flex;align-items:center;gap:12px;font-size:13px}
+.it.compact .node{top:8px;left:6px;width:10px;height:10px;border:0;background:var(--sig);box-shadow:0 0 0 3px var(--bg)}
+.it.compact .lbl{color:var(--mu);white-space:nowrap;flex:none}
+.it.compact .fd{min-width:0;color:var(--dim);font:400 12px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.it.action{position:sticky;top:var(--top);z-index:10;background:var(--dots);padding-top:12px;padding-bottom:18px;margin-top:6px}
+.it.action::after{content:"";position:absolute;left:0;right:0;top:100%;height:22px;background:linear-gradient(var(--bg),rgba(10,10,11,0));opacity:0;transition:opacity .2s;pointer-events:none}
+.it.action.stuck::after{opacity:1}
+.it.action>.node{top:13px;width:20px;height:20px;left:1px;border-color:var(--cy);border-width:2px}
+.it.action>.node::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--cy);opacity:0;animation:halo 2.4s ease-out infinite}
+.it.action[data-s=wrong]>.node,.it.action[data-s=risk]>.node{border-color:var(--am)}
+.it.action[data-s=wrong]>.node::after,.it.action[data-s=risk]>.node::after{border-color:var(--am)}
+.it.action[data-s=verified]>.node{background:var(--sig);border-color:var(--sig)}
+.it.action[data-s=verified]>.node::after{display:none}
+.it.action[data-s=verified]>.node svg{opacity:1}
+.ahead{display:flex;align-items:center;gap:10px;height:22px}
+.ahead h2{margin:0;font:600 15px/1 var(--sans)}
+.tag{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cy);border:1px solid rgba(86,180,233,.3);border-radius:4px;padding:3px 5px}
+.it.action[data-s=wrong] .tag,.it.action[data-s=risk] .tag{color:var(--am);border-color:rgba(232,163,23,.35)}
+.it.action[data-s=verified] .tag{color:var(--dim);border-color:var(--bd2)}
+.provider{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 12px;font-size:13.5px;color:var(--mu);min-height:24px}
+.provider strong{color:var(--tx);font-weight:500}
+.extlink{background:none;border:0;padding:0;display:inline-flex;align-items:center;gap:6px;color:var(--tx);font-size:13px;font-weight:500;text-decoration:underline;text-decoration-color:var(--bd2);text-underline-offset:4px;white-space:nowrap;transition:text-decoration-color .15s}
+.extlink:hover{text-decoration-color:var(--mu)}
+.extlink svg{color:var(--mu)}
+
+.rec{font:11.5px/1.45 var(--mono);border:1px solid var(--bd);border-radius:var(--r);background:var(--el);transition:opacity .5s var(--ease)}
+.rec-h,.rec-r{display:grid;grid-template-columns:48px calc(22ch + 84px) minmax(0,1fr) 100px}
+.rec-h{height:30px;align-items:center;border-bottom:1px solid var(--bd);background:rgba(255,255,255,.012)}
+.rec-h>div{padding:0 10px;display:flex;align-items:center}
+.rec-r>div{padding:12px 10px;min-width:0}
+.rec-r>div+div,.rec-h>div+div{border-left:1px solid var(--bd)}
+.rec-r code{font-size:11.5px;line-height:18px;color:var(--tx)}
+.c-type{display:flex;align-items:flex-start}
+.c-type code{font-weight:600;color:var(--cy)}
+.c-name{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.c-name code{white-space:nowrap}
+.c-val code{font-size:11px !important}
+.c-val{position:relative}
+.c-val code{display:block;overflow-wrap:anywhere}
+.c-val .copy{position:absolute;right:10px;bottom:12px}
+.c-ttl{font-family:var(--sans);font-size:12.5px;color:var(--mu);line-height:18px}
+.rec-f{font-family:var(--sans);border-top:1px solid var(--bd);height:36px;display:flex;align-items:center;gap:12px;padding:0 10px;font-size:12.5px;color:var(--mu)}
+.disc{background:none;border:0;padding:0;display:inline-flex;align-items:center;gap:6px;color:var(--mu);font-size:12.5px}
+.disc:hover{color:var(--tx)}
+.disc svg{transition:transform .2s var(--ease)}
+.disc[aria-expanded=true] svg{transform:rotate(90deg)}
+.fullname{display:flex;align-items:center;gap:10px;opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s var(--ease);visibility:hidden}
+.fullname.open{opacity:1;transform:none;visibility:visible}
+.fullname code{font-size:11.5px;color:var(--tx)}
+.it.action[data-s=verified] .rec{opacity:.5}
+.it.action[data-s=verified] .provider{opacity:.5}
+
+.na{position:relative;margin-top:12px;height:180px;border:1px solid var(--bd2);border-radius:10px;background:linear-gradient(180deg,#131316,#0f0f12);overflow:hidden;display:flex;flex-direction:column;transition:border-color .3s}
+.it.action[data-s=wrong] .na,.it.action[data-s=risk] .na{border-color:rgba(232,163,23,.35)}
+.it.action[data-s=verified] .na{border-color:rgba(61,255,136,.3)}
+.na-body{flex:1;padding:14px 16px 0;min-height:0}
+.na-body.in{animation:fadein .28s var(--ease)}
+.na-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.na-top h3{margin:0;font:600 15px/1.3 var(--sans);display:flex;align-items:center;gap:8px}
+.na-top p{margin:3px 0 0;color:var(--mu);font-size:13px}
+.na-top .btn{width:112px;flex:none}
+.na h3.am{color:var(--am)}
+.na h3.ok{color:var(--sig)}
+.na h3.ok svg path{stroke-dasharray:20;stroke-dashoffset:0}
+.na.celebrate h3.ok svg path{animation:draw .5s .15s var(--ease) both}
+.guide{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.guide li{border:1px solid var(--bd);border-radius:var(--r);padding:8px 10px;font-size:12.5px;color:var(--mu);line-height:1.4;display:flex;gap:9px;background:rgba(255,255,255,.01)}
+.guide li span{font:500 11px/18px var(--mono);color:var(--dim)}
+.facts{margin:12px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.facts div{border:1px solid var(--bd);border-radius:var(--r);padding:9px 10px;background:rgba(255,255,255,.01)}
+.facts dt{font:500 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.facts dd{margin:6px 0 0;font-size:12.5px;color:var(--tx)}
+.cmp{margin:12px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmp>div{border:1px solid var(--bd);border-radius:var(--r);padding:8px 10px;background:var(--bg);min-width:0}
+.cmp .label{display:block;margin-bottom:6px}
+.cmp code{font-size:11px;line-height:16px;display:block;overflow-wrap:anywhere;color:var(--mu)}
+.cmp .end{display:inline-block;width:7px;height:14px;vertical-align:-3px;margin-left:1px;background:var(--am);border-radius:1px;animation:caret 1s steps(2) infinite}
+.cmp mark{background:rgba(232,163,23,.2);color:var(--am);border-radius:2px;padding:0 1px}
+.na-meta{height:36px;display:flex;align-items:center;gap:9px;padding:0 16px;font:400 12px var(--mono);color:var(--mu);border-top:1px solid var(--bd);margin-top:auto;flex:none}
+.live{width:7px;height:7px;border-radius:50%;background:var(--sig);position:relative;flex:none}
+.live::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--sig);animation:halo 2s ease-out infinite}
+.na-meta .sep{color:var(--dim)}
+.na-meta .nx{color:var(--dim)}
+.na-bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:transparent}
+.na-bar i{display:block;height:100%;width:0;background:rgba(86,180,233,.55)}
+.it.action[data-s=verified] .na-bar i{background:rgba(61,255,136,.45)}
+.na .sweep{position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(61,255,136,.14) 50%,transparent 70%);transform:translateX(-100%)}
+.na.celebrate .sweep{animation:sweep .9s var(--ease)}
+
+.sechead{height:28px;display:flex;align-items:flex-end;padding-bottom:6px}
+.it.step{height:48px}
+.it.step .node{top:7px}
+.step .sl{display:flex;align-items:center;gap:10px;font-size:14px;height:22px;padding-top:5px;box-sizing:content-box}
+.step .num{font:500 11px var(--mono);color:var(--dim);width:18px}
+.step .sf{font-size:12.5px;color:var(--mu);margin-left:28px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step .sf code{font-size:11.5px}
+.step .sf.in{animation:fadein .3s var(--ease)}
+.step[data-state=idle] .sl{color:var(--dim)}
+.step[data-state=idle] .sf{color:var(--dim)}
+.step[data-state=idle] .node{width:10px;height:10px;left:6px;top:11px;border-color:var(--bd2);background:var(--bg)}
+.step[data-state=checking] .node{border-color:transparent;background:var(--bg)}
+.step[data-state=checking] .node::before{content:"";position:absolute;inset:-1.5px;border-radius:50%;border:1.5px solid var(--cy);border-right-color:transparent;animation:spin .8s linear infinite}
+.step[data-state=checking] .sf{color:var(--cy)}
+.step[data-state=passed] .node{background:var(--sig);border-color:var(--sig)}
+.step[data-state=passed] .node svg{opacity:1}
+.step[data-state=waiting] .node{border-color:var(--cy);background:var(--bg)}
+.step[data-state=waiting] .node::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--cy);opacity:.5;animation:breathe 2.4s ease-in-out infinite}
+.step[data-state=waiting] .sf{color:var(--cy)}
+.step[data-state=wrong] .node{background:var(--am);border-color:var(--am);color:#0a0a0b;font:700 11px/1 var(--sans)}
+.step[data-state=wrong] .node::before{content:"!"}
+.step[data-state=wrong] .sf{color:var(--am)}
+.step .node.res{animation:pop .45s var(--ease)}
+.step .node.res::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--sig);animation:burst .6s ease-out forwards}
+.step[data-state=waiting] .node.res::after{border-color:var(--cy);background:none;opacity:1;inset:-2px;animation:burst .6s ease-out forwards}
+.step[data-state=wrong] .node.res::after{border-color:var(--am)}
+
+/* ───────── drawer ───────── */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(4,4,5,.62);backdrop-filter:blur(1.5px);opacity:0;pointer-events:none;transition:opacity .26s var(--ease)}
+.drawer{position:fixed;z-index:61;top:0;bottom:0;left:0;width:372px;max-width:88vw;background:var(--el);border-right:1px solid var(--bd2);box-shadow:24px 0 64px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .3s var(--ease),visibility 0s .3s;visibility:hidden;display:flex;flex-direction:column}
+body.drawer-open .scrim{opacity:1;pointer-events:auto}
+body.drawer-open .drawer{transform:none;visibility:visible;transition:transform .3s var(--ease)}
+.dr-h{height:var(--top);display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 18px;border-bottom:1px solid var(--bd)}
+.dr-h .ttl{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.dr-h .keys{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:12px}
+.dr-sec{padding:16px 18px 0}
+.dr-sec .label{display:block;margin-bottom:9px}
+.dr-sec .claimrow .field{height:36px}
+.dr-sec .claimrow .btn{height:36px}
+.filter{position:relative}
+.filter svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--dim)}
+.filter .field{padding-left:32px;height:34px;font-size:13px}
+.dr-list{list-style:none;margin:10px 0 0;padding:0 8px 16px;overflow:auto;flex:1}
+.dr-list li{display:grid;grid-template-rows:1fr;transition:grid-template-rows .36s var(--ease)}
+.dr-list li.enter{grid-template-rows:0fr}
+.dr-list li.enter button{opacity:0}
+.dr-list button{min-height:0;overflow:hidden;width:100%;height:48px;display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:12px;align-items:center;padding:0 10px;border-radius:var(--r);border:0;background:none;text-align:left;transition:background .15s,opacity .3s}
+.dr-list button:hover{background:var(--sf)}
+.dr-list button[aria-current=true]{background:var(--sf);box-shadow:inset 2px 0 0 var(--tx)}
+.dr-list .dn{font:500 13px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-list .ds{font-size:12px;color:var(--dim);white-space:nowrap}
+.dr-empty{padding:14px 10px;color:var(--dim);font-size:12.5px}
+
+/* ───────── prototype panel ───────── */
+.proto{position:fixed;right:16px;bottom:16px;z-index:40;width:224px;border:1px dashed #3a3a40;border-radius:10px;background:rgba(16,16,19,.94);backdrop-filter:blur(6px);padding:10px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s var(--ease)}
+body.on-claim .proto{opacity:1;transform:none;pointer-events:auto}
+.proto summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:2px 2px 0}
+.proto summary::-webkit-details-marker{display:none}
+.proto[open] summary{margin-bottom:8px}
+.proto .pb{display:block;width:100%;height:30px;margin-top:6px;border-radius:6px;border:1px solid var(--bd2);background:var(--sf);font:500 11.5px var(--mono);color:var(--mu);text-align:left;padding:0 10px;transition:color .15s,border-color .15s}
+.proto .pb:hover:not([disabled]){color:var(--tx);border-color:#3a3a40}
+.proto .pb[disabled]{opacity:.4;cursor:default}
+
+/* ───────── keyframes ───────── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:.75;transform:scale(1)}}
+@keyframes halo{0%{opacity:.55;transform:scale(.7)}100%{opacity:0;transform:scale(1.35)}}
+@keyframes pop{0%{transform:scale(.6)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes burst{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes sweep{to{transform:translateX(100%)}}
+@keyframes draw{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+@keyframes caret{50%{opacity:.25}}
+@keyframes rowflash{0%{background:rgba(86,180,233,.10)}100%{background:transparent}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;transition-delay:0s !important}
+}
+
+/* ───────── narrow ───────── */
+@media (max-width:760px){
+  .rec-h{display:none}
+  .rec-r{grid-template-columns:1fr}
+  .rec-r>div+div{border-left:0;border-top:1px solid var(--bd)}
+  .rec-r>div::before{content:attr(data-l);display:block;font:500 10px/1 var(--mono);letter-spacing:.08em;color:var(--dim);margin-bottom:6px;width:100%}
+  .c-type,.c-name{flex-wrap:wrap}
+  .c-val code{padding-right:60px}
+  .rec-f{height:auto;min-height:36px;flex-wrap:wrap;padding:8px 10px}
+  .fullname:not(.open){display:none}
+  .na{height:auto}
+  .guide,.facts,.cmp{grid-template-columns:1fr}
+  .na-top{flex-direction:column}
+  .it.action{position:relative;top:auto}
+  .provider{flex-direction:column;align-items:flex-start}
+  .drow{grid-template-columns:9px minmax(0,1fr) 16px}
+  .drow .dm{display:none}
+  .claimbar{flex-wrap:wrap}
+  .claimbar .crumb{display:none}
+  .claimbar h1{flex-basis:100%;order:3;font-size:22px;margin-top:6px}
+  .claimbar .pill{order:2}
+  .acct .who{display:none}
+  .proto{width:190px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="wrap">
+    <span class="wordmark"><i></i>DomainClaim</span>
+    <div class="acct">
+      <span class="avatar" id="avatar">C</span><span class="who" id="who">carlton</span>
+      <button class="btn ghost" style="height:30px;padding:0 10px;font-size:12.5px" id="signout">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+ <div class="stage" id="stage">
+
+  <!-- Sign in -->
+  <section class="screen" id="s-signin" aria-label="Sign in">
+    <div class="auth">
+      <div class="card">
+        <span class="wordmark"><i></i>DomainClaim</span>
+        <h1>Sign in</h1>
+        <p class="lede">Prove you own a domain. See every step of the check.</p>
+        <div class="stack">
+          <button class="btn" data-oauth="GitHub" id="gh">
+            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 4.2l3.6 3.4A8.3 8.3 0 0 1 12 6.8c1.4 0 2.7.3 3.9.8l3.6-3.4v7.3a7.5 7.5 0 0 1-3.2 6.2v2.1a.8.8 0 0 1-1.2.7l-1-.6a8.8 8.8 0 0 1-4.2 0l-1 .6a.8.8 0 0 1-1.2-.7v-2.1a7.5 7.5 0 0 1-3.2-6.2z"/><circle cx="9.3" cy="12.6" r="1.1" fill="var(--el)"/><circle cx="14.7" cy="12.6" r="1.1" fill="var(--el)"/></svg>
+            <span>Continue with GitHub</span>
+          </button>
+          <button class="btn" data-oauth="Google">
+            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="3">
+              <path d="M16.95 7.05A7 7 0 0 0 5.42 9.61" stroke="#ea4335"/>
+              <path d="M5.42 9.61A7 7 0 0 0 5.42 14.39" stroke="#fbbc05"/>
+              <path d="M5.42 14.39A7 7 0 0 0 16.95 16.95" stroke="#34a853"/>
+              <path d="M16.95 16.95A7 7 0 0 0 19 12H12" stroke="#4285f4"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+        </div>
+        <div class="or">or</div>
+        <form id="emailform" novalidate class="stack">
+          <label class="sr" for="email">Email</label>
+          <input class="field" id="email" type="email" placeholder="you@company.com" autocomplete="email">
+          <button class="btn primary" type="submit">Email me a link</button>
+        </form>
+        <div class="hint" id="emailhint" aria-live="polite"></div>
+        <div class="fine">We only use your account to keep your claims.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inbox -->
+  <section class="screen" id="s-inbox" hidden aria-label="Check your inbox">
+    <div class="auth">
+      <div class="card">
+        <span class="wordmark"><i></i>DomainClaim</span>
+        <div class="inbox-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg></div>
+        <h1>Check your inbox</h1>
+        <p class="lede">We sent a sign-in link to <strong id="sentto" style="color:var(--tx);font-weight:500"></strong>. It works for 15 minutes.</p>
+        <div class="stack">
+          <button class="btn proto-btn" id="openlink">Open the link (prototype)</button>
+          <button class="btn" id="resend"><span style="min-width:84px">Resend link</span></button>
+        </div>
+        <div class="fine"><button class="linkbtn" id="diffemail">Use a different email</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Domain list -->
+  <section class="screen" id="s-list" hidden aria-label="Domains">
+    <div class="listhead">
+      <div><h1>Domains</h1></div>
+      <span class="count" id="count"></span>
+    </div>
+    <form class="claimbox" id="claimform" novalidate>
+      <label class="label" for="claiminput">Claim a domain</label>
+      <div class="claimrow">
+        <input class="field" id="claiminput" placeholder="acme.dev or https://acme.dev" autocomplete="off" spellcheck="false">
+        <button class="btn primary" type="submit" style="width:88px">Claim</button>
+      </div>
+      <div class="vmsg" id="claimmsg" aria-live="polite">Paste a domain or a URL.</div>
+    </form>
+    <ul class="dlist" id="dlist"></ul>
+  </section>
+
+ </div>
+</main>
+
+<!-- Drawer -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Domains" aria-hidden="true">
+  <div class="dr-h">
+    <span class="ttl">Domains</span>
+    <span class="keys"><kbd>Esc</kbd>
+      <button class="iconbtn" id="drclose" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </span>
+  </div>
+  <form class="dr-sec" id="drclaimform" novalidate>
+    <label class="label" for="drclaim">Claim a domain</label>
+    <div class="claimrow">
+      <input class="field" id="drclaim" placeholder="acme.dev" autocomplete="off" spellcheck="false">
+      <button class="btn primary" type="submit">Claim</button>
+    </div>
+    <div class="vmsg" id="drclaimmsg" aria-live="polite">Paste a domain or a URL.</div>
+  </form>
+  <div class="dr-sec" style="padding-top:6px">
+    <div class="filter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+      <label class="sr" for="drfilter">Filter claims</label>
+      <input class="field" id="drfilter" placeholder="Filter claims" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <ul class="dr-list" id="drlist"></ul>
+</aside>
+
+<!-- Prototype controls -->
+<details class="proto" id="proto" open>
+  <summary><span class="label">Prototype</span><span class="label" style="color:var(--dim)">demo only</span></summary>
+  <button class="pb" id="sim-ok">Simulate: record added</button>
+  <button class="pb" id="sim-wrong">Simulate: wrong value</button>
+  <button class="pb" id="sim-reset">Reset to no record</button>
+</details>
+
+<script>
+(() => {
+'use strict';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D = ms => RM ? 0 : ms;
+const wait = ms => new Promise(r => setTimeout(r, D(ms)));
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const RECNAME = '_domainclaim-challenge';
+const INTERVAL = 30;
+
+/* ───── icons ───── */
+const I = {
+  check: '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#0a0a0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.6l4.5-5"/></svg>',
+  bigcheck: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.4 6.4 11.6 13 4.6"/></svg>',
+  back: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+  list: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r=".6" fill="currentColor"/><circle cx="4.5" cy="12" r=".6" fill="currentColor"/><circle cx="4.5" cy="18" r=".6" fill="currentColor"/></svg>',
+  ext: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+  chev: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  caret: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+};
+const TIPS = {
+  TXT: 'A DNS record that holds a line of text. We read it to confirm you control the domain.',
+  Name: 'Where the record lives. Most panels add your domain for you, so enter only this part.',
+  Value: 'The text we look for. Paste it exactly, with no quotes or spaces added.',
+  TTL: 'How long other servers keep a copy of the record. Lower means we see your change sooner.',
+  nameservers: 'The servers that answer DNS questions for your domain. Your records live wherever they are.',
+  zone: 'The set of DNS records for a domain, managed in one place. Usually at your DNS host.',
+};
+let tipN = 0;
+const tip = (k, left) => { const id = 'tt' + (++tipN); return `<span class="tip${left ? ' l' : ''}"><button type="button" class="q" aria-label="What is ${k}?" aria-describedby="${id}">?</button><span class="tt" role="tooltip" id="${id}"><b>${k}</b>${TIPS[k]}</span></span>`; };
+
+/* ───── data ───── */
+const STATUS = {
+  verified: {pill: 'Verified', list: 'Verified'},
+  waiting:  {pill: 'Waiting for your record', list: 'Waiting for record'},
+  checking: {pill: 'Checking', list: 'Checking'},
+  wrong:    {pill: "Value doesn't match", list: "Value doesn't match"},
+  risk:     {pill: 'At risk', list: 'At risk'},
+};
+const now = () => Date.now();
+const P = (s, t) => ({state: s, text: t});
+const claims = [
+  {domain: 'carlton.dev', provider: 'Cloudflare', token: 'm3q8v2kx7tn4pz9wj5hr6cb1fd', expiry: '2026-10-01T10:24Z', status: 'verified', dns: 'ok', meta: 'Checked 2 min ago', last: now() - 8000, claimed: 'claimed 12 Aug', verifiedAt: '12 Aug, 09:40',
+   steps: null},
+  {domain: 'futurity.science', provider: 'Namecheap', token: 'x9d4k2pw7mq3tv8zr5hn6jc1bg', expiry: '2026-10-01T10:24Z', status: 'waiting', dns: 'absent', meta: 'Added 3 days ago', last: now() - 17000, claimed: 'claimed 3 days ago'},
+  {domain: 'fs.cards', provider: 'Cloudflare', token: 'p4w8n2kt6vx9qm3zj7hr5dc1fb', expiry: '2026-10-01T10:24Z', status: 'risk', dns: 'removed', meta: 'Record missing since 09:12', last: now() - 4000, claimed: 'claimed 28 Aug'},
+];
+let uid = 0;
+claims.forEach(c => { c.id = 'c' + (++uid); c.steps = initialSteps(c); });
+
+function stepText(c, i, state) {
+  const T = {
+    0: {passed: `${c.domain}, served by ${c.provider}`, checking: 'Looking up the zone', idle: 'Not reached'},
+    1: {passed: `2 of 2 answered in ${c.ms || 41}ms`, checking: 'Asking the nameservers', idle: 'Runs after the zone is found'},
+    2: {passed: '1 TXT record found', checking: `Looking for ${RECNAME}`, waiting: `No record at <code>${RECNAME}</code> yet`, wrong: `No record at <code>${RECNAME}</code> since 09:12`, idle: 'Runs after the nameservers answer'},
+    3: {passed: 'Token matches', checking: 'Comparing the value', wrong: 'Found a value that was cut short', idle: 'Runs once the record is found'},
+    4: {passed: `${c.domain} is yours`, checking: 'Saving the claim', idle: 'Runs once the token matches'},
+  };
+  return T[i][state] || T[i].idle;
+}
+function initialSteps(c) {
+  const s = [0,1,2,3,4].map(i => ({state: 'idle'}));
+  if (c.status === 'verified') s.forEach(x => x.state = 'passed');
+  if (c.status === 'waiting') { s[0].state = s[1].state = 'passed'; s[2].state = 'waiting'; }
+  if (c.status === 'risk') { s[0].state = s[1].state = 'passed'; s[2].state = 'wrong'; }
+  if (c.status === 'wrong') { s[0].state = s[1].state = s[2].state = 'passed'; s[3].state = 'wrong'; }
+  return s;
+}
+const recValue = c => `domainclaim-token=${c.token} expiry=${c.expiry}`;
+
+/* ───── validation ───── */
+const SUFFIXES = new Set(['com','net','org','dev','io','app','co','uk','de','fr','test','science','cards','ai','me','co.uk','org.uk','ac.uk','gov.uk','me.uk','com.au','net.au','org.au','co.nz','co.jp','com.br','co.za','co.in','github.io','vercel.app','pages.dev','netlify.app','herokuapp.com']);
+function puny(input) {
+  const base=36,tMin=1,tMax=26,skew=38,damp=700; let n=128,delta=0,bias=72;
+  const cps=Array.from(input).map(c=>c.codePointAt(0)); let out=cps.filter(c=>c<128).map(c=>String.fromCharCode(c)).join('');
+  const b=out.length; let h=b; if(b>0) out+='-';
+  const adapt=(d,np,first)=>{d=first?Math.floor(d/damp):d>>1;d+=Math.floor(d/np);let k=0;while(d>((base-tMin)*tMax)>>1){d=Math.floor(d/(base-tMin));k+=base}return k+Math.floor((base-tMin+1)*d/(d+skew))};
+  const digit=d=>String.fromCharCode(d<26?d+97:d+22);
+  while(h<cps.length){let m=Infinity;for(const c of cps)if(c>=n&&c<m)m=c;delta+=(m-n)*(h+1);n=m;
+    for(const c of cps){if(c<n)delta++;if(c===n){let q=delta;for(let k=base;;k+=base){const t=k<=bias?tMin:(k>=bias+tMax?tMax:k-bias);if(q<t)break;out+=digit(t+(q-t)%(base-t));q=Math.floor((q-t)/(base-t))}out+=digit(q);bias=adapt(delta,h+1,h===b);delta=0;h++}}
+    delta++;n++}
+  return out;
+}
+function validate(raw) {
+  const t = raw.trim();
+  if (!t) return {k: 'empty', html: 'Paste a domain or a URL.'};
+  let s = t.normalize('NFC').toLowerCase();
+  s = s.replace(/^[a-z][a-z0-9+.\-]*:\/\//, '').replace(/^[^@\/]*@/, '');
+  s = s.split(/[\/?#]/)[0].replace(/:\d*$/, '').replace(/\.$/, '');
+  if (s.startsWith('www.') && s.split('.').length > 2) s = s.slice(4);
+  const full = {k: 'err', html: 'Enter a full domain, like acme.dev.'};
+  if (!s || !s.includes('.')) return full;
+  const labels = s.split('.');
+  let idn = false;
+  const ascii = labels.map(l => { if (/[^\x00-\x7f]/.test(l)) { idn = true; return 'xn--' + puny(l); } return l; });
+  if (ascii.some(l => !/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(l))) return full;
+  if (/^\d+$/.test(ascii[ascii.length - 1])) return full;
+  const d = ascii.join('.');
+  if (SUFFIXES.has(d)) return {k: 'err', html: `${esc(d)} is a public suffix. Enter a domain you registered, like acme.${esc(d)}.`};
+  const existing = claims.find(c => c.domain === d);
+  if (existing) return {k: 'exists', domain: d, claim: existing, html: `You already have this claim. <button type="button" class="linkbtn" data-open="${existing.id}">Open it.</button>`};
+  if (idn) return {k: 'ok', domain: d, html: `We'll use <code>${esc(d)}</code> (the ASCII form of ${esc(s)}).`};
+  if (d === 'taken.test') return {k: 'warn', domain: d, html: 'Another account holds this name. You can still claim it and prove control.'};
+  if (d !== t.toLowerCase()) return {k: 'ok', domain: d, html: `We'll use <code>${esc(d)}</code>`};
+  return {k: 'ok', domain: d, html: `Ready to claim <code>${esc(d)}</code>.`};
+}
+function bindClaimForm(form, input, msg, onDone) {
+  const upd = () => { const v = validate(input.value); msg.dataset.k = v.k; msg.innerHTML = v.html; return v; };
+  input.addEventListener('input', upd);
+  msg.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openFromForm(claims.find(c => c.id === b.dataset.open)); });
+  function openFromForm(c) { input.value = ''; upd(); onDone(c, false); }
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = upd();
+    if (v.k === 'exists') return openFromForm(v.claim);
+    if (v.k !== 'ok' && v.k !== 'warn') { input.focus(); msg.animate?.([{transform:'translateX(0)'},{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'translateX(0)'}], {duration: D(220)}); return; }
+    const c = newClaim(v.domain);
+    input.value = ''; upd();
+    onDone(c, true);
+  });
+}
+function newClaim(domain) {
+  const chars = 'abcdefghjkmnpqrstvwxyz23456789';
+  const token = domain === 'acme.dev' ? 'k7p2m9xq4rtv8wz3hj6nfc5bgd' : Array.from({length: 26}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const c = {id: 'c' + (++uid), domain, provider: 'Cloudflare', token, expiry: '2026-10-01T10:24Z', status: 'checking', dns: 'absent', meta: 'Added just now', last: 0, claimed: 'claimed just now', fresh: true, ms: 41};
+  c.steps = [0,1,2,3,4].map(() => ({state: 'idle'}));
+  claims.unshift(c);
+  return c;
+}
+
+/* ───── screen transitions ───── */
+const stage = $('#stage');
+let current = $('#s-signin');
+function go(next, dir = 'fwd') {
+  if (next === current) return;
+  const prev = current; current = next;
+  next.hidden = false;
+  next.classList.add(dir === 'fwd' ? 'from-right' : 'from-left');
+  void next.offsetWidth;
+  next.classList.remove('from-right', 'from-left');
+  prev.classList.add(dir === 'fwd' ? 'to-left' : 'to-right');
+  window.scrollTo(0, 0);
+  setTimeout(() => {
+    prev.classList.remove('to-left', 'to-right');
+    if (prev !== current) { prev.hidden = true; if (prev.dataset.dyn) prev.remove(); }
+  }, D(270));
+  document.body.classList.toggle('authed', next.id !== 's-signin' && next.id !== 's-inbox');
+  document.body.classList.toggle('on-claim', !!next.dataset.dyn);
+  if (!next.dataset.dyn) activeClaim = null;
+}
+
+/* ───── sign in ───── */
+let user = {name: 'carlton', via: 'GitHub'};
+document.querySelectorAll('[data-oauth]').forEach(b => b.addEventListener('click', async () => {
+  const lbl = b.querySelector('span'); const w = b.offsetWidth; b.style.width = w + 'px';
+  b.disabled = true; b.querySelector('svg').style.display = 'none';
+  b.insertAdjacentHTML('afterbegin', '<i class="spin"></i>');
+  await wait(380);
+  user = {name: 'carlton', via: b.dataset.oauth};
+  signedIn();
+  setTimeout(() => { b.disabled = false; b.querySelector('.spin')?.remove(); b.querySelector('svg').style.display = ''; b.style.width = ''; }, D(400));
+}));
+$('#emailform').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = $('#email').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { $('#emailhint').textContent = v ? 'That address looks incomplete.' : 'Enter your email.'; $('#email').focus(); return; }
+  $('#emailhint').textContent = '';
+  $('#sentto').textContent = v;
+  go($('#s-inbox'));
+});
+$('#email').addEventListener('input', () => $('#emailhint').textContent = '');
+$('#diffemail').addEventListener('click', () => go($('#s-signin'), 'back'));
+$('#resend').addEventListener('click', e => {
+  const s = $('#resend span'); s.textContent = 'Sent again'; $('#resend').disabled = true;
+  setTimeout(() => { s.textContent = 'Resend link'; $('#resend').disabled = false; }, 2200);
+});
+$('#openlink').addEventListener('click', () => { const em = $('#sentto').textContent; user = {name: em, via: 'email'}; signedIn(); });
+function signedIn() {
+  $('#who').textContent = user.name; $('#avatar').textContent = user.name[0].toUpperCase();
+  renderLists(); go($('#s-list'));
+}
+$('#signout').addEventListener('click', () => { closeDrawer(); go($('#s-signin'), 'back'); });
+
+/* ───── lists ───── */
+const dlist = $('#dlist'), drlist = $('#drlist');
+function renderLists(enterId) {
+  $('#count').textContent = claims.length + (claims.length === 1 ? ' claim' : ' claims');
+  dlist.innerHTML = claims.map(c => `<li data-id="${c.id}" class="${c.id === enterId ? 'enter' : ''}"><button class="drow" data-id="${c.id}">
+      <span class="dot" data-s="${c.status}"></span>
+      <span style="min-width:0"><span class="dn">${esc(c.domain)}</span><span class="ds" data-s="${c.status}">${STATUS[c.status].list}</span></span>
+      <span class="dm">${esc(c.meta)}</span><span class="chev">${I.chev}</span></button></li>`).join('');
+  renderDrawerList(enterId);
+  if (enterId) requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll(`li[data-id="${enterId}"]`).forEach(li => { li.classList.remove('enter'); li.classList.add('flash'); });
+  }));
+}
+function renderDrawerList(enterId) {
+  const q = $('#drfilter').value.trim().toLowerCase();
+  const items = claims.filter(c => !q || c.domain.includes(q));
+  drlist.innerHTML = items.length ? items.map(c => `<li data-id="${c.id}" class="${c.id === enterId ? 'enter' : ''}"><button data-id="${c.id}" aria-current="${activeClaim && activeClaim.id === c.id}">
+      <span class="dot" data-s="${c.status}"></span><span class="dn">${esc(c.domain)}</span><span class="ds">${STATUS[c.status].list}</span></button></li>`).join('')
+    : `<li class="dr-empty">No claims match “${esc(q)}”.</li>`;
+}
+function refreshListRow(c) {
+  document.querySelectorAll(`[data-id="${c.id}"] .dot`).forEach(d => d.dataset.s = c.status);
+  document.querySelectorAll(`.drow[data-id="${c.id}"] .ds`).forEach(d => { d.dataset.s = c.status; d.textContent = STATUS[c.status].list; });
+  document.querySelectorAll(`.drow[data-id="${c.id}"] .dm`).forEach(d => d.textContent = c.meta);
+  document.querySelectorAll(`#drlist button[data-id="${c.id}"] .ds`).forEach(d => d.textContent = STATUS[c.status].list);
+}
+dlist.addEventListener('click', e => { const b = e.target.closest('.drow'); if (b) openClaim(claims.find(c => c.id === b.dataset.id)); });
+bindClaimForm($('#claimform'), $('#claiminput'), $('#claimmsg'), (c, isNew) => {
+  if (!isNew) return openClaim(c);
+  renderLists(c.id);
+  setTimeout(() => openClaim(c), D(520));
+});
+
+/* ───── drawer ───── */
+let lastFocus = null;
+function openDrawer() {
+  if (!activeClaim) return;
+  lastFocus = document.activeElement;
+  renderDrawerList();
+  document.body.classList.add('drawer-open');
+  $('#drawer').setAttribute('aria-hidden', 'false');
+  setTimeout(() => $('#drfilter').focus(), D(60));
+}
+function closeDrawer() {
+  if (!document.body.classList.contains('drawer-open')) return;
+  document.body.classList.remove('drawer-open');
+  $('#drawer').setAttribute('aria-hidden', 'true');
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus({preventScroll: true});
+}
+$('#scrim').addEventListener('click', closeDrawer);
+$('#drclose').addEventListener('click', closeDrawer);
+$('#drfilter').addEventListener('input', () => renderDrawerList());
+drlist.addEventListener('click', e => {
+  const b = e.target.closest('button[data-id]'); if (!b) return;
+  const c = claims.find(x => x.id === b.dataset.id);
+  closeDrawer();
+  if (c !== activeClaim) setTimeout(() => openClaim(c), D(120));
+});
+bindClaimForm($('#drclaimform'), $('#drclaim'), $('#drclaimmsg'), (c, isNew) => {
+  if (!isNew) { closeDrawer(); if (c !== activeClaim) setTimeout(() => openClaim(c), D(120)); return; }
+  renderLists(c.id);
+  setTimeout(() => { closeDrawer(); openClaim(c); }, D(480));
+});
+document.addEventListener('keydown', e => {
+  const typing = /INPUT|TEXTAREA/.test(document.activeElement?.tagName);
+  if (e.key === 'Escape' && document.body.classList.contains('drawer-open')) { e.preventDefault(); closeDrawer(); return; }
+  if (e.key === '[' && !typing && !e.metaKey && !e.ctrlKey && activeClaim) {
+    e.preventDefault();
+    document.body.classList.contains('drawer-open') ? closeDrawer() : openDrawer();
+  }
+  if (e.key === 'Tab' && document.body.classList.contains('drawer-open')) {
+    const f = [...$('#drawer').querySelectorAll('button,input')].filter(x => !x.disabled && x.offsetParent);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+});
+
+/* ───── claim screen ───── */
+let activeClaim = null;
+function openClaim(c) {
+  const el = buildClaim(c);
+  stage.appendChild(el);
+  activeClaim = c; c.el = el;
+  go(el, 'fwd');
+  requestAnimationFrame(() => { layoutRail(c, true); });
+  updateProto();
+  if (c.fresh) { c.fresh = false; setTimeout(() => runCheck(c, 'initial'), D(320)); }
+}
+function buildClaim(c) {
+  const el = document.createElement('section');
+  el.className = 'screen claim'; el.dataset.dyn = '1'; el.hidden = true;
+  el.setAttribute('aria-label', c.domain);
+  const via = user.via === 'email' ? 'email link' : user.via;
+  el.innerHTML = `
+    <header class="claimbar">
+      <button class="iconbtn js-back" aria-label="Back to Domains">${I.back}</button>
+      <button class="drawerbtn js-drawer" aria-label="Open domains drawer" aria-keyshortcuts="[">${I.list}<span>Domains</span><kbd>[</kbd></button>
+      <span class="crumb" aria-hidden="true">/</span>
+      <h1>${esc(c.domain)}</h1>
+      <span class="pill js-pill" data-s="${c.status}" role="status"><span class="dot" data-s="${c.status}"></span><span class="js-pilltext">${STATUS[c.status].pill}</span></span>
+    </header>
+    <ol class="rail">
+      <div class="track" aria-hidden="true"><div class="fill"></div></div>
+      <li class="it compact"><span class="node"></span><span class="lbl">Signed in</span><span class="fd">${esc(via)} · ${esc(user.name)}</span></li>
+      <li class="it compact"><span class="node"></span><span class="lbl">Name checked</span><span class="fd">${esc(c.domain)} · ${esc(c.claimed)}</span></li>
+      <li class="it compact"><span class="node"></span><span class="lbl">Record generated</span><span class="fd">Token expires 1 Oct 2026, 10:24 UTC</span></li>
+      <li class="it action" data-s="${c.status}">
+        <span class="node">${I.check}</span>
+        <div class="ahead"><h2>Add the record</h2><span class="tag js-tag">Your step</span></div>
+        <div class="provider">
+          <span>Your nameservers${tip('nameservers')} are at <strong>${esc(c.provider)}</strong>. Add the record there.</span>
+          <button class="extlink" type="button">Open ${esc(c.provider)} DNS ${I.ext}</button>
+        </div>
+        <div class="rec" role="table" aria-label="DNS record to add">
+          <div class="rec-h" role="row">
+            <div class="label" role="columnheader">Type</div>
+            <div class="label" role="columnheader">Name${tip('Name')}</div>
+            <div class="label" role="columnheader">Value${tip('Value')}</div>
+            <div class="label" role="columnheader">TTL${tip('TTL')}</div>
+          </div>
+          <div class="rec-r" role="row">
+            <div class="c-type" role="cell" data-l="TYPE"><code>TXT</code>${tip('TXT', true)}</div>
+            <div class="c-name" role="cell" data-l="NAME"><code>${RECNAME}</code><button class="copy" data-copy="${RECNAME}">Copy</button></div>
+            <div class="c-val" role="cell" data-l="VALUE"><code>${esc(recValue(c))}</code><button class="copy" data-copy="${esc(recValue(c))}">Copy</button></div>
+            <div class="c-ttl" role="cell" data-l="TTL">Lowest offered</div>
+          </div>
+          <div class="rec-f">
+            <button class="disc" type="button" aria-expanded="false">${I.caret}Panel wants the full name?</button>
+            <span class="fullname"><code>${RECNAME}.${esc(c.domain)}</code><button class="copy" data-copy="${RECNAME}.${esc(c.domain)}">Copy</button></span>
+          </div>
+        </div>
+        <div class="na">
+          <div class="sweep"></div>
+          <div class="na-body"></div>
+          <div class="na-meta" aria-live="off"><span class="live"></span><span class="js-meta"></span></div>
+          <div class="na-bar"><i></i></div>
+        </div>
+      </li>
+      <li class="it sechead"><span class="label">The check</span></li>
+      ${[['01','Find the zone','zone'],['02','Reach the nameservers','nameservers'],['03','Find the TXT record',''],['04','Match the token',''],['05','Record the claim','']].map((s, i) => `
+      <li class="it step" data-i="${i}" data-state="idle">
+        <span class="node">${I.check}</span>
+        <div class="sl"><span class="num">${s[0]}</span><span>${s[1]}</span>${s[2] ? tip(s[2]) : ''}</div>
+        <div class="sf"></div>
+      </li>`).join('')}
+    </ol>`;
+  // wire
+  el.querySelector('.js-back').addEventListener('click', () => { renderLists(); go($('#s-list'), 'back'); updateProto(); });
+  el.querySelector('.js-drawer').addEventListener('click', openDrawer);
+  el.querySelector('.disc').addEventListener('click', e => {
+    const b = e.currentTarget, open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', open); el.querySelector('.fullname').classList.toggle('open', open);
+  });
+  el.addEventListener('click', e => {
+    const cp = e.target.closest('.copy'); if (cp) return copy(cp);
+    if (e.target.closest('.js-checknow')) return runCheck(c, 'manual');
+    if (e.target.closest('.js-tolist')) { renderLists(); go($('#s-list'), 'back'); updateProto(); }
+  });
+  c.steps.forEach((s, i) => renderStep(c, i, false, el));
+  renderAction(c, el, false);
+  return el;
+}
+async function copy(btn) {
+  const text = btn.dataset.copy;
+  try { await navigator.clipboard.writeText(text); } catch (_) {
+    const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); } catch (_) {} t.remove();
+  }
+  btn.textContent = 'Copied'; btn.classList.add('done');
+  clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1400);
+}
+function renderStep(c, i, animate, el = c.el) {
+  if (!el) return;
+  const s = c.steps[i]; const li = el.querySelector(`.step[data-i="${i}"]`);
+  const changed = li.dataset.state !== s.state;
+  li.dataset.state = s.state;
+  const sf = li.querySelector('.sf'); const html = stepText(c, i, s.state);
+  if (sf.innerHTML !== html) { sf.innerHTML = html; if (animate) { sf.classList.remove('in'); void sf.offsetWidth; sf.classList.add('in'); } }
+  const node = li.querySelector('.node');
+  if (animate && changed && ['passed','waiting','wrong'].includes(s.state)) { node.classList.remove('res'); void node.offsetWidth; node.classList.add('res'); }
+}
+function naContent(c) {
+  const p = esc(c.provider);
+  const guide = (a) => `<ol class="guide"><li><span>1</span>Open ${p} DNS and choose Add record.</li><li><span>2</span>${a}</li><li><span>3</span>Save it. The next check picks it up.</li></ol>`;
+  const btn = `<button class="btn primary js-checknow">Check now</button>`;
+  switch (c.status) {
+    case 'verified': return `<div class="na-top"><div><h3 class="ok">${I.bigcheck}Verified</h3><p>We keep checking. You'll hear from us if the record disappears.</p></div><button class="btn js-tolist">All domains</button></div>
+      <dl class="facts"><div><dt>Verified</dt><dd>${esc(c.verifiedAt || 'Today')}</dd></div><div><dt>Checks</dt><dd>Every 30 seconds</dd></div><div><dt>Keep</dt><dd>Leave the TXT record in place</dd></div></dl>`;
+    case 'wrong': {
+      const v = recValue(c), found = `domainclaim-token=${c.token.slice(0, -1)}`, miss = v.slice(found.length);
+      return `<div class="na-top"><div><h3 class="am">The value doesn't match</h3><p>Replace the value in ${p} with the one above. It was cut short when pasted.</p></div>${btn}</div>
+      <div class="cmp"><div><span class="label">Found</span><code>${esc(found)}<span class="end" title="Value ends here"></span></code></div><div><span class="label">Expected</span><code>${esc(found)}<mark>${esc(miss)}</mark></code></div></div>`;
+    }
+    case 'risk': return `<div class="na-top"><div><h3 class="am">The record was removed</h3><p>Add it back to keep the claim.</p></div>${btn}</div>${guide('Add the TXT record above again.')}`;
+    default: return `<div class="na-top"><div><h3>Add the record in ${p}.</h3><p>We check every 30 seconds.</p></div>${btn}</div>${guide('Choose TXT. Paste the Name and Value above.')}`;
+  }
+}
+function renderAction(c, el = c.el, animate = true) {
+  if (!el) return;
+  const act = el.querySelector('.it.action');
+  const prevS = act.dataset.s;
+  act.dataset.s = c.status;
+  const body = el.querySelector('.na-body');
+  const key = c.status === 'checking' ? 'waiting' : c.status;
+  if (body.dataset.key !== key) {
+    body.dataset.key = key; body.innerHTML = naContent(c);
+    if (animate) { body.classList.remove('in'); void body.offsetWidth; body.classList.add('in'); }
+  }
+  const pill = el.querySelector('.js-pill');
+  if (pill.dataset.s !== c.status) {
+    pill.dataset.s = c.status; pill.querySelector('.dot').dataset.s = c.status;
+    el.querySelector('.js-pilltext').textContent = STATUS[c.status].pill;
+    if (animate) { pill.classList.remove('pop'); void pill.offsetWidth; pill.classList.add('pop'); }
+  }
+  el.querySelector('.js-tag').textContent = c.status === 'verified' ? 'Done' : 'Your step';
+  setCheckBtn(c);
+  tickMeta();
+  if (animate && c.status === 'verified' && prevS !== 'verified') {
+    const na = el.querySelector('.na'); na.classList.remove('celebrate'); void na.offsetWidth; na.classList.add('celebrate');
+  }
+}
+function setCheckBtn(c) {
+  const b = c.el && c.el.querySelector('.js-checknow'); if (!b) return;
+  b.disabled = !!c.running; b.textContent = c.running ? 'Checking' : 'Check now';
+}
+
+/* rail fill */
+function layoutRail(c, instant) {
+  const el = c.el; if (!el || el.hidden) return;
+  const rail = el.querySelector('.rail'), track = el.querySelector('.track'), fill = el.querySelector('.fill');
+  const items = [...rail.querySelectorAll('.it')];
+  const act = rail.querySelector('.it.action');
+  const centerOf = it => {
+    let top;
+    if (it === act) { const p = act.previousElementSibling; top = p.offsetTop + p.offsetHeight + 6; }
+    else top = it.offsetTop;
+    const n = it.querySelector('.node'); return top + n.offsetTop + n.offsetHeight / 2;
+  };
+  const nodes = items.filter(i => i.querySelector('.node'));
+  const first = centerOf(nodes[0]), last = centerOf(nodes[nodes.length - 1]);
+  track.style.top = first + 'px'; track.style.height = (last - first) + 'px';
+  // how far: through done items to the action node; beyond only once step 03 passes
+  let target = act;
+  const steps = [...rail.querySelectorAll('.step')];
+  if (c.steps[2].state === 'passed') { for (let i = 0; i < 5; i++) if (c.steps[i].state === 'passed') target = steps[i]; }
+  if (instant) { fill.style.transition = 'none'; }
+  fill.style.height = (centerOf(target) - first) + 'px';
+  if (instant) { void fill.offsetWidth; fill.style.transition = ''; }
+}
+addEventListener('resize', () => activeClaim && layoutRail(activeClaim, true));
+
+/* check engine */
+async function runCheck(c, mode) {
+  if (c.running) return;
+  c.running = true; setCheckBtn(c); tickMeta();
+  const start = mode === 'initial' ? 0 : 2;
+  const quiet = mode === 'auto' && c.status === 'verified';
+  if (quiet) { await wait(900); c.running = false; c.last = now(); setCheckBtn(c); tickMeta(); return; }
+  for (let i = start; i < 5; i++) { c.steps[i] = {state: 'idle'}; renderStep(c, i, false); }
+  layoutRail(c);
+  for (let i = start; i < 5; i++) {
+    c.steps[i].state = 'checking'; renderStep(c, i, true);
+    reveal(c, i);
+    await wait(450);
+    let r = 'passed';
+    if (i === 2) r = c.dns === 'absent' ? 'waiting' : c.dns === 'removed' ? 'wrong' : 'passed';
+    if (i === 3) r = c.dns === 'wrong' ? 'wrong' : 'passed';
+    c.steps[i].state = r; renderStep(c, i, true); layoutRail(c);
+    if (r !== 'passed') break;
+    if (i < 4) await wait(120);
+  }
+  const s3 = c.steps[2].state, s4 = c.steps[3].state;
+  c.status = s3 === 'waiting' ? 'waiting' : s3 === 'wrong' ? 'risk' : s4 === 'wrong' ? 'wrong' : 'verified';
+  if (c.status === 'verified') { const d = new Date(); c.verifiedAt = 'Today, ' + d.toTimeString().slice(0, 5); c.meta = 'Verified just now'; }
+  else if (c.status === 'waiting' && c.meta === 'Added just now') c.meta = 'Added just now';
+  else if (c.status === 'wrong') c.meta = 'Value cut short';
+  c.last = now(); c.running = false;
+  renderAction(c); refreshListRow(c); updateProto();
+  if (activeClaim === c) renderDrawerList();
+}
+function reveal(c, i) {
+  if (activeClaim !== c || innerWidth < 761) return;
+  const li = c.el.querySelector(`.step[data-i="${i}"]`); const r = li.getBoundingClientRect();
+  if (r.bottom > innerHeight - 8) window.scrollBy({top: r.bottom - innerHeight + 28, behavior: RM ? 'auto' : 'smooth'});
+}
+
+/* live meta ticker */
+function fmtAgo(s) { return s < 60 ? `${s}s ago` : `${Math.floor(s / 60)} min ago`; }
+function tickMeta() {
+  const c = activeClaim; if (!c || !c.el) return;
+  const m = c.el.querySelector('.js-meta'), bar = c.el.querySelector('.na-bar i');
+  if (c.running || !c.last) { m.innerHTML = 'Checking now<span class="sep"> · </span><span class="nx">reading DNS for ' + esc(c.domain) + '</span>'; bar.style.width = '100%'; return; }
+  const el = Math.floor((now() - c.last) / 1000), nx = Math.max(0, INTERVAL - el);
+  m.innerHTML = `Last checked ${fmtAgo(el)}<span class="sep"> · </span><span class="nx">next check in ${nx}s</span>`;
+  bar.style.width = Math.min(100, ((now() - c.last) / (INTERVAL * 1000)) * 100) + '%';
+}
+setInterval(() => {
+  claims.forEach(c => { if (!c.running && c.last && now() - c.last >= INTERVAL * 1000 && c === activeClaim) runCheck(c, 'auto'); });
+  tickMeta();
+}, 250);
+
+/* sticky state + topbar border */
+addEventListener('scroll', () => {
+  document.body.classList.toggle('scrolled', scrollY > 4);
+  const a = activeClaim && activeClaim.el && activeClaim.el.querySelector('.it.action');
+  if (a) a.classList.toggle('stuck', scrollY > 0 && a.getBoundingClientRect().top <= parseFloat(getComputedStyle(a).top) + 0.5);
+}, {passive: true});
+
+/* prototype controls */
+function updateProto() {
+  const c = activeClaim;
+  const busy = !c || c.running;
+  $('#sim-ok').disabled = busy || c.status === 'verified';
+  $('#sim-wrong').disabled = busy || c.status === 'wrong';
+  $('#sim-reset').disabled = busy || c.status === 'waiting';
+}
+$('#sim-ok').addEventListener('click', () => { const c = activeClaim; if (!c) return; c.dns = 'ok'; runCheck(c, 'manual').then(updateProto); updateProto(); });
+$('#sim-wrong').addEventListener('click', () => { const c = activeClaim; if (!c) return; c.dns = 'wrong'; runCheck(c, 'manual').then(updateProto); updateProto(); });
+$('#sim-reset').addEventListener('click', () => { const c = activeClaim; if (!c) return; c.dns = 'absent'; runCheck(c, 'manual').then(updateProto); updateProto(); });
+if (innerWidth < 900) $('#proto').open = false;
+
+// initial
+$('#s-signin').hidden = false;
+})();
+</script>
+</body>
+</html>

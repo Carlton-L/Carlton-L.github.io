@@ -46,6 +46,17 @@ export const categories = [
   },
   {
     number: '02',
+    title: 'Product & Systems',
+    subtitle: 'Products built end to end, from the research to the failure states',
+    description:
+      'Full products where the design and the engineering are one decision: what can go wrong, what the person sees when it does, and the code that decides it.',
+    count: '1 project',
+    slug: 'product-systems',
+    accent: 'accent-1',
+    image: '/images/categories/product-systems.jpg',
+  },
+  {
+    number: '03',
     title: 'Experiences & Hardware',
     subtitle: 'Installations, robotics, and interactions that bridge physical and digital space',
     description:
@@ -56,7 +67,7 @@ export const categories = [
     image: '/images/categories/experiences.jpg',
   },
   {
-    number: '03',
+    number: '04',
     title: 'Research & Writing',
     subtitle: 'Qualitative research and thinking on AI, learning, and human capability',
     description:
@@ -264,6 +275,95 @@ export const projects = [
         heading: 'Outcome',
         body: [
           'Futurescaper runs as a real product, a designed frontend on a backend that owns generation, live at futurescape.futurity.science. It’s the clearest small statement of the through-line in my work: an AI tool earns trust when its output is legible, and legibility is a layout problem as much as a model problem.',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'DomainClaim',
+    description:
+      'Claim a domain, prove you control it with one DNS record, and watch every step of the check land. Every failure has a name, a reason and one next action.',
+    meta: '2026 — Design & Full-Stack Build (solo)',
+    category: 'Product & Systems',
+    categorySlug: 'product-systems',
+    image: '/images/projects/domainclaim/cover.png',
+    slug: 'domainclaim',
+    accent: 'accent-1',
+    liveUrl: 'https://domainclaim-pi.vercel.app',
+    tags: ['TypeScript', 'Next.js', 'React', 'DNS', 'Postgres', 'Error States', 'Product Design'],
+    featured: true,
+    hasCustomPage: true,
+    facts: {
+      role: 'Design & full-stack build (solo)',
+      year: '2026',
+      stack: 'Next.js, React, TypeScript, Tailwind, Supabase, Drizzle, Vercel',
+      company: 'Personal',
+      live: 'domainclaim-pi.vercel.app',
+    },
+    caseStudy: [
+      {
+        heading: 'What it is',
+        body: [
+          'DomainClaim lets you claim a domain and prove you control it with one DNS TXT record. Most products stop at "add this record and check back in 48 hours". This one asks the domain’s own nameservers and shows the check as five steps as they land: find the zone, reach the nameservers, find the record, match the value, record the claim.',
+          'Every failure has a name, a reason and one next action. Ownership keeps being checked after it is proved: a name whose record stops answering moves to At risk, and back when the record returns.',
+        ],
+      },
+      {
+        heading: 'What goes wrong',
+        body: [
+          'I started with the ways verification fails, before any screen. A resolver that looked too early caches "no record" for up to an hour. DNS panels add your domain to the name you type, so the record lands at the wrong name. A value gets pasted with an end missing. The record is saved as the wrong type. A wildcard answers with another service’s record. One nameserver is down. The token runs out.',
+          'Each of these needed its own answer, and each one shaped the product.',
+        ],
+      },
+      {
+        heading: 'Ask the source',
+        body: [
+          'The check asks the zone’s authoritative nameservers directly. They don’t cache, so a record is found as soon as the DNS host publishes it. I measured that from a deployed function before building on it. There is no "propagation" copy anywhere in the product.',
+        ],
+      },
+      {
+        heading: 'Whose move is next',
+        body: [
+          'The first check on every new claim looks for a record nobody has added yet. A red cross there would report the product working correctly as a fault. So every step sorts by whose move is next: yours (amber), time’s (cyan), or done (green). There is no red.',
+        ],
+      },
+      {
+        heading: 'Claim, then prove',
+        body: [
+          'Claiming a name and proving control are separate. A pending claim holds nothing, so anyone can start one. One account holds a name at a time, and the database enforces it with a unique index over the holding states, so a race can’t get around it.',
+        ],
+      },
+      {
+        heading: 'Built twice',
+        body: [
+          'I built the engine first: the DNS walk, the typed failures, one owner per name, and a demo namespace where every failure is reachable. The screens got the time that was left, and the stack shaped them into three separate pages.',
+          'The first people outside to use it found the problems in the frame. The sign-in link needed a second click, and the layout shifted between screens. Both were on my list, and I had deferred both. So I kept the engine and started the design again from a blank page, in HTML prototypes.',
+        ],
+      },
+      {
+        heading: 'One change at a time',
+        body: [
+          'I drew three directions from how DNS fails and where the person acts or waits: a rail with a drawer, a scrolling timeline, and the claim as a patch network. The timeline won. It carried the check as one horizontal row of steps on a single cable.',
+          'The next version applied a whole list of changes at once and lost what made the timeline work. From then on each prototype changed one thing, and I decided each change before it was made. The design converged in a day.',
+        ],
+      },
+      {
+        heading: 'Only real states',
+        body: [
+          'Before choosing a stack I checked every state in the design against the backend’s real types. Anything the app couldn’t reach was cut or marked as future work. "Just registered" and "no nameservers set" look the same in DNS, so they became one state. A promise in the copy became build work, or the copy changed.',
+          'The stack came last, with one rule: pages never load data, and screens fetch from the API. The check streams its real steps. It never animates a sequence over one finished answer.',
+        ],
+      },
+      {
+        heading: 'For the code reader',
+        body: [
+          'The code is built to be read. DNS sits behind an interface with a scripted fake, so no test touches the network. Failures are values in a typed union, and the message switch is exhaustive: a new failure breaks the build until it has words. An RFC leads the code, and a friction log records every problem I hit using it against real domains. The unit tests cover the pure layers, and the README names what they don’t.',
+        ],
+      },
+      {
+        heading: 'Outcome',
+        body: [
+          'DomainClaim is live, and the demo names reach every failure above. Designed and not built yet: checking on a schedule while nobody has the claim open, the grace window and the email behind it, transfers between accounts, and a second vantage point.',
         ],
       },
     ],

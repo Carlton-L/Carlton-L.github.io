@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DomainClaim · Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0b;--el:#101013;--sf:#161619;--bd:#232326;--bd2:#2a2a2e;
+  --tx:#e6e6e2;--mu:#8f8f8a;--dim:#5c5c58;--sig:#3dff88;--cy:#56b4e9;--am:#e8a317;
+  --sig-a:rgba(61,255,136,.1);--cy-a:rgba(86,180,233,.1);--am-a:rgba(232,163,23,.1);
+  --r:7px;--rail:56px;--top:52px;--bar:68px;--tl:88px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+code,.mono{font-family:var(--mono)}
+::selection{background:rgba(61,255,136,.25)}
+.dots{position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,#17171a 1.2px,transparent 1.6px);background-size:26px 26px}
+.wrap{width:min(1040px,calc(100% - 48px));margin:0 auto}
+
+/* ---------- primitives ---------- */
+.lab{font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
+.badge{display:inline-flex;align-items:center;height:18px;padding:0 6px;border:1px solid var(--bd2);border-radius:4px;font:500 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.badge.sig{color:var(--sig);border-color:rgba(61,255,136,.28)}
+.badge.cy{color:var(--cy);border-color:rgba(86,180,233,.3)}
+.badge.am{color:var(--am);border-color:rgba(232,163,23,.3)}
+a.btn{color:var(--tx);text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:34px;padding:0 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--sf);font-size:13px;font-weight:500;line-height:1;white-space:nowrap;transition:background .15s,border-color .15s,color .15s,opacity .15s,transform .1s}
+.btn:hover{background:#1c1c20;border-color:#36363b}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible,.q:focus-visible,.tn:focus-visible,.ri:focus-visible,.row:focus-visible,.link:focus-visible,input:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+.btn.primary{background:var(--sig);border-color:var(--sig);color:#05140b}
+.btn.primary:hover{background:#6bffa6;border-color:#6bffa6}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--mu)}
+.btn.ghost:hover{color:var(--tx);background:var(--sf)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn svg{width:15px;height:15px;flex:none}
+.copy{min-width:64px}
+.copy.copied{color:var(--cy);border-color:rgba(86,180,233,.35);background:var(--cy-a)}
+.link{background:none;border:0;padding:0;color:var(--sig);font-size:inherit;text-decoration:underline;text-decoration-color:rgba(61,255,136,.35);text-underline-offset:3px}
+.link:hover{text-decoration-color:var(--sig)}
+input.field{height:40px;width:100%;padding:0 12px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg);color:var(--tx);font-size:14px;transition:border-color .15s,box-shadow .15s}
+input.field::placeholder{color:var(--dim)}
+input.field:focus{outline:none;border-color:#3b3b41;box-shadow:0 0 0 3px rgba(86,180,233,.12)}
+.shake{animation:shake .32s var(--ease)}
+@keyframes shake{25%{transform:translateX(-4px)}60%{transform:translateX(3px)}}
+
+.pill{display:inline-flex;align-items:center;gap:7px;height:24px;padding:0 10px;border-radius:999px;border:1px solid;font-size:12px;font-weight:500;line-height:1;white-space:nowrap}
+.pill .pd{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.p-ver{color:var(--sig);border-color:rgba(61,255,136,.25);background:var(--sig-a)}
+.p-wait,.p-check{color:var(--cy);border-color:rgba(86,180,233,.28);background:var(--cy-a)}
+.p-wrong,.p-risk{color:var(--am);border-color:rgba(232,163,23,.3);background:var(--am-a)}
+.p-wait .pd{animation:breathe 2.4s ease-in-out infinite}
+.p-check .pd{animation:blink .8s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.35}}
+@keyframes blink{50%{opacity:.2}}
+
+/* operator box */
+.op{position:relative;background:var(--el);border:1px solid var(--bd);border-radius:var(--r)}
+.op-h{display:flex;align-items:center;gap:10px;height:40px;padding:0 18px;border-bottom:1px solid var(--bd)}
+.op-h .sp{flex:1}
+.op-h .meta{font:12px var(--mono);color:var(--dim)}
+.port{position:absolute;top:15px;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--sig);background:var(--bg);z-index:2;transition:background .3s,border-color .3s}
+.port.in{left:-5px}.port.out{right:-5px}
+
+/* tooltip */
+.tip{position:relative;display:inline-flex;vertical-align:middle;margin-left:4px}
+.q{width:15px;height:15px;border-radius:50%;border:1px solid var(--bd2);background:var(--sf);color:var(--mu);font:600 9.5px/1 var(--sans);padding:0;display:grid;place-items:center;text-transform:none;letter-spacing:0}
+.q:hover{color:var(--tx);border-color:#3a3a40}
+.tip [role=tooltip]{position:absolute;top:calc(100% + 8px);left:-10px;width:250px;padding:10px 12px;border-radius:6px;background:#1b1b1f;border:1px solid #303036;box-shadow:0 12px 32px rgba(0,0,0,.55);font:400 12.5px/1.5 var(--sans);letter-spacing:0;text-transform:none;color:var(--tx);text-align:left;opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .14s,transform .14s,visibility .14s;z-index:50;pointer-events:none;white-space:normal}
+.tip [role=tooltip] b{font-weight:600;font-family:var(--mono);font-size:11.5px;color:var(--cy)}
+.tip:hover [role=tooltip],.tip:focus-within [role=tooltip]{opacity:1;visibility:visible;transform:none}
+.tip.r [role=tooltip]{left:auto;right:-10px}
+
+/* ---------- rail ---------- */
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--rail);z-index:40;background:var(--el);border-right:1px solid var(--bd);overflow:hidden;transition:width .26s var(--ease),box-shadow .26s var(--ease)}
+.rail-in{width:280px;height:100%;display:flex;flex-direction:column}
+body.authed .rail:hover,body.authed .rail:focus-within,body.authed .rail.open{width:280px;box-shadow:24px 0 60px rgba(0,0,0,.55)}
+.rail-logo{height:var(--top);display:flex;align-items:center;gap:12px;padding:0 10px;border-bottom:1px solid var(--bd);flex:none}
+.logo{width:36px;height:36px;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd2);display:grid;place-items:center;flex:none}
+.rail-name{font-weight:600;font-size:14px;letter-spacing:-.01em;opacity:0;transition:opacity .2s}
+.rail-body{flex:1;display:flex;flex-direction:column;min-height:0;opacity:0;visibility:hidden;transition:opacity .3s}
+body.authed .rail-body{opacity:1;visibility:visible}
+.rail-label{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 18px;margin-top:6px}
+.rail-label .lab{font-size:9.5px}
+.fade{opacity:0;transition:opacity .18s}
+body.authed .rail:hover .fade,body.authed .rail:focus-within .fade,body.authed .rail.open .fade,body.authed .rail:hover .rail-name,body.authed .rail:focus-within .rail-name,body.authed .rail.open .rail-name{opacity:1;transition-delay:.06s}
+.rail-new{display:flex;align-items:center;gap:12px;padding:0 10px;height:44px}
+.plus{width:36px;height:36px;flex:none;border-radius:var(--r);border:1px dashed #3a3a40;background:transparent;color:var(--mu);display:grid;place-items:center;padding:0}
+.plus:hover{color:var(--sig);border-color:rgba(61,255,136,.5)}
+.rail-new form{flex:1;display:flex}
+.rail-new input.field{height:34px;font-size:13px;font-family:var(--mono)}
+.rail-msg{height:36px;padding:3px 16px 0 58px;font-size:11.5px;line-height:1.35;color:var(--mu)}
+.rail-list{list-style:none;margin:0;padding:0;overflow-y:auto;overflow-x:hidden;flex:1}
+.ri{display:flex;align-items:center;gap:12px;width:100%;height:48px;padding:0 10px;background:none;border:0;text-align:left;border-radius:0;transition:background .15s}
+.ri:hover{background:var(--sf)}
+.mt{position:relative;width:36px;height:36px;flex:none;border-radius:var(--r);background:var(--sf);border:1px solid var(--bd2);display:grid;place-items:center;font:500 11.5px/1 var(--mono);letter-spacing:.04em;color:var(--mu);transition:border-color .2s,color .2s}
+.ri.active .mt{border-color:rgba(61,255,136,.55);color:var(--tx);box-shadow:0 0 0 3px rgba(61,255,136,.08)}
+.sd{position:absolute;right:-3px;top:-3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--el);background:var(--dim)}
+.sd.verified{background:var(--sig)}.sd.waiting,.sd.checking{background:var(--cy)}.sd.wrong,.sd.risk{background:var(--am)}
+.sd.checking{animation:blink .8s infinite}
+.ri-t{min-width:0;flex:1;display:flex;flex-direction:column}
+.ri-t b{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-t span{font-size:11.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-new{animation:riIn .45s var(--ease) both}
+@keyframes riIn{from{opacity:0;transform:translateX(-10px)}}
+.rail-foot{flex:none;border-top:1px solid var(--bd);padding:10px}
+.rail-toggle{display:flex;align-items:center;gap:12px;width:100%;height:36px;padding:0;background:none;border:0;color:var(--mu);font-size:12.5px}
+.rail-toggle .tg{width:36px;height:36px;border-radius:var(--r);border:1px solid var(--bd2);display:grid;place-items:center;flex:none;transition:border-color .15s,color .15s}
+.rail-toggle:hover .tg{color:var(--tx);border-color:#3a3a40}
+.rail-toggle svg{transition:transform .26s var(--ease)}
+.rail.open .rail-toggle svg{transform:rotate(180deg)}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;left:var(--rail);right:0;top:0;height:var(--top);z-index:20;border-bottom:1px solid var(--bd);background:rgba(10,10,11,.82);backdrop-filter:blur(10px)}
+.top .wrap{height:100%;display:flex;align-items:center;gap:10px}
+.crumbs{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.crumb{background:none;border:0;padding:4px 6px;margin-left:-6px;border-radius:5px;color:var(--mu);font-size:13px}
+.crumb:hover{color:var(--tx);background:var(--sf)}
+.crumb.cur{color:var(--tx);pointer-events:none}
+.sep{color:var(--dim)}
+.crumb-dom{font:500 13px var(--mono);color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who[hidden]{display:none}
+.who{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:12.5px}
+.av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2a2a2e,#1a1a1d);border:1px solid var(--bd2);display:grid;place-items:center;font:500 10px var(--mono);color:var(--tx)}
+
+/* ---------- stage + screens ---------- */
+.stage{position:fixed;left:var(--rail);right:0;top:var(--top);bottom:0}
+.screen{position:absolute;inset:0}
+.screen[hidden]{display:none}
+.scroll{overflow-y:auto;overflow-x:hidden}
+.in-r{animation:inR .26s var(--ease) both}
+.in-l{animation:inL .26s var(--ease) both}
+.out{animation:out .16s ease both;pointer-events:none}
+@keyframes inR{from{opacity:0;transform:translateX(40px)}}
+@keyframes inL{from{opacity:0;transform:translateX(-40px)}}
+@keyframes out{to{opacity:0}}
+
+/* ---------- sign in ---------- */
+.si{min-height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:64px;align-items:center;padding:48px 0}
+.si-l{max-width:380px}
+.si-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.si-brand .lab{color:var(--dim)}
+.si h1{font-size:34px;line-height:1.1;letter-spacing:-.025em;font-weight:600;margin:0 0 12px}
+.si-sub{color:var(--mu);font-size:15px;margin:0 0 30px;max-width:340px}
+.si-btns{display:flex;flex-direction:column;gap:10px}
+.si-btns .btn{height:42px;justify-content:flex-start;padding:0 16px;font-size:13.5px}
+.si-btns .btn span.k{margin-left:auto;font:11px var(--mono);color:var(--dim)}
+.or{display:flex;align-items:center;gap:12px;margin:22px 0 16px;color:var(--dim)}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--bd)}
+.si-email label{display:block;font-size:12.5px;color:var(--mu);margin-bottom:6px}
+.si-email .rowf{display:flex;gap:8px}
+.si-email .btn{height:40px}
+.msg{min-height:20px;margin-top:7px;font-size:12.5px;color:var(--mu);display:flex;align-items:flex-start;gap:7px;line-height:1.45}
+.msg .md{width:6px;height:6px;border-radius:50%;margin-top:6px;flex:none;background:var(--dim)}
+.msg.ok .md{background:var(--sig)}
+.msg.err{color:var(--am)}.msg.err .md{background:var(--am)}
+.msg.warn{color:#b9dcf2}.msg.warn .md{background:var(--cy)}
+.msg code{color:var(--tx);font-size:12px}
+.fine{margin-top:26px;font-size:12px;color:var(--dim)}
+
+.pv{height:480px;display:flex;flex-direction:column}
+.pv-body{position:relative;flex:1;border-radius:0 0 var(--r) var(--r);overflow:hidden;padding:36px 44px;background-image:radial-gradient(circle at 1px 1px,#1d1d21 1.2px,transparent 1.6px);background-size:26px 26px;display:flex;flex-direction:column}
+.pv-dom{display:flex;align-items:center;gap:10px;margin-bottom:46px}
+.pv-dom b{font:500 15px var(--mono)}
+.pv-cable{position:relative;height:2px;background:var(--bd2);margin:0 7px}
+.pv-fill{position:absolute;left:0;top:0;height:100%;background:var(--sig);box-shadow:0 0 8px rgba(61,255,136,.45);animation:pvf 5s linear infinite}
+.pv-pulse{position:absolute;top:-4px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--sig);box-shadow:0 0 12px 3px rgba(61,255,136,.55);animation:pvp 5s linear infinite}
+.pv-n{position:absolute;top:-7px;width:16px;height:16px;margin-left:-8px;border-radius:50%;border:1.5px solid currentColor;background:var(--el);color:#3a3a40;display:grid;place-items:center}
+.pv-n::after{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pv-n span{position:absolute;top:24px;left:50%;transform:translateX(-50%);white-space:nowrap;font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.pv-list{margin-top:62px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--bd);border-radius:6px;background:rgba(10,10,11,.8);padding:8px 0}
+.pv-f{display:grid;grid-template-columns:28px 190px 1fr;align-items:center;padding:6px 14px;font-size:12.5px}
+.pv-f i{font:normal 500 11px var(--mono);color:currentColor}
+.pv-f em{font-style:normal;color:var(--tx)}
+.pv-f span{color:var(--mu);font-family:var(--mono);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a0{animation:k0 5s linear infinite}.a1{animation:k1 5s linear infinite}.a2{animation:k2 5s linear infinite}.a3{animation:k3 5s linear infinite}.a4{animation:k4 5s linear infinite}
+@keyframes k0{0%{opacity:.4;color:#3a3a40}2%,90%{opacity:1;color:#3dff88}97%,100%{opacity:.4;color:#3a3a40}}
+@keyframes k1{0%,19%{opacity:.4;color:#3a3a40}21%,90%{opacity:1;color:#3dff88}97%,100%{opacity:.4;color:#3a3a40}}
+@keyframes k2{0%,39%{opacity:.4;color:#3a3a40}41%,90%{opacity:1;color:#3dff88}97%,100%{opacity:.4;color:#3a3a40}}
+@keyframes k3{0%,59%{opacity:.4;color:#3a3a40}61%,90%{opacity:1;color:#3dff88}97%,100%{opacity:.4;color:#3a3a40}}
+@keyframes k4{0%,79%{opacity:.4;color:#3a3a40}81%,90%{opacity:1;color:#3dff88}97%,100%{opacity:.4;color:#3a3a40}}
+@keyframes pvp{0%{left:0;opacity:0}3%{opacity:1}80%{left:100%;opacity:1}86%,100%{left:100%;opacity:0}}
+@keyframes pvf{0%{width:0;opacity:1}80%{width:100%;opacity:1}90%{width:100%;opacity:1}97%,100%{width:100%;opacity:0}}
+.pv-ver{position:absolute;right:44px;top:34px;animation:pvv 5s linear infinite}
+@keyframes pvv{0%,80%{opacity:0;transform:translateY(3px)}83%,90%{opacity:1;transform:none}97%,100%{opacity:0}}
+.pv-cap{margin-top:auto;font-size:12.5px;color:var(--dim)}
+
+/* inbox */
+.ib{min-height:100%;display:flex;align-items:center;padding:48px 0}
+.ib .op{width:min(460px,100%)}
+.ib-b{padding:26px 26px 22px}
+.ib h1{font-size:24px;letter-spacing:-.02em;margin:0 0 8px;font-weight:600}
+.ib p{color:var(--mu);margin:0 0 22px}
+.ib p b{color:var(--tx);font-weight:500}
+.ib-acts{display:flex;gap:8px;flex-wrap:wrap}
+.ib-back{margin-top:18px;font-size:12.5px}
+
+/* ---------- list ---------- */
+.ls{padding:40px 0 120px}
+.pg-h{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px}
+.pg-h h1{font-size:26px;letter-spacing:-.02em;font-weight:600;margin:0 0 4px}
+.pg-h p{margin:0;color:var(--mu)}
+.claimbox{margin-bottom:18px}
+.claimbox .body{padding:16px 18px 12px}
+.claimbox form{display:flex;gap:8px}
+.claimbox input.field{font-family:var(--mono);font-size:14px}
+.claimbox .btn{height:40px;padding:0 18px}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{border-top:1px solid var(--bd);overflow:hidden}
+.rows li:first-child{border-top:0}
+.row{display:grid;grid-template-columns:36px minmax(0,1fr) 190px 190px 16px;align-items:center;gap:16px;width:100%;height:64px;padding:0 18px;background:none;border:0;text-align:left;transition:background .15s}
+.row:hover{background:var(--sf)}
+.row .nm{min-width:0}
+.row .nm b{display:block;font-weight:500;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm span{font:11.5px var(--mono);color:var(--dim)}
+.row .mtxt{font-size:12.5px;color:var(--mu);white-space:nowrap}
+.row .chev{color:var(--dim)}
+.row:hover .chev{color:var(--tx)}
+.li-new{animation:liIn .5s var(--ease) both}
+.li-new .row{animation:liGlow 1.6s ease-out}
+@keyframes liIn{from{max-height:0;opacity:0;transform:translateY(-8px)}to{max-height:64px;opacity:1}}
+@keyframes liGlow{0%,30%{background:rgba(61,255,136,.07)}}
+
+/* ---------- claim ---------- */
+.claim{display:flex;flex-direction:column}
+.tl{flex:none;height:var(--tl);border-bottom:1px solid var(--bd);background:rgba(12,12,14,.9);backdrop-filter:blur(10px);position:relative;z-index:3}
+.tl .wrap{position:relative;height:100%}
+.tl-cable{position:absolute;top:27px;left:calc(100% / 12);right:calc(100% / 12);height:2px;background:var(--bd2);border-radius:2px}
+.tl-fill,.tl-warn{position:absolute;top:0;height:100%;border-radius:2px;transition:width .6s var(--ease),left .6s var(--ease),opacity .3s}
+.tl-fill{left:0;background:var(--sig);box-shadow:0 0 8px rgba(61,255,136,.45)}
+.tl-warn{background:var(--am);opacity:0}
+.tr{position:absolute;top:0;height:2px;opacity:0;transition:opacity .2s}
+.checking .tr,.tr.on{opacity:1}
+.pz{position:absolute;top:-4px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--sig);box-shadow:0 0 12px 3px rgba(61,255,136,.6);animation:trav 1.3s linear infinite}
+.pz::before{content:"";position:absolute;right:5px;top:4px;width:56px;height:2px;background:linear-gradient(90deg,transparent,var(--sig))}
+@keyframes trav{0%{left:0;opacity:0}12%{opacity:1}86%{opacity:1}100%{left:100%;opacity:0}}
+.tl-nodes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+.tn{display:flex;flex-direction:column;align-items:center;padding:20px 4px 0;background:none;border:0;border-radius:6px;color:inherit;min-width:0}
+.tn .d{position:relative;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bd2);background:var(--bg);display:grid;place-items:center;transition:background .3s,border-color .3s,box-shadow .3s}
+.tn .d svg{opacity:0;transition:opacity .2s}
+.tn .l{margin-top:9px;font-size:12px;font-weight:500;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:color .2s}
+.tn:hover .l{color:var(--tx)}
+.tn.done .d{background:var(--sig);border-color:var(--sig)}
+.tn.done .d svg{opacity:1}
+.tn.done .l{color:var(--mu)}
+.tn.cur .d{border-color:var(--cy);background:#0d1a22}
+.tn.cur .d::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--cy);opacity:0;animation:ring 2.4s ease-out infinite}
+.tn.cur .l{color:var(--tx)}
+.tn.act .d{border-color:var(--sig);background:#0c1a12}
+.tn.act .d::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:var(--sig);animation:spin .8s linear infinite}
+.tn.act .l{color:var(--tx)}
+.tn.warn .d{border-color:var(--am);background:#221905}
+.tn.warn .l{color:var(--am)}
+.tn.flash .d{animation:pop .5s var(--ease)}
+.tn.flash .d::before{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--sig);animation:burst .7s ease-out forwards}
+@keyframes ring{0%{transform:scale(.7);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ticks{display:flex;gap:3px;margin-top:7px;height:3px}
+.ticks i{width:11px;height:3px;border-radius:2px;background:var(--bd2);transition:background .25s}
+.ticks i.pass{background:var(--sig)}.ticks i.wait{background:var(--cy)}.ticks i.wrong{background:var(--am)}.ticks i.run{background:var(--sig);animation:blink .6s infinite}
+.tl-now{display:none}
+
+.cl-scroll{position:relative;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.cl-wrap{padding:26px 0 0}
+.chead{display:flex;align-items:center;gap:14px;margin-bottom:20px;min-height:36px}
+.chead h1{font:600 26px/1.2 var(--sans);letter-spacing:-.02em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chead .meta{margin-left:auto;font-size:12.5px;color:var(--dim);white-space:nowrap}
+.sec{margin-bottom:22px;transition:opacity .4s,filter .4s,box-shadow .6s,border-color .6s;scroll-margin-top:16px}
+.sec.past{opacity:.42;filter:saturate(.5)}
+.sec.past:hover{opacity:.9;filter:none}
+.sec.fut .port{border-color:#3a3a40}
+.sec.cur{border-color:#2e2e33}
+.sec.cur .port.in{background:var(--sig)}
+.sec.glow{border-color:rgba(61,255,136,.4);box-shadow:0 0 0 1px rgba(61,255,136,.15),0 0 60px rgba(61,255,136,.08)}
+
+.prep{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px 18px}
+.pc{display:flex;gap:12px;padding:12px 14px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);min-width:0}
+.ok{width:18px;height:18px;border-radius:50%;background:var(--sig);display:grid;place-items:center;flex:none;margin-top:1px}
+.pc b{display:block;font-weight:500;font-size:13px}
+.pc span{display:block;font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.rec{padding:18px 18px 20px}
+.prov{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.prov p{margin:0;font-size:14px}
+.prov p strong{font-weight:600}
+.dns{border:1px solid var(--bd2);border-radius:6px;background:var(--bg)}
+.dns-h,.dns-r{display:grid;grid-template-columns:60px 262px minmax(0,1fr) 124px;gap:18px;padding:0 16px}
+.dns-h{height:34px;align-items:center;background:var(--sf);border-bottom:1px solid var(--bd2);border-radius:6px 6px 0 0}
+.dns-h .lab{display:flex;align-items:center}
+.dns-r{padding-top:14px;padding-bottom:12px;align-items:start}
+.txt{display:inline-flex;align-items:center;height:26px;padding:0 8px;border-radius:5px;background:var(--cy-a);border:1px solid rgba(86,180,233,.28);color:var(--cy);font:500 12px var(--mono)}
+.cellv{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.cellv code.nw{white-space:nowrap;word-break:normal}
+.cellv code{flex:1;min-width:0;font-size:13px;line-height:1.55;padding-top:3px;word-break:break-all;color:var(--tx)}
+.disc{margin-top:8px;height:50px}
+.disc-btn{background:none;border:0;padding:0;color:var(--mu);font-size:12px;display:inline-flex;align-items:center;gap:5px}
+.disc-btn:hover{color:var(--tx)}
+.disc-btn svg{transition:transform .2s}
+.disc.open .disc-btn svg{transform:rotate(90deg)}
+.disc-full{display:flex;align-items:center;gap:8px;margin-top:6px;opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .18s,transform .18s,visibility .18s}
+.disc.open .disc-full{opacity:1;visibility:visible;transform:none}
+.disc-full code{font-size:11.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.ttl b{display:block;font-weight:500;font-size:13px;padding-top:3px}
+.ttl span{font-size:12px;color:var(--dim)}
+.rec-hint{margin:12px 2px 0;font-size:12.5px;color:var(--dim)}
+
+.ck-wrap{padding:26px 0 0}
+.ck-row{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.ck-cable{position:absolute;left:0;right:0;top:13px;height:2px;background:var(--bd2)}
+.ck-fill{position:absolute;left:0;top:0;height:100%;width:0;background:var(--sig);box-shadow:0 0 8px rgba(61,255,136,.45);transition:width .45s var(--ease)}
+.ck-row .port{top:9px}
+.ck{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 12px;min-width:0}
+.ck-n{position:relative;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bd2);background:var(--el);display:grid;place-items:center;z-index:1;transition:background .25s,border-color .25s;color:var(--sig)}
+.ck-n svg,.ck-n .bang,.ck-n .wd{display:none}
+.ck-num{margin-top:12px;font:500 10.5px var(--mono);letter-spacing:.1em;color:var(--dim)}
+.ck-lab{margin-top:3px;font-size:13px;font-weight:500;color:var(--mu);display:flex;align-items:center;justify-content:center;transition:color .2s}
+.ck-f{margin-top:4px;min-height:38px;font-size:12.5px;line-height:1.5;color:var(--dim);transition:color .2s}
+.s-run .ck-n{border-color:rgba(61,255,136,.25);background:#0c1a12}
+.s-run .ck-n::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;border:1.5px solid transparent;border-top-color:var(--sig);animation:spin .75s linear infinite}
+.s-run .ck-lab{color:var(--tx)}.s-run .ck-f{color:var(--mu)}
+.s-pass .ck-n{background:var(--sig);border-color:var(--sig)}
+.s-pass .ck-n svg{display:block}
+.s-pass .ck-lab{color:var(--tx)}.s-pass .ck-f{color:var(--mu)}
+.s-wait .ck-n{border-color:var(--cy);background:#0d1a22;color:var(--cy)}
+.s-wait .ck-n .wd{display:block;width:8px;height:8px;border-radius:50%;background:var(--cy);animation:breathe 2.4s ease-in-out infinite}
+.s-wait .ck-lab{color:var(--tx)}.s-wait .ck-f{color:var(--cy)}
+.s-wrong .ck-n{background:var(--am);border-color:var(--am);color:var(--am)}
+.s-wrong .ck-n .bang{display:block;font:700 14px/1 var(--sans);color:#1a1204}
+.s-wrong .ck-lab{color:var(--tx)}.s-wrong .ck-f{color:var(--am)}
+.s-idle .ck-num,.s-idle .ck-lab{opacity:.7}
+.pop .ck-n{animation:pop .45s var(--ease)}
+.pop .ck-n::before{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid currentColor;animation:burst .65s ease-out forwards}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes burst{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.1);opacity:0}}
+
+.dt{margin:18px 18px 18px;min-height:206px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);padding:16px 18px}
+.dt-t{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;margin-bottom:6px}
+.dt p{margin:0 0 10px;color:var(--mu);font-size:13px;max-width:720px}
+.dt p code{color:var(--tx);font-size:12px}
+.ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;flex:none;font:700 12px/1 var(--sans)}
+.ic.am{background:var(--am);color:#1a1204}
+.ic.cy{border:1.5px solid var(--cy)}
+.ic.cy::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--cy);animation:breathe 2.4s infinite}
+.ic.sig{background:var(--sig)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.cmp > div{border:1px solid var(--bd2);border-radius:6px;padding:10px 12px;background:var(--el);min-width:0}
+.cmp .lab{display:block;margin-bottom:6px;font-size:9.5px}
+.cmp code{display:block;font-size:12.5px;line-height:1.55;word-break:break-all;color:var(--tx)}
+.cmp .found{border-color:rgba(232,163,23,.35)}
+mark.miss{background:rgba(232,163,23,.18);color:var(--am);border-bottom:1px solid var(--am);padding:0 1px;border-radius:2px}
+.cut{display:inline-block;width:2px;height:15px;background:var(--am);vertical-align:-3px;margin-left:2px;animation:blink 1s infinite}
+.cutnote{font:11px var(--mono);color:var(--am);margin-left:8px}
+.dt-act{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dt-act p{margin:0;flex:1;min-width:240px;color:var(--tx)}
+.live{position:relative;width:8px;height:8px;border-radius:50%;background:var(--cy);flex:none}
+.live::after{content:"";position:absolute;inset:0;border-radius:50%;background:inherit;animation:ping 1.8s ease-out infinite}
+.live.sig{background:var(--sig)}.live.am{background:var(--am)}
+@keyframes ping{0%{transform:scale(1);opacity:.6}100%{transform:scale(3);opacity:0}}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.facts div{border:1px solid var(--bd);border-radius:6px;padding:9px 12px}
+.facts .lab{font-size:9.5px;display:block;margin-bottom:5px;color:var(--dim)}
+.facts b{font:500 12.5px var(--mono)}
+
+.vb{display:flex;align-items:center;gap:24px;padding:28px 26px;min-height:190px}
+.vbig{position:relative;width:72px;height:72px;border-radius:50%;border:1.5px dashed #3a3a40;display:grid;place-items:center;flex:none}
+.vbig svg{opacity:0}
+.vb.yes .vbig{border:0;background:var(--sig);box-shadow:0 0 40px rgba(61,255,136,.25)}
+.vb.yes .vbig svg{opacity:1}
+.vb.risk .vbig{border:1.5px solid var(--am);background:var(--am-a)}
+.vb h2{margin:0 0 4px;font-size:20px;letter-spacing:-.015em;font-weight:600}
+.vb p{margin:0 0 14px;color:var(--mu)}
+.vb.no h2{color:var(--mu)}
+.celebrate .vbig{animation:pop .55s var(--ease)}
+.celebrate .vbig svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .45s .18s ease-out forwards}
+.celebrate .vbig::before,.celebrate .vbig::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--sig);animation:burst .9s ease-out forwards}
+.celebrate .vbig::after{animation-delay:.15s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.tail{min-height:62vh;padding-top:18px;text-align:center;font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#34343a}
+
+.nextbar{flex:none;height:var(--bar);border-top:1px solid var(--bd);background:rgba(16,16,19,.94);backdrop-filter:blur(10px);position:relative;z-index:3}
+.nextbar .wrap{height:100%;display:flex;align-items:center;gap:14px}
+.nb-text{flex:1;min-width:0}
+.nb-text b{display:block;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-text span{display:block;font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-btns{display:flex;gap:8px;flex:none}
+.nb-timer{width:262px;flex:none;text-align:right;font:12px var(--mono);color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nb-timer em{font-style:normal;color:var(--tx)}
+
+.proto{position:fixed;right:12px;bottom:calc(var(--bar) + 14px);z-index:30;padding:10px;border:1px dashed #3a3a40;border-radius:var(--r);background:rgba(14,14,16,.96);display:none;flex-direction:column;gap:6px;box-shadow:0 12px 32px rgba(0,0,0,.5);width:152px}
+body[data-screen=claim] .proto{display:flex}
+.proto .lab{font-size:9.5px;color:var(--dim);margin-bottom:2px}
+.proto .lab span{display:block;margin-top:5px;letter-spacing:0;text-transform:none;font:11px/1.35 var(--sans);color:var(--dim)}
+.proto .btn{justify-content:flex-start;width:100%}
+
+/* ---------- responsive ---------- */
+@media (max-width:1380px){
+  .proto{width:auto;padding:0;gap:0;border-style:dashed}
+  .proto .lab{padding:8px 12px;margin:0;cursor:default}
+  .proto .lab span,.proto .btn{display:none}
+  .proto:hover,.proto:focus-within{width:152px;padding:10px;gap:6px}
+  .proto:hover .lab,.proto:focus-within .lab{padding:0;margin-bottom:2px}
+  .proto:hover .lab span,.proto:focus-within .lab span{display:block}
+  .proto:hover .btn,.proto:focus-within .btn{display:inline-flex}
+}
+@media (max-width:900px){
+  .si{grid-template-columns:1fr}.pv-wrap{display:none}
+  .row{grid-template-columns:36px minmax(0,1fr) auto 16px}.row .mtxt{display:none}
+  .prep{grid-template-columns:1fr}
+  .dns-h{display:none}
+  .dns-r{grid-template-columns:1fr;gap:12px}
+  .dns-r > div::before{content:attr(data-l);display:block;font:500 9.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .nb-timer{display:none}
+  .facts{grid-template-columns:1fr}
+  .cmp{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  :root{--bar:108px;--tl:64px}
+  .wrap{width:calc(100% - 32px)}
+  .tn .l,.ticks{display:none}
+  .tl-now{display:block;position:absolute;left:0;right:0;bottom:8px;text-align:center;font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+  .tl-cable{top:24px}.tn{padding-top:17px}
+  .chead{flex-wrap:wrap}.chead .meta{margin-left:0;width:100%}
+  .chead h1{font-size:21px}
+  .ck-row{grid-template-columns:1fr;gap:6px;padding:0 18px}
+  .ck-cable,.ck-row .port{display:none}
+  .ck{display:grid;grid-template-columns:28px 1fr;column-gap:12px;text-align:left;align-items:start;padding:0}
+  .ck-n{grid-row:span 3}
+  .ck-num{margin-top:0}.ck-lab{justify-content:flex-start}.ck-f{min-height:20px}
+  .nextbar .wrap{flex-wrap:wrap;align-content:center;gap:8px 12px}
+  .nb-text{flex-basis:calc(100% - 30px)}
+  .prov{flex-direction:column;align-items:flex-start}
+  .pg-h{flex-direction:column;align-items:flex-start}
+  .cellv code.nw{white-space:normal;word-break:break-all}
+  .op-h .meta,.crumbs .pill,#whoName{display:none}
+  .op-h{padding:0 14px}
+  .row .pill{display:none}
+  .proto{bottom:calc(var(--bar) + 8px);right:8px;padding:6px}
+  .vb{flex-direction:column;align-items:flex-start}
+  .si h1{font-size:28px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body data-screen="signin">
+<div class="dots"></div>
+
+<!-- ============ RAIL (persistent frame) ============ -->
+<aside class="rail" id="rail" aria-label="Domains">
+  <div class="rail-in">
+    <div class="rail-logo">
+      <div class="logo" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9h10" stroke="#3dff88" stroke-width="1.5"/><circle cx="4" cy="9" r="2.6" fill="#0a0a0b" stroke="#3dff88" stroke-width="1.5"/><circle cx="14" cy="9" r="2.6" fill="#3dff88"/></svg>
+      </div>
+      <span class="rail-name">DomainClaim</span>
+    </div>
+    <div class="rail-body">
+      <div class="rail-label fade"><span class="lab">Your claims</span><span class="lab" id="railCount">3</span></div>
+      <div class="rail-new">
+        <button class="plus" id="railPlus" aria-label="Claim a domain" title="Claim a domain">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <form id="railForm" class="fade" autocomplete="off"><input class="field" id="railInput" placeholder="Claim a domain" aria-label="Claim a domain" spellcheck="false"></form>
+      </div>
+      <div class="rail-msg fade" id="railMsg" aria-live="polite"></div>
+      <ul class="rail-list" id="railList"></ul>
+      <div class="rail-foot">
+        <button class="rail-toggle" id="railToggle" aria-expanded="false" aria-label="Keep the list open">
+          <span class="tg"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="fade" id="railToggleTxt">Keep open</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ TOP BAR ============ -->
+<header class="top">
+  <div class="wrap">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+    <div class="who" id="who" hidden><span id="whoName">carlton</span><span class="av" id="whoAv">CL</span><button class="btn ghost sm" id="signOut">Sign out</button></div>
+  </div>
+</header>
+
+<main class="stage">
+  <!-- ============ SIGN IN ============ -->
+  <section class="screen scroll" id="s-signin">
+    <div class="wrap si">
+      <div class="si-l">
+        <div class="si-brand"><span class="lab">DomainClaim</span></div>
+        <h1>Prove you own<br>your domain.</h1>
+        <p class="si-sub">Add one DNS record. We check it and show you what we found at every step.</p>
+        <div class="si-btns">
+          <button class="btn" id="ghBtn">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="5" r="1.8"/><path d="M4.5 5.3v5.4M11.5 6.8c0 2.6-7 1.8-7 3.9"/></svg>
+            Continue with GitHub<span class="k">1 click</span></button>
+          <button class="btn" id="goBtn">
+            <svg viewBox="0 0 16 16" fill="none" stroke-width="2.3"><circle cx="8" cy="8" r="5.5" stroke="#4285f4" stroke-dasharray="4.32 40" transform="rotate(0 8 8)"/><circle cx="8" cy="8" r="5.5" stroke="#34a853" stroke-dasharray="10.08 40" transform="rotate(45 8 8)"/><circle cx="8" cy="8" r="5.5" stroke="#fbbc05" stroke-dasharray="6.24 40" transform="rotate(150 8 8)"/><circle cx="8" cy="8" r="5.5" stroke="#ea4335" stroke-dasharray="9.6 40" transform="rotate(215 8 8)"/><path d="M8.2 8h5.3" stroke="#4285f4"/></svg>
+            Continue with Google<span class="k">1 click</span></button>
+        </div>
+        <div class="or"><span class="lab" style="color:var(--dim)">or</span></div>
+        <form class="si-email" id="emailForm" novalidate autocomplete="off">
+          <label for="email">Email</label>
+          <div class="rowf"><input class="field" id="email" type="email" placeholder="you@company.com"><button class="btn" type="submit">Email me a link</button></div>
+          <div class="msg" id="emailMsg"></div>
+        </form>
+        <p class="fine">No password. We only use your account to keep your claims.</p>
+      </div>
+      <div class="pv-wrap" aria-hidden="true">
+        <div class="op pv">
+          <span class="port in"></span><span class="port out"></span>
+          <div class="op-h"><span class="lab">claim · check</span><span class="badge sig">Live</span><span class="sp"></span><span class="meta">every 30s</span></div>
+          <div class="pv-body">
+            <div class="pv-dom"><span class="txt">TXT</span><b>acme.dev</b></div>
+            <span class="badge sig pv-ver">Verified</span>
+            <div class="pv-cable">
+              <div class="pv-fill"></div>
+              <span class="pv-n a0" style="left:0"><span>Zone</span></span>
+              <span class="pv-n a1" style="left:25%"><span>Nameservers</span></span>
+              <span class="pv-n a2" style="left:50%"><span>TXT record</span></span>
+              <span class="pv-n a3" style="left:75%"><span>Token</span></span>
+              <span class="pv-n a4" style="left:100%"><span>Claim</span></span>
+              <div class="pv-pulse"></div>
+            </div>
+            <div class="pv-list">
+              <div class="pv-f a0"><i>01</i><em>Find the zone</em><span>acme.dev, served by Cloudflare</span></div>
+              <div class="pv-f a1"><i>02</i><em>Reach the nameservers</em><span>2 of 2 answered in 41ms</span></div>
+              <div class="pv-f a2"><i>03</i><em>Find the TXT record</em><span>1 TXT record found</span></div>
+              <div class="pv-f a3"><i>04</i><em>Match the token</em><span>Token matches</span></div>
+              <div class="pv-f a4"><i>05</i><em>Record the claim</em><span>acme.dev is yours</span></div>
+            </div>
+            <p class="pv-cap">Every check shows what it found, one step at a time.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INBOX ============ -->
+  <section class="screen scroll" id="s-inbox" hidden>
+    <div class="wrap ib">
+      <div class="op">
+        <span class="port in"></span>
+        <div class="op-h"><span class="lab">sign in · email</span><span class="badge cy">Sent</span></div>
+        <div class="ib-b">
+          <h1>Check your inbox</h1>
+          <p>We sent a sign-in link to <b id="ibAddr">you@company.com</b>. It works for 15 minutes.</p>
+          <div class="ib-acts">
+            <button class="btn primary" id="openLink">Open the link (prototype)</button>
+            <button class="btn" id="resend" style="min-width:112px">Resend link</button>
+          </div>
+          <div class="ib-back"><button class="link" id="ibBack">Use a different email</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LIST ============ -->
+  <section class="screen scroll" id="s-list" hidden>
+    <div class="wrap ls">
+      <div class="pg-h">
+        <div><h1>Domains</h1><p>Your claims and what the last check found.</p></div>
+      </div>
+      <div class="op claimbox">
+        <span class="port in"></span><span class="port out"></span>
+        <div class="op-h"><span class="lab">01 · Claim a domain</span><span class="badge">Input</span></div>
+        <div class="body">
+          <form id="listForm" autocomplete="off">
+            <input class="field" id="listInput" placeholder="acme.dev or https://acme.dev" aria-label="Claim a domain" aria-describedby="listMsg" spellcheck="false">
+            <button class="btn primary" type="submit">Claim</button>
+          </form>
+          <div class="msg" id="listMsg" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="op">
+        <span class="port in"></span><span class="port out"></span>
+        <div class="op-h"><span class="lab">02 · Claims</span><span class="badge" id="listCount">3</span><span class="sp"></span><span class="meta">Checked every 30s</span></div>
+        <ul class="rows" id="rows"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLAIM ============ -->
+  <section class="screen claim" id="s-claim" hidden>
+    <div class="tl" id="tl">
+      <div class="wrap">
+        <div class="tl-cable">
+          <div class="tl-fill" id="tlFill"></div>
+          <div class="tl-warn" id="tlWarn"></div>
+          <div class="tr" id="tlTr" style="left:0;width:80%"><span class="pz"></span></div>
+        </div>
+        <div class="tl-nodes" id="tlNodes"></div>
+        <div class="tl-now" id="tlNow"></div>
+      </div>
+    </div>
+
+    <div class="cl-scroll" id="clScroll">
+      <div class="wrap cl-wrap">
+        <div class="chead">
+          <h1 id="cName">acme.dev</h1><span id="cPill"></span><span class="meta" id="cMeta"></span>
+        </div>
+
+        <section class="op sec" id="sec0">
+          <span class="port in"></span><span class="port out"></span>
+          <div class="op-h"><span class="lab">01 · Ready</span><span class="badge sig">Done</span><span class="sp"></span><span class="meta">3 of 3</span></div>
+          <div class="prep">
+            <div class="pc"><span class="ok"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5.2l2 2 4-4.4" fill="none" stroke="#05140b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="min-width:0"><b>Signed in</b><span id="pcWho">as carlton, with GitHub</span></div></div>
+            <div class="pc"><span class="ok"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5.2l2 2 4-4.4" fill="none" stroke="#05140b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="min-width:0"><b>Name checked</b><span id="pcName">acme.dev can be claimed</span></div></div>
+            <div class="pc"><span class="ok"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 5.2l2 2 4-4.4" fill="none" stroke="#05140b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div style="min-width:0"><b>Record generated</b><span>Token expires Oct 1, 10:24 UTC</span></div></div>
+          </div>
+        </section>
+
+        <section class="op sec" id="sec1">
+          <span class="port in"></span><span class="port out"></span>
+          <div class="op-h"><span class="lab">02 · Record</span><span class="badge cy">TXT</span><span class="sp"></span><span class="meta" id="recMeta">Add in Cloudflare</span></div>
+          <div class="rec">
+            <div class="prov">
+              <p>Your nameservers<span class="tip" id="tipNs"></span> are at <strong id="provName">Cloudflare</strong>. Add the record there.</p>
+              <a class="btn" href="#" id="provBtn" onclick="return false"><span id="provBtnName">Open Cloudflare DNS</span>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7M13 3L4 12"/></svg></a>
+            </div>
+            <div class="dns" role="table" aria-label="DNS record to add">
+              <div class="dns-h" role="row">
+                <span class="lab" role="columnheader">Type<span class="tip" data-tip="TXT"></span></span>
+                <span class="lab" role="columnheader">Name<span class="tip" data-tip="Name"></span></span>
+                <span class="lab" role="columnheader">Value<span class="tip" data-tip="Value"></span></span>
+                <span class="lab" role="columnheader">TTL<span class="tip r" data-tip="TTL"></span></span>
+              </div>
+              <div class="dns-r" role="row">
+                <div data-l="Type" role="cell"><span class="txt">TXT</span></div>
+                <div data-l="Name" role="cell">
+                  <div class="cellv"><code class="nw">_domainclaim-challenge</code><button class="btn sm copy" data-copy="name">Copy</button></div>
+                  <div class="disc" id="disc">
+                    <button class="disc-btn" id="discBtn" aria-expanded="false" aria-controls="discFull"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Panel wants the full name?</button>
+                    <div class="disc-full" id="discFull"><code id="fullName">_domainclaim-challenge.acme.dev</code><button class="btn sm copy" data-copy="full" tabindex="-1">Copy</button></div>
+                  </div>
+                </div>
+                <div data-l="Value" role="cell"><div class="cellv"><code id="valCode"></code><button class="btn sm copy" data-copy="value">Copy</button></div></div>
+                <div data-l="TTL" role="cell" class="ttl"><b>Lowest offered</b><span>Often 1 min or Auto</span></div>
+              </div>
+            </div>
+            <p class="rec-hint">Create a new TXT record, paste the Name and Value, then save. We pick it up on the next check.</p>
+          </div>
+        </section>
+
+        <section class="op sec" id="sec2">
+          <span class="port in"></span><span class="port out"></span>
+          <div class="op-h"><span class="lab">03 · Check</span><span class="badge" id="ckBadge">Live</span><span class="sp"></span><span class="meta" id="ckMeta"></span></div>
+          <div class="ck-wrap">
+            <div class="ck-row" id="ckRow">
+              <div class="ck-cable"><div class="ck-fill" id="ckFill"></div><div class="tr" id="ckTr"><span class="pz"></span></div></div>
+              <span class="port in"></span><span class="port out"></span>
+            </div>
+            <div class="dt" id="dt" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="op sec" id="sec3">
+          <span class="port in"></span><span class="port out"></span>
+          <div class="op-h"><span class="lab">04 · Verified</span><span class="badge" id="vBadge">Output</span><span class="sp"></span><span class="meta" id="vMeta"></span></div>
+          <div class="vb" id="vb"></div>
+        </section>
+        <div class="tail" id="tail">End of claim</div>
+      </div>
+    </div>
+
+    <div class="nextbar" id="nextbar">
+      <div class="wrap">
+        <span class="live" id="nbLive"></span>
+        <div class="nb-text"><b id="nbT"></b><span id="nbS"></span></div>
+        <div class="nb-btns" id="nbBtns"></div>
+        <div class="nb-timer" id="nbTimer"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="proto" id="proto" aria-label="Prototype controls" tabindex="0">
+  <div class="lab">Prototype<span>Simulate what DNS returns</span></div>
+  <button class="btn sm" id="simAdd" aria-label="Simulate: record added">Record added</button>
+  <button class="btn sm" id="simWrong" aria-label="Simulate: wrong value">Wrong value</button>
+  <button class="btn sm ghost" id="simReset" aria-label="Simulate: no record">No record</button>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const STEP_MS = RM ? 0 : 450;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CHECK_SVG = '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.3l2.3 2.3 4.7-5" fill="none" stroke="#05140b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- tooltips ---------- */
+const TIPS = {
+  TXT: '<b>TXT</b> A text record. DNS can hold short notes like this one. We read it to confirm you control the domain.',
+  Name: '<b>Name</b> Where the record lives. Most panels add your domain to the end for you, so paste only this part.',
+  Value: '<b>Value</b> The text we look for. Paste it exactly, with no quotes or extra spaces.',
+  TTL: '<b>TTL</b> How long other servers cache the record. A lower number means we see your change sooner.',
+  nameservers: '<b>Nameservers</b> The servers that answer DNS questions for your domain. Your DNS panel is wherever they point.',
+  zone: '<b>Zone</b> The set of DNS records for your domain, managed in one place by your DNS provider.'
+};
+let tipN = 0;
+function tipHTML(k){ const id = 'tt' + (++tipN); return `<button class="q" type="button" aria-label="What is ${k}?" aria-describedby="${id}">?</button><span role="tooltip" id="${id}">${TIPS[k]}</span>`; }
+document.querySelectorAll('[data-tip]').forEach(el => el.innerHTML = tipHTML(el.dataset.tip));
+$('#tipNs').innerHTML = tipHTML('nameservers');
+
+/* ---------- data ---------- */
+const STEPS = [
+  {lab:'Find the zone', tip:'zone', run:'Looking up the zone'},
+  {lab:'Reach the nameservers', tip:'nameservers', run:'Asking the nameservers'},
+  {lab:'Find the TXT record', run:'Looking for TXT records'},
+  {lab:'Match the token', run:'Comparing the value'},
+  {lab:'Record the claim', run:'Saving the claim'}
+];
+const idle = t => STEPS.map(() => ({st:'idle', f:t || 'Not reached'}));
+const now = () => Date.now();
+function mkClaim(name, o = {}){
+  return Object.assign({
+    name, mono: name.replace(/^xn--/, '').replace(/[^a-z0-9]/g,'').slice(0, 2).toUpperCase(),
+    provider:'Cloudflare', token:'k7p2m9xq4rtv8wz3hj6nfc5bgd', expiry:'2026-10-01T10:24Z',
+    status:'checking', last:'waiting', dns:'none', added:'Added just now',
+    lastChecked:null, nextAt:null, running:false, fresh:true, steps:idle('Queued'), run:0
+  }, o);
+}
+const value = c => `domainclaim-token=${c.token} expiry=${c.expiry}`;
+const t0 = now();
+const S = {
+  who:'carlton', via:'GitHub', screen:'signin', cur:null,
+  claims:[
+    mkClaim('carlton.dev', {token:'r4xw8e2kq9mt6vbz3hn7pc5yja', status:'verified', last:'verified', dns:'added', fresh:false, lastChecked:t0-120000, nextAt:t0+14000, run:412,
+      steps:[['pass','carlton.dev, served by Cloudflare'],['pass','2 of 2 answered in 38ms'],['pass','1 TXT record found'],['pass','Token matches'],['pass','carlton.dev is yours']].map(([st,f])=>({st,f}))}),
+    mkClaim('futurity.science', {provider:'Namecheap', token:'b9ht3ksx7pq2wm8rzc6vn4dyfe', status:'waiting', last:'waiting', added:'Added 3 days ago', run:8639}),
+    mkClaim('fs.cards', {token:'m2qc8vz5kt9xr3pw7hb6ny4dje', status:'risk', last:'risk', dns:'removed', run:2210, wasVerified:true})
+  ]
+};
+const find = n => S.claims.find(c => c.name === n);
+
+const PILL = {verified:['p-ver','Verified'], waiting:['p-wait','Waiting for your record'], checking:['p-check','Checking'], wrong:['p-wrong',"Value doesn't match"], risk:['p-risk','At risk']};
+const pill = (st, short) => `<span class="pill ${PILL[st][0]}"><span class="pd"></span>${short && st==='waiting' ? 'Waiting for record' : PILL[st][1]}</span>`;
+function ago(t){ if(!t) return ''; const s = Math.max(0, Math.round((now()-t)/1000)); if(s < 3) return 'just now'; if(s < 60) return s + 's ago'; const m = Math.floor(s/60); return m + ' min ago'; }
+function metaText(c){
+  switch(c.status){
+    case 'verified': return 'Checked ' + ago(c.lastChecked);
+    case 'checking': return 'Checking now';
+    case 'wrong': return "Value doesn't match";
+    case 'risk': return 'Record missing since 09:12';
+    default: return c.added;
+  }
+}
+const statusWord = c => ({verified:'Verified', waiting:'Waiting for record', checking:'Checking', wrong:"Value doesn't match", risk:'At risk'})[c.status];
+
+/* ---------- validation ---------- */
+const PSL = new Set(['com','net','org','dev','io','app','co','uk','co.uk','org.uk','ac.uk','gov.uk','me.uk','ltd.uk','com.au','net.au','org.au','co.nz','co.jp','com.br','co.za','de','fr','nl','eu','science','cards','test','github.io','vercel.app','pages.dev']);
+function validate(raw){
+  const s = raw.trim();
+  if(!s) return {kind:'idle', msg:'Paste a URL or type a name. We clean it up for you.'};
+  const full = 'Enter a full domain, like acme.dev.';
+  let host;
+  try { host = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(s) ? s : 'http://' + s).hostname; }
+  catch(e){ return {kind:'err', msg:full}; }
+  host = host.replace(/\.$/, '').toLowerCase();
+  if(host.startsWith('www.')) host = host.slice(4);
+  if(!host || host === 'localhost' || !host.includes('.')) return {kind:'err', msg:full};
+  if(/^\d+\.\d+\.\d+\.\d+$/.test(host) || host.startsWith('[')) return {kind:'err', msg:"That's an IP address. " + full};
+  if(PSL.has(host)) return {kind:'err', msg:`${esc(host)} is a public suffix. Enter a domain you registered, like acme.${esc(host)}.`};
+  if(find(host)) return {kind:'exists', host, msg:'You already have this claim. <button type="button" class="link" data-open="' + esc(host) + '">Open it.</button>'};
+  if(host === 'taken.test') return {kind:'warn', host, msg:'Another account holds this name. You can still claim it and prove control.'};
+  if(/[^\x00-\x7f]/.test(s) && host.includes('xn--')){
+    const uni = s.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').split(/[\/?#:]/)[0].toLowerCase().replace(/^www\./,'');
+    return {kind:'ok', host, msg:`We'll use <code>${esc(host)}</code> (the ASCII form of ${esc(uni)}).`};
+  }
+  return {kind:'ok', host, msg:`We'll use <code>${esc(host)}</code>`};
+}
+function showMsg(el, v){
+  el.className = (el.id === 'railMsg' ? 'rail-msg fade ' : 'msg ') + (v.kind === 'exists' ? '' : v.kind);
+  el.innerHTML = el.id === 'railMsg' ? v.msg : `<span class="md"></span><span>${v.msg}</span>`;
+}
+
+/* ---------- screens ---------- */
+const SCREENS = {signin:'#s-signin', inbox:'#s-inbox', list:'#s-list', claim:'#s-claim'};
+function show(name, dir){
+  const next = $(SCREENS[name]), prev = $(SCREENS[S.screen]);
+  const cls = dir === 'back' ? 'in-l' : 'in-r';
+  if(prev && prev !== next){
+    prev.classList.remove('in-r','in-l'); prev.classList.add('out');
+    setTimeout(() => { if(S.screen !== prevName){ prev.hidden = true; } prev.classList.remove('out'); }, RM ? 0 : 160);
+  }
+  const prevName = S.screen;
+  next.hidden = false; next.classList.remove('in-r','in-l','out'); void next.offsetWidth; next.classList.add(cls);
+  S.screen = name; document.body.dataset.screen = name;
+  renderCrumbs(); renderRail();
+}
+function renderCrumbs(){
+  const el = $('#crumbs');
+  if(S.screen === 'signin' || S.screen === 'inbox'){ el.innerHTML = `<span class="crumb cur">Sign in</span>`; $('#who').hidden = true; return; }
+  $('#who').hidden = false;
+  if(S.screen === 'list'){ el.innerHTML = `<span class="crumb cur">Domains</span>`; return; }
+  const c = S.cur;
+  el.innerHTML = `<button class="crumb" data-go="list">Domains</button><span class="sep">/</span><span class="crumb-dom">${esc(c.name)}</span>${pill(c.status)}`;
+}
+
+/* ---------- rail + list ---------- */
+function renderRail(){
+  $('#railCount').textContent = S.claims.length;
+  $('#railList').innerHTML = S.claims.map((c, i) => `<li><button class="ri${S.screen==='claim' && S.cur===c ? ' active':''}${c.railNew ? ' ri-new':''}" data-open="${esc(c.name)}" aria-label="${esc(c.name)}, ${statusWord(c)}" style="${S.enter ? `animation:riIn .4s ${i*60}ms var(--ease) both` : ''}">
+    <span class="mt">${esc(c.mono)}<span class="sd ${c.status}"></span></span>
+    <span class="ri-t fade"><b>${esc(c.name)}</b><span>${statusWord(c)} · ${metaText(c)}</span></span></button></li>`).join('');
+  S.claims.forEach(c => c.railNew = false); S.enter = false;
+}
+function renderList(){
+  $('#listCount').textContent = S.claims.length;
+  $('#rows').innerHTML = S.claims.map(c => `<li class="${c.listNew ? 'li-new' : ''}"><button class="row" data-open="${esc(c.name)}">
+    <span class="mt">${esc(c.mono)}<span class="sd ${c.status}"></span></span>
+    <span class="nm"><b>${esc(c.name)}</b><span>DNS at ${esc(c.provider)}</span></span>
+    <span>${pill(c.status, true)}</span>
+    <span class="mtxt" data-meta="${esc(c.name)}">${metaText(c)}</span>
+    <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3.5l4.5 4.5L6 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>`).join('');
+  S.claims.forEach(c => c.listNew = false);
+}
+
+/* ---------- claim screen ---------- */
+const TLN = [
+  {l:'Signed in', sec:0}, {l:'Name checked', sec:0}, {l:'Record generated', sec:0},
+  {l:'Add the record', sec:1}, {l:'Check', sec:2, ticks:true}, {l:'Verified', sec:3}
+];
+$('#tlNodes').innerHTML = TLN.map((n, i) => `<button class="tn" data-sec="${n.sec}" data-i="${i}" aria-label="${n.l}"><span class="d">${CHECK_SVG.replace('width="12" height="12"','width="10" height="10"')}</span><span class="l">${n.l}</span>${n.ticks ? '<span class="ticks">' + '<i></i>'.repeat(5) + '</span>' : ''}</button>`).join('');
+const ckRow = $('#ckRow');
+ckRow.insertAdjacentHTML('beforeend', STEPS.map((s, i) => `<div class="ck s-idle" id="ck${i}"><span class="ck-n">${CHECK_SVG}<span class="bang">!</span><span class="wd"></span></span><span class="ck-num">${String(i+1).padStart(2,'0')}</span><span class="ck-lab">${s.lab}${s.tip ? '<span class="tip">' + tipHTML(s.tip) + '</span>' : ''}</span><span class="ck-f"></span></div>`).join(''));
+
+const SEC_FOR = {waiting:1, risk:1, checking:2, wrong:2, verified:3};
+function scrollToSec(i, smooth = true){
+  const sc = $('#clScroll'), el = $('#sec' + i);
+  const top = i === 0 ? 0 : el.offsetTop - 16;
+  sc.scrollTo({top, behavior: smooth && !RM ? 'smooth' : 'auto'});
+}
+
+let keys = {};
+function updateClaim(){
+  const c = S.cur; if(!c) return;
+  const st = c.status;
+  renderCrumbs();
+  $('#cName').textContent = c.name;
+  $('#cPill').innerHTML = pill(st);
+  $('#cMeta').textContent = c.wasVerified ? 'Verified Sep 2 · DNS at ' + c.provider : 'Claim started today · DNS at ' + c.provider;
+  $('#pcWho').textContent = `as ${S.who}, with ${S.via}`;
+  $('#pcName').textContent = `${c.name} can be claimed`;
+  $('#provName').textContent = c.provider; $('#provBtnName').textContent = 'Open ' + c.provider + ' DNS';
+  $('#recMeta').textContent = 'Add in ' + c.provider;
+  $('#fullName').textContent = '_domainclaim-challenge.' + c.name;
+  $('#valCode').textContent = value(c);
+
+  /* timeline */
+  const addDone = st === 'verified' || (st === 'checking' && c.last === 'verified');
+  const nodeSt = [ 'done','done','done',
+    addDone ? 'done' : 'cur',
+    st === 'checking' ? 'act' : st === 'verified' ? 'done' : (st === 'wrong' || st === 'risk') ? 'warn' : '',
+    st === 'verified' ? 'done' : st === 'risk' ? 'warn' : '' ];
+  document.querySelectorAll('.tn').forEach((n, i) => {
+    const flash = n.classList.contains('flash');
+    n.className = 'tn ' + nodeSt[i] + (flash ? ' flash' : '');
+    n.setAttribute('aria-label', `${TLN[i].l}: ${({done:'done',cur:'current',act:'running',warn:'needs you','':'not yet'})[nodeSt[i]]}`);
+  });
+  document.querySelectorAll('.ticks i').forEach((t, i) => t.className = ({pass:'pass',wait:'wait',wrong:'wrong',run:'run'})[c.steps[i].st] || '');
+  const fillTo = {waiting:3, checking:4, wrong:3, risk:3, verified:5}[st];
+  $('#tlFill').style.width = (fillTo / 5 * 100) + '%';
+  const warn = st === 'wrong' || st === 'risk';
+  Object.assign($('#tlWarn').style, {left:'60%', width:'20%', opacity: warn ? 1 : 0});
+  $('#tl').classList.toggle('checking', st === 'checking');
+  const curNode = nodeSt.findIndex(s => s === 'cur' || s === 'act' || s === 'warn');
+  $('#tlNow').textContent = st === 'verified' ? 'Verified · 6 of 6' : `${TLN[curNode < 0 ? 5 : curNode].l} · ${(curNode < 0 ? 5 : curNode) + 1} of 6`;
+
+  /* sections */
+  const cur = SEC_FOR[st];
+  for(let i = 0; i < 4; i++){
+    const s = $('#sec' + i);
+    s.classList.toggle('past', i < cur); s.classList.toggle('cur', i === cur); s.classList.toggle('fut', i > cur);
+  }
+
+  /* check cells */
+  let lastPass = -1, runIdx = -1;
+  c.steps.forEach((s, i) => {
+    const el = $('#ck' + i);
+    if(el.dataset.st !== s.st){
+      const pop = ['pass','wait','wrong'].includes(s.st) && el.dataset.st === 'run';
+      el.className = 'ck s-' + s.st;
+      if(pop){ void el.offsetWidth; el.classList.add('pop'); }
+      el.dataset.st = s.st;
+    }
+    el.querySelector('.ck-f').textContent = s.f;
+    if(s.st === 'pass' && lastPass === i - 1) lastPass = i;
+    if(s.st === 'run') runIdx = i;
+  });
+  const centers = i => (i + .5) * 20;
+  $('#ckFill').style.width = (lastPass < 0 ? 0 : centers(lastPass)) + '%';
+  const tr = $('#ckTr');
+  if(runIdx >= 0){ const a = runIdx === 0 ? 0 : centers(runIdx - 1); tr.style.left = a + '%'; tr.style.width = (centers(runIdx) - a) + '%'; tr.classList.add('on'); }
+  else tr.classList.remove('on');
+  $('#ckBadge').className = 'badge ' + (st === 'checking' ? 'sig' : st === 'verified' ? 'sig' : warn ? 'am' : 'cy');
+  $('#ckBadge').textContent = st === 'checking' ? 'Running' : 'Live';
+  $('#ckMeta').textContent = `Run ${c.run}` + (c.lastChecked && st !== 'checking' ? ' · ' + new Date(c.lastChecked).toTimeString().slice(0,8) : '');
+
+  /* detail panel */
+  const dk = c.name + st;
+  if(keys.dt !== dk){ keys.dt = dk; $('#dt').innerHTML = detailHTML(c); }
+
+  /* verified section */
+  const vk = c.name + (st === 'verified' ? 'yes' : st === 'risk' ? 'risk' : 'no');
+  if(keys.vb !== vk){ keys.vb = vk; renderVerified(c); }
+
+  /* next bar */
+  const nk = c.name + st;
+  if(keys.nb !== nk){ keys.nb = nk; renderNext(c); }
+  tick(true);
+  renderRail();
+}
+
+function detailHTML(c){
+  const n = esc(c.name), p = esc(c.provider);
+  switch(c.status){
+    case 'checking': return `<div class="dt-t"><span class="live sig"></span>Checking ${n}</div>
+      <p>We ask ${p} directly, so there's no cache in the way. Each step shows what it found as it lands.</p>
+      <div class="facts"><div><span class="lab">Asking</span><b>${p} nameservers</b></div><div><span class="lab">Looking for</span><b>TXT _domainclaim-challenge</b></div><div><span class="lab">Expecting</span><b>token …${esc(c.token.slice(-6))}</b></div></div>`;
+    case 'waiting': return `<div class="dt-t"><span class="ic cy"></span>No record yet</div>
+      <p>We asked ${p}'s nameservers for TXT records at <code>_domainclaim-challenge.${n}</code>. Nothing there yet. New records usually show up a few minutes after you save them.</p>
+      <p>Waiting here is normal. We keep checking every 30 seconds, and you can leave this page.</p>
+      <div class="facts"><div><span class="lab">Zone</span><b>${n}</b></div><div><span class="lab">Nameservers</span><b>2 of 2 answered</b></div><div><span class="lab">TXT records found</span><b>0</b></div></div>`;
+    case 'wrong': {
+      const exp = value(c), found = 'domainclaim-token=' + c.token.slice(0, -1);
+      return `<div class="dt-t"><span class="ic am">!</span>The value doesn't match</div>
+      <div class="cmp">
+        <div class="found"><span class="lab">Found in ${p}</span><code>${esc(found)}<span class="cut"></span><span class="cutnote">ends here</span></code></div>
+        <div><span class="lab">Expected</span><code>${esc(found)}<mark class="miss">${esc(exp.slice(found.length))}</mark></code></div>
+      </div>
+      <div class="dt-act"><p>Replace the value in ${p} with the one above. It was cut short when pasted.</p><button class="btn sm copy" data-copy="value">Copy value</button><button class="btn sm primary" data-act="check">Check now</button></div>`;
+    }
+    case 'risk': return `<div class="dt-t"><span class="ic am">!</span>The record was removed</div>
+      <p>The record was removed. Add it back to keep the claim. Your claim stays active while we keep checking.</p>
+      <div class="cmp">
+        <div class="found"><span class="lab">Found in ${p}</span><code>No TXT record at _domainclaim-challenge.${n}</code></div>
+        <div><span class="lab">Expected</span><code>${esc(value(c))}</code></div>
+      </div>
+      <div class="dt-act"><p>Add the record back in ${p}, then check.</p><button class="btn sm copy" data-copy="value">Copy value</button><button class="btn sm primary" data-act="check">Check now</button></div>`;
+    case 'verified': return `<div class="dt-t"><span class="ic sig">${CHECK_SVG.replace(/12/g,'10')}</span>All five steps passed</div>
+      <p>The record is in place and the token matches. We re-check every 30 seconds and email you if it disappears.</p>
+      <div class="facts"><div><span class="lab">Zone</span><b>${n}</b></div><div><span class="lab">TXT records found</span><b>1</b></div><div><span class="lab">Token</span><b>matches</b></div></div>`;
+  }
+  return '';
+}
+function renderVerified(c){
+  const vb = $('#vb'), n = esc(c.name);
+  const sec = $('#sec3');
+  if(c.status === 'verified'){
+    vb.className = 'vb yes';
+    vb.innerHTML = `<div class="vbig"><svg width="30" height="30" viewBox="0 0 30 30"><path d="M8 15.5l5 5 9.5-10.5" fill="none" stroke="#05140b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><h2>${n} is verified</h2><p>We keep checking. You'll hear from us if the record disappears.</p><button class="btn" data-go="list">Back to domains</button></div>`;
+    $('#vBadge').className = 'badge sig'; $('#vBadge').textContent = 'Output';
+  } else if(c.status === 'risk'){
+    vb.className = 'vb risk';
+    vb.innerHTML = `<div class="vbig"><span class="ic am" style="width:30px;height:30px;font-size:17px">!</span></div>
+      <div><h2>Verified, now at risk</h2><p>The record is missing since 09:12. Add it back to keep ${n}.</p></div>`;
+    $('#vBadge').className = 'badge am'; $('#vBadge').textContent = 'At risk';
+  } else {
+    vb.className = 'vb no';
+    vb.innerHTML = `<div class="vbig"></div><div><h2>Not verified yet</h2><p>This fills in when the check finds your record and the token matches.</p></div>`;
+    $('#vBadge').className = 'badge'; $('#vBadge').textContent = 'Output';
+  }
+  sec.classList.remove('celebrate');
+}
+function renderNext(c){
+  const p = c.provider, st = c.status;
+  const live = $('#nbLive');
+  live.className = 'live ' + ({verified:'sig', checking:'sig', wrong:'am', risk:'am'}[st] || '');
+  const cn = '<button class="btn sm copy" data-copy="name">Copy name</button>';
+  const cv = '<button class="btn sm copy" data-copy="value" style="min-width:86px">Copy value</button>';
+  const chk = dis => `<button class="btn sm primary" data-act="check" style="min-width:92px"${dis ? ' disabled' : ''}>${dis ? 'Checking' : 'Check now'}</button>`;
+  let t, s, b;
+  if(st === 'checking'){ t = `Checking ${c.name}`; s = 'Each step lands in the Check section as it resolves.'; b = cn + cv + chk(true); }
+  else if(st === 'waiting'){ t = `Add the record in ${p}`; s = 'We check every 30 seconds.'; b = cn + cv + chk(); }
+  else if(st === 'wrong'){ t = `Replace the value in ${p}`; s = 'It was cut short when pasted.'; b = cv + chk(); }
+  else if(st === 'risk'){ t = `Add the record back in ${p}`; s = 'The record was removed. Add it back to keep the claim.'; b = cn + cv + chk(); }
+  else { t = `${c.name} is verified`; s = 'We keep checking in the background.'; b = '<button class="btn sm" data-go="list">Back to domains</button>'; }
+  $('#nbT').textContent = t; $('#nbS').textContent = s; $('#nbBtns').innerHTML = b;
+}
+
+/* ---------- check engine ---------- */
+let runTok = 0;
+function plan(c){
+  const f0 = `${c.name}, served by ${c.provider}`, f1 = '2 of 2 answered in 41ms';
+  switch(c.dns){
+    case 'added': return {res:'verified', steps:[['pass',f0],['pass',f1],['pass','1 TXT record found'],['pass','Token matches'],['pass',`${c.name} is yours`]]};
+    case 'wrong': return {res:'wrong', steps:[['pass',f0],['pass',f1],['pass','1 TXT record found'],['wrong','Value is cut short'],null]};
+    case 'removed': return {res:'risk', steps:[['pass',f0],['pass',f1],['wrong','The record was removed'],null,null]};
+    default: return {res:'waiting', steps:[['pass',f0],['pass',f1],['wait','No record at _domainclaim-challenge yet'],null,null]};
+  }
+}
+function cancelRun(){
+  runTok++;
+  const c = S.cur;
+  if(c && c.running){
+    c.running = false; c.status = c.last;
+    if(c.saved) c.steps = c.saved.map(s => ({...s})); else { c.steps = idle('Queued'); c.fresh = true; }
+  }
+}
+async function runCheck(c, opt = {}){
+  if(c.running) cancelRun();
+  const tok = ++runTok;
+  const before = c.last;
+  c.running = true; c.status = 'checking'; c.run++;
+  c.steps = idle('Queued');
+  updateClaim(); renderList();
+  if(!opt.auto) scrollToSec(2);
+  await sleep(RM ? 0 : 280);
+  const p = plan(c);
+  for(let i = 0; i < 5; i++){
+    if(tok !== runTok) return;
+    const r = p.steps[i];
+    if(!r){ c.steps[i] = {st:'idle', f:'Not reached'}; continue; }
+    c.steps[i] = {st:'run', f:STEPS[i].run}; updateClaim();
+    await sleep(STEP_MS);
+    if(tok !== runTok) return;
+    c.steps[i] = {st:r[0], f:r[1]}; updateClaim();
+    if(r[0] !== 'pass'){ for(let j = i + 1; j < 5; j++) c.steps[j] = {st:'idle', f:'Not reached'}; break; }
+  }
+  if(tok !== runTok) return;
+  c.running = false; c.status = p.res; c.last = p.res;
+  if(p.res === 'verified') c.wasVerified = true;
+  c.lastChecked = now(); c.nextAt = c.lastChecked + 30000;
+  c.saved = c.steps.map(s => ({...s}));
+  updateClaim(); renderList();
+  if(!opt.auto || p.res !== before) setTimeout(() => { if(S.cur === c && tok === runTok) scrollToSec(SEC_FOR[p.res]); }, RM ? 0 : 380);
+  if(p.res === 'verified' && before !== 'verified') celebrate();
+}
+function celebrate(){
+  const sec = $('#sec3'), n = document.querySelectorAll('.tn')[5];
+  setTimeout(() => {
+    sec.classList.remove('celebrate'); void sec.offsetWidth; sec.classList.add('celebrate', 'glow');
+    n.classList.add('flash');
+    setTimeout(() => { sec.classList.remove('glow'); n.classList.remove('flash'); }, 1600);
+  }, RM ? 0 : 420);
+}
+
+/* ---------- timer ---------- */
+function tick(renderOnly){
+  const c = S.cur;
+  if(S.screen === 'claim' && c){
+    const el = $('#nbTimer');
+    if(c.status === 'checking') el.innerHTML = `<em>Checking now</em> · step ${Math.max(1, c.steps.findIndex(s => s.st === 'run') + 1 || c.steps.filter(s => s.st !== 'idle').length)} of 5`;
+    else if(c.nextAt){
+      const left = Math.max(0, Math.ceil((c.nextAt - now()) / 1000));
+      el.innerHTML = `Last checked <em>${ago(c.lastChecked)}</em> · next check in <em>${left}s</em>`;
+      if(!renderOnly && left <= 0 && !c.running){
+        if(c.status === 'verified'){ c.lastChecked = now(); c.nextAt = now() + 30000; c.run++; updateClaim(); }
+        else runCheck(c, {auto:true});
+      }
+    } else el.innerHTML = '';
+  }
+  if(!renderOnly && S.screen === 'list') document.querySelectorAll('[data-meta]').forEach(m => { const c2 = find(m.dataset.meta); if(c2) m.textContent = metaText(c2); });
+}
+setInterval(() => tick(false), 1000);
+
+/* ---------- actions ---------- */
+function openClaim(name, dir = 'fwd'){
+  const c = find(name); if(!c) return;
+  cancelRun();
+  S.cur = c; keys = {};
+  $('#disc').classList.remove('open'); $('#discBtn').setAttribute('aria-expanded','false');
+  document.querySelectorAll('.ck').forEach(el => { el.dataset.st = ''; });
+  if(document.activeElement) document.activeElement.blur();
+  $('#rail').classList.remove('open'); $('#railToggle').setAttribute('aria-expanded','false');
+  if(c.fresh){ c.status = 'checking'; c.steps = idle('Queued'); }
+  show('claim', dir);
+  updateClaim();
+  if(c.fresh){
+    c.fresh = false;
+    scrollToSec(0, false);
+    setTimeout(() => { if(S.cur === c) runCheck(c); }, RM ? 0 : 320);
+  } else scrollToSec(SEC_FOR[c.status], false);
+}
+function goList(dir = 'back'){
+  cancelRun(); renderList(); show('list', dir);
+  if(S.cur) S.cur = S.cur; // keep for rail
+}
+function signIn(via, who){
+  S.via = via; S.who = who || 'carlton';
+  $('#whoName').textContent = S.who; $('#whoAv').textContent = S.who.slice(0,2).toUpperCase();
+  document.body.classList.add('authed'); S.enter = true;
+  renderList(); show('list', 'fwd');
+}
+function submitClaim(input, msgEl){
+  const v = validate(input.value);
+  if(v.kind === 'idle' || v.kind === 'err'){
+    showMsg(msgEl, v.kind === 'idle' ? {kind:'err', msg:'Enter a domain to claim, like acme.dev.'} : v);
+    input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake'); input.focus(); return;
+  }
+  if(v.kind === 'exists'){ input.value = ''; showMsg(msgEl, validate('')); openClaim(v.host); return; }
+  const c = mkClaim(v.host, {taken: v.kind === 'warn'});
+  c.railNew = c.listNew = true;
+  S.claims.unshift(c);
+  input.value = ''; showMsg($('#listMsg'), validate('')); $('#railMsg').innerHTML = '';
+  renderList(); renderRail();
+  setTimeout(() => openClaim(c.name, 'fwd'), RM ? 0 : (S.screen === 'list' ? 520 : 200));
+}
+function copyText(kind){
+  const c = S.cur; if(!c) return '';
+  return kind === 'name' ? '_domainclaim-challenge' : kind === 'full' ? '_domainclaim-challenge.' + c.name : value(c);
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, a'); if(!t) return;
+  if(t.dataset.open){ e.preventDefault(); const inClaim = S.screen === 'claim'; openClaim(t.dataset.open, 'fwd'); return; }
+  if(t.dataset.go === 'list'){ goList('back'); return; }
+  if(t.dataset.copy){
+    const txt = copyText(t.dataset.copy);
+    try { navigator.clipboard && navigator.clipboard.writeText(txt).catch(() => {}); } catch(err){}
+    if(!t.dataset.label) t.dataset.label = t.textContent;
+    t.textContent = 'Copied'; t.classList.add('copied');
+    clearTimeout(t._tm); t._tm = setTimeout(() => { t.textContent = t.dataset.label; t.classList.remove('copied'); }, 1400);
+    return;
+  }
+  if(t.dataset.act === 'check' && S.cur){ runCheck(S.cur); return; }
+  if(t.classList.contains('tn')){ scrollToSec(+t.dataset.sec); return; }
+});
+$('#ghBtn').onclick = () => signIn('GitHub');
+$('#goBtn').onclick = () => signIn('Google');
+$('#emailForm').onsubmit = e => {
+  e.preventDefault();
+  const v = $('#email').value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ const m = $('#emailMsg'); m.className = 'msg err'; m.innerHTML = '<span class="md"></span><span>Enter an email address, like you@company.com.</span>'; $('#email').focus(); return; }
+  $('#emailMsg').innerHTML = ''; $('#ibAddr').textContent = v; S.pendingEmail = v; show('inbox', 'fwd');
+};
+$('#email').oninput = () => { $('#emailMsg').className = 'msg'; $('#emailMsg').innerHTML = ''; };
+$('#openLink').onclick = () => signIn('an email link', (S.pendingEmail || 'you').split('@')[0].slice(0, 16));
+$('#resend').onclick = e => { const b = e.currentTarget; b.textContent = 'Sent again'; setTimeout(() => b.textContent = 'Resend link', 1600); };
+$('#ibBack').onclick = () => show('signin', 'back');
+$('#signOut').onclick = () => { cancelRun(); document.body.classList.remove('authed'); S.cur = null; show('signin', 'back'); };
+
+const li = $('#listInput'), lm = $('#listMsg');
+showMsg(lm, validate(''));
+li.oninput = () => showMsg(lm, validate(li.value));
+$('#listForm').onsubmit = e => { e.preventDefault(); submitClaim(li, lm); };
+const ri = $('#railInput'), rm = $('#railMsg');
+ri.oninput = () => { if(ri.value.trim()) showMsg(rm, validate(ri.value)); else rm.innerHTML = ''; };
+$('#railForm').onsubmit = e => { e.preventDefault(); submitClaim(ri, rm); };
+$('#railPlus').onclick = () => { $('#rail').classList.add('open'); $('#railToggle').setAttribute('aria-expanded','true'); $('#railToggleTxt').textContent = 'Collapse'; setTimeout(() => ri.focus(), RM ? 0 : 120); };
+$('#railToggle').onclick = () => {
+  const open = !$('#rail').classList.contains('open');
+  $('#rail').classList.toggle('open', open); $('#railToggle').setAttribute('aria-expanded', String(open));
+  $('#railToggleTxt').textContent = open ? 'Collapse' : 'Keep open';
+  if(!open) document.activeElement.blur();
+};
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('#rail').classList.contains('open')){ $('#railToggle').click(); } });
+$('#discBtn').onclick = () => {
+  const d = $('#disc'), open = !d.classList.contains('open');
+  d.classList.toggle('open', open); $('#discBtn').setAttribute('aria-expanded', String(open));
+  d.querySelector('.disc-full .copy').tabIndex = open ? 0 : -1;
+};
+$('#simAdd').onclick = () => { if(!S.cur) return; S.cur.dns = 'added'; runCheck(S.cur); };
+$('#simWrong').onclick = () => { if(!S.cur) return; S.cur.dns = 'wrong'; runCheck(S.cur); };
+$('#simReset').onclick = () => { if(!S.cur) return; S.cur.dns = 'none'; runCheck(S.cur); };
+
+document.querySelectorAll('#proto .btn').forEach(bt => bt.addEventListener('click', e => { if(e.detail > 0) bt.blur(); }));
+renderCrumbs(); renderRail();
+window.__dc = S;
+})();
+</script>
+</body>
+</html>

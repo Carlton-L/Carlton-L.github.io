@@ -1,0 +1,456 @@
+---
+/**
+ * DomainClaim — case-study network. Plan: Carlton Portfolio/domainclaim-case-study/05_CASE_STUDY_PLAN.md
+ *
+ * INPUT (the problem) → VIEW (the product's sign-in demo) → what goes wrong + research_in →
+ * three decisions → VIEW (the failure explorer: pick a demo name, the product runs it) →
+ * built twice → concepts → one change at a time → only real states → rules → for the code
+ * reader → OUT.
+ *
+ * Both VIEWs run the product's own code (src/components/react/demos/domainclaim/PORT.md): the
+ * screens and route handlers, vendored unchanged, in their own document at /demos/domainclaim/.
+ * Prose comes from src/data/content.js, fact-checked against 04_GROUND_TRUTH.md. The repo link
+ * stays disabled until Carlton opens it.
+ */
+import Base from '../../layouts/Base.astro';
+import Operator from '../../components/Operator.astro';
+import PatchField from '../../components/PatchField.astro';
+import SignInHero from '../../components/react/demos/domainclaim/SignInHero.jsx';
+import FailureExplorer from '../../components/react/demos/domainclaim/FailureExplorer.jsx';
+import { projects } from '../../data/content.js';
+import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
+
+const project = projects.find((p) => p.slug === 'domainclaim');
+const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    getCreativeWorkJsonLd(project),
+    getBreadcrumbJsonLd([
+      { name: 'Home', url: '/' },
+      { name: 'Projects', url: '/projects' },
+      { name: 'DomainClaim' },
+    ]),
+  ],
+};
+
+const links: [string, string][] = [
+  ['dcTitle', 'dcHero'],
+  ['dcHero', 'dcWrong'],
+  ['dcWrong', 'dcRsrch'],
+  ['dcRsrch', 'dcD1'],
+  ['dcRsrch', 'dcD2'],
+  ['dcRsrch', 'dcD3'],
+  ['dcD1', 'dcFx'],
+  ['dcD2', 'dcFx'],
+  ['dcD3', 'dcFx'],
+  ['dcFx', 'dcTwice'],
+  ['dcTwice', 'dcBefore'],
+  ['dcTwice', 'dcCpt'],
+  ['dcCpt', 'dcMiss'],
+  ['dcMiss', 'dcReal'],
+  ['dcReal', 'dcRules'],
+  ['dcRules', 'dcCode'],
+  ['dcCode', 'dcFiles'],
+  ['dcCode', 'dcOutc'],
+  ['dcOutc', 'dcOut'],
+];
+
+const layout = {
+  mode: 'content',
+  padTop: 48,
+  tiers: [{
+    min: 0,
+    cols: 12,
+    areas: `
+      title title title title title .     .     .     .     own   own   own
+      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
+      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
+      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
+      .     fx    fx    fx    fx    fx    fx    fx    fx    fx    fx    .
+      .     twice twice twice twice .     .     bfr   bfr   bfr   bfr   .
+      .     cpt   cpt   cpt   cpt   cpt   cpt   .     miss  miss  miss  miss
+      .     real  real  real  real  real  .     rules rules rules rules .
+      .     code  code  code  code  code  code  .     files files files files
+      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+    `,
+  }],
+};
+
+const research: [string, string][] = [
+  ['IETF domain verification draft', 'A scoped underscore label, the expiry inside the value, and asking the zone’s own servers.'],
+  ['RFC 2308', 'How long a resolver keeps saying "no record" after it looked too early.'],
+  ['RFC 8555 DNS-01', 'How certificate authorities prove control of a domain.'],
+  ['RFC 8552', 'Why an underscore label can’t collide with a real hostname.'],
+  ['Five products', 'How Google, GitHub, Vercel, Atlassian and Cloudflare verify, and what their errors say.'],
+  ['A deployed probe', 'Direct queries from the host, the doubled name, split TXT values and timeouts, measured.'],
+];
+
+const rules: string[] = [
+  'Waiting is never drawn as a fault.',
+  'Cables only where there is a sequence, and straight.',
+  'Past cards dim. Future cards are absent.',
+  'The pulse runs only where the check is.',
+  'Copied is a word, never a tick.',
+  'Every state shown is one the app can reach.',
+  'On a phone, a row that scrolls sideways never wraps.',
+];
+
+const files: [string, string][] = [
+  ['src/lib/dns/trace.ts', 'Asks DNS and reports what each server said.'],
+  ['src/lib/claims/evaluate.ts', 'Compares that with the claim and decides what the row should do.'],
+  ['src/lib/claims/steps.ts', 'Turns a check into the five steps.'],
+  ['src/lib/claims/messages.ts', 'Every failure as title, value, action and reason.'],
+  ['src/lib/dns/testNames.ts', 'Scripts the demo names.'],
+];
+
+const concepts = [
+  { n: '01', label: 'Rail and drawer', file: '01-rail-drawer.html', img: 'concept-01' },
+  { n: '02', label: 'Scrolling timeline', file: '02-scroll-timeline.html', img: 'concept-02' },
+  { n: '03', label: 'Patch network', file: '03-patch-nodes.html', img: 'concept-03' },
+];
+
+const unionExcerpt = `export type FailureReason =
+  | { code: 'record_not_found'; queriedName: string;
+      nameservers: string[]; negativeTtlSeconds: number | null }
+  | { code: 'no_txt_at_name'; queriedName: string }
+  | { code: 'appended_zone_suspected'; queriedName: string; foundAt: string }
+  | { code: 'value_mismatch'; expected: string; found: string[] }
+  | { code: 'token_expired'; expiredAt: Date }
+  | { code: 'nameservers_unreachable'; attempted: string[]; timeoutMs: number }
+  | { code: 'zone_not_found'; walked: string[] };`;
+---
+
+<Base
+  title="DomainClaim — Proof You Can Watch | Carlton Lindsay"
+  description={project.description}
+  ogImage={project.image}
+  jsonLd={jsonLd}
+>
+  <PatchField id="dcNet" links={links} density={0.3} layout={layout} label="DomainClaim case-study network — press P for reading mode">
+    <!-- INPUT -->
+    <Operator id="dcTitle" name="input · the_problem" type="txt" area="title" ports="out">
+      <p class="dc-meta">{project.meta}</p>
+      <h1 class="dc-h">Proof you can <span class="grn">watch</span></h1>
+      <p class="dc-sub">{'// MOST VERIFICATION SAYS "CHECK BACK IN 48 HOURS". THIS ONE ASKS YOUR NAMESERVERS AND SHOWS EVERY STEP AS IT LANDS.'}</p>
+      <div class="dc-links">
+        <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
+        <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
+      </div>
+    </Operator>
+
+    <Operator id="dcOwn" name="ownership_data" type="data" area="own" maxw={280}>
+      <div class="dc-meter">
+        <span>RESEARCH</span><div class="bar"><i style="width:100%"></i></div>
+        <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
+        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span class="dc-meternote">SOLO. SEPTEMBER 2026.</span>
+      </div>
+    </Operator>
+
+    <!-- VIEW (opener): the product's own home-page demo -->
+    <Operator id="dcHero" name="domainclaim_view · VERIFY.scn" type="view" area="hero" maxw={860}>
+      <div class="dc-viewerwrap">
+        <SignInHero client:visible />
+      </div>
+    </Operator>
+
+    <!-- PROCESS: what goes wrong, and where that came from -->
+    <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
+      {cs['What it is'].map((p) => <p class="dc-p">{p}</p>)}
+      <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
+      {cs['What goes wrong'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="dcRsrch" name="research_in" type="data" area="rsrch" nudge="0 32">
+      <ul class="dc-list">
+        {research.map(([k, v]) => (
+          <li><b>{k}</b><span>{v}</span></li>
+        ))}
+      </ul>
+    </Operator>
+
+    <!-- PROCESS: three decisions the research produced -->
+    <Operator id="dcD1" name="decision_01 · ask_the_source" type="txt" area="d1">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">01</span>
+        <h3 class="dc-dh">Ask the source</h3>
+        {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <Operator id="dcD2" name="decision_02 · whose_move" type="txt" area="d2" nudge="0 40">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">02</span>
+        <h3 class="dc-dh">Whose move is next</h3>
+        {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <Operator id="dcD3" name="decision_03 · claim_then_prove" type="txt" area="d3" nudge="0 80">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">03</span>
+        <h3 class="dc-dh">Claim, then prove</h3>
+        {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <!-- VIEW: the failure explorer, the product running each demo name -->
+    <Operator id="dcFx" name="failure_explorer · DEMO_NAMES.scn" type="view" area="fx" maxw={1000}>
+      <div class="dc-viewerwrap">
+        <FailureExplorer client:visible />
+      </div>
+    </Operator>
+
+    <!-- PROCESS: two passes -->
+    <Operator id="dcTwice" name="txt · built_twice" type="txt" area="twice">
+      <h2 class="dc-h2">Built <span class="grn">twice</span></h2>
+      {cs['Built twice'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <!-- reserved: the first pass's screens, to be ported from its own code -->
+    <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={380} nudge="0 24" ports="in">
+      <div class="dc-slot">
+        <span>{'// THE FIRST PASS, RUNNING FROM ITS OWN CODE'}</span>
+        <span class="dc-slotsub">SLOT RESERVED</span>
+      </div>
+    </Operator>
+
+    <Operator id="dcCpt" name="concepts · 01_02_03" type="view" area="cpt">
+      <div class="dc-cpt" data-cpt>
+        <div class="dc-tabs" role="tablist" aria-label="Three concepts">
+          {concepts.map((c, i) => (
+            <button type="button" role="tab" class="dc-tab" aria-selected={i === 1 ? 'true' : 'false'} data-cpt-tab={c.n}>
+              {c.n} · {c.label.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        {concepts.map((c, i) => (
+          <figure class="dc-shot" data-cpt-panel={c.n} hidden={i !== 1}>
+            <img src={`/images/projects/domainclaim/${c.img}.webp`} alt={`Concept ${c.n}, ${c.label.toLowerCase()}: the claim screen at desktop width`} width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption>
+              <span>{i === 1 ? 'PICKED' : 'NOT PICKED'}</span>
+              <a href={`/projects/domainclaim/proto/${c.file}`} target="_blank" rel="noopener">OPEN THE PROTOTYPE ↗</a>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </Operator>
+
+    <Operator id="dcMiss" name="txt · one_change_at_a_time" type="txt" area="miss" nudge="0 32">
+      {cs['One change at a time'].map((p) => <p class="dc-p">{p}</p>)}
+      <div class="dc-pair">
+        <figure>
+          <img src="/images/projects/domainclaim/proto-04.webp" alt="Prototype 04: every change applied at once, with collapsed cards and a pin button" width="1440" height="900" loading="lazy" decoding="async" />
+          <figcaption>04 · EVERYTHING AT ONCE</figcaption>
+        </figure>
+        <figure>
+          <img src="/images/projects/domainclaim/proto-05.webp" alt="Prototype 05: restarted from the timeline, one change" width="1440" height="900" loading="lazy" decoding="async" />
+          <figcaption>05 · BACK TO 02, ONE CHANGE</figcaption>
+        </figure>
+      </div>
+    </Operator>
+
+    <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
+      <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
+      {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
+      <figure class="dc-shot">
+        <img src="/images/projects/domainclaim/state-audit.webp" alt="Every claim state in the prototype, laid out after the audit against the backend's types" width="1308" height="1344" loading="lazy" decoding="async" />
+        <figcaption><span>THE STATE AUDIT · PROTOTYPE 15</span></figcaption>
+      </figure>
+    </Operator>
+
+    <Operator id="dcRules" name="rules_out" type="data" area="rules" nudge="0 32">
+      <ul class="dc-list dc-rules">
+        {rules.map((r) => <li><span>{r}</span></li>)}
+      </ul>
+    </Operator>
+
+    <!-- for the person who will read the code -->
+    <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
+      {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
+      <pre class="dc-code"><code>{unionExcerpt}</code></pre>
+      <div class="dc-codecap">src/lib/claims/state.ts · every failure the check can report</div>
+    </Operator>
+
+    <Operator id="dcFiles" name="read_first" type="data" area="files" nudge="0 24">
+      <ul class="dc-list dc-files">
+        {files.map(([f, v]) => (
+          <li><b>{f}</b><span>{v}</span></li>
+        ))}
+      </ul>
+      <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
+    </Operator>
+
+    <!-- OUT -->
+    <Operator id="dcOutc" name="out · outcome" type="txt" area="outc" ports="in">
+      {cs['Outcome'].map((p) => <p class="dc-p">{p}</p>)}
+      <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · domainclaim-pi.vercel.app ↗</a>
+    </Operator>
+
+    <Operator id="dcOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
+      <div class="dc-out">
+        EVERY FAILURE HAS AN ANSWER.<br /><br />
+        <a href="/projects/futurity-engine">NEXT ▸ futurity_engine</a><br />
+        <span class="dc-outsub">watch the machine think</span>
+      </div>
+    </Operator>
+  </PatchField>
+</Base>
+
+<script is:inline data-astro-rerun>
+  (function () {
+    var root = document.querySelector('[data-cpt]');
+    if (!root) return;
+    var tabs = root.querySelectorAll('[data-cpt-tab]');
+    var panels = root.querySelectorAll('[data-cpt-panel]');
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var n = tab.getAttribute('data-cpt-tab');
+        tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t === tab)); });
+        panels.forEach(function (p) { p.hidden = p.getAttribute('data-cpt-panel') !== n; });
+      });
+    });
+  })();
+</script>
+
+<style>
+  .dc-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .dc-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(24px, 2.8vw, 38px);
+    line-height: 0.98;
+    max-width: 14ch;
+  }
+  .grn { color: var(--signal); }
+  .dc-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    line-height: 1.7;
+    max-width: 44ch;
+  }
+  .dc-h2 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(18px, 2vw, 26px);
+    line-height: 0.98;
+    margin: 14px 0 8px;
+  }
+  .dc-h2:first-child { margin-top: 0; }
+  .dc-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
+  .dc-p:last-child { margin-bottom: 0; }
+
+  .dc-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .dc-live {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--signal);
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: border-color var(--duration-normal), background var(--duration-normal);
+  }
+  a.dc-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+  .dc-off { color: var(--text-dim); border-style: dashed; cursor: not-allowed; }
+  .dc-files + .dc-off, .dc-list + .dc-off { margin-top: 12px; }
+  #dcOutc .dc-live { margin-top: 14px; }
+
+  .dc-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
+  .dc-meter .bar { height: 6px; background: var(--bg-surface); border: 1px solid #26262a; margin: 4px 0 8px; position: relative; }
+  .dc-meter .bar i { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px); }
+  .dc-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
+
+  .dc-viewerwrap { margin: -12px -14px; }
+
+  .dc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-family: var(--font-mono); font-size: 10px; line-height: 1.55; }
+  .dc-list li { display: grid; gap: 2px; }
+  .dc-list b { color: var(--data, #56b4e9); font-weight: 500; letter-spacing: 0.02em; }
+  .dc-list span { color: var(--text-muted); }
+  .dc-rules li { grid-template-columns: 10px 1fr; }
+  .dc-rules li::before { content: '▸'; color: var(--signal-dim); }
+  .dc-rules span { color: var(--text); }
+  .dc-files b { color: var(--text); overflow-wrap: anywhere; }
+
+  .dc-dec { position: relative; padding-top: 4px; }
+  .dc-dnum {
+    position: absolute; top: -6px; right: -2px;
+    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
+    pointer-events: none; user-select: none;
+  }
+  .dc-dh {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    padding-right: 52px;
+  }
+
+  .dc-slot {
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    padding: 10px;
+  }
+  .dc-slotsub { font-size: 8.5px; opacity: 0.7; }
+
+  .dc-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .dc-tab {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+    color: var(--signal); background: transparent; cursor: pointer;
+    border: 1px solid rgba(61, 255, 136, 0.35); border-radius: 3px; padding: 4px 9px;
+  }
+  .dc-tab:hover { border-color: var(--signal); }
+  .dc-tab:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .dc-tab[aria-selected='true'] { background: rgba(61, 255, 136, 0.12); border-color: var(--signal); color: var(--text); }
+  .dc-shot { margin: 0; }
+  .dc-shot img, .dc-pair img { display: block; width: 100%; height: auto; border: 1px solid var(--border-color); border-radius: 3px; background: #0a0a0b; }
+  .dc-shot figcaption, .dc-pair figcaption {
+    display: flex; justify-content: space-between; gap: 10px; margin-top: 6px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim);
+  }
+  .dc-shot figcaption a { color: var(--signal); text-decoration: none; }
+  .dc-shot figcaption a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  #dcReal .dc-shot { margin-top: 12px; max-width: 360px; }
+  .dc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .dc-pair figure { margin: 0; }
+
+  .dc-code {
+    margin: 12px 0 6px; padding: 10px 12px; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: var(--text-muted);
+    background: #0a0a0b; border: 1px solid var(--border-color); border-radius: 4px;
+  }
+  .dc-codecap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; color: var(--text-dim); }
+
+  .dc-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+  .dc-out a { color: var(--signal); text-decoration: none; }
+  .dc-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .dc-outsub { color: var(--text-dim); }
+</style>

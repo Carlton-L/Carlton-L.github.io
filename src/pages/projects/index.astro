@@ -35,7 +35,7 @@ const groups = categories.map((cat) => ({
 const yearOf = (p) => (p.facts?.year ?? p.meta.split(' ')[0] ?? '').split('–').pop();
 const roleOf = (p) => (p.facts?.role ?? p.meta.replace(/^[0-9–\s]+—\s*/, '').split('·')[0]).toUpperCase();
 
-const catIdx = { 'apps-systems': 0, 'experiences': 1, 'research': 2 };
+const catIdx = { 'apps-systems': 0, 'experiences': 1, 'research': 2, 'product-systems': 3 };
 
 // initial selection = first row (server-rendered chrome must match: FAST)
 const first = groups[0].items[0];
@@ -201,6 +201,7 @@ const layout = {
   .catdot[data-c='0'] { background: #56b4e9; }
   .catdot[data-c='1'] { background: #cc79a7; }
   .catdot[data-c='2'] { background: #e69f00; }
+  .catdot[data-c='3'] { background: #009e73; }
   .idxmain { display: flex; flex-direction: row; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
   .idxname { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; flex: none; }
   .idxname::before { content: '▸ '; color: var(--signal-dim); }
