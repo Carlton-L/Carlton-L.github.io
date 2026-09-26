@@ -232,12 +232,12 @@ const unionExcerpt = `export type FailureReason =
       {cs['Two passes'].map((p) => <p class="dc-p">{p}</p>)}
     </Operator>
 
-    <!-- reserved: the first pass's screens, to be ported from its own code -->
-    <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={380} nudge="0 24" ports="in">
-      <div class="dc-slot">
-        <span>{'// THE FIRST PASS, RUNNING FROM ITS OWN CODE'}</span>
-        <span class="dc-slotsub">SLOT RESERVED</span>
-      </div>
+    <!-- the first pass: its claim screen, from the old README (a ported, running version can replace it later) -->
+    <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={420} nudge="0 24" ports="in">
+      <figure class="dc-shot">
+        <img src="/images/projects/domainclaim/first-pass.webp" alt="The first pass of the claim screen: the five steps as a list, with the failing step open to show the value found, the value to use, and why they differ" width="1200" height="1024" loading="lazy" decoding="async" />
+        <figcaption><span>FIRST PASS · THE CHECK AS A LIST OF STEPS</span></figcaption>
+      </figure>
     </Operator>
 
     <Operator id="dcCpt" name="concepts · 01_02_03" type="view" area="cpt">
@@ -423,21 +423,6 @@ const unionExcerpt = `export type FailureReason =
     padding-right: 52px;
   }
 
-  .dc-slot {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    text-align: center;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    padding: 10px;
-  }
-  .dc-slotsub { font-size: 8.5px; opacity: 0.7; }
 
   .dc-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .dc-tab {
