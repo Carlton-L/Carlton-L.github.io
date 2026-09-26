@@ -14,8 +14,8 @@
  *
  * Every VIEW runs the product's own code (src/components/react/demos/domainclaim/PORT.md): the
  * screens and route handlers, vendored unchanged, in their own document at /demos/domainclaim/.
- * Prose comes from src/data/content.js, fact-checked against 04_GROUND_TRUTH.md. The repo link
- * stays disabled until Carlton opens it.
+ * Prose comes from src/data/content.js, fact-checked against 04_GROUND_TRUTH.md. The repo is public
+ * at github.com/Carlton-L/domainclaim (renamed from resend-take-home, which redirects).
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
@@ -167,7 +167,7 @@ const unionExcerpt = `export type FailureReason =
       {cs['What it is'].map((p) => <p class="dc-p dc-lede">{p}</p>)}
       <div class="dc-links">
         <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
-        <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
+        <a class="dc-live" href="https://github.com/Carlton-L/domainclaim" target="_blank" rel="noopener">▸ REPO · Carlton-L/domainclaim ↗</a>
       </div>
     </Operator>
 
@@ -294,7 +294,7 @@ const unionExcerpt = `export type FailureReason =
           <li><b>{f}</b><span>{v}</span></li>
         ))}
       </ul>
-      <GithubButton repo="Carlton-L/resend-take-home" later block class="dc-gh" />
+      <GithubButton repo="Carlton-L/domainclaim" block class="dc-gh" />
     </Operator>
 
     {breaks.slice(2, 3).map(([id, area, label]) => (
@@ -444,7 +444,6 @@ const unionExcerpt = `export type FailureReason =
     transition: border-color var(--duration-normal), background var(--duration-normal);
   }
   a.dc-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
-  .dc-off { color: var(--text-dim); border-style: dashed; cursor: not-allowed; }
   .dc-list + :global(.dc-gh) { margin-top: 14px; }
   #dcOutc .dc-live { margin-top: 14px; }
 

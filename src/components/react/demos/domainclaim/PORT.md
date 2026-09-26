@@ -66,4 +66,5 @@ node scripts/port-sync.mjs domainclaim ../resend-take-home
 Rewrites `vendor/` from the product's current source and prints what changed. Then build and check
 both VIEWs.
 
-Source: github.com/Carlton-L/resend-take-home, synced 2026-09-25 at `a2fb3a8`.
+Source: github.com/Carlton-L/domainclaim (named resend-take-home until 2026-09-26), synced 2026-09-25 at
+`a2fb3a8`. The sync command takes the path of your local clone.
