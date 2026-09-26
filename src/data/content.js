@@ -353,14 +353,14 @@ export const projects = [
         heading: 'For the code reader',
         body: [
           'DNS sits behind an interface with a scripted fake, so no test touches the network. Failures are values in a typed union, and the message switch is exhaustive: a new failure breaks the build until it has words. An RFC leads the code, and a friction log records every problem I hit using it against real domains.',
-          'Each claim shows its site’s real favicon. The server fetches it under tight limits: public addresses, two redirects, raster images, since an SVG can run script. A site without one gets a globe. In the demo, carlton.dev shows its own icon and the .test names show the globe.',
+          'Each claim shows its site’s real favicon. The server fetches it under tight limits: public addresses, two redirects, raster images, since an SVG can run script. A site without one gets a globe. In the demo, the rail shows real icons next to the .test names, which get the globe.',
         ],
       },
       {
         heading: 'Two passes',
         body: [
           'The design came in two passes. The first was close to a wireframe: what the product shows, when, and how each step behaves. I built the engine under it and tested it against real domains.',
-          'The second pass happened away from the codebase, in HTML prototypes only, and was then applied to the working product. The screens changed. The DNS layer and the claim rules stayed as they were. The sign-in demo came out of that pass: a small copy of the app playing one claim.',
+          'The second pass happened away from the codebase, in HTML prototypes only, and was then applied to the working product. The screens changed. The DNS layer and the claim rules stayed as they were.',
         ],
       },
       {

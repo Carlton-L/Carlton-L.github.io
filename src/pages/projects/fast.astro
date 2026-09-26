@@ -117,6 +117,15 @@ const layout = {
       <p class="fs-sub">{"// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH. EVERY PAGE IS A CAMERA POSITION IN IT."}</p>
     </Operator>
 
+    <!-- OWNERSHIP (honest; only verified numbers get bars) -->
+    <Operator id="fastOwn" name="ownership_data" type="data" area="own" maxw={280}>
+      <div class="fs-meter">
+        <span>UX/UI DESIGN</span><div class="bar"><i style="width:100%"></i></div>
+        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span class="fs-meternote">EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET.</span>
+      </div>
+    </Operator>
+
     <!-- VIEW (opener): the subject page, composed and self-playing -->
     <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
@@ -126,14 +135,6 @@ const layout = {
       </div>
     </Operator>
 
-    <!-- OWNERSHIP (honest; only verified numbers get bars) -->
-    <Operator id="fastOwn" name="ownership_data" type="data" area="own" maxw={280}>
-      <div class="fs-meter">
-        <span>UX/UI DESIGN</span><div class="bar"><i style="width:100%"></i></div>
-        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="fs-meternote">EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET.</span>
-      </div>
-    </Operator>
 
     <Operator id="fastWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}

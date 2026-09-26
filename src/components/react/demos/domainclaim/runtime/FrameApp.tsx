@@ -21,6 +21,9 @@ export type FrameEvent =
   | { dc: 'check'; claimId: string; events: unknown[]; decided: unknown }
   | { dc: 'route'; pathname: string };
 
+/** carlton.dev's icon is found live, the product's way; the others are saved with the demo. */
+const SEEDED = ['carlton.dev', 'apple.com', 'microsoft.com'];
+
 const post = (event: FrameEvent) => window.parent.postMessage(event, window.location.origin);
 
 let installed = false;
@@ -48,8 +51,10 @@ const App: React.FC = () => {
       }
       resetStore();
       resetAttempts();
-      // carlton.dev is the demo account's own site, and the one site whose icon the demo can read.
-      seedVerified('carlton.dev', DEMO_USER.id);
+      // The demo account's other claims, so the rail shows real site icons next to each scene.
+      for (const name of SEEDED) {
+        seedVerified(name, DEMO_USER.id);
+      }
       if (message.data.heldElsewhere) {
         seedHeldElsewhere(message.data.name);
       }

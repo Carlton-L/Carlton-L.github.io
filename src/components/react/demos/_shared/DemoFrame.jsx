@@ -25,12 +25,14 @@ import './demos.css';
 const LABELS = {
   live: (
     <span>
-      <b>LIVE</b> — REAL PRODUCT CODE, SYNTHETIC DATA
+      <b>LIVE</b>
+      <span className="demoframe-long"> — REAL PRODUCT CODE, SYNTHETIC DATA</span>
     </span>
   ),
   recreation: (
     <span>
-      <b>RECREATION</b> — REAL BEHAVIOR, PORTFOLIO-OWNED CODE
+      <b>RECREATION</b>
+      <span className="demoframe-long"> — REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span>
     </span>
   ),
 };

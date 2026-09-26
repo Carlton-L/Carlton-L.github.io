@@ -2,6 +2,7 @@
  * StateCard — every state the check can land in, one panel each. Browse by scrolling the panels
  * sideways, with the arrows, or with the strip of markers; the view beside it runs whichever state
  * is showing. Fixed height at each width, so changing state never moves the page. No timer.
+ * On the case study it pops out into the corner dock while the view is on screen and it isn't.
  */
 import { useEffect, useRef } from 'react';
 import { MOVES, SCENES } from './explorer-data.js';
@@ -34,6 +35,24 @@ export default function StateCard() {
       steering.current = false;
     }, 700);
     return () => clearTimeout(done);
+  }, [index]);
+
+  // The page can move the card into a corner dock and back (PatchField's DUO dock). A moved
+  // element loses its scroll position, so put the current panel back without a slide.
+  useEffect(() => {
+    const onDuo = () => {
+      const el = track.current;
+      if (!el) return;
+      steering.current = true;
+      requestAnimationFrame(() => {
+        el.scrollTo({ left: index * el.clientWidth, behavior: 'auto' });
+        setTimeout(() => {
+          steering.current = false;
+        }, 200);
+      });
+    };
+    document.addEventListener('patch:duo', onDuo);
+    return () => document.removeEventListener('patch:duo', onDuo);
   }, [index]);
 
   // A sideways scroll by the visitor picks the panel it settles on.

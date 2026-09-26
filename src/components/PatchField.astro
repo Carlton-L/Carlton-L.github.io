@@ -34,7 +34,9 @@
  * rest). Home parents keep a min-height reservation so nothing jumps.
  * Emits `patch:duo` CustomEvents ({el, docked}) so demos can adapt
  * (e.g. drop pixel ratio while docked). One dock per field; first pair
- * wins if several fight over it.
+ * wins if several fight over it. A member marked data-duo-stay is never
+ * docked (DomainClaim's claim view is an iframe, which reloads if moved);
+ * only its partner pops out.
  *
  * LAYOUT RESOLVER (opt-in via the `layout` prop): places ops that carry an
  * `area` prop from an ASCII grid-areas string, snapped to the dot grid.
@@ -821,6 +823,9 @@ const heightStyle =
       }
       function dockEl(el) {
         if (docked === el) return;
+        // data-duo-stay: this surface never leaves home (an iframe reloads when it moves), so when
+        // it scrolls away its partner simply comes home
+        if (el.hasAttribute('data-duo-stay')) { undock(); return; }
         if (docked) undock();
         const name = el.dataset.duoName || el.dataset.duo;
         el.__w = el.offsetWidth || 1;

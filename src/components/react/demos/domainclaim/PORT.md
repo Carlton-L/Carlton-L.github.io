@@ -39,7 +39,7 @@ the site's stylesheet never loads there, and `src/styles/global.css` skips this 
 | `@/lib/claims/rateLimit` | `shims/rate-limit.ts` | The product's two check windows, counted in memory. |
 | `@/lib/auth/supabase/route` | `shims/supabase-route.ts` | One signed-in demo account. Sign in is out of the demo. |
 | `@/lib/dns/nodeResolver` | `shims/node-resolver.ts` | A browser can't send DNS queries. A real domain gets the product's own "the check could not run" answer; every `.test` name uses the product's scripted resolver, as in production. |
-| `@/lib/favicon/fetch` | `shims/favicon-fetch.ts` | A browser can only read the site it is on without that site's permission. The product's icon search (`/favicon.ico`, then the home page's icon links, raster only, with its own parser and type check) runs for carlton.dev; every other name gets the product's answer for a site with no icon, the globe. |
+| `@/lib/favicon/fetch` | `shims/favicon-fetch.ts` | A browser can only read the site it is on without that site's permission. The product's icon search (`/favicon.ico`, then the home page's icon links, raster only, with its own parser and type check) runs for carlton.dev. apple.com and microsoft.com use their real icons, saved in `public/demos/domainclaim/icons/` (read once from each site's `/favicon.ico`, resized to 64 px). Every other name gets the product's answer for a site with no icon, the globe. |
 | `@/lib/claims/check` | `shims/check-tap.ts` | Observation only: re-exports the product module and hands what `runCheck` decided to the explorer's "what the code decided" pane. |
 
 Build-time environment (`port.json` `env`): `DOMAINCLAIM_TEST_NAMESPACE=on`, the same switch as the
@@ -54,7 +54,8 @@ production deployment.
   given the bytes as a blob.
 - `runtime/FrameApp.tsx` mirrors the product's root and app layouts, and takes one command from the
   case study: open a demo name as a fresh claim (optionally held by a second account first). Every scene also
-  seeds carlton.dev as a verified claim of the demo account, the one site whose icon the demo can read.
+  seeds carlton.dev, apple.com and microsoft.com as verified claims of the demo account, so the rail
+  shows real site icons.
 
 ## Updating
 

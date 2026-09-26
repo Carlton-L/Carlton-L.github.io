@@ -2,13 +2,14 @@
 /**
  * DomainClaim — case-study network. Plan: Carlton Portfolio/domainclaim-case-study/05_CASE_STUDY_PLAN.md
  *
- * Option B (Carlton, Sep 26): the interactive explorer opens the page, right under the title.
- *   INPUT (title: what it is, try it) → states card ─drives→ claim view
- *   01 THE PROBLEM   what goes wrong + research_in
- *   02 DECISIONS     ask the source, whose move, claim then prove, progressive disclosure
- *   03 THE RESULT    only real states + rules
- *   04 THE CODE      for the code reader + read first
- *   05 THE PROCESS   two passes + the sign-in demo, first pass, concepts + one change
+ * Layout v4 (Carlton, Sep 26), after Futurescaper: the animated demo opens the page, a short run of
+ * problem and decisions, then a break and the live demo, then the code and the process.
+ *   INPUT (title) + ownership → VERIFY.scn (the product's own home-page demo, plays by itself)
+ *   what goes wrong + research_in → decisions 01 to 04
+ *   01 THE LIVE DEMO   claim view, the states card under it (docks in a corner while the view is on
+ *                      screen and the card isn't), then only real states + rules
+ *   02 THE CODE        for the code reader + read first
+ *   03 THE PROCESS     two passes, first pass, concepts, one change at a time
  *   OUT
  *
  * Every VIEW runs the product's own code (src/components/react/demos/domainclaim/PORT.md): the
@@ -41,25 +42,24 @@ const jsonLd = {
 };
 
 const links: [string, string][] = [
-  ['dcTitle', 'dcCat'],
-  ['dcCat', 'dcFx'],
-  ['dcFx', 'dcBr1'],
-  ['dcBr1', 'dcWrong'],
+  ['dcTitle', 'dcHero'],
+  ['dcHero', 'dcWrong'],
   ['dcWrong', 'dcRsrch'],
-  ['dcRsrch', 'dcBr2'],
-  ['dcBr2', 'dcD1'],
+  ['dcRsrch', 'dcD1'],
   ['dcD1', 'dcD2'],
   ['dcD2', 'dcD3'],
   ['dcD3', 'dcNext'],
-  ['dcNext', 'dcBr3'],
-  ['dcBr3', 'dcReal'],
+  ['dcNext', 'dcBr1'],
+  ['dcBr1', 'dcFx'],
+  ['dcCat', 'dcFx'],
+  ['dcTry', 'dcCat'],
+  ['dcFx', 'dcReal'],
   ['dcReal', 'dcRules'],
-  ['dcRules', 'dcBr4'],
-  ['dcBr4', 'dcCode'],
+  ['dcRules', 'dcBr2'],
+  ['dcBr2', 'dcCode'],
   ['dcCode', 'dcFiles'],
-  ['dcFiles', 'dcBr5'],
-  ['dcBr5', 'dcTwice'],
-  ['dcTwice', 'dcHero'],
+  ['dcFiles', 'dcBr3'],
+  ['dcBr3', 'dcTwice'],
   ['dcTwice', 'dcBefore'],
   ['dcBefore', 'dcCpt'],
   ['dcCpt', 'dcMiss'],
@@ -67,8 +67,8 @@ const links: [string, string][] = [
   ['dcOutc', 'dcOut'],
 ];
 
-// Sections are separated by SYS break ops (br1 to br5) with blank rows around them, the same
-// grammar as the FAST page.
+// Three SYS breaks (br1 to br3) with blank rows around them, the same grammar as the FAST page. The
+// first one sits right before the live demo, so the page slows down there.
 const layout = {
   mode: 'content',
   padTop: 48,
@@ -77,29 +77,25 @@ const layout = {
     cols: 12,
     areas: `
       title title title title title title .     .     .     own   own   own
-      cat   cat   cat   cat   .     fx    fx    fx    fx    fx    fx    fx
+      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
+      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
+      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
+      .     .     .     next  next  next  next  next  next  .     .     .
       .     .     .     .     .     .     .     .     .     .     .     .
       .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
       .     .     .     .     .     .     .     .     .     .     .     .
-      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
+      .     fx    fx    fx    fx    fx    fx    fx    fx    fx    fx    .
+      .     try   try   try   .     cat   cat   cat   cat   cat   cat   .
+      .     real  real  real  real  real  .     rules rules rules rules .
       .     .     .     .     .     .     .     .     .     .     .     .
       .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
       .     .     .     .     .     .     .     .     .     .     .     .
-      .     d1    d1    d1    d1    .     .     d2    d2    d2    d2    .
-      .     d3    d3    d3    d3    .     .     next  next  next  next  .
+      .     code  code  code  code  code  code  .     files files files files
       .     .     .     .     .     .     .     .     .     .     .     .
       .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
       .     .     .     .     .     .     .     .     .     .     .     .
-      .     real  real  real  real  real  .     rules rules rules rules .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br4   br4   br4   br4   br4   br4   br4   br4   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     code  code  code  code  code  code  .     files files files files
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br5   br5   br5   br5   br5   br5   br5   br5   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     twice twice twice twice .     hero  hero  hero  hero  hero  hero
-      .     bfr   bfr   bfr   bfr   .     cpt   cpt   cpt   cpt   cpt   cpt
+      .     twice twice twice twice twice .     bfr   bfr   bfr   bfr   .
+      .     cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   .
       .     .     .     miss  miss  miss  miss  miss  miss  .     .     .
       outc  outc  outc  outc  outc  .     .     .     .     out   out   out
     `,
@@ -107,11 +103,9 @@ const layout = {
 };
 
 const breaks: [string, string, string][] = [
-  ['dcBr1', 'br1', 'THE PROBLEM'],
-  ['dcBr2', 'br2', 'DECISIONS'],
-  ['dcBr3', 'br3', 'THE RESULT'],
-  ['dcBr4', 'br4', 'THE CODE'],
-  ['dcBr5', 'br5', 'THE PROCESS'],
+  ['dcBr1', 'br1', 'THE LIVE DEMO'],
+  ['dcBr2', 'br2', 'THE CODE'],
+  ['dcBr3', 'br3', 'THE PROCESS'],
 ];
 
 const research: [string, string][] = [
@@ -167,12 +161,11 @@ const unionExcerpt = `export type FailureReason =
   jsonLd={jsonLd}
 >
   <PatchField id="dcNet" links={links} density={0.3} layout={layout} label="DomainClaim case-study network — press P for reading mode">
-    <!-- INPUT: what it is, and an invitation to the demo right under it -->
+    <!-- INPUT -->
     <Operator id="dcTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="dc-meta">{project.meta}</p>
       <h1 class="dc-h">Proof you can <span class="grn">watch</span></h1>
       {cs['What it is'].map((p) => <p class="dc-p dc-lede">{p}</p>)}
-      <p class="dc-try"><span class="dc-trytag">LIVE DEMO</span>{cs['Try it'][0]}</p>
       <div class="dc-links">
         <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
         <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
@@ -189,29 +182,14 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <!-- the demo: the card drives the view beside it -->
-    <Operator id="dcCat" name="states · pick_one" type="data" area="cat">
-      <StateCard client:visible />
-    </Operator>
-
-    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
+    <!-- the product's own home-page demo, playing by itself -->
+    <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
       <div class="dc-viewerwrap">
-        <FailureView client:visible />
+        <SignInHero client:visible />
       </div>
     </Operator>
 
-    {breaks.slice(0, 1).map(([id, area, label]) => (
-      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
-        <div class="dc-break">
-          <span class="dc-break-num">{'01'}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-          <span class="dc-break-label">{label}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-        </div>
-      </Operator>
-    ))}
-
-    <!-- 01 THE PROBLEM -->
+    <!-- the problem, and what it decided -->
     <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
       <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
       {cs['What goes wrong'].map((p) => <p class="dc-p">{p}</p>)}
@@ -225,18 +203,6 @@ const unionExcerpt = `export type FailureReason =
       </ul>
     </Operator>
 
-    {breaks.slice(1, 2).map(([id, area, label]) => (
-      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
-        <div class="dc-break">
-          <span class="dc-break-num">{'02'}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-          <span class="dc-break-label">{label}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-        </div>
-      </Operator>
-    ))}
-
-    <!-- 02 DECISIONS -->
     <Operator id="dcD1" name="decision_01 · ask_the_source" type="txt" area="d1">
       <div class="dc-dec">
         <span class="dc-dnum" aria-hidden="true">01</span>
@@ -269,10 +235,10 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    {breaks.slice(2, 3).map(([id, area, label]) => (
+    {breaks.slice(0, 1).map(([id, area, label]) => (
       <Operator id={id} name="section_break" type="sys" area={area} ports="both">
         <div class="dc-break">
-          <span class="dc-break-num">{'03'}</span>
+          <span class="dc-break-num">{'01'}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
           <span class="dc-break-label">{label}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
@@ -280,7 +246,24 @@ const unionExcerpt = `export type FailureReason =
       </Operator>
     ))}
 
-    <!-- 03 THE RESULT -->
+    <!-- 01 THE LIVE DEMO: one view, the states card under it drives it -->
+    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
+      <div class="dc-viewerwrap" data-duo="dc" data-duo-stay data-duo-name="claim_view">
+        <FailureView client:visible />
+      </div>
+    </Operator>
+
+    <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
+      <h2 class="dc-h2">Try <span class="grn">it</span></h2>
+      {cs['Try it'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="dcCat" name="states · pick_one" type="data" area="cat">
+      <div data-duo="dc" data-duo-name="states">
+        <StateCard client:visible />
+      </div>
+    </Operator>
+
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
       <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
       {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
@@ -292,10 +275,10 @@ const unionExcerpt = `export type FailureReason =
       </ul>
     </Operator>
 
-    {breaks.slice(3, 4).map(([id, area, label]) => (
+    {breaks.slice(1, 2).map(([id, area, label]) => (
       <Operator id={id} name="section_break" type="sys" area={area} ports="both">
         <div class="dc-break">
-          <span class="dc-break-num">{'04'}</span>
+          <span class="dc-break-num">{'02'}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
           <span class="dc-break-label">{label}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
@@ -303,7 +286,7 @@ const unionExcerpt = `export type FailureReason =
       </Operator>
     ))}
 
-    <!-- 04 THE CODE -->
+    <!-- 02 THE CODE -->
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
       <h2 class="dc-h2">For the <span class="grn">code</span> reader</h2>
       {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
@@ -320,10 +303,10 @@ const unionExcerpt = `export type FailureReason =
       <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
     </Operator>
 
-    {breaks.slice(4, 5).map(([id, area, label]) => (
+    {breaks.slice(2, 3).map(([id, area, label]) => (
       <Operator id={id} name="section_break" type="sys" area={area} ports="both">
         <div class="dc-break">
-          <span class="dc-break-num">{'05'}</span>
+          <span class="dc-break-num">{'03'}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
           <span class="dc-break-label">{label}</span>
           <span class="dc-break-rule" aria-hidden="true"></span>
@@ -331,20 +314,13 @@ const unionExcerpt = `export type FailureReason =
       </Operator>
     ))}
 
-    <!-- 05 THE PROCESS -->
+    <!-- 03 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
       <h2 class="dc-h2">Two <span class="grn">passes</span></h2>
       {cs['Two passes'].map((p) => <p class="dc-p">{p}</p>)}
     </Operator>
 
-    <!-- the second pass's sign-in demo: the product's own home-page demo -->
-    <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" ports="in">
-      <div class="dc-viewerwrap">
-        <SignInHero client:visible />
-      </div>
-    </Operator>
-
-    <!-- the first pass: its claim screen, from the old README (a ported, running version can replace it later) -->
+    <!-- the first pass: its claim screen, from the old README -->
     <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={420}>
       <figure class="dc-shot">
         <img src="/images/projects/domainclaim/first-pass.webp" alt="The first pass of the claim screen: the five steps as a list, with the failing step open to show the value found, the value to use, and why they differ" width="1200" height="1024" loading="lazy" decoding="async" />
@@ -352,7 +328,7 @@ const unionExcerpt = `export type FailureReason =
       </figure>
     </Operator>
 
-    <Operator id="dcCpt" name="concepts · 01_02_03" type="view" area="cpt">
+    <Operator id="dcCpt" name="concepts · 01_02_03" type="view" area="cpt" maxw={900}>
       <div class="dc-cpt" data-cpt>
         <div class="dc-tabs" role="tablist" aria-label="Three concepts">
           {concepts.map((c, i) => (
@@ -438,14 +414,6 @@ const unionExcerpt = `export type FailureReason =
   }
   .grn { color: var(--signal); }
   .dc-lede { margin-top: 12px; max-width: 52ch; }
-  .dc-try {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 12px;
-    font-size: 13px; line-height: 1.6; color: var(--text); max-width: 56ch;
-  }
-  .dc-trytag {
-    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; color: var(--signal);
-    border: 1px solid var(--signal-dim); border-radius: 2px; padding: 1px 6px;
-  }
   .dc-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
   .dc-break-num {
     font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1;

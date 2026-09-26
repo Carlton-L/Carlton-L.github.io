@@ -2,13 +2,21 @@
 // `/favicon.ico` first, then the icons its home page links to, raster images only. A browser can
 // read one site without asking that site's permission: the one it is on. So the demo runs the
 // product's search, with the product's own link parser and type check, for the site that serves
-// it, and every other name gets the product's answer for a site with no icon: the globe.
+// it. A few well-known sites have their real icons saved with the demo, read once from each site's
+// own /favicon.ico and resized to 64 px. Every other name gets the product's answer for a site with
+// no icon: the globe.
 import { acceptableIcon, iconLinks, MAX_ICON_BYTES, MAX_PAGE_BYTES, mediaType } from '@/lib/favicon/icons';
 
 export type Icon = { contentType: string; body: ArrayBuffer };
 
 /** The name of the site serving the demo. Local previews stand in for it. */
 const SELF = 'carlton.dev';
+
+/** Real icons saved with the demo, since a browser can't read them from their own sites. */
+const SAVED: Record<string, string> = {
+  'apple.com': '/demos/domainclaim/icons/apple.com.png',
+  'microsoft.com': '/demos/domainclaim/icons/microsoft.com.png',
+};
 
 const get = async (path: string, maxBytes: number) => {
   try {
@@ -29,6 +37,10 @@ const asIcon = (got: Awaited<ReturnType<typeof get>>): Icon | null =>
     : null;
 
 export const fetchFavicon = async (name: string): Promise<Icon | null> => {
+  const saved = SAVED[name];
+  if (saved !== undefined) {
+    return asIcon(await get(saved, MAX_ICON_BYTES));
+  }
   if (name !== SELF) {
     return null;
   }

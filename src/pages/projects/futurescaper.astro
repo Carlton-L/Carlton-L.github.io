@@ -99,6 +99,17 @@ const layout = {
       <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · futurescape.futurity.science ↗</a>
     </Operator>
 
+    <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
+    <Operator id="fsOwn" name="ownership_data" type="data" area="own" maxw={280}>
+      <div class="fs-meter">
+        <span>CONCEPT</span><div class="bar"><i style="width:35%"></i></div>
+        <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
+        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
+        <span class="fs-meternote">SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO.</span>
+      </div>
+    </Operator>
+
     <!-- VIEW (opener): the product's landing hero — a map generating itself -->
     <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
@@ -126,16 +137,6 @@ const layout = {
       {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
-    <Operator id="fsOwn" name="ownership_data" type="data" area="own" maxw={280}>
-      <div class="fs-meter">
-        <span>CONCEPT</span><div class="bar"><i style="width:35%"></i></div>
-        <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
-        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="fs-meternote">SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO.</span>
-      </div>
-    </Operator>
 
     <Operator id="fsRole" name="txt · my_role" type="txt" area="role" nudge="0 48">
       {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
