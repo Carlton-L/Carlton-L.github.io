@@ -310,7 +310,7 @@ export const projects = [
       {
         heading: 'Try it',
         body: [
-          'This is the product itself, running in the page. Pick a state on the card and it runs the real check.',
+          'This is the product itself, running in the page. Pick a state under it with the arrows and it runs the real check.',
         ],
       },
       {

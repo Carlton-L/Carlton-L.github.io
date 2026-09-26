@@ -14,7 +14,7 @@ replaced, and why. The method is written up in the portfolio folder,
 | `port.json` | Entry points, the path alias, the seams and the build-time environment. |
 | `shims/` | One module per seam. The only product-facing code written here. |
 | `runtime/` | Glue: the in-page API and the demo document's root. |
-| `DomainClaimFrame.jsx`, `SignInHero.jsx`, `StateCard.jsx`, `FailureView.jsx`, `explorer-*.js` | The case study's side: the scaled frame, the sign-in VIEW, and the states card driving the claim VIEW. |
+| `DomainClaimFrame.jsx`, `SignInHero.jsx`, `StateCard.jsx`, `FailureView.jsx`, `explorer-*.js` | The case study's side: the scaled frame, the sign-in VIEW, and the claim VIEW with its state card underneath. |
 | `../ports.mjs` | The Vite plugin that applies `port.json` to files in this folder only. |
 | `src/pages/demos/domainclaim.astro` | The demo document the frames load. |
 
@@ -38,9 +38,9 @@ the site's stylesheet never loads there, and `src/styles/global.css` skips this 
 | `@/lib/claims/store` | `shims/store.ts` | The same functions over an in-memory table, each write keeping its product condition and the one-owner index. |
 | `@/lib/claims/rateLimit` | `shims/rate-limit.ts` | The product's two check windows, counted in memory. |
 | `@/lib/auth/supabase/route` | `shims/supabase-route.ts` | One signed-in demo account. Sign in is out of the demo. |
-| `@/lib/dns/nodeResolver` | `shims/node-resolver.ts` | A browser can't send DNS queries. A real domain gets the product's own "the check could not run" answer; every `.test` name uses the product's scripted resolver, as in production. |
+| `@/lib/dns/nodeResolver` | `shims/node-resolver.ts` | A browser can't send DNS queries. Every `.test` name uses the product's scripted resolver, as in production. The demo account's real-site claims answer from the product's fake resolver with their record in place, so opening one runs a passing check. Any other real domain gets the product's own "the check could not run" answer. |
 | `@/lib/favicon/fetch` | `shims/favicon-fetch.ts` | A browser can only read the site it is on without that site's permission. The product's icon search (`/favicon.ico`, then the home page's icon links, raster only, with its own parser and type check) runs for carlton.dev. apple.com and microsoft.com use their real icons, saved in `public/demos/domainclaim/icons/` (read once from each site's `/favicon.ico`, resized to 64 px). Every other name gets the product's answer for a site with no icon, the globe. |
-| `@/lib/claims/check` | `shims/check-tap.ts` | Observation only: re-exports the product module and hands what `runCheck` decided to the explorer's "what the code decided" pane. |
+| `@/lib/claims/check` | `shims/check-scope.ts` | Re-exports the product module; `runCheck` is wrapped only to tell the resolver shim which name it is checking. |
 
 Build-time environment (`port.json` `env`): `DOMAINCLAIM_TEST_NAMESPACE=on`, the same switch as the
 production deployment.
@@ -48,7 +48,7 @@ production deployment.
 ## Glue
 
 - `runtime/api.ts` answers `fetch('/api/...')` inside the demo document with the product's route
-  handlers, adds 90 ms of latency, and copies each streamed check to the explorer.
+  handlers, and adds 90 ms of latency.
 - `runtime/api.ts` also answers the product's `<img src="/api/favicon/:id">`: an image request never goes
   through `fetch`, so the image's `src` (attribute and property) is routed to the same handler and
   given the bytes as a blob.

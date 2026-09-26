@@ -36,7 +36,7 @@
     "@/lib/claims/rateLimit": "shims/rate-limit.ts",
     "@/lib/auth/supabase/route": "shims/supabase-route.ts",
     "@/lib/dns/nodeResolver": "shims/node-resolver.ts",
-    "@/lib/claims/check": "shims/check-tap.ts",
+    "@/lib/claims/check": "shims/check-scope.ts",
     "@/lib/favicon/fetch": "shims/favicon-fetch.ts"
   },
   "env": {

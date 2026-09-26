@@ -6,8 +6,8 @@
  * problem and decisions, then a break and the live demo, then the code and the process.
  *   INPUT (title) + ownership → VERIFY.scn (the product's own home-page demo, plays by itself)
  *   what goes wrong + research_in → decisions 01 to 04
- *   01 THE LIVE DEMO   claim view, the states card under it (docks in a corner while the view is on
- *                      screen and the card isn't), then only real states + rules
+ *   01 THE LIVE DEMO   try it, then the claim view with its state card underneath (big arrows),
+ *                      then only real states + rules
  *   02 THE CODE        for the code reader + read first
  *   03 THE PROCESS     two passes, first pass, concepts, one change at a time
  *   OUT
@@ -21,7 +21,6 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import PatchField from '../../components/PatchField.astro';
 import SignInHero from '../../components/react/demos/domainclaim/SignInHero.jsx';
-import StateCard from '../../components/react/demos/domainclaim/StateCard.jsx';
 import FailureView from '../../components/react/demos/domainclaim/FailureView.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -50,9 +49,8 @@ const links: [string, string][] = [
   ['dcD2', 'dcD3'],
   ['dcD3', 'dcNext'],
   ['dcNext', 'dcBr1'],
-  ['dcBr1', 'dcFx'],
-  ['dcCat', 'dcFx'],
-  ['dcTry', 'dcCat'],
+  ['dcBr1', 'dcTry'],
+  ['dcTry', 'dcFx'],
   ['dcFx', 'dcReal'],
   ['dcReal', 'dcRules'],
   ['dcRules', 'dcBr2'],
@@ -84,8 +82,8 @@ const layout = {
       .     .     .     .     .     .     .     .     .     .     .     .
       .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
       .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     .     try   try   try   try   try   try   .     .     .
       .     fx    fx    fx    fx    fx    fx    fx    fx    fx    fx    .
-      .     try   try   try   .     cat   cat   cat   cat   cat   cat   .
       .     real  real  real  real  real  .     rules rules rules rules .
       .     .     .     .     .     .     .     .     .     .     .     .
       .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
@@ -246,23 +244,18 @@ const unionExcerpt = `export type FailureReason =
       </Operator>
     ))}
 
-    <!-- 01 THE LIVE DEMO: one view, the states card under it drives it -->
-    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
-      <div class="dc-viewerwrap" data-duo="dc" data-duo-stay data-duo-name="claim_view">
-        <FailureView client:visible />
-      </div>
-    </Operator>
-
+    <!-- 01 THE LIVE DEMO: how to use it, then one view with its state card underneath -->
     <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
       <h2 class="dc-h2">Try <span class="grn">it</span></h2>
       {cs['Try it'].map((p) => <p class="dc-p">{p}</p>)}
     </Operator>
 
-    <Operator id="dcCat" name="states · pick_one" type="data" area="cat">
-      <div data-duo="dc" data-duo-name="states">
-        <StateCard client:visible />
+    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
+      <div class="dc-viewerwrap">
+        <FailureView client:visible />
       </div>
     </Operator>
+
 
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
       <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>

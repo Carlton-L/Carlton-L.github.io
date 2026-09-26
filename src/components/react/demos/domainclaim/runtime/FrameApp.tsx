@@ -12,13 +12,12 @@ import { navigate, startAt, useLocation } from '../shims/next-navigation';
 import { resetAttempts } from '../shims/rate-limit';
 import { resetStore, seedHeldElsewhere, seedVerified } from '../shims/store';
 import { DEMO_USER } from '../shims/supabase-route';
-import { installApi, onCheck } from './api';
+import { installApi } from './api';
 
 export type FrameCommand = { dc: 'open'; name: string; heldElsewhere?: boolean };
 export type FrameEvent =
   | { dc: 'ready' }
   | { dc: 'opened'; name: string; id: string }
-  | { dc: 'check'; claimId: string; events: unknown[]; decided: unknown }
   | { dc: 'route'; pathname: string };
 
 /** carlton.dev's icon is found live, the product's way; the others are saved with the demo. */
@@ -33,7 +32,6 @@ const install = () => {
   }
   installed = true;
   installApi();
-  onCheck((record) => post({ dc: 'check', ...record }));
 };
 
 const Screen: React.FC = () => {

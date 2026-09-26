@@ -7,7 +7,6 @@ import { POST as postRelease } from '../vendor/src/app/api/claims/[id]/release/r
 import { GET as getClaims, POST as postClaims } from '../vendor/src/app/api/claims/route';
 import { GET as getFavicon } from '../vendor/src/app/api/favicon/[id]/route';
 import { GET as getMe } from '../vendor/src/app/api/me/route';
-import { onOutcome } from '../shims/check-tap';
 import type { NextRequest } from '../shims/next-server';
 
 type Handler = (request: NextRequest, context: { params: Promise<{ id: string }> }) => Promise<Response>;
@@ -21,25 +20,6 @@ const ROUTES: { method: string; pattern: RegExp; handler: Handler }[] = [
   { method: 'POST', pattern: /^\/api\/claims\/([^/]+)\/release$/, handler: postRelease as Handler },
   { method: 'GET', pattern: /^\/api\/favicon\/([^/]+)$/, handler: getFavicon as Handler },
 ];
-
-/** What one check decided, as the product's own values, plus the steps it streamed. */
-export type CheckRecord = { claimId: string; events: unknown[]; decided: unknown };
-export type CheckTap = (record: CheckRecord) => void;
-
-let tap: CheckTap = () => {};
-const decided = new Map<string, unknown>();
-export const onCheck = (listener: CheckTap) => {
-  tap = listener;
-};
-onOutcome((claimId, outcome) => {
-  decided.set(claimId, {
-    result: outcome.result,
-    status: outcome.status,
-    provedButHeld: outcome.provedButHeld,
-    recovered: outcome.recovered,
-    actionNeeded: outcome.actionNeeded,
-  });
-});
 
 /** A real network round trip is part of what the screen was designed around, so keep one. */
 const LATENCY_MS = 90;
@@ -66,38 +46,6 @@ const requestFor = (url: URL, init: RequestInit | undefined): NextRequest => {
   };
 };
 
-/** Copies a streamed check line by line to the tap, and passes the stream on untouched. */
-const tapStream = (response: Response, claimId: string): Response => {
-  if (response.body === null || !(response.headers.get('content-type') ?? '').includes('ndjson')) {
-    return response;
-  }
-  const [forScreen, forTap] = response.body.tee();
-  const events: unknown[] = [];
-  void (async () => {
-    const reader = forTap.pipeThrough(new TextDecoderStream()).getReader();
-    let buffer = '';
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) {
-        break;
-      }
-      buffer += value;
-      let cut = buffer.indexOf('\n');
-      while (cut >= 0) {
-        const line = buffer.slice(0, cut).trim();
-        buffer = buffer.slice(cut + 1);
-        if (line) {
-          events.push(JSON.parse(line));
-        }
-        cut = buffer.indexOf('\n');
-      }
-    }
-    tap({ claimId, events, decided: decided.get(claimId) ?? null });
-    decided.delete(claimId);
-  })();
-  return new Response(forScreen, { status: response.status, headers: response.headers });
-};
-
 export const installApi = () => {
   const network = window.fetch.bind(window);
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -114,8 +62,7 @@ export const installApi = () => {
       const match = route.method === method ? route.pattern.exec(url.pathname) : null;
       if (match) {
         const id = match[1] ?? '';
-        const response = await route.handler(requestFor(url, init), { params: Promise.resolve({ id }) });
-        return route.pattern.source.includes('check') ? tapStream(response, id) : response;
+        return route.handler(requestFor(url, init), { params: Promise.resolve({ id }) });
       }
     }
     return Response.json({ ok: false, error: 'not_found' }, { status: 404 });

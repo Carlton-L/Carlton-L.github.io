@@ -1,8 +1,7 @@
 /**
- * StateCard — every state the check can land in, one panel each. Browse by scrolling the panels
- * sideways, with the arrows, or with the strip of markers; the view beside it runs whichever state
- * is showing. Fixed height at each width, so changing state never moves the page. No timer.
- * On the case study it pops out into the corner dock while the view is on screen and it isn't.
+ * StateCard — every state the check can land in, one panel each, under the view it drives. Browse
+ * with the two large arrows, by scrolling the panels sideways, or with the strip of markers; the
+ * view above runs whichever state is showing. Fixed height at each width, so changing state never moves the page. No timer.
  */
 import { useEffect, useRef } from 'react';
 import { MOVES, SCENES } from './explorer-data.js';
@@ -37,24 +36,6 @@ export default function StateCard() {
     return () => clearTimeout(done);
   }, [index]);
 
-  // The page can move the card into a corner dock and back (PatchField's DUO dock). A moved
-  // element loses its scroll position, so put the current panel back without a slide.
-  useEffect(() => {
-    const onDuo = () => {
-      const el = track.current;
-      if (!el) return;
-      steering.current = true;
-      requestAnimationFrame(() => {
-        el.scrollTo({ left: index * el.clientWidth, behavior: 'auto' });
-        setTimeout(() => {
-          steering.current = false;
-        }, 200);
-      });
-    };
-    document.addEventListener('patch:duo', onDuo);
-    return () => document.removeEventListener('patch:duo', onDuo);
-  }, [index]);
-
   // A sideways scroll by the visitor picks the panel it settles on.
   useEffect(() => {
     const el = track.current;
@@ -84,16 +65,12 @@ export default function StateCard() {
         <span className="dcs-count">
           {pad(index + 1)} / {pad(SCENES.length)}
         </span>
-        <span className="dcs-nav">
-          <button type="button" className="dcs-arrow" onClick={() => pick(index - 1)} aria-label="Previous state">
-            ◂
-          </button>
-          <button type="button" className="dcs-arrow" onClick={() => pick(index + 1)} aria-label="Next state">
-            ▸
-          </button>
-        </span>
       </div>
 
+      <div className="dcs-body">
+        <button type="button" className="dcs-arrow" onClick={() => pick(index - 1)} aria-label="Previous state">
+          <span aria-hidden="true">◂</span>
+        </button>
       <div className="dcs-track" ref={track} tabIndex={0} aria-label="States, scroll sideways to browse">
         {SCENES.map((s, i) => (
           <section key={s.id} className="dcs-panel" aria-hidden={i !== index} aria-roledescription="state">
@@ -106,6 +83,10 @@ export default function StateCard() {
             </div>
           </section>
         ))}
+      </div>
+        <button type="button" className="dcs-arrow" onClick={() => pick(index + 1)} aria-label="Next state">
+          <span aria-hidden="true">▸</span>
+        </button>
       </div>
 
       <div className="dcs-foot">

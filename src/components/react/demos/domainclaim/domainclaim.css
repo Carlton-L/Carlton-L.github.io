@@ -1,37 +1,12 @@
-/* DomainClaim demos: the frame box, and the explorer's picker and panes.
+/* DomainClaim demos: the frame box, and the state card under the claim view.
    Site chrome in site tokens; the product itself draws inside the frame in its own. */
 
 .dcf { position: relative; overflow: hidden; background: #0a0a0b; }
 .dcf-frame { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b; }
 
-.dcx-pane { padding: 12px 14px 14px; border-top: 1px solid var(--border-color); }
-.dcx-h { font-family: var(--font-mono); font-size: 9px; font-weight: 400; letter-spacing: 0.12em; color: var(--text-dim); margin: 0 0 8px; }
-.dcx-code {
-  margin: 0 0 10px; padding: 10px 12px; overflow-x: auto; white-space: pre;
-  font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--text-muted);
-  background: #0a0a0b; border: 1px solid var(--border-color); border-radius: 4px;
-  height: 150px;
-  overflow: auto;
-}
-.dcx-c { color: var(--text-dim); }
-.dcx-p { color: #56b4e9; }
-.dcx-s { color: var(--signal); }
-.dcx-k { color: #e8a317; }
-.dcx-line { display: flex; flex-wrap: nowrap; overflow: hidden; height: 20px; align-items: center; gap: 5px; margin: 0 0 6px; font-family: var(--font-mono); font-size: 10px; }
-.dcx-lab { font-size: 9px; letter-spacing: 0.12em; color: var(--text-dim); margin-right: 4px; min-width: 42px; }
-.dcx-status, .dcx-flag, .dcx-step { padding: 1px 6px; border-radius: 2px; border: 1px solid var(--border-color); color: var(--text-muted); }
-.dcx-status.s-verified { color: var(--signal); border-color: rgba(61, 255, 136, 0.4); }
-.dcx-status.s-pending { color: #56b4e9; border-color: rgba(86, 180, 233, 0.4); }
-.dcx-status.s-at_risk { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
-.dcx-flag { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
-.dcx-step.t-done { color: var(--signal); border-color: rgba(61, 255, 136, 0.35); }
-.dcx-step.t-wrong { color: #e8a317; border-color: rgba(232, 163, 23, 0.4); }
-.dcx-step.t-wait { color: #56b4e9; border-color: rgba(86, 180, 233, 0.4); }
-.dcx-step.t-idle { color: var(--text-dim); }
-
 /* ---- StateCard: one panel per state, fixed height at each width ---- */
-.dcs { --dcs-h: 272px; display: flex; flex-direction: column; margin: -12px -14px; }
-@media (max-width: 720px) { .dcs { --dcs-h: 360px; } }
+.dcs { --dcs-h: 232px; --dcs-arrow: 72px; display: flex; flex-direction: column; border-top: 1px solid var(--border-color); }
+@media (max-width: 720px) { .dcs { --dcs-h: 360px; --dcs-arrow: 44px; } }
 .dcs-head, .dcs-foot {
   display: flex; align-items: center; gap: 10px; padding: 8px 14px;
   font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; color: var(--text-dim);
@@ -43,22 +18,26 @@
 .dcs-move.m-time { color: #56b4e9; }
 .dcs-move.m-done { color: var(--signal); }
 .dcs-count { font-variant-numeric: tabular-nums; color: var(--text-muted); }
-.dcs-nav { margin-left: auto; display: flex; gap: 6px; }
+.dcs-body { display: flex; height: var(--dcs-h); }
+/* The arrows are the main control: full height, easy to hit on a phone. */
 .dcs-arrow {
-  width: 26px; height: 22px; display: grid; place-items: center; cursor: pointer;
-  font-size: 11px; color: var(--signal); background: transparent;
-  border: 1px solid rgba(61, 255, 136, 0.35); border-radius: 3px;
+  flex: 0 0 var(--dcs-arrow); display: grid; place-items: center; cursor: pointer;
+  font-size: 26px; color: var(--signal); background: rgba(61, 255, 136, 0.04);
+  border: 0; border-right: 1px solid var(--border-color);
+  transition: background var(--duration-normal, 0.2s);
 }
-.dcs-arrow:hover { border-color: var(--signal); }
+.dcs-arrow:last-child { border-right: 0; border-left: 1px solid var(--border-color); }
+.dcs-arrow:hover { background: rgba(61, 255, 136, 0.12); }
+.dcs-arrow:active { background: rgba(61, 255, 136, 0.2); }
 .dcs-arrow:focus-visible, .dcs-mark:focus-visible, .dcs-track:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 .dcs-track {
-  display: flex; height: var(--dcs-h); overflow-x: auto; overflow-y: hidden;
+  flex: 1; min-width: 0; display: flex; height: 100%; overflow-x: auto; overflow-y: hidden;
   scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .dcs-track::-webkit-scrollbar { display: none; }
 .dcs-panel {
   flex: 0 0 100%; height: 100%; scroll-snap-align: start; overflow-y: auto;
-  padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 8px;
 }
 .dcs-title {
   font-family: var(--font-display); font-weight: 900; text-transform: uppercase;

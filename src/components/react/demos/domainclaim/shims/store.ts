@@ -5,7 +5,9 @@
 import { CLAIM_LIMIT, TOKEN_TTL_MS } from '@/lib/claims/config';
 import { isExpired } from '@/lib/claims/evaluate';
 import { holdsTheName, OWNED_STATUSES } from '@/lib/claims/state';
+import { formatRecordValue } from '@/lib/claims/record';
 import { generateToken } from '@/lib/claims/token';
+import { holdRecord } from './node-resolver';
 
 export type {
   Claim,
@@ -55,15 +57,19 @@ export const seedHeldElsewhere = (name: string, now = new Date()) => {
  * real site next to each scene's claim.
  */
 export const seedVerified = (name: string, ownerId: string, now = new Date()) => {
+  const token = generateToken();
+  const expiresAt = new Date(now.getTime() - 33 * 86_400_000);
+  // Its record stays in place, so a check on it passes the way it would on the real site.
+  holdRecord(name, formatRecordValue(token, expiresAt));
   rows.push({
     id: crypto.randomUUID(),
     ownerId,
     name,
     registrableDomain: name,
-    token: generateToken(),
+    token,
     status: 'verified',
     issuedAt: new Date(now.getTime() - 40 * 86_400_000),
-    expiresAt: new Date(now.getTime() - 33 * 86_400_000),
+    expiresAt,
     verifiedAt: new Date(now.getTime() - 40 * 86_400_000),
     failingSince: null,
     actionNeededSince: null,
