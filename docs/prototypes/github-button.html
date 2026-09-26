@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GitHub button · prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0b; --bg-elevated: #101013; --bg-surface: #161619;
+    --signal: #3dff88; --signal-dim: rgba(61, 255, 136, 0.28);
+    --text: #e6e6e2; --text-muted: #8f8f8a; --text-dim: #5c5c58;
+    --border-color: #232326;
+    --font-display: 'proxima-nova', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 40px 16px 80px; }
+  main { max-width: 1040px; margin: 0 auto; }
+  h1 { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 28px; margin: 0 0 6px; }
+  .lede { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 70ch; margin: 0 0 32px; }
+  h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--signal); font-weight: 500; margin: 40px 0 6px; }
+  .note { color: var(--text-muted); font-size: 13px; line-height: 1.6; max-width: 70ch; margin: 0 0 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .cell { display: grid; gap: 8px; }
+  .cap { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); }
+
+  /* ================= the component ================= */
+  .gh {
+    --gh-h: 56px;
+    display: inline-flex; align-items: stretch; min-height: var(--gh-h); min-width: 280px;
+    text-decoration: none; color: var(--text); background: transparent;
+    border: 1px solid rgba(61, 255, 136, 0.45); border-radius: 6px; overflow: hidden;
+    transition: border-color 0.2s, background 0.2s, transform 0.08s;
+  }
+  .gh-icon {
+    flex: 0 0 var(--gh-h); display: grid; place-items: center;
+    background: transparent; border-right: 1px solid rgba(61, 255, 136, 0.45);
+    color: var(--text); transition: background 0.2s, color 0.2s;
+  }
+  .gh-icon svg { width: 24px; height: 24px; fill: currentColor; }
+  .gh-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 16px; min-width: 0; }
+  .gh-label { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; color: var(--signal); }
+  .gh-repo { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gh-go { flex: 0 0 44px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px; color: var(--text-dim); transition: color 0.2s, transform 0.2s; }
+  a.gh:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+  a.gh:hover .gh-icon { border-right-color: var(--signal); }
+  a.gh:hover .gh-icon { background: var(--signal); color: #0a0a0b; }
+  a.gh:hover .gh-go { color: var(--signal); transform: translate(2px, -2px); }
+  a.gh:active { transform: translateY(1px); }
+  a.gh:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+  /* not public yet: same shape, dashed and quiet, not clickable */
+  .gh[aria-disabled='true'] { border-style: dashed; border-color: var(--border-color); background: transparent; cursor: not-allowed; }
+  .gh[aria-disabled='true'] .gh-icon { background: transparent; color: var(--text-dim); border-right: 1px dashed var(--border-color); }
+  .gh[aria-disabled='true'] .gh-label { color: var(--text-muted); }
+  .gh[aria-disabled='true'] .gh-repo { color: var(--text-dim); }
+  .gh[aria-disabled='true'] .gh-go { display: none; }
+  /* full width inside a narrow card, and on phones */
+  .gh-block { display: flex; width: 100%; min-width: 0; }
+  /* forced states for this sheet only */
+  .is-hover { border-color: var(--signal) !important; background: rgba(61, 255, 136, 0.06) !important; }
+  .is-hover .gh-icon { background: var(--signal); color: #0a0a0b; }
+  .is-hover .gh-go { color: var(--signal); transform: translate(2px, -2px); }
+  .is-focus { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+  /* ================= variant B: filled ================= */
+  .ghb { display: inline-flex; align-items: center; gap: 12px; height: 48px; padding: 0 20px 0 14px; border-radius: 6px;
+    background: var(--signal); color: #0a0a0b; text-decoration: none; font-family: var(--font-mono); font-weight: 600; font-size: 12px; letter-spacing: 0.14em; }
+  .ghb svg { width: 22px; height: 22px; fill: currentColor; }
+  .ghb small { font-weight: 400; letter-spacing: 0.02em; opacity: 0.7; font-size: 11px; }
+
+  /* ================= variant C: operator-style port ================= */
+  .ghc { display: inline-flex; align-items: center; gap: 12px; height: 48px; padding: 0 16px 0 12px; border-radius: 4px;
+    border: 1px solid var(--signal-dim); color: var(--signal); text-decoration: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; }
+  .ghc svg { width: 20px; height: 20px; fill: currentColor; }
+  .ghc .port { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--signal); margin-left: 6px; }
+
+  /* ================= in context: the read_first card ================= */
+  .op { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
+  .op-h { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border-color); background: var(--bg-surface);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted); }
+  .op-h b { font-weight: 500; font-size: 9px; padding: 2px 6px; border-radius: 2px; background: #0f2c3d; color: #56b4e9; }
+  .op-b { padding: 12px 14px 14px; }
+  .files { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 9px; font-family: var(--font-mono); font-size: 10px; line-height: 1.55; }
+  .files li { display: grid; gap: 2px; }
+  .files b { color: var(--text); font-weight: 500; }
+  .files span { color: var(--text-muted); }
+  .ctx { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; }
+  .code { font-size: 13px; line-height: 1.68; color: var(--text); }
+  .code h3 { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 22px; margin: 0 0 8px; }
+  .code h3 i { font-style: normal; color: var(--signal); }
+  .phone { width: 343px; }
+  @media (max-width: 760px) { .ctx { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>See on GitHub · button</h1>
+  <p class="lede">A larger link for "For the code reader", with the GitHub mark on the left. A: my pick. B and C are two other directions to compare. Hover the live ones.</p>
+
+  <h2>A · OUTLINE, ICON CELL + TWO LINES (PICKED)</h2>
+  <p class="note">An outline button, like the demo's PREV and NEXT. The mark sits in its own cell and fills green on hover, so the whole thing reads as one button. The second line names the repo so people know where they're going. The not-yet-public state keeps the same shape, dashed, so the page doesn't change when the repo opens.</p>
+  <div class="row">
+    <div class="cell"><span class="cap">DEFAULT (LIVE)</span>
+      <a class="gh" href="#" onclick="return false">
+        <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+        <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Carlton-L/resend-take-home</span></span>
+        <span class="gh-go" aria-hidden="true">↗</span>
+      </a></div>
+    <div class="cell"><span class="cap">HOVER</span>
+      <a class="gh is-hover" href="#" onclick="return false">
+        <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+        <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Carlton-L/resend-take-home</span></span>
+        <span class="gh-go" aria-hidden="true">↗</span>
+      </a></div>
+    <div class="cell"><span class="cap">KEYBOARD FOCUS</span>
+      <a class="gh is-focus" href="#" onclick="return false">
+        <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+        <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Carlton-L/resend-take-home</span></span>
+        <span class="gh-go" aria-hidden="true">↗</span>
+      </a></div>
+    <div class="cell"><span class="cap">NOT PUBLIC YET</span>
+      <span class="gh" aria-disabled="true">
+        <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+        <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Available later</span></span>
+      </span></div>
+  </div>
+
+  <h2>B · FILLED</h2>
+  <p class="note">Loudest option. It would compete with the live demo's PREV and NEXT buttons, which are the page's main controls.</p>
+  <a class="ghb" href="#" onclick="return false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>SEE ON GITHUB <small>↗</small></a>
+
+  <h2>C · OUTLINE WITH A PORT</h2>
+  <p class="note">Quietest. The little port nods to the patch cables, but it's close to the existing small links and doesn't read much bigger.</p>
+  <a class="ghc" href="#" onclick="return false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>SEE ON GITHUB<span class="port"></span></a>
+
+  <h2>A IN CONTEXT · FOR THE CODE READER</h2>
+  <p class="note">Full width at the bottom of the read_first card, where the small dashed "REPO · AVAILABLE LATER" link is now.</p>
+  <div class="ctx">
+    <div class="code"><h3>For the <i>code</i> reader</h3>DNS sits behind an interface with a scripted fake, so no test touches the network. Failures are values in a typed union, and the message switch is exhaustive: a new failure breaks the build until it has words.</div>
+    <div class="op">
+      <div class="op-h">read_first <b>DATA</b></div>
+      <div class="op-b">
+        <ul class="files">
+          <li><b>src/lib/dns/trace.ts</b><span>Asks DNS and reports what each server said.</span></li>
+          <li><b>src/lib/claims/evaluate.ts</b><span>Compares that with the claim and decides what the row should do.</span></li>
+          <li><b>src/lib/claims/steps.ts</b><span>Turns a check into the five steps.</span></li>
+        </ul>
+        <a class="gh gh-block" href="#" onclick="return false">
+          <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+          <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Carlton-L/resend-take-home</span></span>
+          <span class="gh-go" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <h2>A ON A PHONE · 343 PX</h2>
+  <div class="phone">
+    <span class="gh gh-block" aria-disabled="true">
+      <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+      <span class="gh-body"><span class="gh-label">SEE ON GITHUB</span><span class="gh-repo">Available later</span></span>
+    </span>
+  </div>
+</main>
+</body>
+</html>

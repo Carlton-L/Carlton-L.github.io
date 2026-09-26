@@ -20,6 +20,7 @@
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import PatchField from '../../components/PatchField.astro';
+import GithubButton from '../../components/GithubButton.astro';
 import SignInHero from '../../components/react/demos/domainclaim/SignInHero.jsx';
 import FailureView from '../../components/react/demos/domainclaim/FailureView.jsx';
 import { projects } from '../../data/content.js';
@@ -293,7 +294,7 @@ const unionExcerpt = `export type FailureReason =
           <li><b>{f}</b><span>{v}</span></li>
         ))}
       </ul>
-      <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
+      <GithubButton repo="Carlton-L/resend-take-home" later block class="dc-gh" />
     </Operator>
 
     {breaks.slice(2, 3).map(([id, area, label]) => (
@@ -444,7 +445,7 @@ const unionExcerpt = `export type FailureReason =
   }
   a.dc-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
   .dc-off { color: var(--text-dim); border-style: dashed; cursor: not-allowed; }
-  .dc-files + .dc-off, .dc-list + .dc-off { margin-top: 12px; }
+  .dc-list + :global(.dc-gh) { margin-top: 14px; }
   #dcOutc .dc-live { margin-top: 14px; }
 
   .dc-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }

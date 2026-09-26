@@ -1,9 +1,13 @@
 /**
  * StateCard — every state the check can land in, one panel each, under the view it drives. Browse
- * with the two large arrows, by scrolling the panels sideways, or with the strip of markers; the
- * view above runs whichever state is showing. Fixed height at each width, so changing state never moves the page. No timer.
+ * with the two buttons in the header, the strip of markers, a swipe, or the arrow keys; the view
+ * above runs whichever state is showing. No timer.
+ *
+ * The panels sit stacked in one grid cell, so the card is exactly as tall as its longest state at
+ * the current width: no empty space kept for a state that doesn't need it, and changing state never
+ * moves the page.
  */
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { MOVES, SCENES } from './explorer-data.js';
 import { pick, useExplorer } from './explorer-store.js';
 import './domainclaim.css';
@@ -12,68 +16,63 @@ const pad = (n) => String(n).padStart(2, '0');
 
 export default function StateCard() {
   const { index } = useExplorer();
-  const track = useRef(null);
-  const steering = useRef(false);
-  const first = useRef(true);
-
-  // Follow the store: bring the current panel into view.
-  useEffect(() => {
-    const el = track.current;
-    if (!el) return undefined;
-    const left = index * el.clientWidth;
-    if (Math.abs(el.scrollLeft - left) < 2) {
-      first.current = false;
-      return undefined;
-    }
-    steering.current = true;
-    // The first placement is instant, so the card opens on its starting state without a slide.
-    const smooth = !first.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    first.current = false;
-    el.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
-    const done = setTimeout(() => {
-      steering.current = false;
-    }, 700);
-    return () => clearTimeout(done);
-  }, [index]);
-
-  // A sideways scroll by the visitor picks the panel it settles on.
-  useEffect(() => {
-    const el = track.current;
-    if (!el) return undefined;
-    let settle = null;
-    const onScroll = () => {
-      if (steering.current) return;
-      clearTimeout(settle);
-      settle = setTimeout(() => {
-        const i = Math.round(el.scrollLeft / el.clientWidth);
-        if (i !== index) pick(i);
-      }, 140);
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      clearTimeout(settle);
-      el.removeEventListener('scroll', onScroll);
-    };
-  }, [index]);
-
   const scene = SCENES[index];
+  const swipe = useRef(null);
+
+  const onPointerDown = (e) => {
+    if (e.pointerType === 'mouse') return;
+    swipe.current = { x: e.clientX, y: e.clientY };
+  };
+  const onPointerUp = (e) => {
+    const start = swipe.current;
+    swipe.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(e.clientY - start.y) * 1.5) pick(index + (dx < 0 ? 1 : -1));
+  };
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowRight') pick(index + 1);
+    else if (e.key === 'ArrowLeft') pick(index - 1);
+    else return;
+    e.preventDefault();
+  };
 
   return (
     <div className="dcs">
       <div className="dcs-head">
-        <span className={`dcs-move m-${scene.move}`}>{MOVES[scene.move]}</span>
-        <span className="dcs-count">
-          {pad(index + 1)} / {pad(SCENES.length)}
+        <span className="dcs-where">
+          <span className={`dcs-move m-${scene.move}`}>{MOVES[scene.move]}</span>
+          <span className="dcs-count">
+            {pad(index + 1)} / {pad(SCENES.length)}
+          </span>
+        </span>
+        <span className="dcs-nav">
+          <button type="button" className="dcs-btn" onClick={() => pick(index - 1)} aria-label="Previous state">
+            <span aria-hidden="true">◂</span> PREV
+          </button>
+          <button type="button" className="dcs-btn" onClick={() => pick(index + 1)} aria-label="Next state">
+            NEXT <span aria-hidden="true">▸</span>
+          </button>
         </span>
       </div>
 
-      <div className="dcs-body">
-        <button type="button" className="dcs-arrow" onClick={() => pick(index - 1)} aria-label="Previous state">
-          <span aria-hidden="true">◂</span>
-        </button>
-      <div className="dcs-track" ref={track} tabIndex={0} aria-label="States, scroll sideways to browse">
+      <div
+        className="dcs-stack"
+        tabIndex={0}
+        aria-label="States. Use the arrow keys to browse"
+        onKeyDown={onKeyDown}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => (swipe.current = null)}
+      >
         {SCENES.map((s, i) => (
-          <section key={s.id} className="dcs-panel" aria-hidden={i !== index} aria-roledescription="state">
+          <section
+            key={s.id}
+            className="dcs-panel"
+            data-on={i === index ? 'true' : 'false'}
+            aria-hidden={i !== index}
+            aria-roledescription="state"
+          >
             <h3 className="dcs-title">{s.title}</h3>
             <div className="dcs-name">{s.name}</div>
             <div className="dcs-text">{s.text}</div>
@@ -83,10 +82,6 @@ export default function StateCard() {
             </div>
           </section>
         ))}
-      </div>
-        <button type="button" className="dcs-arrow" onClick={() => pick(index + 1)} aria-label="Next state">
-          <span aria-hidden="true">▸</span>
-        </button>
       </div>
 
       <div className="dcs-foot">

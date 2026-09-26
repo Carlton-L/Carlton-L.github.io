@@ -1,0 +1,76 @@
+---
+/**
+ * GithubButton: a large "see on GitHub" link, the mark in its own cell on the left and the repo
+ * named under the label. Same grammar as the operators: a surface, a hairline, a mono label.
+ *
+ *   <GithubButton repo="Carlton-L/some-repo" />             live link to github.com/<repo>
+ *   <GithubButton repo="Carlton-L/some-repo" later />       not public yet: same shape, dashed, not a link
+ *   <GithubButton repo="…" block />                         fills its container (cards, phones)
+ *   <GithubButton href="https://github.com/…/tree/main/src" repo="…/src" label="READ THE SOURCE" />
+ *
+ * Prototype, with the two other directions: docs/prototypes/github-button.html (this is variant A).
+ */
+interface Props {
+  repo: string;
+  href?: string;
+  label?: string;
+  later?: boolean;
+  block?: boolean;
+  class?: string;
+}
+
+const { repo, href, label = 'SEE ON GITHUB', later = false, block = false, class: extra = '' } = Astro.props;
+const url = href ?? `https://github.com/${repo}`;
+const cls = ['gh', block && 'gh-block', extra].filter(Boolean).join(' ');
+const mark =
+  'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z';
+---
+
+{later ? (
+  <span class={cls} aria-disabled="true">
+    <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d={mark} /></svg></span>
+    <span class="gh-body"><span class="gh-label">{label}</span><span class="gh-repo">Available later</span></span>
+  </span>
+) : (
+  <a class={cls} href={url} target="_blank" rel="noopener">
+    <span class="gh-icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d={mark} /></svg></span>
+    <span class="gh-body"><span class="gh-label">{label}</span><span class="gh-repo">{repo}</span></span>
+    <span class="gh-go" aria-hidden="true">↗</span>
+  </a>
+)}
+
+<style>
+  .gh {
+    --gh-h: 56px;
+    display: inline-flex; align-items: stretch; min-height: var(--gh-h); min-width: 280px; max-width: 100%;
+    text-decoration: none; color: var(--text); background: transparent;
+    border: 1px solid rgba(61, 255, 136, 0.45); border-radius: 6px; overflow: hidden;
+    transition: border-color var(--duration-normal), background var(--duration-normal), transform 0.08s;
+  }
+  .gh-block { display: flex; width: 100%; min-width: 0; }
+  .gh-icon {
+    flex: 0 0 var(--gh-h); display: grid; place-items: center;
+    background: transparent; border-right: 1px solid rgba(61, 255, 136, 0.45);
+    color: var(--text); transition: background var(--duration-normal), color var(--duration-normal);
+  }
+  .gh-icon svg { width: 24px; height: 24px; fill: currentColor; }
+  .gh-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 16px; min-width: 0; }
+  .gh-label { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; color: var(--signal); }
+  .gh-repo { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gh-go {
+    flex: 0 0 44px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px;
+    color: var(--text-dim); transition: color var(--duration-normal), transform var(--duration-normal);
+  }
+  a.gh:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+  a.gh:hover .gh-icon { border-right-color: var(--signal); }
+  a.gh:hover .gh-icon { background: var(--signal); color: var(--bg); }
+  a.gh:hover .gh-go { color: var(--signal); transform: translate(2px, -2px); }
+  a.gh:active { transform: translateY(1px); }
+  a.gh:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+  /* not public yet: same shape, so nothing moves when the repo opens */
+  .gh[aria-disabled='true'] { border-style: dashed; border-color: var(--border-color); background: transparent; cursor: not-allowed; }
+  .gh[aria-disabled='true'] .gh-icon { background: transparent; color: var(--text-dim); border-right: 1px dashed var(--border-color); }
+  .gh[aria-disabled='true'] .gh-label { color: var(--text-muted); }
+  .gh[aria-disabled='true'] .gh-repo { color: var(--text-dim); }
+  @media (prefers-reduced-motion: reduce) { .gh, .gh-icon, .gh-go { transition: none; } }
+</style>
