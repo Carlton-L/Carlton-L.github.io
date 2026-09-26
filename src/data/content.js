@@ -547,60 +547,6 @@ export const projects = [
     ],
   },
   {
-    title: 'Immersive Experience Builder',
-    description:
-      'A framework and visual tool for creating interactive, sensor-driven spatial experiences.',
-    meta: '2024 — Framework Design',
-    category: 'AI-Native Interfaces',
-    categorySlug: 'apps-systems',
-    image: '/images/projects/immersive-experience-builder/cover.jpg',
-    slug: 'immersive-experience-builder',
-    accent: 'accent-1',
-    tags: ['Framework', 'Spatial Computing', 'Sensors', 'Interactive'],
-    facts: {
-      role: 'Independent project, solo',
-      year: '2024',
-      stack: 'React visual builder, 100+ component taxonomy',
-      company: 'Independent',
-    },
-    caseStudy: [
-      {
-        heading: 'The brief',
-        body: [
-          'Sensor-driven spatial experiences, rooms that notice you and respond, get designed from scratch every time. A motion sensor here, a projector there, some glue code, and none of it transfers to the next project. There was no shared vocabulary for what these experiences are made of, which meant every new one started at zero and non-engineers could not participate in the design at all.',
-          'So in 2024 I built one, as an independent project: a framework for describing these experiences as compositions of known parts, and a visual tool for assembling them.',
-        ],
-      },
-      {
-        heading: 'A grammar of parts',
-        body: [
-          'The core of the project is a taxonomy: a database of over 100 catalogued building blocks, the things an interactive space is actually made of. Things that perceive (sensors), things that respond (projectors, speakers, lights, behaviors), and the context they operate in. Instead of treating each installation as bespoke, the framework treats it as a sentence built from a known grammar.',
-          'Cataloguing the parts was most of the design work. Once the vocabulary existed, the tool was almost the easy part.',
-        ],
-      },
-      {
-        heading: 'Plate, brigade, restaurant',
-        body: [
-          'The framework organizes everything through a restaurant metaphor: Plate, Brigade, Restaurant, mapping to Perception, Responsiveness, and Context. The Plate is what the guest directly perceives. The Brigade is the machinery that responds behind the scenes. The Restaurant is the whole context the experience lives in.',
-          'The point of the metaphor is legibility. A producer or a spatial designer who has never wired a sensor can still reason about an experience in these terms, argue about it, and change it. Naming systems are interface design. This one was chosen so that the people who design experiences and the people who build them could look at the same structure.',
-        ],
-      },
-      {
-        heading: 'The visual builder',
-        body: [
-          'The framework ships with a visual tool, a React app for composing experiences from the component database. You lay out the space, place sensor zones, and wire perception to response. The output is a specification of the experience, not a runnable installation: it describes what to build and how the parts connect, for humans to execute.',
-          'Building the tool forced the taxonomy to be honest. Every component that could not be composed cleanly in the interface was a component that was defined wrong, so the database and the builder were designed against each other until both held up.',
-        ],
-      },
-      {
-        heading: 'Where it landed',
-        body: [
-          'The framework is complete as a design tool; no physical installation has run on it. What it settled for me is worth more than a single install: a good component grammar is a design deliverable, not an engineering byproduct, and giving non-engineers a legible model of a technical system changes who gets to design with it. That conviction runs through everything I have built since, including the design systems work at Futurity.',
-        ],
-      },
-    ],
-  },
-  {
     title: 'Lab Equipment Portal',
     description:
       'Real-time equipment tracking with QR check-out, connecting a live status board to a physical lab. The project that pivoted my career from hardware to software.',
@@ -696,6 +642,60 @@ export const projects = [
         heading: 'What it settled',
         body: [
           'Phygital interfaces live or die on how much meaning one physical gesture can carry. Getting the artefact-tap to feel like addressing a person, not scanning a barcode, was the whole design problem, and it was solved in the concept, before any hardware existed. That lesson, that the interaction model is the product, is the same one that runs through my software work.',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Immersive Experience Builder',
+    description:
+      'A framework and visual tool for creating interactive, sensor-driven spatial experiences.',
+    meta: '2024 — Framework Design',
+    category: 'Experiences & Hardware',
+    categorySlug: 'experiences',
+    image: '/images/projects/immersive-experience-builder/cover.jpg',
+    slug: 'immersive-experience-builder',
+    accent: 'accent-2',
+    tags: ['Framework', 'Spatial Computing', 'Sensors', 'Interactive'],
+    facts: {
+      role: 'Independent project, solo',
+      year: '2024',
+      stack: 'React visual builder, 100+ component taxonomy',
+      company: 'Independent',
+    },
+    caseStudy: [
+      {
+        heading: 'The brief',
+        body: [
+          'Sensor-driven spatial experiences, rooms that notice you and respond, get designed from scratch every time. A motion sensor here, a projector there, some glue code, and none of it transfers to the next project. There was no shared vocabulary for what these experiences are made of, which meant every new one started at zero and non-engineers could not participate in the design at all.',
+          'So in 2024 I built one, as an independent project: a framework for describing these experiences as compositions of known parts, and a visual tool for assembling them.',
+        ],
+      },
+      {
+        heading: 'A grammar of parts',
+        body: [
+          'The core of the project is a taxonomy: a database of over 100 catalogued building blocks, the things an interactive space is actually made of. Things that perceive (sensors), things that respond (projectors, speakers, lights, behaviors), and the context they operate in. Instead of treating each installation as bespoke, the framework treats it as a sentence built from a known grammar.',
+          'Cataloguing the parts was most of the design work. Once the vocabulary existed, the tool was almost the easy part.',
+        ],
+      },
+      {
+        heading: 'Plate, brigade, restaurant',
+        body: [
+          'The framework organizes everything through a restaurant metaphor: Plate, Brigade, Restaurant, mapping to Perception, Responsiveness, and Context. The Plate is what the guest directly perceives. The Brigade is the machinery that responds behind the scenes. The Restaurant is the whole context the experience lives in.',
+          'The point of the metaphor is legibility. A producer or a spatial designer who has never wired a sensor can still reason about an experience in these terms, argue about it, and change it. Naming systems are interface design. This one was chosen so that the people who design experiences and the people who build them could look at the same structure.',
+        ],
+      },
+      {
+        heading: 'The visual builder',
+        body: [
+          'The framework ships with a visual tool, a React app for composing experiences from the component database. You lay out the space, place sensor zones, and wire perception to response. The output is a specification of the experience, not a runnable installation: it describes what to build and how the parts connect, for humans to execute.',
+          'Building the tool forced the taxonomy to be honest. Every component that could not be composed cleanly in the interface was a component that was defined wrong, so the database and the builder were designed against each other until both held up.',
+        ],
+      },
+      {
+        heading: 'Where it landed',
+        body: [
+          'The framework is complete as a design tool; no physical installation has run on it. What it settled for me is worth more than a single install: a good component grammar is a design deliverable, not an engineering byproduct, and giving non-engineers a legible model of a technical system changes who gets to design with it. That conviction runs through everything I have built since, including the design systems work at Futurity.',
         ],
       },
     ],
