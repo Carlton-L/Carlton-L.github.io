@@ -334,17 +334,29 @@ export const projects = [
         ],
       },
       {
-        heading: 'Built twice',
+        heading: 'Every state',
         body: [
-          'I built the engine first: the DNS walk, the typed failures, one owner per name, and a demo namespace where every failure is reachable. The screens got the time that was left, and the stack shaped them into three separate pages.',
-          'The first people outside to use it found the problems in the frame. The sign-in link needed a second click, and the layout shifted between screens. Both were on my list, and I had deferred both. So I kept the engine and started the design again from a blank page, in HTML prototypes.',
+          'I listed every state a check can land in: each kind of waiting, each failure, and each way it passes. Every state has a cause, an answer to whose move is next, and one thing to do. Browse them on the card. The view beside it runs each one through the product\u2019s real check.',
+        ],
+      },
+      {
+        heading: 'Two passes',
+        body: [
+          'The design came in two passes. The first was close to a wireframe. It settled what the product shows, when it shows it, and how each step behaves, and I built the engine under it: the DNS walk, the typed failures, one owner per name, and a demo namespace where every failure is reachable. That code was tested against real domains and reviewed for safety before the visual design started.',
+          'The second pass happened away from the codebase, in HTML prototypes only. Once it settled, I applied it to the working product. The screens changed. The DNS layer and the claim rules under them stayed as they were, so the new look cost none of the reliability.',
         ],
       },
       {
         heading: 'One change at a time',
         body: [
-          'I drew three directions from how DNS fails and where the person acts or waits: a rail with a drawer, a scrolling timeline, and the claim as a patch network. The timeline won. It carried the check as one horizontal row of steps on a single cable.',
+          'I drew three directions from how DNS fails and where the person acts or waits: the claim as a patch network, a scrolling timeline, and a rail with a drawer. The timeline won. It carried the check as one horizontal row of steps on a single cable.',
           'The next version applied a whole list of changes at once and lost what made the timeline work. From then on each prototype changed one thing, and I decided each change before it was made. The design converged in a day.',
+        ],
+      },
+      {
+        heading: 'Progressive disclosure',
+        body: [
+          'The claim page shows the step the person is on and nothing after it. A card appears when its step starts, and the five steps of the check land one at a time as the check reaches them. Finished cards dim and stay on the page above, so everything already done is one scroll away. Nothing on screen asks for something the person can\u2019t do yet.',
         ],
       },
       {
@@ -593,8 +605,8 @@ export const projects = [
     description:
       'Real-time equipment tracking with QR check-out, connecting a live status board to a physical lab. The project that pivoted my career from hardware to software.',
     meta: '2021 — Full Stack Development',
-    category: 'AI-Native Interfaces',
-    categorySlug: 'apps-systems',
+    category: 'Product & Systems',
+    categorySlug: 'product-systems',
     image: '/images/projects/lab-equipment-portal/cover.jpg',
     slug: 'lab-equipment-portal',
     accent: 'accent-1',

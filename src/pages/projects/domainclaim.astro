@@ -16,7 +16,8 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import PatchField from '../../components/PatchField.astro';
 import SignInHero from '../../components/react/demos/domainclaim/SignInHero.jsx';
-import FailureExplorer from '../../components/react/demos/domainclaim/FailureExplorer.jsx';
+import StateCard from '../../components/react/demos/domainclaim/StateCard.jsx';
+import FailureView from '../../components/react/demos/domainclaim/FailureView.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
@@ -42,9 +43,12 @@ const links: [string, string][] = [
   ['dcRsrch', 'dcD1'],
   ['dcRsrch', 'dcD2'],
   ['dcRsrch', 'dcD3'],
-  ['dcD1', 'dcFx'],
-  ['dcD2', 'dcFx'],
-  ['dcD3', 'dcFx'],
+  ['dcD1', 'dcNext'],
+  ['dcD2', 'dcNext'],
+  ['dcD3', 'dcNext'],
+  ['dcNext', 'dcEvery'],
+  ['dcEvery', 'dcCat'],
+  ['dcCat', 'dcFx'],
   ['dcFx', 'dcTwice'],
   ['dcTwice', 'dcBefore'],
   ['dcTwice', 'dcCpt'],
@@ -68,7 +72,8 @@ const layout = {
       .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
       .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
       .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     fx    fx    fx    fx    fx    fx    fx    fx    fx    fx    .
+      .     next  next  next  next  next  .     every every every every every
+      cat   cat   cat   cat   .     fx    fx    fx    fx    fx    fx    fx
       .     twice twice twice twice .     .     bfr   bfr   bfr   bfr   .
       .     cpt   cpt   cpt   cpt   cpt   cpt   .     miss  miss  miss  miss
       .     real  real  real  real  real  .     rules rules rules rules .
@@ -105,10 +110,12 @@ const files: [string, string][] = [
   ['src/lib/dns/testNames.ts', 'Scripts the demo names.'],
 ];
 
+// Shown patch network first, rail last (Carlton, Sep 26). Numbers follow the display order;
+// the files keep their original names.
 const concepts = [
-  { n: '01', label: 'Rail and drawer', file: '01-rail-drawer.html', img: 'concept-01' },
+  { n: '01', label: 'Patch network', file: '03-patch-nodes.html', img: 'concept-03' },
   { n: '02', label: 'Scrolling timeline', file: '02-scroll-timeline.html', img: 'concept-02' },
-  { n: '03', label: 'Patch network', file: '03-patch-nodes.html', img: 'concept-03' },
+  { n: '03', label: 'Rail and drawer', file: '01-rail-drawer.html', img: 'concept-01' },
 ];
 
 const unionExcerpt = `export type FailureReason =
@@ -197,17 +204,32 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <!-- VIEW: the failure explorer, the product running each demo name -->
-    <Operator id="dcFx" name="failure_explorer · DEMO_NAMES.scn" type="view" area="fx" maxw={1000}>
+    <!-- progressive disclosure: how the claim page reveals itself -->
+    <Operator id="dcNext" name="txt · progressive_disclosure" type="txt" area="next">
+      <h2 class="dc-h2">Progressive <span class="grn">disclosure</span></h2>
+      {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <!-- every state: the card drives the view beside it -->
+    <Operator id="dcEvery" name="txt · every_state" type="txt" area="every">
+      <h2 class="dc-h2">Every <span class="grn">state</span></h2>
+      {cs['Every state'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="dcCat" name="states · 13" type="data" area="cat">
+      <StateCard client:visible />
+    </Operator>
+
+    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
       <div class="dc-viewerwrap">
-        <FailureExplorer client:visible />
+        <FailureView client:visible />
       </div>
     </Operator>
 
     <!-- PROCESS: two passes -->
-    <Operator id="dcTwice" name="txt · built_twice" type="txt" area="twice">
-      <h2 class="dc-h2">Built <span class="grn">twice</span></h2>
-      {cs['Built twice'].map((p) => <p class="dc-p">{p}</p>)}
+    <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
+      <h2 class="dc-h2">Two <span class="grn">passes</span></h2>
+      {cs['Two passes'].map((p) => <p class="dc-p">{p}</p>)}
     </Operator>
 
     <!-- reserved: the first pass's screens, to be ported from its own code -->
@@ -256,10 +278,6 @@ const unionExcerpt = `export type FailureReason =
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
       <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
       {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
-      <figure class="dc-shot">
-        <img src="/images/projects/domainclaim/state-audit.webp" alt="Every claim state in the prototype, laid out after the audit against the backend's types" width="1308" height="1344" loading="lazy" decoding="async" />
-        <figcaption><span>THE STATE AUDIT · PROTOTYPE 15</span></figcaption>
-      </figure>
     </Operator>
 
     <Operator id="dcRules" name="rules_out" type="data" area="rules" nudge="0 32">
@@ -438,7 +456,6 @@ const unionExcerpt = `export type FailureReason =
   }
   .dc-shot figcaption a { color: var(--signal); text-decoration: none; }
   .dc-shot figcaption a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  #dcReal .dc-shot { margin-top: 12px; max-width: 360px; }
   .dc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
   .dc-pair figure { margin: 0; }
 
