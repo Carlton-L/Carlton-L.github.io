@@ -2,8 +2,8 @@
 
 The DomainClaim case study runs the product's own code: its screens, its client, and its route
 handlers, copied unchanged from the product repo. This file lists what was copied, what was
-replaced, and why. The method is written up in the portfolio folder,
-`domainclaim-case-study/06_DEMO_PORT_METHOD.md`.
+replaced, and why. The method is written up in
+`docs/DEMO_PORTING.md`.
 
 ## Layout
 

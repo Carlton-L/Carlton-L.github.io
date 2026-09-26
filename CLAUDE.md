@@ -16,7 +16,7 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - Controls grammar: sliders = `.prange` (white flat rect thumb, signal fill via `--p`); **clickable chips = `.chipbtn`** (signal border/text), static chips stay gray — keep this affordance rule.
 - Type: **Proxima Nova via Adobe Fonts kit** (`use.typekit.net/pxz7fsi.css` in Base.astro; family `'proxima-nova'`, weights 400/500/700/900; replaced unlicensed Gotham 2026-07-06 — never reintroduce self-hosted Gotham, and purge it from git history before wide repo scrutiny) + Inter (fallback) + **IBM Plex Mono** (`--font-mono`, 2026-07 trial winner; Courier Prime + Fira Code pruned; JetBrains Mono @400 stays for Futurescaper viewer interiors). Signal accent `--signal: #3dff88` — cables, live states, links; not a costume.
 - Viewer interiors (demos) use each **product's real visual language**, scoped inside the VIEW operator: Futurescaper = ink-on-paper `--paper`/`--ink`, amber `--amber`, Wong STEEPLE palette (`--steep-*`). Tokens already in `src/styles/tokens.css`.
-- Case studies are **networks**: INPUT (problem) → PROCESS (decision nodes) → VIEW (live demo) → OUT (outcome/next). Shared spine, bespoke topology + viewer per project.
+- Case studies are **networks**: INPUT (problem) → PROCESS (decision nodes) → VIEW (live demo) → OUT (outcome/next). Shared spine, bespoke topology + viewer per project. Shape and rules: see "Case studies" below.
 
 ## Conventions
 
@@ -28,6 +28,26 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - **Shared previews (2026-07-06)**: `src/lib/previs.js` (`window.Previs`, inlined via `PrevisEngine.astro` — same strip pipeline + no-`//`-in-string/regex-literals constraint as patch-runtime.js) owns all work_index viewer scenes: ALL 9 projects have a `V`-registry entry — 5 featured live previews + grid-lamp live mini + 3 recreated minis (equipment board, orb, sensor-zone room; vfoot label starts "RECREATION"). **2026-07-06 restructure:** biomimetic-eye/home-lighting/synthetic-plant were never built → removed from projects, live in /lab instead (eye = CAD study; presence + plant = plan + interactive sims, `public/js/presence-lab.js` + `plant-lab.js`, GridLab init pattern). GRID promoted from lab → `/projects/grid-lamp` (bespoke page hosts the full sim + `public/js/grid-lab.js`); the LIVE badge on /projects reads `p.live ?? p.featured`, so grid-lamp is LIVE without joining the 5 featured on the homepage. Homepage index = 5 featured + see-more row → /projects; /projects = the full-index network (`work_txt → work_index ─selection→ projects_view`; compact single-line rows, LIVE/RECR badges, no category filter — Carlton cut it 2026-07-05), READ mode reuses the homepage sticky-viewer rack. Navbar `/work` → `/projects` (prefix-aware active state); home is reachable via the brand mark. New previews go in previs.js's `V` registry, not in page scripts. **grid-lamp preview = real 3D (2026-07-06, Carlton's call):** the `V` entry is `gl: true`, which makes the engine overlay a WebGL canvas running the case study's actual studio scene — `public/js/previs-gl.js` (a controls-free port of grid-lab.js: Wave motion at speed 0.35, auto-orbit 0.07 rad/s, motors, bloom/DoF) lazy-loads three r128 + postprocessing from CDN only when a work index first selects grid_lamp, so pages that never select it ship nothing. The svg mini remains the reduced-motion / load-failure / load-gap fallback; the dither dissolve renders above the canvas so scene transitions still work; INVERT = css `invert(1) hue-rotate(180deg)` on the canvas. This is a sanctioned exception to "homepage ships ~zero framework JS" (selection-gated, not initial load).
 - Astro quirk: variables used by `getStaticPaths` must be defined INSIDE it.
 - Performance budget: homepage ships ~zero framework JS; demo islands ≤300KB gz; never scroll-jack; respect reduced motion.
+
+## Case studies
+
+Read `docs/CASE_STUDY_PLAYBOOK.md` before building or reshaping a case study, and `docs/DEMO_PORTING.md` before porting a product into a VIEW. The rules that always apply:
+
+- **Futurescaper is the template.** Title, ownership, a demo that plays by itself, a short run of problem and decisions, a break, the live demo, a little more, outcome. DomainClaim follows it.
+- **The ownership card comes right after the title in the page source.** READ mode and phones stack cards in source order.
+- **Three section breaks at most**, each before something the visitor should slow down for. Cut text cards that restate another card; keep them to about 30 to 90 words.
+- **A case study stands on its own.** It shows decisions, reasons, impact and care for every error state and every kind of user. It never says who the work was for or how it was judged unless Carlton asks.
+- **Real demos.** VIEWs run the product's own code wherever that's allowed, labeled LIVE or RECREATION. When something can't run in a browser, show the product's own honest state. The "Try it" copy says everything is clickable.
+- **Cards never change height** (it resets the dither background). Fixed heights per width; for variants, stack them in one grid cell so the card fits the longest.
+- **Affordances.** Clickable = green outline. Disabled or "later" = the same shape, dashed grey, so nothing moves when it goes live. Large links use `GithubButton.astro`.
+- **Check every round** with screenshots at 1440, 1280, 768 and 375, PATCH and READ, and confirm demo state changes leave the page height alone.
+
+## Working with Carlton
+
+- New UI pieces start as an HTML prototype with a few directions and one recommended, saved in `docs/prototypes/`. Copy comes as options with one recommended. Carlton picks.
+- Copy follows `CARLTON_REGISTER.md` (Carlton Portfolio folder).
+- Claude edits, Carlton commits. Before overwriting a file in his working copy, check it still matches what was last delivered. Commit messages are his: conventional, short, no AI mentions or co-author trailers.
+- A git command meant for another repo starts with `cd` into that repo.
 
 ## Demos (live product demos in case studies)
 
@@ -51,3 +71,5 @@ The mounted repo's `.vite`/`.astro`/`dist` caches are NOT writable from the Linu
 - `design/concept-patch.html` — living mockup of home + Futurescaper case-study network
 - `live-demos/` — master plan, per-project demo session prompts, intake answers (incl. Futurity publish permissions: FAST/Engine recreated-only, Futurescaper/extension public)
 - `archive/` — salvaged pages from the pre-patch site (e.g. immersive-experience-builder.astro)
+
+In this repo: `docs/CASE_STUDY_PLAYBOOK.md`, `docs/DEMO_PORTING.md`, `docs/AI_LAYER.md`, `docs/prototypes/`.
