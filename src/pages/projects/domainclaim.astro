@@ -2,12 +2,16 @@
 /**
  * DomainClaim — case-study network. Plan: Carlton Portfolio/domainclaim-case-study/05_CASE_STUDY_PLAN.md
  *
- * INPUT (the problem) → VIEW (the product's sign-in demo) → what goes wrong + research_in →
- * three decisions → VIEW (the failure explorer: pick a demo name, the product runs it) →
- * built twice → concepts → one change at a time → only real states → rules → for the code
- * reader → OUT.
+ * Option B (Carlton, Sep 26): the interactive explorer opens the page, right under the title.
+ *   INPUT (title: what it is, try it) → states card ─drives→ claim view
+ *   01 THE PROBLEM   what goes wrong + research_in
+ *   02 DECISIONS     ask the source, whose move, claim then prove, progressive disclosure
+ *   03 THE RESULT    only real states + rules
+ *   04 THE CODE      for the code reader + read first
+ *   05 THE PROCESS   two passes + the sign-in demo, first pass, concepts + one change
+ *   OUT
  *
- * Both VIEWs run the product's own code (src/components/react/demos/domainclaim/PORT.md): the
+ * Every VIEW runs the product's own code (src/components/react/demos/domainclaim/PORT.md): the
  * screens and route handlers, vendored unchanged, in their own document at /demos/domainclaim/.
  * Prose comes from src/data/content.js, fact-checked against 04_GROUND_TRUTH.md. The repo link
  * stays disabled until Carlton opens it.
@@ -37,30 +41,34 @@ const jsonLd = {
 };
 
 const links: [string, string][] = [
-  ['dcTitle', 'dcHero'],
-  ['dcHero', 'dcWrong'],
-  ['dcWrong', 'dcRsrch'],
-  ['dcRsrch', 'dcD1'],
-  ['dcRsrch', 'dcD2'],
-  ['dcRsrch', 'dcD3'],
-  ['dcD1', 'dcNext'],
-  ['dcD2', 'dcNext'],
-  ['dcD3', 'dcNext'],
-  ['dcNext', 'dcEvery'],
-  ['dcEvery', 'dcCat'],
+  ['dcTitle', 'dcCat'],
   ['dcCat', 'dcFx'],
-  ['dcFx', 'dcTwice'],
-  ['dcTwice', 'dcBefore'],
-  ['dcTwice', 'dcCpt'],
-  ['dcCpt', 'dcMiss'],
-  ['dcMiss', 'dcReal'],
+  ['dcFx', 'dcBr1'],
+  ['dcBr1', 'dcWrong'],
+  ['dcWrong', 'dcRsrch'],
+  ['dcRsrch', 'dcBr2'],
+  ['dcBr2', 'dcD1'],
+  ['dcD1', 'dcD2'],
+  ['dcD2', 'dcD3'],
+  ['dcD3', 'dcNext'],
+  ['dcNext', 'dcBr3'],
+  ['dcBr3', 'dcReal'],
   ['dcReal', 'dcRules'],
-  ['dcRules', 'dcCode'],
+  ['dcRules', 'dcBr4'],
+  ['dcBr4', 'dcCode'],
   ['dcCode', 'dcFiles'],
-  ['dcCode', 'dcOutc'],
+  ['dcFiles', 'dcBr5'],
+  ['dcBr5', 'dcTwice'],
+  ['dcTwice', 'dcHero'],
+  ['dcTwice', 'dcBefore'],
+  ['dcBefore', 'dcCpt'],
+  ['dcCpt', 'dcMiss'],
+  ['dcMiss', 'dcOutc'],
   ['dcOutc', 'dcOut'],
 ];
 
+// Sections are separated by SYS break ops (br1 to br5) with blank rows around them, the same
+// grammar as the FAST page.
 const layout = {
   mode: 'content',
   padTop: 48,
@@ -68,20 +76,43 @@ const layout = {
     min: 0,
     cols: 12,
     areas: `
-      title title title title title .     .     .     .     own   own   own
-      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
-      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     next  next  next  next  next  .     every every every every every
+      title title title title title title .     .     .     own   own   own
       cat   cat   cat   cat   .     fx    fx    fx    fx    fx    fx    fx
-      .     twice twice twice twice .     .     bfr   bfr   bfr   bfr   .
-      .     cpt   cpt   cpt   cpt   cpt   cpt   .     miss  miss  miss  miss
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     d1    d1    d1    d1    .     .     d2    d2    d2    d2    .
+      .     d3    d3    d3    d3    .     .     next  next  next  next  .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
       .     real  real  real  real  real  .     rules rules rules rules .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br4   br4   br4   br4   br4   br4   br4   br4   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
       .     code  code  code  code  code  code  .     files files files files
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     .     br5   br5   br5   br5   br5   br5   br5   br5   .     .
+      .     .     .     .     .     .     .     .     .     .     .     .
+      .     twice twice twice twice .     hero  hero  hero  hero  hero  hero
+      .     bfr   bfr   bfr   bfr   .     cpt   cpt   cpt   cpt   cpt   cpt
+      .     .     .     miss  miss  miss  miss  miss  miss  .     .     .
       outc  outc  outc  outc  outc  .     .     .     .     out   out   out
     `,
   }],
 };
+
+const breaks: [string, string, string][] = [
+  ['dcBr1', 'br1', 'THE PROBLEM'],
+  ['dcBr2', 'br2', 'DECISIONS'],
+  ['dcBr3', 'br3', 'THE RESULT'],
+  ['dcBr4', 'br4', 'THE CODE'],
+  ['dcBr5', 'br5', 'THE PROCESS'],
+];
 
 const research: [string, string][] = [
   ['IETF domain verification draft', 'A scoped underscore label, the expiry inside the value, and asking the zone’s own servers.'],
@@ -136,11 +167,12 @@ const unionExcerpt = `export type FailureReason =
   jsonLd={jsonLd}
 >
   <PatchField id="dcNet" links={links} density={0.3} layout={layout} label="DomainClaim case-study network — press P for reading mode">
-    <!-- INPUT -->
+    <!-- INPUT: what it is, and an invitation to the demo right under it -->
     <Operator id="dcTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="dc-meta">{project.meta}</p>
       <h1 class="dc-h">Proof you can <span class="grn">watch</span></h1>
-      <p class="dc-sub">{'// MOST VERIFICATION SAYS "CHECK BACK IN 48 HOURS". THIS ONE ASKS YOUR NAMESERVERS AND SHOWS EVERY STEP AS IT LANDS.'}</p>
+      {cs['What it is'].map((p) => <p class="dc-p dc-lede">{p}</p>)}
+      <p class="dc-try"><span class="dc-trytag">LIVE DEMO</span>{cs['Try it'][0]}</p>
       <div class="dc-links">
         <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
         <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
@@ -157,66 +189,8 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <!-- VIEW (opener): the product's own home-page demo -->
-    <Operator id="dcHero" name="domainclaim_view · VERIFY.scn" type="view" area="hero" maxw={860}>
-      <div class="dc-viewerwrap">
-        <SignInHero client:visible />
-      </div>
-    </Operator>
-
-    <!-- PROCESS: what goes wrong, and where that came from -->
-    <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
-      {cs['What it is'].map((p) => <p class="dc-p">{p}</p>)}
-      <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
-      {cs['What goes wrong'].map((p) => <p class="dc-p">{p}</p>)}
-    </Operator>
-
-    <Operator id="dcRsrch" name="research_in" type="data" area="rsrch" nudge="0 32">
-      <ul class="dc-list">
-        {research.map(([k, v]) => (
-          <li><b>{k}</b><span>{v}</span></li>
-        ))}
-      </ul>
-    </Operator>
-
-    <!-- PROCESS: three decisions the research produced -->
-    <Operator id="dcD1" name="decision_01 · ask_the_source" type="txt" area="d1">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">01</span>
-        <h3 class="dc-dh">Ask the source</h3>
-        {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
-
-    <Operator id="dcD2" name="decision_02 · whose_move" type="txt" area="d2" nudge="0 40">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">02</span>
-        <h3 class="dc-dh">Whose move is next</h3>
-        {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
-
-    <Operator id="dcD3" name="decision_03 · claim_then_prove" type="txt" area="d3" nudge="0 80">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">03</span>
-        <h3 class="dc-dh">Claim, then prove</h3>
-        {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
-
-    <!-- progressive disclosure: how the claim page reveals itself -->
-    <Operator id="dcNext" name="txt · progressive_disclosure" type="txt" area="next">
-      <h2 class="dc-h2">Progressive <span class="grn">disclosure</span></h2>
-      {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
-    </Operator>
-
-    <!-- every state: the card drives the view beside it -->
-    <Operator id="dcEvery" name="txt · every_state" type="txt" area="every">
-      <h2 class="dc-h2">Every <span class="grn">state</span></h2>
-      {cs['Every state'].map((p) => <p class="dc-p">{p}</p>)}
-    </Operator>
-
-    <Operator id="dcCat" name="states · 13" type="data" area="cat">
+    <!-- the demo: the card drives the view beside it -->
+    <Operator id="dcCat" name="states · pick_one" type="data" area="cat">
       <StateCard client:visible />
     </Operator>
 
@@ -226,14 +200,152 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <!-- PROCESS: two passes -->
+    {breaks.slice(0, 1).map(([id, area, label]) => (
+      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
+        <div class="dc-break">
+          <span class="dc-break-num">{'01'}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+          <span class="dc-break-label">{label}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- 01 THE PROBLEM -->
+    <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
+      <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
+      {cs['What goes wrong'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="dcRsrch" name="research_in" type="data" area="rsrch">
+      <ul class="dc-list">
+        {research.map(([k, v]) => (
+          <li><b>{k}</b><span>{v}</span></li>
+        ))}
+      </ul>
+    </Operator>
+
+    {breaks.slice(1, 2).map(([id, area, label]) => (
+      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
+        <div class="dc-break">
+          <span class="dc-break-num">{'02'}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+          <span class="dc-break-label">{label}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- 02 DECISIONS -->
+    <Operator id="dcD1" name="decision_01 · ask_the_source" type="txt" area="d1">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">01</span>
+        <h3 class="dc-dh">Ask the source</h3>
+        {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <Operator id="dcD2" name="decision_02 · whose_move" type="txt" area="d2">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">02</span>
+        <h3 class="dc-dh">Whose move is next</h3>
+        {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <Operator id="dcD3" name="decision_03 · claim_then_prove" type="txt" area="d3">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">03</span>
+        <h3 class="dc-dh">Claim, then prove</h3>
+        {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    <Operator id="dcNext" name="decision_04 · progressive_disclosure" type="txt" area="next">
+      <div class="dc-dec">
+        <span class="dc-dnum" aria-hidden="true">04</span>
+        <h3 class="dc-dh">Progressive disclosure</h3>
+        {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
+      </div>
+    </Operator>
+
+    {breaks.slice(2, 3).map(([id, area, label]) => (
+      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
+        <div class="dc-break">
+          <span class="dc-break-num">{'03'}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+          <span class="dc-break-label">{label}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- 03 THE RESULT -->
+    <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
+      <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
+      {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="dcRules" name="rules_out" type="data" area="rules">
+      <ul class="dc-list dc-rules">
+        {rules.map((r) => <li><span>{r}</span></li>)}
+      </ul>
+    </Operator>
+
+    {breaks.slice(3, 4).map(([id, area, label]) => (
+      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
+        <div class="dc-break">
+          <span class="dc-break-num">{'04'}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+          <span class="dc-break-label">{label}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- 04 THE CODE -->
+    <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
+      <h2 class="dc-h2">For the <span class="grn">code</span> reader</h2>
+      {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
+      <pre class="dc-code"><code>{unionExcerpt}</code></pre>
+      <div class="dc-codecap">src/lib/claims/state.ts · every failure the check can report</div>
+    </Operator>
+
+    <Operator id="dcFiles" name="read_first" type="data" area="files">
+      <ul class="dc-list dc-files">
+        {files.map(([f, v]) => (
+          <li><b>{f}</b><span>{v}</span></li>
+        ))}
+      </ul>
+      <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
+    </Operator>
+
+    {breaks.slice(4, 5).map(([id, area, label]) => (
+      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
+        <div class="dc-break">
+          <span class="dc-break-num">{'05'}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+          <span class="dc-break-label">{label}</span>
+          <span class="dc-break-rule" aria-hidden="true"></span>
+        </div>
+      </Operator>
+    ))}
+
+    <!-- 05 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
       <h2 class="dc-h2">Two <span class="grn">passes</span></h2>
       {cs['Two passes'].map((p) => <p class="dc-p">{p}</p>)}
     </Operator>
 
+    <!-- the second pass's sign-in demo: the product's own home-page demo -->
+    <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" ports="in">
+      <div class="dc-viewerwrap">
+        <SignInHero client:visible />
+      </div>
+    </Operator>
+
     <!-- the first pass: its claim screen, from the old README (a ported, running version can replace it later) -->
-    <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={420} nudge="0 24" ports="in">
+    <Operator id="dcBefore" name="before · first_pass" type="view" area="bfr" maxw={420}>
       <figure class="dc-shot">
         <img src="/images/projects/domainclaim/first-pass.webp" alt="The first pass of the claim screen: the five steps as a list, with the failing step open to show the value found, the value to use, and why they differ" width="1200" height="1024" loading="lazy" decoding="async" />
         <figcaption><span>FIRST PASS · THE CHECK AS A LIST OF STEPS</span></figcaption>
@@ -244,13 +356,13 @@ const unionExcerpt = `export type FailureReason =
       <div class="dc-cpt" data-cpt>
         <div class="dc-tabs" role="tablist" aria-label="Three concepts">
           {concepts.map((c, i) => (
-            <button type="button" role="tab" class="dc-tab" aria-selected={i === 1 ? 'true' : 'false'} data-cpt-tab={c.n}>
+            <button type="button" role="tab" class="dc-tab" aria-selected={i === 0 ? 'true' : 'false'} data-cpt-tab={c.n}>
               {c.n} · {c.label.toUpperCase()}
             </button>
           ))}
         </div>
         {concepts.map((c, i) => (
-          <figure class="dc-shot" data-cpt-panel={c.n} hidden={i !== 1}>
+          <figure class="dc-shot" data-cpt-panel={c.n} hidden={i !== 0}>
             <img src={`/images/projects/domainclaim/${c.img}.webp`} alt={`Concept ${c.n}, ${c.label.toLowerCase()}: the claim screen at desktop width`} width="1440" height="900" loading="lazy" decoding="async" />
             <figcaption>
               <span>{i === 1 ? 'PICKED' : 'NOT PICKED'}</span>
@@ -261,7 +373,7 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <Operator id="dcMiss" name="txt · one_change_at_a_time" type="txt" area="miss" nudge="0 32">
+    <Operator id="dcMiss" name="txt · one_change_at_a_time" type="txt" area="miss">
       {cs['One change at a time'].map((p) => <p class="dc-p">{p}</p>)}
       <div class="dc-pair">
         <figure>
@@ -273,33 +385,6 @@ const unionExcerpt = `export type FailureReason =
           <figcaption>05 · BACK TO 02, ONE CHANGE</figcaption>
         </figure>
       </div>
-    </Operator>
-
-    <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
-      <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
-      {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
-    </Operator>
-
-    <Operator id="dcRules" name="rules_out" type="data" area="rules" nudge="0 32">
-      <ul class="dc-list dc-rules">
-        {rules.map((r) => <li><span>{r}</span></li>)}
-      </ul>
-    </Operator>
-
-    <!-- for the person who will read the code -->
-    <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
-      {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
-      <pre class="dc-code"><code>{unionExcerpt}</code></pre>
-      <div class="dc-codecap">src/lib/claims/state.ts · every failure the check can report</div>
-    </Operator>
-
-    <Operator id="dcFiles" name="read_first" type="data" area="files" nudge="0 24">
-      <ul class="dc-list dc-files">
-        {files.map(([f, v]) => (
-          <li><b>{f}</b><span>{v}</span></li>
-        ))}
-      </ul>
-      <span class="dc-live dc-off" aria-disabled="true">REPO · AVAILABLE LATER</span>
     </Operator>
 
     <!-- OUT -->
@@ -352,14 +437,25 @@ const unionExcerpt = `export type FailureReason =
     max-width: 14ch;
   }
   .grn { color: var(--signal); }
-  .dc-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--text-muted);
-    margin-top: 10px;
-    line-height: 1.7;
-    max-width: 44ch;
+  .dc-lede { margin-top: 12px; max-width: 52ch; }
+  .dc-try {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 12px;
+    font-size: 13px; line-height: 1.6; color: var(--text); max-width: 56ch;
   }
+  .dc-trytag {
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; color: var(--signal);
+    border: 1px solid var(--signal-dim); border-radius: 2px; padding: 1px 6px;
+  }
+  .dc-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
+  .dc-break-num {
+    font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1px var(--signal-dim); user-select: none;
+  }
+  .dc-break-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px); }
+  .dc-break-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--text-muted); white-space: nowrap; }
+  :global(body.perform) .dc-break { padding: 56px 0; }
+  :global(body.perform) .dc-break-num { font-size: 30px; }
+
   .dc-h2 {
     font-family: var(--font-display);
     font-weight: 900;

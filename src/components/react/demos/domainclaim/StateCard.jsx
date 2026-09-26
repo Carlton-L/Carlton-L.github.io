@@ -1,32 +1,34 @@
 /**
  * StateCard — every state the check can land in, one panel each. Browse by scrolling the panels
  * sideways, with the arrows, or with the strip of markers; the view beside it runs whichever state
- * is showing. Fixed height at each width, so changing state never moves the page.
+ * is showing. Fixed height at each width, so changing state never moves the page. No timer.
  */
 import { useEffect, useRef } from 'react';
 import { MOVES, SCENES } from './explorer-data.js';
-import { loopAvailable, pick, startLoop, useExplorer } from './explorer-store.js';
-import useIsland from './useIsland.js';
+import { pick, useExplorer } from './explorer-store.js';
 import './domainclaim.css';
 
 const pad = (n) => String(n).padStart(2, '0');
 
 export default function StateCard() {
-  const { index, auto } = useExplorer();
-  const root = useRef(null);
+  const { index } = useExplorer();
   const track = useRef(null);
   const steering = useRef(false);
-  useIsland(root);
-  useEffect(() => startLoop(), []);
+  const first = useRef(true);
 
   // Follow the store: bring the current panel into view.
   useEffect(() => {
     const el = track.current;
     if (!el) return undefined;
     const left = index * el.clientWidth;
-    if (Math.abs(el.scrollLeft - left) < 2) return undefined;
+    if (Math.abs(el.scrollLeft - left) < 2) {
+      first.current = false;
+      return undefined;
+    }
     steering.current = true;
-    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // The first placement is instant, so the card opens on its starting state without a slide.
+    const smooth = !first.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    first.current = false;
     el.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' });
     const done = setTimeout(() => {
       steering.current = false;
@@ -44,7 +46,7 @@ export default function StateCard() {
       clearTimeout(settle);
       settle = setTimeout(() => {
         const i = Math.round(el.scrollLeft / el.clientWidth);
-        if (i !== index) pick(i, true);
+        if (i !== index) pick(i);
       }, 140);
     };
     el.addEventListener('scroll', onScroll, { passive: true });
@@ -57,7 +59,7 @@ export default function StateCard() {
   const scene = SCENES[index];
 
   return (
-    <div className="dcs" ref={root}>
+    <div className="dcs">
       <div className="dcs-head">
         <span className={`dcs-move m-${scene.move}`}>{MOVES[scene.move]}</span>
         <span className="dcs-count">
@@ -101,7 +103,7 @@ export default function StateCard() {
             />
           ))}
         </div>
-        <span className="dcs-auto">{!loopAvailable ? 'PICK A STATE' : auto ? 'PLAYING THROUGH ▸' : 'PAUSED'}</span>
+        <span className="dcs-auto">PICK ONE · {SCENES.length} STATES</span>
       </div>
     </div>
   );

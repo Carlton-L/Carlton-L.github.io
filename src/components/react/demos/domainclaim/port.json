@@ -13,7 +13,9 @@
     "src/app/api/claims/route.ts",
     "src/app/api/claims/[id]/route.ts",
     "src/app/api/claims/[id]/check/route.ts",
-    "src/app/api/claims/[id]/release/route.ts"
+    "src/app/api/claims/[id]/release/route.ts",
+    "src/app/api/favicon/[id]/route.ts",
+    "src/lib/claims/check.ts"
   ],
   "include": [
     "src/app/globals.css",
@@ -21,7 +23,8 @@
     "src/lib/claims/store.ts",
     "src/lib/claims/rateLimit.ts",
     "src/lib/claims/token.ts",
-    "src/lib/dns/types.ts"
+    "src/lib/dns/types.ts",
+    "src/lib/favicon/icons.ts"
   ],
   "seams": {
     "server-only": "shims/server-only.ts",
@@ -33,7 +36,8 @@
     "@/lib/claims/rateLimit": "shims/rate-limit.ts",
     "@/lib/auth/supabase/route": "shims/supabase-route.ts",
     "@/lib/dns/nodeResolver": "shims/node-resolver.ts",
-    "@/lib/claims/check": "shims/check-tap.ts"
+    "@/lib/claims/check": "shims/check-tap.ts",
+    "@/lib/favicon/fetch": "shims/favicon-fetch.ts"
   },
   "env": {
     "DOMAINCLAIM_TEST_NAMESPACE": "on"

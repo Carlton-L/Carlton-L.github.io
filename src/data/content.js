@@ -304,78 +304,75 @@ export const projects = [
       {
         heading: 'What it is',
         body: [
-          'DomainClaim lets you claim a domain and prove you control it with one DNS TXT record. Most products stop at "add this record and check back in 48 hours". This one asks the domain’s own nameservers and shows the check as five steps as they land: find the zone, reach the nameservers, find the record, match the value, record the claim.',
-          'Every failure has a name, a reason and one next action. Ownership keeps being checked after it is proved: a name whose record stops answering moves to At risk, and back when the record returns.',
+          'Claim a domain and prove you control it with one DNS TXT record. The check asks your nameservers directly and shows its five steps as they land. Every failure has a name, a reason and one next action.',
+        ],
+      },
+      {
+        heading: 'Try it',
+        body: [
+          'This is the product itself, running in the page. Pick a state on the card and it runs the real check.',
         ],
       },
       {
         heading: 'What goes wrong',
         body: [
-          'I started with the ways verification fails, before any screen. A resolver that looked too early caches "no record" for up to an hour. DNS panels add your domain to the name you type, so the record lands at the wrong name. A value gets pasted with an end missing. The record is saved as the wrong type. A wildcard answers with another service’s record. One nameserver is down. The token runs out.',
-          'Each of these needed its own answer, and each one shaped the product.',
+          'I started with the ways verification fails, before any screen: a resolver that caches "no record" for an hour, DNS panels that add the domain twice, half-pasted values, the wrong record type, wildcards, dead nameservers, expired tokens. Each one needed its own answer.',
         ],
       },
       {
         heading: 'Ask the source',
         body: [
-          'The check asks the zone’s authoritative nameservers directly. They don’t cache, so a record is found as soon as the DNS host publishes it. I measured that from a deployed function before building on it. There is no "propagation" copy anywhere in the product.',
+          'The check asks the zone’s own nameservers, which don’t cache. A record is found as soon as the DNS host publishes it, so there is no "wait 48 hours" anywhere in the product.',
         ],
       },
       {
         heading: 'Whose move is next',
         body: [
-          'The first check on every new claim looks for a record nobody has added yet. A red cross there would report the product working correctly as a fault. So every step sorts by whose move is next: yours (amber), time’s (cyan), or done (green). There is no red.',
+          'The first check on a new claim always misses, and a red cross there would call that a fault. So every step sorts by whose move is next: yours (amber), time’s (cyan), or done (green). There is no red.',
         ],
       },
       {
         heading: 'Claim, then prove',
         body: [
-          'Claiming a name and proving control are separate. A pending claim holds nothing, so anyone can start one. One account holds a name at a time, and the database enforces it with a unique index over the holding states, so a race can’t get around it.',
-        ],
-      },
-      {
-        heading: 'Every state',
-        body: [
-          'I listed every state a check can land in: each kind of waiting, each failure, and each way it passes. Every state has a cause, an answer to whose move is next, and one thing to do. Browse them on the card. The view beside it runs each one through the product\u2019s real check.',
-        ],
-      },
-      {
-        heading: 'Two passes',
-        body: [
-          'The design came in two passes. The first was close to a wireframe. It settled what the product shows, when it shows it, and how each step behaves, and I built the engine under it: the DNS walk, the typed failures, one owner per name, and a demo namespace where every failure is reachable. That code was tested against real domains and reviewed for safety before the visual design started.',
-          'The second pass happened away from the codebase, in HTML prototypes only. Once it settled, I applied it to the working product. The screens changed. The DNS layer and the claim rules under them stayed as they were, so the new look cost none of the reliability.',
-        ],
-      },
-      {
-        heading: 'One change at a time',
-        body: [
-          'I drew three directions from how DNS fails and where the person acts or waits: the claim as a patch network, a scrolling timeline, and a rail with a drawer. The timeline won. It carried the check as one horizontal row of steps on a single cable.',
-          'The next version applied a whole list of changes at once and lost what made the timeline work. From then on each prototype changed one thing, and I decided each change before it was made. The design converged in a day.',
+          'A pending claim holds nothing, so anyone can start one. One account holds a name at a time, and the database enforces it, so a race can’t get around it.',
         ],
       },
       {
         heading: 'Progressive disclosure',
         body: [
-          'The claim page shows the step the person is on and nothing after it. A card appears when its step starts, and the five steps of the check land one at a time as the check reaches them. Finished cards dim and stay on the page above, so everything already done is one scroll away. Nothing on screen asks for something the person can\u2019t do yet.',
+          'The claim page shows the step the person is on and nothing after it. The check’s steps land one at a time. Finished cards dim and stay above, one scroll away.',
         ],
       },
       {
         heading: 'Only real states',
         body: [
-          'Before choosing a stack I checked every state in the design against the backend’s real types. Anything the app couldn’t reach was cut or marked as future work. "Just registered" and "no nameservers set" look the same in DNS, so they became one state. A promise in the copy became build work, or the copy changed.',
-          'The stack came last, with one rule: pages never load data, and screens fetch from the API. The check streams its real steps. It never animates a sequence over one finished answer.',
+          'Every state in the design was checked against the backend’s real types. What the app can’t reach was cut, and a promise in the copy became build work or the copy changed. The stack came last, with one rule: pages never load data.',
         ],
       },
       {
         heading: 'For the code reader',
         body: [
-          'The code is built to be read. DNS sits behind an interface with a scripted fake, so no test touches the network. Failures are values in a typed union, and the message switch is exhaustive: a new failure breaks the build until it has words. An RFC leads the code, and a friction log records every problem I hit using it against real domains. The unit tests cover the pure layers, and the README names what they don’t.',
+          'DNS sits behind an interface with a scripted fake, so no test touches the network. Failures are values in a typed union, and the message switch is exhaustive: a new failure breaks the build until it has words. An RFC leads the code, and a friction log records every problem I hit using it against real domains.',
+          'Each claim shows its site’s real favicon. The server fetches it under tight limits: public addresses, two redirects, raster images, since an SVG can run script. A site without one gets a globe. In the demo, carlton.dev shows its own icon and the .test names show the globe.',
+        ],
+      },
+      {
+        heading: 'Two passes',
+        body: [
+          'The design came in two passes. The first was close to a wireframe: what the product shows, when, and how each step behaves. I built the engine under it and tested it against real domains.',
+          'The second pass happened away from the codebase, in HTML prototypes only, and was then applied to the working product. The screens changed. The DNS layer and the claim rules stayed as they were. The sign-in demo came out of that pass: a small copy of the app playing one claim.',
+        ],
+      },
+      {
+        heading: 'One change at a time',
+        body: [
+          'I drew three directions from how DNS fails and where the person acts or waits. The timeline won. A later version applied a whole list of changes at once and lost what made it work, so from then on each prototype changed one thing.',
         ],
       },
       {
         heading: 'Outcome',
         body: [
-          'DomainClaim is live, and the demo names reach every failure above. Designed and not built yet: checking on a schedule while nobody has the claim open, the grace window and the email behind it, transfers between accounts, and a second vantage point.',
+          'DomainClaim is live, and the demo names reach every state above. Designed and not built yet: checking on a schedule while nobody has the claim open, the grace window and the email behind it, transfers between accounts, and a second vantage point.',
         ],
       },
     ],

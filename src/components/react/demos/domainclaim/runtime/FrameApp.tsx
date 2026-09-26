@@ -10,7 +10,8 @@ import DomainsScreen from '@/screens/DomainsScreen/DomainsScreen';
 import SignInDemo from '@/screens/SignInDemo/SignInDemo';
 import { navigate, startAt, useLocation } from '../shims/next-navigation';
 import { resetAttempts } from '../shims/rate-limit';
-import { resetStore, seedHeldElsewhere } from '../shims/store';
+import { resetStore, seedHeldElsewhere, seedVerified } from '../shims/store';
+import { DEMO_USER } from '../shims/supabase-route';
 import { installApi, onCheck } from './api';
 
 export type FrameCommand = { dc: 'open'; name: string; heldElsewhere?: boolean };
@@ -47,6 +48,8 @@ const App: React.FC = () => {
       }
       resetStore();
       resetAttempts();
+      // carlton.dev is the demo account's own site, and the one site whose icon the demo can read.
+      seedVerified('carlton.dev', DEMO_USER.id);
       if (message.data.heldElsewhere) {
         seedHeldElsewhere(message.data.name);
       }

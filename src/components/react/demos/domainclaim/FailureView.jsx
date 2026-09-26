@@ -12,7 +12,6 @@ import DemoFrame from '../_shared/DemoFrame.jsx';
 import DomainClaimFrame from './DomainClaimFrame.jsx';
 import { SCENES } from './explorer-data.js';
 import { useExplorer } from './explorer-store.js';
-import useIsland from './useIsland.js';
 import './domainclaim.css';
 
 const STEP_NUM = { zone: '01', nameservers: '02', record: '03', token: '04', claim: '05' };
@@ -100,12 +99,10 @@ function Decided({ run }) {
 
 export default function FailureView() {
   const frame = useRef(null);
-  const root = useRef(null);
   const { index } = useExplorer();
   const [ready, setReady] = useState(false);
   const [claimId, setClaimId] = useState(null);
   const [run, setRun] = useState(null);
-  useIsland(root);
 
   const onEvent = useCallback((e) => {
     if (e.dc === 'ready') setReady(true);
@@ -125,7 +122,7 @@ export default function FailureView() {
   const shown = run && claimId && run.claimId === claimId ? run : null;
 
   return (
-    <div ref={root}>
+    <div>
       <DemoFrame title={`DEMO_NAMES.scn · ${SCENES[index].name}`} label="live" fill={false}>
         <DomainClaimFrame ref={frame} view="app" width={960} height={600} title="DomainClaim, running the state on the card" onEvent={onEvent} />
         <section className="dcx-pane">

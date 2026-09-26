@@ -5,6 +5,7 @@ import { GET as getClaim } from '../vendor/src/app/api/claims/[id]/route';
 import { POST as postCheck } from '../vendor/src/app/api/claims/[id]/check/route';
 import { POST as postRelease } from '../vendor/src/app/api/claims/[id]/release/route';
 import { GET as getClaims, POST as postClaims } from '../vendor/src/app/api/claims/route';
+import { GET as getFavicon } from '../vendor/src/app/api/favicon/[id]/route';
 import { GET as getMe } from '../vendor/src/app/api/me/route';
 import { onOutcome } from '../shims/check-tap';
 import type { NextRequest } from '../shims/next-server';
@@ -18,6 +19,7 @@ const ROUTES: { method: string; pattern: RegExp; handler: Handler }[] = [
   { method: 'GET', pattern: /^\/api\/claims\/([^/]+)$/, handler: getClaim as Handler },
   { method: 'POST', pattern: /^\/api\/claims\/([^/]+)\/check$/, handler: postCheck as Handler },
   { method: 'POST', pattern: /^\/api\/claims\/([^/]+)\/release$/, handler: postRelease as Handler },
+  { method: 'GET', pattern: /^\/api\/favicon\/([^/]+)$/, handler: getFavicon as Handler },
 ];
 
 /** What one check decided, as the product's own values, plus the steps it streamed. */
@@ -118,4 +120,55 @@ export const installApi = () => {
     }
     return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
   };
+  installImages();
+};
+
+/**
+ * The product shows a claim's icon with a plain `<img src="/api/favicon/:id">`. An image request
+ * never goes through `fetch`, so the demo answers it here: the same route handler, its bytes handed
+ * to the image as a blob. A miss becomes an image that fails, which the product shows as the globe.
+ * React sets an image's `src` twice, as an attribute and then as a property, so both are covered.
+ */
+const FAVICON = /^\/api\/favicon\/[^/]+$/;
+const installImages = () => {
+  const setAttribute = Element.prototype.setAttribute;
+  const srcProperty = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  const answered = new WeakMap<HTMLImageElement, string>();
+  const answer = (image: HTMLImageElement, value: string): boolean => {
+    const url = new URL(String(value), window.location.href);
+    if (url.origin !== window.location.origin || !FAVICON.test(url.pathname)) {
+      return false;
+    }
+    if (answered.get(image) === url.pathname) {
+      return true;
+    }
+    answered.set(image, url.pathname);
+    void (async () => {
+      const response = await window.fetch(url.pathname);
+      const source = response.ok ? URL.createObjectURL(await response.blob()) : 'data:,';
+      setAttribute.call(image, 'src', source);
+    })();
+    return true;
+  };
+  Element.prototype.setAttribute = function (this: Element, name: string, value: string) {
+    if (this instanceof HTMLImageElement && name === 'src' && answer(this, value)) {
+      return;
+    }
+    setAttribute.call(this, name, value);
+  };
+  if (srcProperty?.set && srcProperty.get) {
+    const { get, set } = srcProperty;
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      configurable: true,
+      enumerable: srcProperty.enumerable,
+      get() {
+        return get.call(this);
+      },
+      set(this: HTMLImageElement, value: string) {
+        if (!answer(this, value)) {
+          set.call(this, value);
+        }
+      },
+    });
+  }
 };

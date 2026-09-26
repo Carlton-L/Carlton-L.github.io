@@ -50,6 +50,28 @@ export const seedHeldElsewhere = (name: string, now = new Date()) => {
   });
 };
 
+/**
+ * Puts a verified claim on `name` under `ownerId`, claimed a while ago, so the demo account holds a
+ * real site next to each scene's claim.
+ */
+export const seedVerified = (name: string, ownerId: string, now = new Date()) => {
+  rows.push({
+    id: crypto.randomUUID(),
+    ownerId,
+    name,
+    registrableDomain: name,
+    token: generateToken(),
+    status: 'verified',
+    issuedAt: new Date(now.getTime() - 40 * 86_400_000),
+    expiresAt: new Date(now.getTime() - 33 * 86_400_000),
+    verifiedAt: new Date(now.getTime() - 40 * 86_400_000),
+    failingSince: null,
+    actionNeededSince: null,
+    lastCheckedAt: new Date(now.getTime() - 3 * 3_600_000),
+    dnsHost: null,
+  });
+};
+
 const owned = (id: string, ownerId: string) =>
   rows.find((row) => row.id === id && row.ownerId === ownerId) ?? null;
 
