@@ -310,7 +310,7 @@ export const projects = [
       {
         heading: 'Try it',
         body: [
-          'This is the product itself, running in the page. Pick a state under it with the arrows and it runs the real check.',
+          'It’s the live app, and everything is clickable. The buttons underneath load each demo state.',
         ],
       },
       {
