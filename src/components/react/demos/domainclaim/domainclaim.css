@@ -10,7 +10,7 @@
 }
 .dcf-frame {
   position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b;
-  opacity: 0; transition: opacity 0.5s ease;
+  opacity: 0; transition: opacity 0.3s ease;
 }
 .dcf[data-shown='true'] .dcf-frame { opacity: 1; }
 /* Same language as the FAST posters: a quiet label on the product's own background. */
@@ -21,7 +21,7 @@
   background-color: #0a0a0b;
   background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.3s ease;
 }
 .dcf[data-shown='true'] .dcf-poster { opacity: 0; }
 .dcf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); animation: dcf-pulse 1.2s ease-in-out infinite; flex: none; }

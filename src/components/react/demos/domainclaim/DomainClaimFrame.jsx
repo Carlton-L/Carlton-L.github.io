@@ -69,12 +69,27 @@ const DomainClaimFrame = forwardRef(function DomainClaimFrame(
     return () => window.removeEventListener('message', listen);
   }, [onEvent, revealOn]);
 
-  // If a message never comes, show whatever loaded rather than a poster forever.
+  // The frame is same-origin, so its document can also be read directly: once the product has
+  // put anything on screen, the sign-in demo is ready, whatever happened to the message. And if
+  // nothing arrives at all, show whatever loaded rather than a poster forever.
   useEffect(() => {
     if (!near || shown) return undefined;
-    const late = setTimeout(() => setShown(true), 6000);
-    return () => clearTimeout(late);
-  }, [near, shown]);
+    // The sign-in demo has drawn once its island has content; the app once a claim's title is up.
+    const drawn = () => {
+      const doc = frameRef.current?.contentDocument;
+      if (!doc) return false;
+      if (view === 'signin') return (doc.querySelector('astro-island')?.childElementCount ?? 0) > 0;
+      return (doc.querySelector('h1')?.textContent ?? '').trim().length > 0;
+    };
+    const poll = setInterval(() => {
+      if (drawn()) requestAnimationFrame(() => setShown(true));
+    }, 100);
+    const late = setTimeout(() => setShown(true), 4000);
+    return () => {
+      clearInterval(poll);
+      clearTimeout(late);
+    };
+  }, [near, shown, view]);
 
   const phone = !fixedDesktop && box > 0 && box < phoneBelow;
   const native = phone ? box : width;
