@@ -40,6 +40,7 @@ Read `docs/CASE_STUDY_PLAYBOOK.md` before building or reshaping a case study, an
 - **A case study stands on its own.** It shows decisions, reasons, impact and care for every error state and every kind of user. It never says who the work was for or how it was judged unless Carlton asks.
 - **Real demos.** VIEWs run the product's own code wherever that's allowed, labeled LIVE or RECREATION. When something can't run in a browser, show the product's own honest state. The "Try it" copy says everything is clickable.
 - **Cards never change height** (it resets the dither background). Fixed heights per width; for variants, stack them in one grid cell so the card fits the longest.
+- **Shared parts.** Section breaks, decision cards, ownership meters and the next-case card are components in `src/components/case/`. Use them.
 - **Affordances.** Clickable = green outline. Disabled or "later" = the same shape, dashed grey, so nothing moves when it goes live. Large links use `GithubButton.astro`.
 - **Check every round** with screenshots at 1440, 1280, 768 and 375, PATCH and READ, and confirm demo state changes leave the page height alone.
 
@@ -58,6 +59,7 @@ Detail: `docs/DEMOS.md` (infrastructure, data, embedding), `docs/DEMO_PORTING.md
 - Demo data is synthetic or recorded-then-sanitized, deterministic, one file per demo (`src/data/demos/`).
 - Labels: LIVE (real product code, synthetic data) or RECREATION (real behavior, portfolio code). **FAST and the Engine are recreation-only per Futurity**; Futurescaper and the browser extension are public.
 - Reference implementations: Futurescaper (`demos/futurescaper/`) for inline islands, DomainClaim (`demos/domainclaim/`) for a full product port in its own document.
+- **Every demo that loads code sits in a `ViewSlot`** (reserved size, poster, fade in); React demos are server-rendered, never `client:only`. Content an inline page script draws at once (the Engine canvas, Campus funnel) needs no slot. Every animation pauses off screen (`Patch.onScreen`, `useOnScreen`). A product in its own document uses `ProductFrame`; a controller plus viewer pair uses `LinkedViews`.
 
 ## Building in the Cowork sandbox
 

@@ -37,8 +37,30 @@ Futurescaper is the template. Top to bottom:
 - **Real data by choice.** When a demo needs real-world data (site icons, a real domain), pick it on purpose, write the choice down in the port's `PORT.md`, and mention it on the page if a visitor would wonder.
 - **Say that it's clickable.** People assume a frame is a picture. The "Try it" card says plainly that everything in it works.
 - **One demo, its controls under it.** A demo that needs controls (a state picker) gets them inside the same frame, under the view. Two cards side by side split attention.
-- **No pop-in.** A demo's box has its final size before any script runs (a fixed height, or a CSS aspect ratio), shows a COOKING VIEWER poster until the content is ready, then fades it in. Islands start loading well before they scroll into view (`client:visible={{ rootMargin: '600px' }}`), or use `client:only` with a `slot="fallback"` poster like the FAST page.
+- **No pop-in.** Every demo that loads code (an island, an iframe, a library from a CDN) sits in a `ViewSlot` (`src/components/ViewSlot.astro`). Content an inline page script draws at once needs no slot. The slot's box has its final size before any script runs, it shows a COOKING VIEWER poster until the content is ready, then fades it in. React demos are rendered on the server (`client:load` for a hero, `client:visible={{ rootMargin: '600px' }}` further down), never `client:only`, so their real markup holds the space.
+- **Nothing animates off screen.** Every animation runs only while it is on screen and the tab is visible: `Patch.onScreen(el, fn)` in page scripts, `useOnScreen(ref)` in React.
 - **An iframe never moves.** Moving an iframe's element reloads it, so a demo in its own document can't use the DUO corner dock.
+
+## The two kinds of demo
+
+**Hero previews** open the page, right after the title and ownership card.
+
+- It plays by itself and can't be interacted with. It loops, and pauses off screen.
+- It is wide and centred (`maxw={900}`), with a fixed aspect ratio, and loads with the page (`client:load`).
+- It shows the product doing its one thing, with no explanation needed: Futurescaper's map drawing itself, DomainClaim's check landing step by step, the Engine's run.
+- With reduced motion it shows a settled frame.
+
+**Interactive demos** come after a section break and a "Try it" card, and are the product itself, as close as allowed. There are three kinds, in this order of preference:
+
+1. **The product's own code, in its own page** (`ProductFrame`, DomainClaim). The most faithful, and possible from any stack (`docs/DEMO_PORTING.md`).
+2. **The product's real logic in a portfolio-built screen** (Futurescaper's layout algorithm, GRID's sim). Use it when the product's screens can't be separated from its backend.
+3. **A recreation** (FAST, the Engine's agent card), when the real code can't be published. The label says RECREATION.
+
+A demo with a separate controller and viewer (GRID's app and 3D studio) uses `LinkedViews`: one shared state, a cable that pulses on every change, and the corner dock.
+
+## Parts
+
+Case-study cards that repeat are components in `src/components/case/`, styled once in `src/styles/case-study.css`: `SectionBreak`, `DecisionCard`, `OwnershipMeter`, `NextCase`. Use them; don't copy their markup. Page-specific cards stay on the page.
 
 ## Controls and affordances
 
@@ -66,6 +88,7 @@ Futurescaper is the template. Top to bottom:
 - [ ] No more than three section breaks, each before something the visitor should slow down for.
 - [ ] Every text card is under about 90 words and says something no other card says.
 - [ ] Every demo is labeled LIVE or RECREATION, and the "Try it" card says it's clickable.
+- [ ] Every demo that loads code is in a ViewSlot, and every animation pauses off screen.
 - [ ] Switching every demo state leaves the page height unchanged, and nothing shifts while demos load (layout shift 0 in Playwright).
 - [ ] Screenshots at 1440, 1280, 768 and 375, PATCH and READ, reviewed.
 - [ ] No mention of who the work was for or how it was judged, unless I asked for it.
