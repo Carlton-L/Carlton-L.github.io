@@ -19,7 +19,7 @@
  *  - onReset: optional extra reset side-effect; children always remount via key
  *  - children
  */
-import { useCallback, useState, Suspense } from 'react';
+import { useCallback, useState } from 'react';
 import './demos.css';
 
 const LABELS = {
@@ -57,11 +57,13 @@ export default function DemoFrame({ title, label = 'live', height = '540px', fil
         </span>
       </div>
       <div className="demoframe-body" data-fill={fill ? 'true' : 'false'} style={fill ? { height } : undefined}>
-        <Suspense fallback={<div className="demoframe-skeleton">COOKING…</div>}>
-          <div key={epoch} className="demoframe-mount" style={fill ? { position: 'absolute', inset: 0 } : undefined}>
-            {children}
-          </div>
-        </Suspense>
+        {/* No Suspense here. Nothing in a demo suspends, and React 19 streams a large Suspense
+            boundary separately with inline scripts even when nothing does. The router skips a
+            script it has already run, so coming back to the page left the demo half built
+            (React error #419). Loading is ViewSlot's job. */}
+        <div key={epoch} className="demoframe-mount" style={fill ? { position: 'absolute', inset: 0 } : undefined}>
+          {children}
+        </div>
       </div>
     </div>
   );

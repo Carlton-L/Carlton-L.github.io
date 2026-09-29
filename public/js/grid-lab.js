@@ -785,6 +785,7 @@ window.GridLab = (function () {
 
     let lastT = performance.now();
     function loop(now) {
+      if (!device.isConnected) { raf = 0; return; }   // the page was swapped out: stop, don't touch the next page
       if (!onscreen) { lastT = now; raf = requestAnimationFrame(loop); return; }
       const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
 

@@ -594,11 +594,13 @@ const heightStyle =
       lastReal = performance.now();
     }, { passive: true });
 
-    function cookDither() {
+    // k = how many regular cooks this one stands in for (2 while scrolling), so the field moves
+    // and cools at the same speed whatever the cook rate
+    function cookDither(k = 1) {
       if (!ctx || P.density <= 0 || !field) return;
       if (Math.max(2, Math.round(P.scale)) !== FSbase) allocField();
-      if (!REDUCED) t += 0.008 * P.speed; // cooks at half frame-rate
-      energy *= COARSE ? 0.86 : 0.74; // touch heat lingers — trails must survive between taps
+      if (!REDUCED) t += 0.008 * P.speed * k; // cooks at half frame-rate
+      energy *= Math.pow(COARSE ? 0.86 : 0.74, k); // touch heat lingers — trails must survive between taps
       /* ghost painter — coarse pointers only: after 1s without real input the
          field paints itself (lissajous drift + noise wander; pace follows
          SPEED via t). Any real touch wins instantly; AUTO chip toggles it. */
@@ -697,9 +699,9 @@ const heightStyle =
       return { x: (side === 'out' ? r.right : r.left) - h.left, y: r.top + r.height / 2 - h.top, v: 0 };
     }
     let phase = 0;
-    function cookWires() {
+    function cookWires(k = 1) {
       if (!svg || isRead()) { if (svg && isRead()) svg.innerHTML = ''; return; }
-      if (!REDUCED) phase += 0.008;
+      if (!REDUCED) phase += 0.008 * k;
       const sig = PALETTES[((P.pal % PALETTES.length) + PALETTES.length) % PALETTES.length].hot;
       let o = '';
       const geo = []; // per drawn cable: endpoints for the routed-delivery pulses
@@ -740,17 +742,22 @@ const heightStyle =
     }
 
     /* ---------- main loop (dither cooks at half rate) ----------
-       Both cooks yield during scroll: the per-frame canvas blit + SVG
-       rebuild were starving Chrome's tile rasterizer on long scrolls,
-       leaving freshly exposed viewport unpainted (black) until the next
-       input. Wires are field-anchored and the dither is a noise field,
-       so a ~150ms pause is imperceptible; raster wins the thread. */
+       While the page scrolls, both cooks drop to a quarter of the frame
+       rate. At full rate the canvas blit + SVG rebuild starved Chrome's
+       tile rasterizer on long scrolls, leaving freshly exposed viewport
+       unpainted (black) until the next input. Stopping them outright
+       fixed that but froze the background mid-scroll, which read as a
+       stall. Each quarter-rate cook stands in for the cooks it skips, so
+       the motion keeps its speed. */
     let fc = 0, lastScrollT = -1e4;
     on(window, 'scroll', () => { lastScrollT = performance.now(); }, { passive: true });
     function frame() {
       if (!host.isConnected) return;
-      if (performance.now() - lastScrollT > 150) {
-        if ((fc++ & 1) === 0) cookDither();
+      fc++;
+      if (performance.now() - lastScrollT < 150) {
+        if ((fc & 3) === 0) { cookDither(2); cookWires(4); }
+      } else {
+        if ((fc & 1) === 0) cookDither();
         cookWires();
       }
       requestAnimationFrame(frame);
