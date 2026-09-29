@@ -62,6 +62,10 @@ A demo with a separate controller and viewer (GRID's app and 3D studio) uses `Li
 
 Case-study cards that repeat are components in `src/components/case/`, styled once in `src/styles/case-study.css`: `SectionBreak`, `DecisionCard`, `OwnershipMeter`, `NextCase`. Use them; don't copy their markup. Page-specific cards stay on the page.
 
+**Reading order.** `caseOrder` in `src/data/content.js` is the order of every case study: the homepage's seven (`homeOrder`), then the rest in the /projects page's order, then back to the start. `NextCase` reads it, so each case study's last card is a button to the next one, with that project's `teaser` under its name. A new case study goes into `caseOrder` and gets a `teaser`.
+
+**Large links** use `LinkButton` (`src/components/LinkButton.astro`): an icon cell, a label, a line that says where it goes, an arrow. `GithubButton` and the next-case button are built on it.
+
 ## Controls and affordances
 
 - Clickable means a green outline (`--signal`). Hover adds a faint green fill.

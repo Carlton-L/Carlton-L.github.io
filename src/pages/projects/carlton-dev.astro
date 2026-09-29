@@ -13,11 +13,13 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import LinkButton from '../../components/LinkButton.astro';
 import PatchField from '../../components/PatchField.astro';
-import { projects } from '../../data/content.js';
+import { projects, nextCase } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const project = projects.find((p) => p.slug === 'carlton-dev');
+const next = nextCase('carlton-dev');
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -165,10 +167,9 @@ const layout = {
         embedded demo, and a signal monitor that live-prints the message bus.
         You'll be able to watch this site think.
       </p>
-      <p class="cd-out">
-        <a href="/projects/fast">NEXT ▸ fast</a><br />
-        <span class="cd-outsub">the research platform behind the engine</span>
-      </p>
+      <LinkButton href={`/projects/${next.slug}`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
+        <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+      </LinkButton>
     </Operator>
 
     <!-- the background generator, patched into the page it's described on —
@@ -286,10 +287,6 @@ const layout = {
     span.cap-coarse { display: inline; }
   }
 
-  .cd-out { font-family: var(--font-mono); font-size: 11px; line-height: 1.7; margin-top: 12px; }
-  .cd-out a { color: var(--signal); text-decoration: none; }
-  .cd-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .cd-outsub { color: var(--text-dim); }
 
   /* bg_generator controls — same grammar as the homepage chain */
   .chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
@@ -306,4 +303,5 @@ const layout = {
   :global(#cdBgDith .ohead), :global(#cdBgOut .ohead) { padding: 4px 9px; font-size: 9px; }
   :global(#cdBgNoise) .prow, :global(#cdBgFdbk) .prow,
   :global(#cdBgDith) .prow, :global(#cdBgOut) .prow { margin-top: 6px; }
+  .cd-p + :global(.cd-next) { margin-top: 14px; }
 </style>

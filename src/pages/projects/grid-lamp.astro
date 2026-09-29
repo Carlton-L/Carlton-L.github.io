@@ -16,6 +16,7 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import LinkedViews from '../../components/LinkedViews.astro';
+import NextCase from '../../components/case/NextCase.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -23,8 +24,6 @@ import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 const project = projects.find((p) => p.slug === 'grid-lamp');
 const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
 
-const idx = projects.findIndex((p) => p.slug === project.slug);
-const next = projects[(idx + 1) % projects.length];
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -268,12 +267,7 @@ const layout = {
       <p class="gl-outnext">▸ NEXT · BUILD PHOTOS LAND IN grid_photo AS THE HARDWARE COMES TOGETHER</p>
     </Operator>
 
-    <Operator id="glNext" name="out · next_network" type="data" area="nxt" maxw={300} ports="in">
-      <a class="gl-next" href={`/projects/${next.slug}`}>
-        NEXT ▸ {next.slug.replace(/-/g, '_')}
-        <span class="gl-nextsub">{next.title}</span>
-      </a>
-    </Operator>
+    <NextCase id="glNext" from="grid-lamp" area="nxt" nudge="0 0" />
   </PatchField>
 
   <!-- Lazy bootstrap: nothing GRID-related loads until a sim op nears the
@@ -433,15 +427,6 @@ const layout = {
     line-height: 1.7;
   }
 
-  .gl-next {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--signal);
-    text-decoration: none;
-  }
-  .gl-next:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .gl-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
 
   /* telemetry is patch garnish — drop it on small screens to keep READ quiet */
   @media (max-width: 767px) {

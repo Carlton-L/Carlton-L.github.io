@@ -1,0 +1,40 @@
+---
+/**
+ * LinkButton: the large link. An icon in its own cell on the left, a mono label, a second line
+ * that says where it goes, and an arrow. Outline in the signal colour; on hover the icon cell fills.
+ * GithubButton and the next-case-study button are both built on it.
+ *
+ *   <LinkButton href="/projects/fast" label="NEXT · FAST" sub="the research platform behind the engine" block>
+ *     <svg slot="icon" …/>
+ *   </LinkButton>
+ *
+ * `later` gives the not-ready state: same shape, dashed and grey, not a link, so nothing moves when
+ * it goes live. External links (http…) open in a new tab and show ↗; internal ones show →.
+ * Styles: src/styles/link-button.css (global, so a slotted icon picks them up).
+ */
+interface Props {
+  href?: string;
+  label: string;
+  sub: string;
+  later?: boolean;
+  block?: boolean;
+  class?: string;
+}
+
+const { href = '#', label, sub, later = false, block = false, class: extra = '' } = Astro.props;
+const external = /^https?:/.test(href);
+const cls = ['lbtn', block && 'lbtn-block', extra].filter(Boolean).join(' ');
+---
+
+{later ? (
+  <span class={cls} aria-disabled="true">
+    <span class="lbtn-icon"><slot name="icon" /></span>
+    <span class="lbtn-body"><span class="lbtn-label">{label}</span><span class="lbtn-sub">{sub}</span></span>
+  </span>
+) : (
+  <a class={cls} href={href} {...(external ? { target: '_blank', rel: 'noopener' } : {})}>
+    <span class="lbtn-icon"><slot name="icon" /></span>
+    <span class="lbtn-body"><span class="lbtn-label">{label}</span><span class="lbtn-sub">{sub}</span></span>
+    <span class="lbtn-go" aria-hidden="true">{external ? '↗' : '→'}</span>
+  </a>
+)}

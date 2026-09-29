@@ -92,6 +92,8 @@ export const projects = [
     categorySlug: 'apps-systems',
     image: '/images/projects/fast/cover.jpg',
     slug: 'fast',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'the research platform behind the engine',
     accent: 'accent-1',
     tags: ['React', 'TypeScript', 'Cosmograph', 'React Flow', 'LLM Tools', 'Design System'],
     featured: true,
@@ -157,6 +159,8 @@ export const projects = [
     categorySlug: 'apps-systems',
     image: '/images/projects/futurity-engine/cover.jpg',
     slug: 'futurity-engine',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'watch the machine think',
     accent: 'accent-1',
     tags: ['React', 'SSE Streaming', 'Multi-Agent AI', 'WebGL Graphs', 'FastAPI'],
     featured: true,
@@ -210,6 +214,8 @@ export const projects = [
     category: 'Design Engineering',
     categorySlug: 'apps-systems',
     slug: 'carlton-dev',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'this site, built as a live patch',
     accent: 'accent-1',
     liveUrl: 'https://carlton.dev',
     tags: ['Astro', 'Vanilla JS', 'Canvas', 'Design System', 'React Islands'],
@@ -231,6 +237,8 @@ export const projects = [
     categorySlug: 'apps-systems',
     image: '/images/projects/futurescaper/cover.jpg',
     slug: 'futurescaper',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'a metro map for possible futures',
     accent: 'accent-1',
     liveUrl: 'https://futurescape.futurity.science',
     tags: ['React', 'TypeScript', 'Graph Layouts', 'AI Orchestration', 'Data Viz'],
@@ -288,6 +296,8 @@ export const projects = [
     categorySlug: 'product-systems',
     image: '/images/projects/domainclaim/cover.png',
     slug: 'domainclaim',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'proof you can watch',
     accent: 'accent-1',
     liveUrl: 'https://domainclaim-pi.vercel.app',
     tags: ['TypeScript', 'Next.js', 'React', 'DNS', 'Postgres', 'Error States', 'Product Design'],
@@ -386,6 +396,8 @@ export const projects = [
     categorySlug: 'research',
     image: '/images/projects/campus-ai/cover.jpg',
     slug: 'campus-ai',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'research on how people actually learn with AI',
     accent: 'accent-3',
     tags: ['UX Research', 'AI & Learning', 'Qualitative Methods', 'Strategy'],
     featured: true,
@@ -503,6 +515,8 @@ export const projects = [
     categorySlug: 'experiences',
     image: '/images/projects/grid-lamp/cover.jpg',
     slug: 'grid-lamp',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'a lamp you sculpt by touch',
     accent: 'accent-2',
     live: true,
     tags: ['Kinetic Light', 'Three.js', 'Hardware', 'Simulation'],
@@ -552,6 +566,8 @@ export const projects = [
     categorySlug: 'product-systems',
     image: '/images/projects/lab-equipment-portal/cover.jpg',
     slug: 'lab-equipment-portal',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'the project that moved me from hardware to software',
     accent: 'accent-1',
     tags: ['Full Stack', 'React', 'Node.js', 'GraphQL'],
     facts: {
@@ -606,6 +622,8 @@ export const projects = [
     categorySlug: 'experiences',
     image: '/images/projects/futures-garden/cover.jpg',
     slug: 'futures-garden',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'talking to the future through its objects',
     accent: 'accent-2',
     tags: ['LLM', 'NFC', 'Physical Computing', 'EU Commission'],
     facts: {
@@ -652,6 +670,8 @@ export const projects = [
     categorySlug: 'experiences',
     image: '/images/projects/immersive-experience-builder/cover.jpg',
     slug: 'immersive-experience-builder',
+    /** The one-liner under this project's name when it's the next case study. */
+    teaser: 'a tool for building sensor-driven spaces',
     accent: 'accent-2',
     tags: ['Framework', 'Spatial Computing', 'Sensors', 'Interactive'],
     facts: {
@@ -709,6 +729,21 @@ export const caseStudies = {
 };
 
 export const pinnedItems = projects.filter((p) => p.featured);
+
+/**
+ * Reading order of the case studies. The homepage index shows the first seven in this order; the
+ * next-case-study button on every case study walks the whole list, then comes back to the start.
+ * The rest follow the /projects page's order.
+ */
+export const homeOrder = ['futurescaper', 'domainclaim', 'futurity-engine', 'carlton-dev', 'fast', 'grid-lamp', 'campus-ai'];
+export const caseOrder = [...homeOrder, 'lab-equipment-portal', 'futures-garden', 'immersive-experience-builder'];
+
+/** The case study after `slug` in reading order. */
+export const nextCase = (slug) => {
+  const i = caseOrder.indexOf(slug);
+  const next = caseOrder[(i + 1) % caseOrder.length];
+  return projects.find((p) => p.slug === next);
+};
 
 // ============================================
 // Contact Links

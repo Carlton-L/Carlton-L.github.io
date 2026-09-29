@@ -1,0 +1,36 @@
+/* LinkButton (src/components/LinkButton.astro): GithubButton and the next-case-study button. */
+
+.lbtn {
+  --lbtn-h: 56px;
+  display: inline-flex; align-items: stretch; min-height: var(--lbtn-h); min-width: 280px; max-width: 100%;
+  text-decoration: none; color: var(--text); background: transparent;
+  border: 1px solid rgba(61, 255, 136, 0.45); border-radius: 6px; overflow: hidden;
+  transition: border-color var(--duration-normal), background var(--duration-normal), transform 0.08s;
+}
+.lbtn-block { display: flex; width: 100%; min-width: 0; }
+.lbtn-icon {
+  flex: 0 0 var(--lbtn-h); display: grid; place-items: center;
+  background: transparent; border-right: 1px solid rgba(61, 255, 136, 0.45);
+  color: var(--text); transition: background var(--duration-normal), color var(--duration-normal);
+}
+.lbtn-icon svg { width: 24px; height: 24px; fill: currentColor; }
+.lbtn-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 16px; min-width: 0; }
+.lbtn-label { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; color: var(--signal); }
+.lbtn-sub { font-family: var(--font-mono); font-size: 11px; line-height: 1.45; color: var(--text-muted); overflow-wrap: anywhere; }
+.lbtn-go {
+  flex: 0 0 44px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 15px;
+  color: var(--text-dim); transition: color var(--duration-normal), transform var(--duration-normal);
+}
+a.lbtn:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+a.lbtn:hover .lbtn-icon { border-right-color: var(--signal); }
+a.lbtn:hover .lbtn-icon { background: var(--signal); color: var(--bg); }
+a.lbtn:hover .lbtn-go { color: var(--signal); transform: translate(2px, -2px); }
+a.lbtn:not([target]):hover .lbtn-go { transform: translateX(3px); }
+a.lbtn:active { transform: translateY(1px); }
+a.lbtn:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+/* not ready yet (a repo that isn't public): same shape, so nothing moves when it goes live */
+.lbtn[aria-disabled='true'] { border-style: dashed; border-color: var(--border-color); background: transparent; cursor: not-allowed; }
+.lbtn[aria-disabled='true'] .lbtn-icon { background: transparent; color: var(--text-dim); border-right: 1px dashed var(--border-color); }
+.lbtn[aria-disabled='true'] .lbtn-label { color: var(--text-muted); }
+.lbtn[aria-disabled='true'] .lbtn-sub { color: var(--text-dim); }
+@media (prefers-reduced-motion: reduce) { .lbtn, .lbtn-icon, .lbtn-go { transition: none; } }

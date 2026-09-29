@@ -1,28 +1,37 @@
 ---
 /**
- * NextCase: the last card of a case study. One line that sums the project up, then a link to the
- * next case study with its own one-liner.
+ * NextCase: the last card of a case study. An optional one-line sum-up of this project, then a
+ * LinkButton to the next case study in reading order (`caseOrder` in src/data/content.js, which
+ * follows the homepage and loops back to the start). The next project's `teaser` sits under its
+ * name, so every case study reaches every other one.
  *
- *   <NextCase id="dcOut" tagline="EVERY FAILURE HAS AN ANSWER." slug="futurity-engine" sub="watch the machine think" />
+ *   <NextCase id="dcOut" from="domainclaim" tagline="EVERY FAILURE HAS AN ANSWER." />
+ *   <NextCase id="csOut" from={project.slug} doc />       (PatchDoc pages: no layout area, no ports)
  */
 import Operator from '../Operator.astro';
+import LinkButton from '../LinkButton.astro';
+import { nextCase } from '../../data/content.js';
 
 interface Props {
   id: string;
-  tagline: string;
-  /** Slug of the next case study. */
-  slug: string;
-  sub: string;
+  /** This page's slug. */
+  from: string;
+  tagline?: string;
   area?: string;
   nudge?: string;
+  maxw?: number;
+  /** On a PatchDoc page: no layout area and no ports. */
+  doc?: boolean;
 }
-const { id, tagline, slug, sub, area = 'out', nudge = '0 24' } = Astro.props;
+const { id, from, tagline, area = 'out', nudge = '0 24', maxw, doc = false } = Astro.props;
+const next = nextCase(from);
 ---
 
-<Operator id={id} name="out · next_network" type="data" area={area} nudge={nudge} ports="in">
+<Operator id={id} name="out · next_network" type="data" area={doc ? undefined : area} nudge={doc ? undefined : nudge} maxw={maxw} ports={doc ? 'none' : 'in'}>
   <div class="cs-out">
-    {tagline}<br /><br />
-    <a href={`/projects/${slug}`}>NEXT ▸ {slug.replace(/-/g, '_')}</a><br />
-    <span class="cs-outsub">{sub}</span>
+    {tagline && <div class="cs-outline">{tagline}</div>}
+    <LinkButton href={`/projects/${next.slug}`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block>
+      <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+    </LinkButton>
   </div>
 </Operator>

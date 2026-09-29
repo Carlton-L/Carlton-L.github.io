@@ -41,7 +41,8 @@ Read `docs/CASE_STUDY_PLAYBOOK.md` before building or reshaping a case study, an
 - **Real demos.** VIEWs run the product's own code wherever that's allowed, labeled LIVE or RECREATION. When something can't run in a browser, show the product's own honest state. The "Try it" copy says everything is clickable.
 - **Cards never change height** (it resets the dither background). Fixed heights per width; for variants, stack them in one grid cell so the card fits the longest.
 - **Shared parts.** Section breaks, decision cards, ownership meters and the next-case card are components in `src/components/case/`. Use them.
-- **Affordances.** Clickable = green outline. Disabled or "later" = the same shape, dashed grey, so nothing moves when it goes live. Large links use `GithubButton.astro`.
+- **Reading order.** `caseOrder` in `content.js` (the homepage's order, then the rest, looping). Every case study ends with `NextCase`, a button to the next one. A new case study goes into `caseOrder` with a `teaser`.
+- **Affordances.** Clickable = green outline. Disabled or "later" = the same shape, dashed grey, so nothing moves when it goes live. Large links use `LinkButton.astro` (`GithubButton` is built on it).
 - **Check every round** with screenshots at 1440, 1280, 768 and 375, PATCH and READ, and confirm demo state changes leave the page height alone.
 
 ## Working with Carlton

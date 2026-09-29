@@ -21,6 +21,7 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import NextCase from '../../components/case/NextCase.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
@@ -177,7 +178,7 @@ const layout = {
       .     .     .     .     .     .     .     .     .     .     .     .
       .     r1    r1    r1    r1    .     .     r2    r2    r2    r2    .
       .     r3    r3    r3    r3    .     .     r4    r4    r4    r4    .
-      outc  outc  outc  outc  outc  .     .     .     .     out   out   out
+      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
     `,
   }],
 };
@@ -381,12 +382,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
       <a class="ca-req" href="/contact">▸ WANT THE FULL WRITE-UP? CONTACT ME</a>
     </Operator>
 
-    <Operator id="caOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
-      <a class="ca-next" href="/lab">
-        NEXT ▸ lab
-        <span class="ca-nextsub">experiments and things in progress</span>
-      </a>
-    </Operator>
+    <NextCase id="caOut" from="campus-ai" />
   </PatchField>
 </Base>
 
@@ -943,7 +939,4 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     transition: border-color var(--duration-normal), background var(--duration-normal);
   }
   .ca-req:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
-  .ca-next { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--signal); text-decoration: none; }
-  .ca-next:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .ca-nextsub { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 3px; }
 </style>

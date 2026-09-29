@@ -31,8 +31,10 @@ body.perform .cs-break-num { font-size: 30px; }
 .cs-meter .bar i { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px); }
 .cs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
 
-/* NextCase */
-.cs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
-.cs-out a { color: var(--signal); text-decoration: none; }
-.cs-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.cs-outsub { color: var(--text-dim); }
+/* NextCase: the sum-up line, readable at a glance, then the next-case button */
+.cs-out { display: flex; flex-direction: column; gap: 14px; }
+.cs-outline {
+  font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+  font-size: 17px; line-height: 1.15; letter-spacing: 0.02em; color: var(--text);
+}
+.cs-out .lbtn-icon svg { fill: none; }

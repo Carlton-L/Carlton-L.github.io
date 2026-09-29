@@ -20,7 +20,7 @@
  * All patch scripts are inline vanilla JS — no React island needed here.
  */
 import Base from '../layouts/Base.astro';
-import { siteConfig, projects } from '../data/content.js';
+import { siteConfig, projects, homeOrder } from '../data/content.js';
 import { getPersonJsonLd, getWebSiteJsonLd } from '../lib/seo.js';
 import Operator from '../components/Operator.astro';
 import PatchField from '../components/PatchField.astro';
@@ -88,7 +88,8 @@ const layout = {
 
 // Explicit narrative order (content.js array order is NOT the display order —
 // relying on filter() once put fast first while the viewer cooked futurescaper)
-const ORDER_SLUGS = ['futurescaper', 'domainclaim', 'futurity-engine', 'carlton-dev', 'fast', 'grid-lamp', 'campus-ai'];
+// Order lives in content.js (homeOrder), shared with the next-case-study buttons.
+const ORDER_SLUGS = homeOrder;
 const indexRows = ORDER_SLUGS
   .map((slug) => projects.find((p) => p.slug === slug))
   .filter(Boolean)
