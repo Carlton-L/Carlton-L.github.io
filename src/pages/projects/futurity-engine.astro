@@ -322,13 +322,18 @@ const layout = {
     return;
   }
   let last = performance.now();
+  // Runs only on screen (Patch.onScreen, the site's one pause rule); resumes where it stopped.
+  let on = true;
+  if (window.Patch && Patch.onScreen) Patch.onScreen(cv, (v) => { on = v; if (v) last = performance.now(); });
   (function frame(now) {
     if (!cv.isConnected) return;
-    const dt = Math.min(.05, (now - last) / 1000);
-    elapsed += now - last; last = now;
-    for (const e of EV) if (!e.done && e.t <= elapsed) { e.done = true; fire(e); }
-    step(dt * 60); draw(); tickUI();
-    if (elapsed > LOOP) { reset(); last = performance.now(); }
+    if (on) {
+      const dt = Math.min(.05, (now - last) / 1000);
+      elapsed += now - last; last = now;
+      for (const e of EV) if (!e.done && e.t <= elapsed) { e.done = true; fire(e); }
+      step(dt * 60); draw(); tickUI();
+      if (elapsed > LOOP) { reset(); last = performance.now(); }
+    }
     requestAnimationFrame(frame);
   })(last);
 })();

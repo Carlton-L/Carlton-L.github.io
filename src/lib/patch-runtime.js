@@ -158,6 +158,26 @@
       GLOBALS.push(() => { document.removeEventListener(ev, fn); S.listeners--; });
     },
     stats: () => ({ fields: S.fields, nodes: S.nodes, timers: S.timers, listeners: S.listeners, observers: S.observers }),
+    /* The one rule for animations: run while el is within margin of the viewport and the tab is
+       visible. fn(true) and fn(false) on each change; returns a stop function. Dies on page swap. */
+    onScreen: (el, fn, margin) => {
+      let inView = false, last = null;
+      const emit = () => {
+        const now = inView && document.visibilityState === 'visible';
+        if (now !== last) { last = now; fn(now); }
+      };
+      const io = new IntersectionObserver((es) => { inView = es.some((e) => e.isIntersecting); emit(); }, { rootMargin: margin || '200px' });
+      io.observe(el);
+      document.addEventListener('visibilitychange', emit);
+      S.observers++;
+      let live = true;
+      const stop = () => {
+        if (!live) return;
+        live = false; io.disconnect(); document.removeEventListener('visibilitychange', emit); S.observers--;
+      };
+      GLOBALS.push(stop);
+      return stop;
+    },
   };
 
   /* registered ONCE for the document's life; page registrations die here */

@@ -15,9 +15,10 @@
  *
  * Embed with client:only="react".
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import DemoFrame from '../_shared/DemoFrame.jsx';
+import useOnScreen from '../_shared/useOnScreen.js';
 import { PLACED_SCENARIOS, MAP_W, MAP_H, octiPath, EDGE_DRAW_DUR, SEED } from './liveMapData.js';
 
 const HOLD_MS = 3400;
@@ -218,21 +219,28 @@ function StatusLine({ s, animate }) {
 
 /* ── The looping generative map panel ── */
 function GenerativeMapPanel() {
-  const reduced = useReducedMotion() ?? false;
+  /* Read after mount: the server can't know the visitor's setting, and the first client render
+     has to match what the server sent. */
+  const prefersReduced = useReducedMotion();
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => setReduced(!!prefersReduced), [prefersReduced]);
   const [idx, setIdx] = useState(0);
   const s = PLACED_SCENARIOS[idx % PLACED_SCENARIOS.length];
+  /* the next scenario starts only on screen (the site's one pause rule, Patch.onScreen) */
+  const panelRef = useRef(null);
+  const onScreen = useOnScreen(panelRef);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !onScreen) return;
     const cycle = s.total * 1000 + HOLD_MS + FADE_MS;
     const t = setTimeout(() => setIdx((i) => (i + 1) % PLACED_SCENARIOS.length), cycle);
     return () => clearTimeout(t);
-  }, [idx, s, reduced]);
+  }, [idx, s, reduced, onScreen]);
 
   const animate = !reduced;
 
   return (
-    <div className="fsd-hero-panel">
+    <div className="fsd-hero-panel" ref={panelRef}>
       <div className="fsd-hero-svgwrap">
         <AnimatePresence mode="wait">
           <motion.div key={idx} initial={false} exit={animate ? { opacity: 0, transition: { duration: FADE_MS / 1000 } } : undefined}>

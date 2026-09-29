@@ -11,6 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { NETWORKS, START, NODE_TYPE_COLORS, INDEX_META } from '../../../../data/demos/fast-network.js';
+import useOnScreen from '../_shared/useOnScreen.js';
 import './fast.css';
 
 const REDUCED =
@@ -34,6 +35,10 @@ export default function FastHero() {
   const [fade, setFade] = useState(0);
   const focusRef = useRef(focus);
   focusRef.current = focus;
+  /* runs only on screen (the site's one pause rule, Patch.onScreen) */
+  const onScreen = useOnScreen(wrapRef);
+  const onScreenRef = useRef(onScreen);
+  onScreenRef.current = onScreen;
 
   const data = NETWORKS[focus];
   /* null indices = the product's N/A state (not yet computed) */
@@ -65,7 +70,7 @@ export default function FastHero() {
 
   /* scripted auto-traversal: pick a traversable neighbor, pulse, then move */
   useEffect(() => {
-    if (REDUCED) return;
+    if (REDUCED || !onScreen) return;
     let cancelled = false;
     const run = async () => {
       await wait(1600);
@@ -90,7 +95,7 @@ export default function FastHero() {
     return () => {
       cancelled = true;
     };
-  }, [focus]);
+  }, [focus, onScreen]);
 
   /* render loop */
   useEffect(() => {
@@ -100,7 +105,7 @@ export default function FastHero() {
       const canvas = canvasRef.current;
       const wrap = wrapRef.current;
       const st = stateRef.current;
-      if (canvas && wrap && st.nodes.length) {
+      if (canvas && wrap && st.nodes.length && onScreenRef.current) {
         const w = wrap.clientWidth;
         const h = wrap.clientHeight;
         const dpr = Math.min(window.devicePixelRatio || 1, 2);

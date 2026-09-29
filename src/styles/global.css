@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import './view-slot.css';
 /* A ported product brings its own Tailwind theme and builds its own stylesheet. */
 @source not '../components/react/demos/domainclaim';
 

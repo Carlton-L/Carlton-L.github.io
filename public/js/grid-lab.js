@@ -838,8 +838,8 @@ window.GridLab = (function () {
       raf = requestAnimationFrame(loop);
     }
 
-    const poster = document.getElementById('glposter');
-    if (poster) poster.remove();
+    // The scene is up: the ViewSlot around the canvas fades it in (src/components/ViewSlot.astro).
+    canvas.dispatchEvent(new CustomEvent('view:ready', { bubbles: true }));
 
     loadFamily('static');
     paintLimit();

@@ -14,6 +14,7 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -217,7 +218,9 @@ const layout = {
     >
       <div class="gridlab glviewwrap" data-duo="grid" data-duo-name="grid_view">
         <div class="viewcard" id="viewcard">
-          <canvas id="gl"></canvas>
+          <ViewSlot poster="COOKING SIM · THREE.JS LOADS ON APPROACH…" height="100%" wait="event" bg="#0b0c0d" ink="#67615a" class="gl-slot">
+            <canvas id="gl"></canvas>
+          </ViewSlot>
           <div class="vignette"></div>
           <span class="vtick tl"></span><span class="vtick tr"></span>
           <span class="vtick bl"></span><span class="vtick br"></span>
@@ -238,7 +241,6 @@ const layout = {
             <div class="vnote" id="travelNote"></div>
           </div>
           <div class="vhud"><span id="vhint">Drag to orbit &middot; scroll to zoom &middot; hold a cylinder to raise it</span></div>
-          <div class="glposter" id="glposter">COOKING SIM &middot; THREE.JS LOADS ON APPROACH&hellip;</div>
         </div>
       </div>
     </Operator>
@@ -564,11 +566,7 @@ const layout = {
   .gridlab .vbtn.on { color: #e2ded6; border-color: #726c63; background: rgba(255, 255, 255, .07); }
   .gridlab .vnote { font-family: var(--font-mono); font-size: 8px; color: #5d574f; letter-spacing: .12em; text-transform: uppercase; }
 
-  .gridlab .glposter {
-    position: absolute; inset: 0; z-index: 5;
-    display: grid; place-items: center;
-    background: #0b0c0d;
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em;
-    color: #67615a;
-  }
+  /* The 3D canvas loads inside a ViewSlot (poster + fade), filling the card. */
+  .gridlab :global(.gl-slot) { position: absolute; inset: 0; }
+  .gridlab :global(.gl-slot .vslot) { height: 100%; }
 </style>

@@ -672,9 +672,12 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
   }
   const t0 = performance.now();
   let fc = 0;
+  // Runs only on screen (Patch.onScreen, the site's one pause rule).
+  let on = true;
+  if (window.Patch && Patch.onScreen) Patch.onScreen(svg, (v) => { on = v; });
   (function frame(now) {
     if (!svg.isConnected) return;
-    if ((fc++ & 1) === 0) {
+    if (on && (fc++ & 1) === 0) {
       const t = ((now - t0) / 1000) % 9;
       dots.forEach((d, i) => d.setAttribute('opacity', t > 0.4 + i * 0.028 ? '0.18' : '0.85'));
       seats.forEach((s, i) => s.setAttribute('stroke', t > 1.7 + i * 0.14 ? '#3dff88' : 'rgba(61,255,136,0.15)'));

@@ -14,6 +14,7 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FastHero from '../../components/react/demos/fast/FastHero.jsx';
 import FastGraphDemo from '../../components/react/demos/fast/FastGraphDemo.jsx';
@@ -129,9 +130,9 @@ const layout = {
     <!-- VIEW (opener): the subject page, composed and self-playing -->
     <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
-        <FastHero client:only="react">
-          <div class="fs-poster fast" slot="fallback" aria-hidden="true">COOKING VIEWER · SELF-PLAYING SUBJECT PAGE…</div>
-        </FastHero>
+        <ViewSlot poster="COOKING VIEWER · SELF-PLAYING SUBJECT PAGE…" bg="#111111">
+          <FastHero client:load />
+        </ViewSlot>
       </div>
     </Operator>
 
@@ -177,9 +178,9 @@ const layout = {
     <!-- VIEW: the interactive graph — click a node, traverse to its subject -->
     <Operator id="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
       <div class="fs-viewerwrap">
-        <FastGraphDemo client:only="react">
-          <div class="fs-poster fast" style="height:640px" slot="fallback" aria-hidden="true">COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…</div>
-        </FastGraphDemo>
+        <ViewSlot poster="COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…" bg="#111111">
+          <FastGraphDemo client:visible={{ rootMargin: '600px' }} />
+        </ViewSlot>
       </div>
     </Operator>
 
@@ -302,9 +303,9 @@ const layout = {
     <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
     <Operator id="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
       <div class="fs-viewerwrap">
-        <FastGatherDemo client:only="react">
-          <div class="fs-poster fast" slot="fallback" aria-hidden="true">COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…</div>
-        </FastGatherDemo>
+        <ViewSlot poster="COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…" bg="#111111">
+          <FastGatherDemo client:visible={{ rootMargin: '600px' }} />
+        </ViewSlot>
       </div>
     </Operator>
 
@@ -457,18 +458,6 @@ const layout = {
 
   /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */
   .fs-viewerwrap { margin: -12px -14px; }
-  .fs-poster {
-    display: grid;
-    place-items: center;
-    height: 520px;
-    background: #111111;
-    color: rgba(255, 255, 255, 0.5);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-align: center;
-    padding: 0 20px;
-  }
 
   /* ── section breaks — interstitial SYS markers between chapters ── */
   .fs-break {

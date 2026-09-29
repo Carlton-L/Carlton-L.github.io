@@ -1,0 +1,33 @@
+/* ViewSlot: reserved box, COOKING VIEWER poster, fade in when ready. See src/components/ViewSlot.astro. */
+
+.vslot-wrap { container-type: inline-size; }
+.vslot { position: relative; }
+@container (max-width: 719.98px) {
+  .vslot.vslot-phone { aspect-ratio: auto !important; height: var(--vslot-ph) !important; }
+}
+
+.vslot-content { transition: opacity 0.3s ease; }
+.vslot:not([data-ready='true']) > .vslot-content { opacity: 0; }
+/* Aspect or height given: the content fills the reserved box. */
+.vslot[style*='height'] > .vslot-content,
+.vslot[style*='aspect-ratio'] > .vslot-content { position: absolute; inset: 0; }
+
+.vslot-poster {
+  position: absolute; inset: 0; z-index: 6;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 20px; text-align: center; pointer-events: none;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--vslot-ink, rgba(255, 255, 255, 0.5));
+  background-color: var(--vslot-bg, #0a0a0b);
+  background-image: radial-gradient(rgba(127, 127, 127, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.vslot[data-ready='true'] > .vslot-poster { opacity: 0; visibility: hidden; }
+.vslot-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); flex: none; animation: vslot-pulse 1.2s ease-in-out infinite; }
+@keyframes vslot-pulse { 50% { opacity: 0.25; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .vslot-content, .vslot-poster { transition: none; }
+  .vslot-dot { animation: none; }
+}

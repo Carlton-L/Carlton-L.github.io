@@ -23,6 +23,7 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FuturescaperDemo from '../../components/react/demos/futurescaper/FuturescaperDemo.jsx';
 import HeroMap from '../../components/react/demos/futurescaper/HeroMap.jsx';
@@ -113,9 +114,9 @@ const layout = {
     <!-- VIEW (opener): the product's landing hero — a map generating itself -->
     <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
-        <HeroMap client:only="react">
-          <div class="fs-poster hero" slot="fallback" aria-hidden="true">COOKING VIEWER · SELF-GENERATING MAP…</div>
-        </HeroMap>
+        <ViewSlot poster="COOKING VIEWER · SELF-GENERATING MAP…" bg="var(--paper)" ink="var(--ink-muted)">
+          <HeroMap client:load />
+        </ViewSlot>
       </div>
     </Operator>
 
@@ -179,9 +180,9 @@ const layout = {
     <!-- VIEW: the real product, live — real layout code, synthetic data -->
     <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" area="view" maxw={900}>
       <div class="fs-viewerwrap">
-        <FuturescaperDemo client:only="react">
-          <div class="fs-poster" slot="fallback" aria-hidden="true">COOKING VIEWER · REAL LAYOUT CODE, SYNTHETIC DATA…</div>
-        </FuturescaperDemo>
+        <ViewSlot poster="COOKING VIEWER · REAL LAYOUT CODE, SYNTHETIC DATA…" bg="var(--paper)" ink="var(--ink-muted)">
+          <FuturescaperDemo client:visible={{ rootMargin: '600px' }} />
+        </ViewSlot>
       </div>
     </Operator>
 
@@ -306,17 +307,6 @@ const layout = {
   .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
 
   .fs-viewerwrap { margin: -12px -14px; }
-  .fs-poster.hero { height: 600px; }
-  .fs-poster {
-    display: grid;
-    place-items: center;
-    height: 634px;
-    background: var(--paper);
-    color: var(--ink-muted);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-  }
 
   .fs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
   .fs-out a { color: var(--signal); text-decoration: none; }
