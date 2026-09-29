@@ -34,7 +34,6 @@
 
 html {
   font-size: 16px;
-  scroll-behavior: smooth;
   /* Never allow horizontal overflow: it was widening the fixed-element
      containing block, which stretched the navbar + footer past the viewport
      and clipped their right edge (COOKED / CV). clip = no scroll container,

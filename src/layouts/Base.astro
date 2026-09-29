@@ -105,6 +105,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
 
     <!-- View Transitions (browser-native page animations) -->
     <ClientRouter />
+    <script>
+      import '../lib/scroll-hold.js';
+    </script>
   </head>
   <body class="flex flex-col min-h-screen">
     <Navigation />

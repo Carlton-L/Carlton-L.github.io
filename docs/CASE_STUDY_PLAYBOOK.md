@@ -106,3 +106,4 @@ Case-study cards that repeat are components in `src/components/case/`, styled on
 - READ mode forces paragraphs inside operators to 15px. Demo panes that need their own text size use `div` elements.
 - `.chipbtn` isn't styled on case-study pages. Give tabs their own class.
 - A static preview server dies when `dist` is rebuilt. Restart it after every build.
+- Never put `scroll-behavior: smooth` on `html`. It turns the router's jump to the top and the back button's return into slow glides. A link that should glide does it itself. `src/lib/scroll-hold.js` keeps the page where the router put it until the visitor scrolls.

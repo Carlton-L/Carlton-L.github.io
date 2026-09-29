@@ -277,6 +277,21 @@ const layout = {
        viewport. No CDN deps — self-contained vanilla canvas.
        Re-nav safe: globals persist, init() re-binds to fresh DOM. -->
   <script is:inline data-astro-rerun>
+  /* The index links glide to their experiment. The page itself never scrolls smoothly (see
+     src/lib/scroll-hold.js), so the glide lives on these two links. */
+  document.querySelectorAll('.pd-exp[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var target = document.querySelector(a.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(history.state, '', a.getAttribute('href'));
+    });
+  });
+  </script>
+
+  <script is:inline data-astro-rerun>
   (function () {
     var SIMS = [
       ['plView', 'PresenceLab', '/js/presence-lab.js'],
