@@ -158,6 +158,32 @@
       GLOBALS.push(() => { document.removeEventListener(ev, fn); S.listeners--; });
     },
     stats: () => ({ fields: S.fields, nodes: S.nodes, timers: S.timers, listeners: S.listeners, observers: S.observers }),
+    /* LinkedViews: one small state shared by a controller op and whatever it drives. set() merges,
+       tells subscribers at once, and emits the state on the controller's port so the cables out of
+       it carry it and pulse. Emits are interaction-paced: at most one per 120ms, the last one always
+       lands. Without the runtime (nopatch) it is still a working store, minus the cables. */
+    link: (fieldId, fromId, opts) => {
+      const port = (opts && opts.port) || 'state';
+      let state = Object.assign({}, opts && opts.initial);
+      const subs = [];
+      const node = window.Patch.field(fieldId).node(fromId, { outs: { [port]: 'object' } });
+      let last = 0, pending = false;
+      const emit = () => { last = performance.now(); pending = false; node.emit(port, state); };
+      return {
+        get: () => state,
+        set: (next) => {
+          state = Object.assign({}, state, typeof next === 'function' ? next(state) : next);
+          subs.slice().forEach((fn) => fn(state));
+          const wait = 120 - (performance.now() - last);
+          if (wait <= 0) emit();
+          else if (!pending) { pending = true; node.timeout(wait, emit); }
+        },
+        on: (fn) => {
+          subs.push(fn); fn(state);
+          return () => { const i = subs.indexOf(fn); if (i >= 0) subs.splice(i, 1); };
+        },
+      };
+    },
     /* The one rule for animations: run while el is within margin of the viewport and the tab is
        visible. fn(true) and fn(false) on each change; returns a stop function. Dies on page swap. */
     onScreen: (el, fn, margin) => {

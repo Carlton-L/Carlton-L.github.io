@@ -1,0 +1,102 @@
+---
+/**
+ * LinkedViews: a controller operator and the viewer it drives, as one piece. GRID's app and 3D
+ * studio are the first use; anything with "change it here, see it there" should use it too.
+ *
+ * What it gives the pair:
+ *  - Two VIEW operators, placed by the page layout like any others (`controller.area`,
+ *    `viewer.area`).
+ *  - One shared state through the patch runtime: `Patch.link(field, controller.id, { port })`. The
+ *    controller's element carries it as `el.__link` (also sent as a `link:ready` event), so the demo
+ *    code publishes real state with `link.set({...})` and anyone can `link.on(fn)`. Every change
+ *    travels the cables out of the controller, so they pulse: add `['<controller>:<port>', '<viewer>']`
+ *    (and any readout op) to the page's `links`.
+ *  - If the demo publishes nothing, any interaction inside the controller still sends an
+ *    `interaction` count, so the cable pulses when the visitor acts.
+ *  - The DUO dock: when one surface is on screen and the other isn't, the other pops into a corner
+ *    (PatchField). Set `dock={false}` to turn it off. Never put an iframe in a docked surface.
+ *  - Anything that belongs between the two in reading order (a help card for the viewer) goes in
+ *    the `between` slot, so READ mode and phones still read controller, help, viewer.
+ *
+ *   <LinkedViews field="glNet" pair="grid"
+ *     controller={{ id: 'gridApp', name: 'grid_ctrl · app_sim', area: 'app', label: 'grid_ctrl' }}
+ *     viewer={{ id: 'gridView', name: 'grid_view · studio_3d', area: 'gview', label: 'grid_view' }}>
+ *     <Fragment slot="controller">…</Fragment>
+ *     <Fragment slot="viewer">…</Fragment>
+ *   </LinkedViews>
+ */
+import Operator from './Operator.astro';
+
+interface Side {
+  id: string;
+  name: string;
+  area?: string;
+  maxw?: number;
+  nudge?: string;
+  ports?: 'both' | 'in' | 'out' | 'none';
+  /** Chip label when docked. */
+  label?: string;
+  /** Classes on the operator body's outer wrapper. */
+  wrapClass?: string;
+  /** Classes on the surface itself (the element that docks). */
+  class?: string;
+}
+
+interface Props {
+  /** The PatchField id. */
+  field: string;
+  /** DUO pair id. */
+  pair: string;
+  controller: Side;
+  viewer: Side;
+  /** Port the shared state travels on. */
+  port?: string;
+  dock?: boolean;
+}
+
+const { field, pair, controller, viewer, port = 'state', dock = true } = Astro.props;
+const duo = (side: Side) => (dock ? { 'data-duo': pair, 'data-duo-name': side.label ?? side.id } : {});
+---
+
+<Operator id={controller.id} name={controller.name} type="view" area={controller.area} maxw={controller.maxw} nudge={controller.nudge} ports={controller.ports}>
+  <div class={controller.wrapClass}>
+    <div class={controller.class} {...duo(controller)} data-link-field={field} data-link-from={controller.id} data-link-port={port}>
+      <slot name="controller" />
+    </div>
+  </div>
+</Operator>
+
+<slot name="between" />
+
+<Operator id={viewer.id} name={viewer.name} type="view" area={viewer.area} maxw={viewer.maxw} nudge={viewer.nudge} ports={viewer.ports}>
+  <div class={viewer.wrapClass}>
+    <div class={viewer.class} {...duo(viewer)} data-link-to={controller.id}>
+      <slot name="viewer" />
+    </div>
+  </div>
+</Operator>
+
+<script>
+  // One link per controller on the page, rebuilt after every ClientRouter swap.
+  const boot = () => {
+    document.querySelectorAll<HTMLElement>('[data-link-from]').forEach((el) => {
+      const P = (window as unknown as { Patch?: { link?: Function } }).Patch;
+      if ((el as any).__link || !P?.link) return;
+      const link = P.link(el.dataset.linkField, el.dataset.linkFrom, { port: el.dataset.linkPort });
+      (el as any).__link = link;
+      el.dispatchEvent(new CustomEvent('link:ready', { detail: link, bubbles: true }));
+      // A pulse for every interaction, unless the demo publishes its own state.
+      let n = 0;
+      const touch = () => {
+        if (!(el as any).__linkPublishes) link.set({ interaction: ++n });
+      };
+      el.addEventListener('pointerup', touch);
+      el.addEventListener('change', touch);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') touch();
+      });
+    });
+  };
+  boot();
+  document.addEventListener('astro:page-load', boot);
+</script>

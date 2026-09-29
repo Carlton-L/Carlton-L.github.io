@@ -10,7 +10,10 @@
  *
  * window.GridLab.init() is re-runnable (view-transition safe): it
  * cancels the previous rAF loop and re-binds to the fresh DOM. The
- * loop idles while both views are offscreen.
+ * loop idles while both views are offscreen. The two operators are a
+ * LinkedViews pair (src/components/LinkedViews.astro): commands publish
+ * the lamp's state on the pair's link, so the cables out of grid_ctrl
+ * pulse and any op can subscribe.
  */
 window.GridLab = (function () {
   let raf = 0;
@@ -730,15 +733,14 @@ window.GridLab = (function () {
     new ResizeObserver(resize).observe(viewcard);
     resize();
 
-    /* ---- idle while both operators are offscreen ---- */
+    /* ---- idle while both operators are off screen or the tab is hidden: the site's one pause
+       rule (Patch.onScreen), applied to either surface ---- */
     let onscreen = true;
-    if ('IntersectionObserver' in window) {
-      const seen = new Map();
-      const io = new IntersectionObserver((es) => {
-        es.forEach(e => seen.set(e.target, e.isIntersecting));
-        onscreen = [...seen.values()].some(Boolean);
-      }, { rootMargin: '200px' });
-      io.observe(viewcard); io.observe(device);
+    if (window.Patch && window.Patch.onScreen) {
+      const seen = { view: true, ctrl: true };
+      const watch = (key) => (v) => { seen[key] = v; onscreen = seen.view || seen.ctrl; };
+      window.Patch.onScreen(viewcard, watch('view'));
+      window.Patch.onScreen(device, watch('ctrl'));
     }
 
     /* ==================================================================
@@ -844,6 +846,30 @@ window.GridLab = (function () {
     loadFamily('static');
     paintLimit();
     raf = requestAnimationFrame(loop);
+
+    /* ---- LinkedViews: publish the lamp's state after every command, from either surface. The
+       cables out of grid_ctrl carry it (and pulse); see src/components/LinkedViews.astro. ---- */
+    const holder = device.closest('[data-link-from]');
+    if (holder) {
+      holder.__linkPublishes = true;
+      const publish = () => {
+        const link = holder.__link;
+        if (!link) return;
+        link.set({
+          family: fam, mode, setpoint,
+          speed: +speed.toFixed(2),
+          ceilingK: Math.round(sliderK()),
+          range: [+floorV.toFixed(2), +ceilV.toFixed(2)],
+          level: +(base.reduce((a, v) => a + v, 0) / CELLS).toFixed(2),
+        });
+      };
+      const later = () => setTimeout(publish);
+      [holder, viewcard].forEach((el) => {
+        el.addEventListener('pointerup', later);
+        el.addEventListener('change', later);
+        el.addEventListener('keyup', later);
+      });
+    }
   }
 
   return { init };

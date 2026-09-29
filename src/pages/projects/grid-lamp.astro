@@ -15,6 +15,7 @@
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
+import LinkedViews from '../../components/LinkedViews.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -45,8 +46,8 @@ const links: [string, string][] = [
   ['glWhat', 'studioHelp'],
   ['ctrlHelp', 'gridApp'],
   ['studioHelp', 'gridView'],
-  ['gridApp', 'gridView'],
-  ['gridApp', 'gridTelemetry'],
+  ['gridApp:state', 'gridView'],
+  ['gridApp:state', 'gridTelemetry'],
   ['gridView', 'controlDesign'],
   ['controlDesign', 'gridOut'],
   ['gridOut', 'glNext'],
@@ -129,12 +130,16 @@ const layout = {
       </ul>
     </Operator>
 
-    <!-- app + studio share one viewport band: sculpt on the left,
-         watch the lamp respond on the right -->
-    <Operator id="gridApp" name="grid_ctrl · app_sim" type="view" area="app">
-      <div class="gridlab glctr">
-        <!-- .glduo carries .gridlab so the demo's vars/selectors travel with it into the dock -->
-        <div class="gridlab glduo" data-duo="grid" data-duo-name="grid_ctrl">
+    <!-- app + studio share one viewport band: sculpt on the left, watch the lamp respond on the
+         right. LinkedViews gives the pair one shared state (the cable out of grid_ctrl pulses on
+         every change) and the DUO dock. -->
+    <LinkedViews
+      field="glNet"
+      pair="grid"
+      controller={{ id: 'gridApp', name: 'grid_ctrl · app_sim', area: 'app', label: 'grid_ctrl', wrapClass: 'gridlab glctr', class: 'gridlab glduo' }}
+      viewer={{ id: 'gridView', name: 'grid_view · studio_3d', area: 'gview', label: 'grid_view', class: 'gridlab glviewwrap' }}
+    >
+      <Fragment slot="controller">
         <div class="phone">
           <div class="bar">
             <span class="lampname">Studio</span>
@@ -197,26 +202,18 @@ const layout = {
             <span id="ctemp">1800k</span>
           </div>
         </div>
-        </div>
-      </div>
-    </Operator>
-
-    <Operator id="studioHelp" name="help · studio_howto" type="txt" area="shelp">
-      <ul class="gl-help">
-        <li><b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>DOUBLE-CLICK</b> returns to the hero cam</li>
-        <li><b>TAP / HOLD</b> a cylinder in the scene for the same steps and jogs as the app</li>
-        <li><b>HERO / TOP / LOW</b> camera presets · <b>AUTO-ORBIT</b> spins the scene slowly</li>
-        <li><b>60 / 110&nbsp;MM</b> switches the build-plan travel · stroke time updates live</li>
-      </ul>
-    </Operator>
-
-    <Operator
-      id="gridView"
-      name="grid_view · studio_3d"
-      type="view"
-      area="gview"
-    >
-      <div class="gridlab glviewwrap" data-duo="grid" data-duo-name="grid_view">
+      </Fragment>
+      <Fragment slot="between">
+        <Operator id="studioHelp" name="help · studio_howto" type="txt" area="shelp">
+          <ul class="gl-help">
+            <li><b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>DOUBLE-CLICK</b> returns to the hero cam</li>
+            <li><b>TAP / HOLD</b> a cylinder in the scene for the same steps and jogs as the app</li>
+            <li><b>HERO / TOP / LOW</b> camera presets · <b>AUTO-ORBIT</b> spins the scene slowly</li>
+            <li><b>60 / 110&nbsp;MM</b> switches the build-plan travel · stroke time updates live</li>
+          </ul>
+        </Operator>
+      </Fragment>
+      <Fragment slot="viewer">
         <div class="viewcard" id="viewcard">
           <ViewSlot poster="COOKING SIM · THREE.JS LOADS ON APPROACH…" height="100%" wait="event" bg="#0b0c0d" ink="#67615a" class="gl-slot">
             <canvas id="gl"></canvas>
@@ -242,8 +239,11 @@ const layout = {
           </div>
           <div class="vhud"><span id="vhint">Drag to orbit &middot; scroll to zoom &middot; hold a cylinder to raise it</span></div>
         </div>
-      </div>
-    </Operator>
+      </Fragment>
+    </LinkedViews>
+
+
+
 
     <!-- SYS: live readout tapped off the shared state (hidden on small screens) -->
     <Operator id="gridTelemetry" name="sys · telemetry" type="sys" area="tel" maxw={260} ports="in">
@@ -567,6 +567,6 @@ const layout = {
   .gridlab .vnote { font-family: var(--font-mono); font-size: 8px; color: #5d574f; letter-spacing: .12em; text-transform: uppercase; }
 
   /* The 3D canvas loads inside a ViewSlot (poster + fade), filling the card. */
-  .gridlab :global(.gl-slot) { position: absolute; inset: 0; }
-  .gridlab :global(.gl-slot .vslot) { height: 100%; }
+  .gridlab .gl-slot { position: absolute; inset: 0; }
+  .gridlab .gl-slot .vslot { height: 100%; }
 </style>
