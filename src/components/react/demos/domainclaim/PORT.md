@@ -14,7 +14,7 @@ replaced, and why. The method is written up in
 | `port.json` | Entry points, the path alias, the seams and the build-time environment. |
 | `shims/` | One module per seam. The only product-facing code written here. |
 | `runtime/` | Glue: the in-page API and the demo document's root. |
-| `DomainClaimFrame.jsx`, `SignInHero.jsx`, `StateCard.jsx`, `FailureView.jsx`, `explorer-*.js` | The case study's side: the scaled frame, the sign-in VIEW, and the claim VIEW with its state card underneath. |
+| `SignInHero.jsx`, `StateCard.jsx`, `FailureView.jsx`, `explorer-*.js` | The case study's side: the sign-in VIEW, and the claim VIEW with its state card underneath. Both show the product through the shared `_shared/ProductFrame.jsx`. |
 | `../ports.mjs` | The Vite plugin that applies `port.json` to files in this folder only. |
 | `src/pages/demos/domainclaim.astro` | The demo document the frames load. |
 

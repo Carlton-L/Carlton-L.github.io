@@ -3,13 +3,25 @@
  * check once too early, then watch it verify. Drawn at the size the product draws it (780 x 590).
  */
 import DemoFrame from '../_shared/DemoFrame.jsx';
-import DomainClaimFrame from './DomainClaimFrame.jsx';
+import ProductFrame from '../_shared/ProductFrame.jsx';
 import './domainclaim.css';
+
+/** Drawn once the demo's island has content. */
+const signInDrawn = (doc) => (doc.querySelector('astro-island')?.childElementCount ?? 0) > 0;
 
 export default function SignInHero() {
   return (
     <DemoFrame title="VERIFY.scn · the product's home-page demo" label="live" fill={false}>
-      <DomainClaimFrame view="signin" width={780} height={590} fixedDesktop interactive={false} title="DomainClaim demo" poster="COOKING VIEWER · THE PRODUCT'S HOME-PAGE DEMO…" />
+      <ProductFrame
+        src="/demos/domainclaim/?view=signin"
+        width={780}
+        height={590}
+        fixedDesktop
+        interactive={false}
+        title="DomainClaim demo"
+        revealOn="ready"
+        drawn={signInDrawn}
+      />
     </DemoFrame>
   );
 }

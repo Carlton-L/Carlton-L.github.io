@@ -75,3 +75,14 @@
 @media (max-width: 480px) {
   .demoframe-long { display: none; }
 }
+
+/* ProductFrame: a product in its own document, scaled into a VIEW (see ProductFrame.jsx).
+   The box is its final size before any JS: the drawn aspect ratio, or the phone height where the
+   product switches to its phone layout. Container queries can't take a variable, so the phone
+   switch is fixed at 720px, the breakpoint every port so far uses. */
+.pframe-wrap { container-type: inline-size; }
+.pframe { position: relative; overflow: hidden; background: #0a0a0b; }
+@container (max-width: 719.98px) {
+  .pframe.pframe-phoneable { aspect-ratio: auto !important; height: var(--pframe-phone-h); }
+}
+.pframe-frame { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b; }
