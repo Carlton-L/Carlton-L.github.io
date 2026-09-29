@@ -14,6 +14,10 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import DecisionCard from '../../components/case/DecisionCard.astro';
+import NextCase from '../../components/case/NextCase.astro';
+import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
+import SectionBreak from '../../components/case/SectionBreak.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FastHero from '../../components/react/demos/fast/FastHero.jsx';
@@ -119,13 +123,7 @@ const layout = {
     </Operator>
 
     <!-- OWNERSHIP (honest; only verified numbers get bars) -->
-    <Operator id="fastOwn" name="ownership_data" type="data" area="own" maxw={280}>
-      <div class="fs-meter">
-        <span>UX/UI DESIGN</span><div class="bar"><i style="width:100%"></i></div>
-        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="fs-meternote">EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET.</span>
-      </div>
-    </Operator>
+    <OwnershipMeter id="fastOwn" rows={[['UX/UI DESIGN', 100], ['FRONTEND', 100]]} note="EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET." />
 
     <!-- VIEW (opener): the subject page, composed and self-playing -->
     <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
@@ -155,14 +153,7 @@ const layout = {
     </Operator>
 
     <!-- SECTION BREAK 01 -->
-    <Operator id="fastBreak1" name="section_break" type="sys" area="br1" ports="both">
-      <div class="fs-break">
-        <span class="fs-break-num">01</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-        <span class="fs-break-label">THE SUBJECT PAGE</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="fastBreak1" area="br1" num={1} label="THE SUBJECT PAGE" />
 
     <!-- PROCESS: the hero surface -->
     <Operator id="fastSubjSect" name="process · the_hero_surface" type="txt" area="ssect">
@@ -184,29 +175,17 @@ const layout = {
       </div>
     </Operator>
 
-    <Operator id="fastD1" name="decision_01 · traversal" type="txt" area="d1">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">01</span>
-        <h3 class="fs-dh">Traversal, not search</h3>
-        <p class="fs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fastD1" area="d1" num={1} slug="traversal" title="Traversal, not search">
+      <p class="fs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
+    </DecisionCard>
 
-    <Operator id="fastD2" name="decision_02 · honest_waiting" type="txt" area="d2" nudge="0 40">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">02</span>
-        <h3 class="fs-dh">Honest waiting</h3>
-        <p class="fs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fastD2" area="d2" num={2} slug="honest_waiting" title="Honest waiting" nudge="0 40">
+      <p class="fs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
+    </DecisionCard>
 
-    <Operator id="fastD3" name="decision_03 · one_click_deep" type="txt" area="d3" nudge="0 80">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">03</span>
-        <h3 class="fs-dh">Overview to detail in one click</h3>
-        <p class="fs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fastD3" area="d3" num={3} slug="one_click_deep" title="Overview to detail in one click" nudge="0 80">
+      <p class="fs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
+    </DecisionCard>
 
     <Operator id="fastSources" name="txt · source_pages" type="txt" area="src" maxw={600}>
       <h2 class="fs-h2">One pattern, <span class="amb">five more citizens</span></h2>
@@ -214,14 +193,7 @@ const layout = {
     </Operator>
 
     <!-- SECTION BREAK 02 -->
-    <Operator id="fastBreak2" name="section_break" type="sys" area="br2" ports="both">
-      <div class="fs-break">
-        <span class="fs-break-num">02</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-        <span class="fs-break-label">THE LAB FLOW</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="fastBreak2" area="br2" num={2} label="THE LAB FLOW" />
 
     <!-- PROCESS: the lab flow -->
     <Operator id="fastLabSect" name="process · the_lab_flow" type="txt" area="lsect">
@@ -284,21 +256,13 @@ const layout = {
       {cs['The lab flow'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fastL1" name="decision_04 · optimistic_undo" type="txt" area="l1">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">04</span>
-        <h3 class="fs-dh">Optimistic, with an undo</h3>
-        <p class="fs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fastL1" area="l1" num={4} slug="optimistic_undo" title="Optimistic, with an undo">
+      <p class="fs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
+    </DecisionCard>
 
-    <Operator id="fastL2" name="decision_05 · wizards" type="txt" area="l2" nudge="0 40">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">05</span>
-        <h3 class="fs-dh">Wizards for hard questions</h3>
-        <p class="fs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fastL2" area="l2" num={5} slug="wizards" title="Wizards for hard questions" nudge="0 40">
+      <p class="fs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
+    </DecisionCard>
 
     <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
     <Operator id="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
@@ -310,14 +274,7 @@ const layout = {
     </Operator>
 
     <!-- SECTION BREAK 03 -->
-    <Operator id="fastBreak3" name="section_break" type="sys" area="br3" ports="both">
-      <div class="fs-break">
-        <span class="fs-break-num">03</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-        <span class="fs-break-label">THE SYSTEM AROUND IT</span>
-        <span class="fs-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="fastBreak3" area="br3" num={3} label="THE SYSTEM AROUND IT" />
 
     <Operator id="fastSystem" name="txt · design_system" type="txt" area="sys">
       <h2 class="fs-h2">One token system <span class="amb">under everything</span></h2>
@@ -352,13 +309,7 @@ const layout = {
       {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fastOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
-      <p class="fs-out">
-        THE PAGE IS A PLACE IN THE GRAPH.<br /><br />
-        <a href="/projects/campus-ai">NEXT ▸ campus_ai</a><br />
-        <span class="fs-outsub">research on how people actually learn with AI</span>
-      </p>
-    </Operator>
+    <NextCase id="fastOut" tagline="THE PAGE IS A PLACE IN THE GRAPH." slug="campus-ai" sub="research on how people actually learn with AI" />
   </PatchField>
 </Base>
 
@@ -399,22 +350,6 @@ const layout = {
   }
   .fs-h2 .amb { color: var(--signal); }
 
-  .fs-dec { position: relative; padding-top: 4px; }
-  .fs-dnum {
-    position: absolute; top: -6px; right: -2px;
-    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
-    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
-    pointer-events: none; user-select: none;
-  }
-  .fs-dh {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-    padding-right: 52px;
-  }
 
   .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
   .fs-p:last-child { margin-bottom: 0; }
@@ -424,20 +359,6 @@ const layout = {
   .fs-facts dd { font-size: 12.5px; color: var(--text); }
   @media (max-width: 560px) { .fs-facts { grid-template-columns: 1fr; } }
 
-  .fs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
-  .fs-meter .bar {
-    height: 6px;
-    background: var(--bg-surface);
-    border: 1px solid #26262a;
-    margin: 4px 0 8px;
-    position: relative;
-  }
-  .fs-meter .bar i {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px);
-  }
-  .fs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
 
   .fs-photoslot {
     aspect-ratio: 4 / 3;
@@ -459,37 +380,6 @@ const layout = {
   /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */
   .fs-viewerwrap { margin: -12px -14px; }
 
-  /* ── section breaks — interstitial SYS markers between chapters ── */
-  .fs-break {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 2px 0;
-  }
-  .fs-break-num {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 22px;
-    line-height: 1;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--signal-dim);
-    user-select: none;
-  }
-  .fs-break-rule {
-    flex: 1;
-    height: 1px;
-    background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px);
-  }
-  .fs-break-label {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.22em;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  /* READ mode: breaks carry the section spacing so topics visibly separate */
-  :global(body.perform) .fs-break { padding: 56px 0; }
-  :global(body.perform) .fs-break-num { font-size: 30px; }
 
   /* ── lab process tabs (VIEW) — the product's real tab order ── */
   .fs-labtabs { font-size: 13px; }
@@ -541,8 +431,4 @@ const layout = {
     .fs-lt-tab { padding: 7px 6px 8px; font-size: 9px; }
   }
 
-  .fs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
-  .fs-out a { color: var(--signal); text-decoration: none; }
-  .fs-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .fs-outsub { color: var(--text-dim); }
 </style>

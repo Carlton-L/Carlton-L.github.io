@@ -19,6 +19,10 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import DecisionCard from '../../components/case/DecisionCard.astro';
+import NextCase from '../../components/case/NextCase.astro';
+import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
+import SectionBreak from '../../components/case/SectionBreak.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import GithubButton from '../../components/GithubButton.astro';
@@ -102,11 +106,6 @@ const layout = {
   }],
 };
 
-const breaks: [string, string, string][] = [
-  ['dcBr1', 'br1', 'THE LIVE DEMO'],
-  ['dcBr2', 'br2', 'THE CODE'],
-  ['dcBr3', 'br3', 'THE PROCESS'],
-];
 
 const research: [string, string][] = [
   ['IETF domain verification draft', 'A scoped underscore label, the expiry inside the value, and asking the zone’s own servers.'],
@@ -172,15 +171,7 @@ const unionExcerpt = `export type FailureReason =
       </div>
     </Operator>
 
-    <Operator id="dcOwn" name="ownership_data" type="data" area="own" maxw={280}>
-      <div class="dc-meter">
-        <span>RESEARCH</span><div class="bar"><i style="width:100%"></i></div>
-        <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
-        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="dc-meternote">SOLO. SEPTEMBER 2026.</span>
-      </div>
-    </Operator>
+    <OwnershipMeter id="dcOwn" rows={[['RESEARCH', 100], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO. SEPTEMBER 2026." />
 
     <!-- the product's own home-page demo, playing by itself -->
     <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
@@ -205,48 +196,23 @@ const unionExcerpt = `export type FailureReason =
       </ul>
     </Operator>
 
-    <Operator id="dcD1" name="decision_01 · ask_the_source" type="txt" area="d1">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">01</span>
-        <h3 class="dc-dh">Ask the source</h3>
-        {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
+    <DecisionCard id="dcD1" area="d1" num={1} slug="ask_the_source" title="Ask the source">
+      {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
+    </DecisionCard>
 
-    <Operator id="dcD2" name="decision_02 · whose_move" type="txt" area="d2">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">02</span>
-        <h3 class="dc-dh">Whose move is next</h3>
-        {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
+    <DecisionCard id="dcD2" area="d2" num={2} slug="whose_move" title="Whose move is next">
+      {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
+    </DecisionCard>
 
-    <Operator id="dcD3" name="decision_03 · claim_then_prove" type="txt" area="d3">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">03</span>
-        <h3 class="dc-dh">Claim, then prove</h3>
-        {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
+    <DecisionCard id="dcD3" area="d3" num={3} slug="claim_then_prove" title="Claim, then prove">
+      {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
+    </DecisionCard>
 
-    <Operator id="dcNext" name="decision_04 · progressive_disclosure" type="txt" area="next">
-      <div class="dc-dec">
-        <span class="dc-dnum" aria-hidden="true">04</span>
-        <h3 class="dc-dh">Progressive disclosure</h3>
-        {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
-      </div>
-    </Operator>
+    <DecisionCard id="dcNext" area="next" num={4} slug="progressive_disclosure" title="Progressive disclosure">
+      {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
+    </DecisionCard>
 
-    {breaks.slice(0, 1).map(([id, area, label]) => (
-      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
-        <div class="dc-break">
-          <span class="dc-break-num">{'01'}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-          <span class="dc-break-label">{label}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-        </div>
-      </Operator>
-    ))}
+    <SectionBreak id="dcBr1" area="br1" num={1} label="THE LIVE DEMO" />
 
     <!-- 01 THE LIVE DEMO: how to use it, then one view with its state card underneath -->
     <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
@@ -274,16 +240,7 @@ const unionExcerpt = `export type FailureReason =
       </ul>
     </Operator>
 
-    {breaks.slice(1, 2).map(([id, area, label]) => (
-      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
-        <div class="dc-break">
-          <span class="dc-break-num">{'02'}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-          <span class="dc-break-label">{label}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-        </div>
-      </Operator>
-    ))}
+    <SectionBreak id="dcBr2" area="br2" num={2} label="THE CODE" />
 
     <!-- 02 THE CODE -->
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
@@ -302,16 +259,7 @@ const unionExcerpt = `export type FailureReason =
       <GithubButton repo="Carlton-L/domainclaim" block class="dc-gh" />
     </Operator>
 
-    {breaks.slice(2, 3).map(([id, area, label]) => (
-      <Operator id={id} name="section_break" type="sys" area={area} ports="both">
-        <div class="dc-break">
-          <span class="dc-break-num">{'03'}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-          <span class="dc-break-label">{label}</span>
-          <span class="dc-break-rule" aria-hidden="true"></span>
-        </div>
-      </Operator>
-    ))}
+    <SectionBreak id="dcBr3" area="br3" num={3} label="THE PROCESS" />
 
     <!-- 03 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
@@ -368,13 +316,7 @@ const unionExcerpt = `export type FailureReason =
       <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · domainclaim-pi.vercel.app ↗</a>
     </Operator>
 
-    <Operator id="dcOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
-      <div class="dc-out">
-        EVERY FAILURE HAS AN ANSWER.<br /><br />
-        <a href="/projects/futurity-engine">NEXT ▸ futurity_engine</a><br />
-        <span class="dc-outsub">watch the machine think</span>
-      </div>
-    </Operator>
+    <NextCase id="dcOut" tagline="EVERY FAILURE HAS AN ANSWER." slug="futurity-engine" sub="watch the machine think" />
   </PatchField>
 </Base>
 
@@ -413,15 +355,6 @@ const unionExcerpt = `export type FailureReason =
   }
   .grn { color: var(--signal); }
   .dc-lede { margin-top: 12px; max-width: 52ch; }
-  .dc-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
-  .dc-break-num {
-    font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1;
-    color: transparent; -webkit-text-stroke: 1px var(--signal-dim); user-select: none;
-  }
-  .dc-break-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px); }
-  .dc-break-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--text-muted); white-space: nowrap; }
-  :global(body.perform) .dc-break { padding: 56px 0; }
-  :global(body.perform) .dc-break-num { font-size: 30px; }
 
   .dc-h2 {
     font-family: var(--font-display);
@@ -452,10 +385,6 @@ const unionExcerpt = `export type FailureReason =
   .dc-list + :global(.dc-gh) { margin-top: 14px; }
   #dcOutc .dc-live { margin-top: 14px; }
 
-  .dc-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
-  .dc-meter .bar { height: 6px; background: var(--bg-surface); border: 1px solid #26262a; margin: 4px 0 8px; position: relative; }
-  .dc-meter .bar i { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px); }
-  .dc-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
 
   .dc-viewerwrap { margin: -12px -14px; }
 
@@ -468,22 +397,6 @@ const unionExcerpt = `export type FailureReason =
   .dc-rules span { color: var(--text); }
   .dc-files b { color: var(--text); overflow-wrap: anywhere; }
 
-  .dc-dec { position: relative; padding-top: 4px; }
-  .dc-dnum {
-    position: absolute; top: -6px; right: -2px;
-    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
-    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
-    pointer-events: none; user-select: none;
-  }
-  .dc-dh {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-    padding-right: 52px;
-  }
 
 
   .dc-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -513,8 +426,4 @@ const unionExcerpt = `export type FailureReason =
   }
   .dc-codecap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; color: var(--text-dim); }
 
-  .dc-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
-  .dc-out a { color: var(--signal); text-decoration: none; }
-  .dc-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .dc-outsub { color: var(--text-dim); }
 </style>

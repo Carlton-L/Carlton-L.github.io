@@ -23,6 +23,9 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import DecisionCard from '../../components/case/DecisionCard.astro';
+import NextCase from '../../components/case/NextCase.astro';
+import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FuturescaperDemo from '../../components/react/demos/futurescaper/FuturescaperDemo.jsx';
@@ -101,15 +104,7 @@ const layout = {
     </Operator>
 
     <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
-    <Operator id="fsOwn" name="ownership_data" type="data" area="own" maxw={280}>
-      <div class="fs-meter">
-        <span>CONCEPT</span><div class="bar"><i style="width:35%"></i></div>
-        <span>DESIGN</span><div class="bar"><i style="width:100%"></i></div>
-        <span>FRONTEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span>BACKEND</span><div class="bar"><i style="width:100%"></i></div>
-        <span class="fs-meternote">SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO.</span>
-      </div>
-    </Operator>
+    <OwnershipMeter id="fsOwn" rows={[['CONCEPT', 35], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO." />
 
     <!-- VIEW (opener): the product's landing hero — a map generating itself -->
     <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
@@ -148,29 +143,17 @@ const layout = {
     </Operator>
 
     <!-- PROCESS: the three design-engineering decisions -->
-    <Operator id="fsD1" name="decision_01 · spatial_memory" type="txt" area="d1">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">01</span>
-        <h3 class="fs-dh">Spatial memory</h3>
-        <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fsD1" area="d1" num={1} slug="spatial_memory" title="Spatial memory">
+      <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
+    </DecisionCard>
 
-    <Operator id="fsD2" name="decision_02 · provenance" type="txt" area="d2" nudge="0 40">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">02</span>
-        <h3 class="fs-dh">Visible provenance</h3>
-        <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fsD2" area="d2" num={2} slug="provenance" title="Visible provenance" nudge="0 40">
+      <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
+    </DecisionCard>
 
-    <Operator id="fsD3" name="decision_03 · off_thread" type="txt" area="d3" nudge="0 80">
-      <div class="fs-dec">
-        <span class="fs-dnum" aria-hidden="true">03</span>
-        <h3 class="fs-dh">Off the main thread</h3>
-        <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
-      </div>
-    </Operator>
+    <DecisionCard id="fsD3" area="d3" num={3} slug="off_thread" title="Off the main thread" nudge="0 80">
+      <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
+    </DecisionCard>
 
     <!-- PROCESS: the core argument, set up right before the live demo -->
     <Operator id="fsLayout" name="process · the_layout_problem" type="txt" area="lay" maxw={600}>
@@ -192,13 +175,7 @@ const layout = {
       <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · futurescape.futurity.science ↗</a>
     </Operator>
 
-    <Operator id="fsOut" name="out · next_network" type="data" area="out" nudge="0 24" ports="in">
-      <p class="fs-out">
-        THE LAYOUT IS THE ARGUMENT.<br /><br />
-        <a href="/projects/domainclaim">NEXT ▸ domainclaim</a><br />
-        <span class="fs-outsub">proof you can watch</span>
-      </p>
-    </Operator>
+    <NextCase id="fsOut" tagline="THE LAYOUT IS THE ARGUMENT." slug="domainclaim" sub="proof you can watch" />
   </PatchField>
 </Base>
 
@@ -239,23 +216,6 @@ const layout = {
   }
   .fs-h2 .amb { color: var(--signal); }
 
-  /* decisions: outlined ghost numeral (hero's stroke grammar) + display heading */
-  .fs-dec { position: relative; padding-top: 4px; }
-  .fs-dnum {
-    position: absolute; top: -6px; right: -2px;
-    font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
-    color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
-    pointer-events: none; user-select: none;
-  }
-  .fs-dh {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-    padding-right: 52px;
-  }
 
   .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
   .fs-p:last-child { margin-bottom: 0; }
@@ -275,20 +235,6 @@ const layout = {
   }
   .fs-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
 
-  .fs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
-  .fs-meter .bar {
-    height: 6px;
-    background: var(--bg-surface);
-    border: 1px solid #26262a;
-    margin: 4px 0 8px;
-    position: relative;
-  }
-  .fs-meter .bar i {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px);
-  }
-  .fs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
 
   .fs-photoslot {
     aspect-ratio: 4 / 3;
@@ -308,8 +254,4 @@ const layout = {
 
   .fs-viewerwrap { margin: -12px -14px; }
 
-  .fs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
-  .fs-out a { color: var(--signal); text-decoration: none; }
-  .fs-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .fs-outsub { color: var(--text-dim); }
 </style>

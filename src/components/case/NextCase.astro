@@ -1,0 +1,28 @@
+---
+/**
+ * NextCase: the last card of a case study. One line that sums the project up, then a link to the
+ * next case study with its own one-liner.
+ *
+ *   <NextCase id="dcOut" tagline="EVERY FAILURE HAS AN ANSWER." slug="futurity-engine" sub="watch the machine think" />
+ */
+import Operator from '../Operator.astro';
+
+interface Props {
+  id: string;
+  tagline: string;
+  /** Slug of the next case study. */
+  slug: string;
+  sub: string;
+  area?: string;
+  nudge?: string;
+}
+const { id, tagline, slug, sub, area = 'out', nudge = '0 24' } = Astro.props;
+---
+
+<Operator id={id} name="out · next_network" type="data" area={area} nudge={nudge} ports="in">
+  <div class="cs-out">
+    {tagline}<br /><br />
+    <a href={`/projects/${slug}`}>NEXT ▸ {slug.replace(/-/g, '_')}</a><br />
+    <span class="cs-outsub">{sub}</span>
+  </div>
+</Operator>

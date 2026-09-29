@@ -1,0 +1,38 @@
+/* Case-study parts shared by every case study: src/components/case/*.astro. */
+
+/* SectionBreak */
+.cs-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
+.cs-break-num {
+  font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1px var(--signal-dim); user-select: none;
+}
+.cs-break-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px); }
+.cs-break-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--text-muted); white-space: nowrap; }
+/* READ mode: breaks carry the section spacing so topics visibly separate */
+body.perform .cs-break { padding: 56px 0; }
+body.perform .cs-break-num { font-size: 30px; }
+
+/* DecisionCard */
+.cs-dec { position: relative; padding-top: 4px; }
+.cs-dnum {
+  position: absolute; top: -6px; right: -2px;
+  font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1.1px var(--signal-dim);
+  pointer-events: none; user-select: none;
+}
+.cs-dh {
+  font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+  font-size: 15px; letter-spacing: 0.02em; margin-bottom: 8px; padding-right: 52px;
+}
+
+/* OwnershipMeter */
+.cs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
+.cs-meter .bar { height: 6px; background: var(--bg-surface); border: 1px solid #26262a; margin: 4px 0 8px; position: relative; }
+.cs-meter .bar i { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, var(--signal) 0 4px, transparent 4px 6px); }
+.cs-meternote { color: var(--text-dim); display: block; margin-top: 4px; line-height: 1.6; }
+
+/* NextCase */
+.cs-out { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+.cs-out a { color: var(--signal); text-decoration: none; }
+.cs-out a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cs-outsub { color: var(--text-dim); }

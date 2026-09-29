@@ -1,0 +1,31 @@
+---
+/**
+ * OwnershipMeter: what share of each discipline was mine, with one honest note under it. Comes
+ * right after the title card in the page source (READ mode and phones stack in source order).
+ * Only verified numbers get bars.
+ *
+ *   <OwnershipMeter id="dcOwn" rows={[['DESIGN', 100], ['BACKEND', 100]]} note="SOLO. SEPTEMBER 2026." />
+ */
+import Operator from '../Operator.astro';
+
+interface Props {
+  id: string;
+  rows: [string, number][];
+  note: string;
+  area?: string;
+  maxw?: number;
+}
+const { id, rows, note, area = 'own', maxw = 280 } = Astro.props;
+---
+
+<Operator id={id} name="ownership_data" type="data" area={area} maxw={maxw}>
+  <div class="cs-meter">
+    {rows.map(([label, pct]) => (
+      <>
+        <span>{label}</span>
+        <div class="bar"><i style={`width:${pct}%`}></i></div>
+      </>
+    ))}
+    <span class="cs-meternote">{note}</span>
+  </div>
+</Operator>

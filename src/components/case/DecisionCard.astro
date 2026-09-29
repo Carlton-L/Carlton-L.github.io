@@ -1,0 +1,32 @@
+---
+/**
+ * DecisionCard: one numbered design decision. The ghost numeral sits top right; the heading is
+ * the decision in a few words; the slot holds the paragraph(s), styled by the page.
+ *
+ *   <DecisionCard id="dcD1" area="d1" num={1} slug="ask_the_source" title="Ask the source">
+ *     {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
+ *   </DecisionCard>
+ */
+import Operator from '../Operator.astro';
+
+interface Props {
+  id: string;
+  area: string;
+  num: number;
+  /** Operator name after "decision_0N · ". */
+  slug: string;
+  title: string;
+  nudge?: string;
+  maxw?: number;
+}
+const { id, area, num, slug, title, nudge, maxw } = Astro.props;
+const n = String(num).padStart(2, '0');
+---
+
+<Operator id={id} name={`decision_${n} · ${slug}`} type="txt" area={area} nudge={nudge} maxw={maxw}>
+  <div class="cs-dec">
+    <span class="cs-dnum" aria-hidden="true">{n}</span>
+    <h3 class="cs-dh">{title}</h3>
+    <slot />
+  </div>
+</Operator>

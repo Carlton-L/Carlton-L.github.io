@@ -1,0 +1,27 @@
+---
+/**
+ * SectionBreak: the SYS marker between chapters of a case study. At most three per page, each
+ * before something the visitor should slow down for (docs/CASE_STUDY_PLAYBOOK.md). READ mode gives
+ * it room so the chapters visibly separate. Leave blank grid rows around its area in the layout.
+ *
+ *   <SectionBreak id="dcBr1" area="br1" num={1} label="THE LIVE DEMO" />
+ */
+import Operator from '../Operator.astro';
+
+interface Props {
+  id: string;
+  area: string;
+  num: number;
+  label: string;
+}
+const { id, area, num, label } = Astro.props;
+---
+
+<Operator id={id} name="section_break" type="sys" area={area} ports="both">
+  <div class="cs-break">
+    <span class="cs-break-num">{String(num).padStart(2, '0')}</span>
+    <span class="cs-break-rule" aria-hidden="true"></span>
+    <span class="cs-break-label">{label}</span>
+    <span class="cs-break-rule" aria-hidden="true"></span>
+  </div>
+</Operator>

@@ -21,6 +21,7 @@
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
+import SectionBreak from '../../components/case/SectionBreak.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -236,14 +237,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     </Operator>
 
     <!-- CHAPTER 01 · THE STUDY -->
-    <Operator id="caBreak1" name="section_break" type="sys" area="br1" ports="both">
-      <div class="ca-break">
-        <span class="ca-break-num">01</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-        <span class="ca-break-label">THE STUDY</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="caBreak1" area="br1" num={1} label="THE STUDY" />
 
     <Operator id="caQ" name="process · research_questions" type="txt" area="q">
       <h2 class="ca-h2">Four research questions</h2>
@@ -306,14 +300,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     </Operator>
 
     <!-- CHAPTER 02 · THE EVIDENCE -->
-    <Operator id="caBreak2" name="section_break" type="sys" area="br2" ports="both">
-      <div class="ca-break">
-        <span class="ca-break-num">02</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-        <span class="ca-break-label">THE EVIDENCE</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="caBreak2" area="br2" num={2} label="THE EVIDENCE" />
 
     <Operator id="caMethod" name="process · the_coding" type="txt" area="meth">
       <h2 class="ca-h2">Method</h2>
@@ -355,14 +342,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     </Operator>
 
     <!-- CHAPTER 03 · WHAT WE FOUND -->
-    <Operator id="caBreak3" name="section_break" type="sys" area="br3" ports="both">
-      <div class="ca-break">
-        <span class="ca-break-num">03</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-        <span class="ca-break-label">WHAT WE FOUND</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="caBreak3" area="br3" num={3} label="WHAT WE FOUND" />
 
     {INSIGHTS.map((ins, i) => (
       <Operator id={ins.id} name={`insight_${ins.num}`} type="txt" area={AREA_INS[i]} nudge={['', '0 40', '0 80', '', '0 40', '0 80', ''][i] || undefined}>
@@ -380,14 +360,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     ))}
 
     <!-- CHAPTER 04 · WHAT WE RECOMMENDED -->
-    <Operator id="caBreak4" name="section_break" type="sys" area="br4" ports="both">
-      <div class="ca-break">
-        <span class="ca-break-num">04</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-        <span class="ca-break-label">WHAT WE RECOMMENDED</span>
-        <span class="ca-break-rule" aria-hidden="true"></span>
-      </div>
-    </Operator>
+    <SectionBreak id="caBreak4" area="br4" num={4} label="WHAT WE RECOMMENDED" />
 
     {RECS.map((rec, i) => (
       <Operator id={rec.id} name={`rec_${rec.num}`} type="txt" area={AREA_REC[i]} nudge={i % 2 ? '0 40' : undefined}>
@@ -782,21 +755,6 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
   }
   .ca-pchip.sig { border-color: var(--signal); color: var(--signal); }
 
-  /* ── section breaks ── */
-  .ca-break { display: flex; align-items: center; gap: 14px; padding: 2px 0; }
-  .ca-break-num {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 22px;
-    line-height: 1;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--signal-dim);
-    user-select: none;
-  }
-  .ca-break-rule { flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--border-color) 0 6px, transparent 6px 12px); }
-  .ca-break-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.22em; color: var(--text-muted); white-space: nowrap; }
-  :global(body.perform) .ca-break { padding: 56px 0; }
-  :global(body.perform) .ca-break-num { font-size: 30px; }
 
   /* ── insight / rec cards ── */
   .ca-ins { position: relative; }
