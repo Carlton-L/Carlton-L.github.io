@@ -1,8 +1,35 @@
 /* DomainClaim demos: the frame box, and the state card under the claim view.
    Site chrome in site tokens; the product itself draws inside the frame in its own. */
 
+/* The box is its final size before any JS runs: the aspect ratio of the drawn size, or the fixed
+   phone height where the product switches to its phone layout (below 720px of container). */
+.dcf-wrap { container-type: inline-size; }
 .dcf { position: relative; overflow: hidden; background: #0a0a0b; }
-.dcf-frame { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b; }
+@container (max-width: 719.98px) {
+  .dcf.dcf-phoneable { aspect-ratio: auto !important; height: var(--dcf-phone-h); }
+}
+.dcf-frame {
+  position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; background: #0a0a0b;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.dcf[data-shown='true'] .dcf-frame { opacity: 1; }
+/* Same language as the FAST posters: a quiet label on the product's own background. */
+.dcf-poster {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 20px; text-align: center;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: rgba(255, 255, 255, 0.5);
+  background-color: #0a0a0b;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  transition: opacity 0.5s ease;
+}
+.dcf[data-shown='true'] .dcf-poster { opacity: 0; }
+.dcf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); animation: dcf-pulse 1.2s ease-in-out infinite; flex: none; }
+@keyframes dcf-pulse { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) {
+  .dcf-frame, .dcf-poster { transition: none; }
+  .dcf-dot { animation: none; }
+}
 
 /* ---- StateCard: every panel stacked in one grid cell, as tall as the longest state ---- */
 .dcs { display: flex; flex-direction: column; border-top: 1px solid var(--border-color); }

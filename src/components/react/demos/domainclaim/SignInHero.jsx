@@ -9,7 +9,7 @@ import './domainclaim.css';
 export default function SignInHero() {
   return (
     <DemoFrame title="VERIFY.scn · the product's home-page demo" label="live" fill={false}>
-      <DomainClaimFrame view="signin" width={780} height={590} fixedDesktop interactive={false} title="DomainClaim demo" />
+      <DomainClaimFrame view="signin" width={780} height={590} fixedDesktop interactive={false} title="DomainClaim demo" poster="COOKING VIEWER · THE PRODUCT'S HOME-PAGE DEMO…" />
     </DemoFrame>
   );
 }

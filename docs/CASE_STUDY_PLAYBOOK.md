@@ -37,6 +37,7 @@ Futurescaper is the template. Top to bottom:
 - **Real data by choice.** When a demo needs real-world data (site icons, a real domain), pick it on purpose, write the choice down in the port's `PORT.md`, and mention it on the page if a visitor would wonder.
 - **Say that it's clickable.** People assume a frame is a picture. The "Try it" card says plainly that everything in it works.
 - **One demo, its controls under it.** A demo that needs controls (a state picker) gets them inside the same frame, under the view. Two cards side by side split attention.
+- **No pop-in.** A demo's box has its final size before any script runs (a fixed height, or a CSS aspect ratio), shows a COOKING VIEWER poster until the content is ready, then fades it in. Islands start loading well before they scroll into view (`client:visible={{ rootMargin: '600px' }}`), or use `client:only` with a `slot="fallback"` poster like the FAST page.
 - **An iframe never moves.** Moving an iframe's element reloads it, so a demo in its own document can't use the DUO corner dock.
 
 ## Controls and affordances
@@ -65,7 +66,7 @@ Futurescaper is the template. Top to bottom:
 - [ ] No more than three section breaks, each before something the visitor should slow down for.
 - [ ] Every text card is under about 90 words and says something no other card says.
 - [ ] Every demo is labeled LIVE or RECREATION, and the "Try it" card says it's clickable.
-- [ ] Switching every demo state leaves the page height unchanged (checked in Playwright).
+- [ ] Switching every demo state leaves the page height unchanged, and nothing shifts while demos load (layout shift 0 in Playwright).
 - [ ] Screenshots at 1440, 1280, 768 and 375, PATCH and READ, reviewed.
 - [ ] No mention of who the work was for or how it was judged, unless I asked for it.
 - [ ] Every fact on the page is in the ground-truth notes. No Futurity client names.

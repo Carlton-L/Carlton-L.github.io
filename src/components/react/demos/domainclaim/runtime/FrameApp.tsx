@@ -78,11 +78,17 @@ const App: React.FC = () => {
   );
 };
 
+/** The sign-in demo, telling the case study once it has rendered, so the frame can fade it in. */
+const SignInReady: React.FC = () => {
+  useEffect(() => post({ dc: 'ready' }), []);
+  return <SignInDemo />;
+};
+
 /** `view=signin` is the home page's sign-in demo on its own; anything else is the app. */
 const FrameApp: React.FC<{ view: 'signin' | 'app' }> = ({ view }) => {
   install();
   if (view === 'signin') {
-    return <SignInDemo />;
+    return <SignInReady />;
   }
   return <App />;
 };

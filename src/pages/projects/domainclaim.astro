@@ -184,7 +184,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- the product's own home-page demo, playing by itself -->
     <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
       <div class="dc-viewerwrap">
-        <SignInHero client:visible />
+        <SignInHero client:visible={{ rootMargin: '600px' }} />
       </div>
     </Operator>
 
@@ -253,7 +253,7 @@ const unionExcerpt = `export type FailureReason =
 
     <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
       <div class="dc-viewerwrap">
-        <FailureView client:visible />
+        <FailureView client:visible={{ rootMargin: '600px' }} />
       </div>
     </Operator>
 

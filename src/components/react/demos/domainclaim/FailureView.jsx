@@ -30,7 +30,7 @@ export default function FailureView() {
   return (
     <div>
       <DemoFrame title={`DEMO_NAMES.scn · ${SCENES[index].name}`} label="live" fill={false}>
-        <DomainClaimFrame ref={frame} view="app" width={960} height={600} title="DomainClaim, running the state on the card" onEvent={onEvent} />
+        <DomainClaimFrame ref={frame} view="app" width={960} height={600} title="DomainClaim, running the state on the card" poster="COOKING VIEWER · THE LIVE APP · EVERYTHING IS CLICKABLE…" onEvent={onEvent} />
         <StateCard />
       </DemoFrame>
     </div>
