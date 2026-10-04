@@ -179,6 +179,13 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     box-shadow: 0 0 7px rgba(61, 255, 136, 0.8);
   }
 
+  /* phones: all four routes fit beside OPS without a sideways scroll (down to about 350px) */
+  @media (max-width: 420px) {
+    nav { gap: 8px; padding-left: 14px; padding-right: 14px; }
+    .navlink { padding: 3px 5px; }
+    .navlink .ndot { display: none; }
+  }
+
   .vdiv { width: 1px; height: 16px; background: var(--border-color); margin: 0 4px; }
 
   /* touch entry to the palette — chip grammar, signal accents like a chipbtn */
