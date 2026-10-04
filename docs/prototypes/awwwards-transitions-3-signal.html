@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Round 3. Picked all three: front starts at the click, cables wire in, nav reports it. Built 2026-10-04 as an artifact, kept here as the record. -->
+<title>Patch Signal Transitions</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Inter:wght@400;500;700;900&display=swap">
+<style>
+  /* Layout: controls on top, one mock browser viewport (the stage), notes per direction below.
+     Single dark look on purpose: these are carlton.dev's own tokens (src/styles/tokens.css). */
+  :root {
+    color-scheme: dark;
+    --bg: #0a0a0b; --bg-elevated: #101013; --bg-surface: #161619;
+    --signal: #3dff88; --signal-dim: rgba(61, 255, 136, 0.28);
+    --text: #e6e6e2; --text-muted: #8f8f8a; --text-dim: #5c5c58;
+    --border-color: #232326; --op-border: #2a2a2e;
+    --op-view-bg: #123c24; --op-view-fg: #3dff88;
+    --op-txt-bg: #2a2a20; --op-txt-fg: #e6e6d8;
+    --op-data-bg: #0f2c3d; --op-data-fg: #56b4e9;
+    --op-sys-bg: #232326; --op-sys-fg: #8f8f8a;
+    --paper: #f4f1ea; --paper-line: #d2caba; --amber: #e8a317; --ink: #15140f;
+    --font-display: 'proxima-nova', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; padding-inline: 16px; padding-block: 28px 72px; }
+  main { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+  h1 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 26px; margin: 0; text-wrap: balance; }
+  .lede { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 68ch; margin: 6px 0 0; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-dim); }
+
+  /* controls */
+  .ctl { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; }
+  .grp { display: grid; gap: 6px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chipbtn {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; padding: 6px 10px; border-radius: 5px;
+    background: transparent; border: 1px solid rgba(61, 255, 136, 0.45); color: var(--signal); cursor: pointer;
+  }
+  .chipbtn:hover { background: rgba(61, 255, 136, 0.09); }
+  .chipbtn[aria-pressed='true'] { background: var(--signal); color: var(--bg); font-weight: 700; }
+  .chipbtn:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .rng { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .rng input { accent-color: var(--signal); width: 130px; }
+  .rng b { color: var(--text); font-weight: 500; min-width: 5ch; font-variant-numeric: tabular-nums; }
+
+  /* the stage = one browser viewport */
+  .stage { position: relative; height: 600px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--bg); cursor: crosshair; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #bg { opacity: 0.75; transition: opacity 0.35s; }
+  .stage.read #bg { opacity: 0.28; }
+  #wipe { z-index: 30; }
+  .scroller, .ghost { position: absolute; inset: 0; }
+  .scroller { overflow-y: auto; overflow-x: hidden; z-index: 5; }
+  .ghost { overflow: hidden; z-index: 6; pointer-events: none; }
+  .page { position: relative; min-height: 100%; }
+  .stage.read { cursor: default; }
+  .stage.read .page { height: auto !important; padding: 84px 20px 48px; }
+
+  .snav { position: absolute; left: 0; right: 0; top: 0; height: 44px; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 0 18px;
+    background: rgba(10, 10, 11, 0.78); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); }
+  .snav .brand { font-size: 12px; font-weight: 700; color: var(--text); background: none; border: 0; cursor: pointer; font-family: inherit; padding: 4px 0; }
+  .snav .brand i { color: var(--signal); font-style: normal; font-weight: 400; margin-right: 6px; }
+  .snav .sp { flex: 1; }
+  .navlink { font-family: inherit; font-size: 11px; letter-spacing: 0.04em; color: var(--text-muted); background: none; border: 0; padding: 4px 8px; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+  .navlink:hover { color: var(--text); background: rgba(230, 230, 226, 0.04); }
+  .navlink.on { color: var(--signal); }
+  .navlink:focus-visible, .brand:focus-visible { outline: 1px solid var(--signal); outline-offset: 2px; }
+  .cook { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0.1em; color: var(--signal); min-width: 9ch; }
+  .cook i { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 6px rgba(61, 255, 136, 0.9); }
+  .cook.busy i { background: transparent; border: 1px solid var(--signal); box-shadow: none; }
+
+  /* operators (Operator.astro, trimmed) */
+  .op { position: absolute; background: var(--bg-elevated); border: 1px solid var(--op-border); border-radius: 7px; box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55); overflow: hidden; }
+  .ohead { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 10px; border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; }
+  .otyp { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+  .op-view .otyp { background: var(--op-view-bg); color: var(--op-view-fg); }
+  .op-txt .otyp { background: var(--op-txt-bg); color: var(--op-txt-fg); }
+  .op-data .otyp { background: var(--op-data-bg); color: var(--op-data-fg); }
+  .op-sys .otyp { background: var(--op-sys-bg); color: var(--op-sys-fg); }
+  .obody { padding: 12px 14px; font-size: 13px; line-height: 1.55; color: var(--text-muted); }
+  .obody h2 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; color: var(--text); font-size: 24px; line-height: 1.05; margin: 0 0 8px; }
+  .obody p { margin: 0 0 8px; }
+  .ln { height: 7px; border-radius: 2px; background: #1e1e22; margin: 9px 0; }
+  .row { display: flex; justify-content: space-between; gap: 10px; width: 100%; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+    background: none; border: 0; border-bottom: 1px solid var(--border-color); padding: 8px 0; cursor: pointer; text-align: left; }
+  .row:hover { color: var(--signal); }
+  .row span:last-child { color: var(--text-dim); }
+  .paper { position: absolute; inset: 27px 0 0 0; background: var(--paper); }
+  .paper::before { content: ''; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 46px rgba(210, 202, 186, 0.45), 0 0 0 92px rgba(210, 202, 186, 0.28), 0 0 0 138px rgba(210, 202, 186, 0.16); }
+  .stage.read .op { position: static; left: auto !important; top: auto !important; width: 100% !important; max-width: 680px; margin: 0 auto 28px; background: transparent; border: 0; box-shadow: none; border-radius: 0; }
+  .stage.read .op .ohead { padding: 0 0 7px; }
+  .stage.read .op .obody { padding: 12px 0 0; }
+  .stage.read .op.op-view { position: relative; max-width: 780px; }
+
+  @keyframes opOut { to { opacity: 0; transform: translateY(-4px); } }
+  @keyframes opIn { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes hoIn { from { opacity: 0; transform: translate(var(--dx, 0px), var(--dy, -12px)); } }
+  .stage.ringing .scroller { -webkit-mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 calc(var(--r) - 90px), transparent var(--r)); mask-image: radial-gradient(circle at var(--cx) var(--cy), #000 calc(var(--r) - 90px), transparent var(--r)); }
+  .stage.ringing .ghost { -webkit-mask-image: radial-gradient(circle at var(--cx) var(--cy), transparent calc(var(--r) - 90px), #000 var(--r)); mask-image: radial-gradient(circle at var(--cx) var(--cy), transparent calc(var(--r) - 90px), #000 var(--r)); }
+  .wires { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
+  .wires path { fill: none; stroke: var(--signal); stroke-opacity: 0.45; stroke-width: 1.4; }
+  .wires circle { fill: var(--bg); stroke: var(--signal); stroke-width: 1.5; }
+  .op { z-index: 3; }
+  .stage.read .wires { display: none; }
+  .pathchip { font-size: 10px; letter-spacing: 0.06em; color: var(--signal); border: 1px solid var(--border-color); border-radius: 4px; padding: 2px 8px; background: rgba(61, 255, 136, 0.04); white-space: nowrap; min-width: 22ch; }
+  @keyframes dimOut { to { opacity: 0.35; } }
+  @keyframes panOutL { to { transform: translateX(-100%); } }
+  @keyframes panOutR { to { transform: translateX(100%); } }
+  @keyframes panInR { from { transform: translateX(100%); } }
+  @keyframes panInL { from { transform: translateX(-100%); } }
+  .stage.wiping .scroller { -webkit-mask-image: linear-gradient(to bottom, #000 calc(var(--w) - 14%), transparent var(--w)); mask-image: linear-gradient(to bottom, #000 calc(var(--w) - 14%), transparent var(--w)); }
+  .stage.wiping .ghost { -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--w) - 14%), #000 var(--w)); mask-image: linear-gradient(to bottom, transparent calc(var(--w) - 14%), #000 var(--w)); }
+  .stage.wiping.back .scroller { -webkit-mask-image: linear-gradient(to top, #000 calc(var(--w) - 14%), transparent var(--w)); mask-image: linear-gradient(to top, #000 calc(var(--w) - 14%), transparent var(--w)); }
+  .stage.wiping.back .ghost { -webkit-mask-image: linear-gradient(to top, transparent calc(var(--w) - 14%), #000 var(--w)); mask-image: linear-gradient(to top, transparent calc(var(--w) - 14%), #000 var(--w)); }
+  @keyframes fadeOut { to { opacity: 0; } }
+  @keyframes fadeIn { from { opacity: 0; } }
+
+  /* notes */
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+  .note { border-top: 1px solid var(--border-color); padding-top: 12px; min-width: 0; }
+  .note h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; font-weight: 500; color: var(--text); margin: 0 0 6px; }
+  .note h3 em { font-style: normal; color: var(--signal); margin-left: 6px; }
+  .note p { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin: 0 0 8px; }
+  .note.on h3 { color: var(--signal); }
+  .found { border: 1px dashed var(--border-color); border-radius: 7px; padding: 14px 16px; }
+  .found p { font-size: 13px; line-height: 1.65; color: var(--text-muted); margin: 0 0 8px; max-width: 78ch; }
+  .found p:last-child { margin: 0; }
+  code { font-family: var(--font-mono); font-size: 12px; color: var(--text); }
+  @media (max-width: 640px) { .stage { height: 520px; } .snav .hide-s { display: none; } }
+</style>
+
+</head>
+<body>
+<main>
+  <header>
+    <span class="lbl">PROTOTYPE · PAGE TRANSITIONS · PART 3</span>
+    <h1>The click, the cables, the nav</h1>
+    <p class="lede">The base is what you picked: wipe, handoff, old page dims. Three additions sit on top, each with its own switch. Click a nav link or a row in the work index, and try clicking from different places on the stage. SLOW ×4 helps.</p>
+  </header>
+
+  <section class="ctl" aria-label="Prototype controls">
+    <div class="grp"><span class="lbl">1 · FRONT STARTS</span>
+      <div class="seg" id="originSeg">
+        <button class="chipbtn" data-origin="top" aria-pressed="false">AT THE TOP</button>
+        <button class="chipbtn" data-origin="click" aria-pressed="true">AT THE CLICK</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">2 · CABLES</span>
+      <div class="seg" id="cablesSeg">
+        <button class="chipbtn" data-cables="appear" aria-pressed="false">APPEAR</button>
+        <button class="chipbtn" data-cables="wire" aria-pressed="true">WIRE IN</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">6 · NAV</span>
+      <div class="seg" id="navSeg">
+        <button class="chipbtn" data-nav="quiet" aria-pressed="false">QUIET</button>
+        <button class="chipbtn" data-nav="live" aria-pressed="true">LIVE</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">MODE</span>
+      <div class="seg" id="modeSeg">
+        <button class="chipbtn" data-mode="patch" aria-pressed="true">PATCH</button>
+        <button class="chipbtn" data-mode="read" aria-pressed="false">READ</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">TEST</span>
+      <div class="seg">
+        <button class="chipbtn" id="redBtn" aria-pressed="false">REDUCED MOTION</button>
+        <button class="chipbtn" id="slowBtn" aria-pressed="false">SLOW ×4</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">DURATION</span>
+      <label class="rng"><input type="range" id="durIn" min="200" max="800" step="20" value="320" aria-label="Transition duration in milliseconds"><b id="durOut">320ms</b></label>
+    </div>
+  </section>
+
+  <div class="stage" id="stage">
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="scroller" id="scroller"></div>
+    <canvas id="wipe" aria-hidden="true"></canvas>
+    <div class="snav">
+      <button class="brand" data-go="home"><i>▛▟</i>carlton.dev</button>
+      <span class="pathchip hide-s" id="pathchip">/network/home</span>
+      <span class="sp"></span>
+      <button class="navlink" data-go="home">/home</button>
+      <button class="navlink" data-go="futurescaper">/futurescaper</button>
+      <button class="navlink" data-go="lab">/lab</button>
+      <span class="cook hide-s" id="cook"><i></i><span>COOKED</span></span>
+    </div>
+  </div>
+
+  <section class="notes" id="notes">
+    <div class="note">
+      <h3>1 · THE FRONT STARTS AT THE CLICK</h3>
+      <p>The click drops heat where the pointer is. The front spreads from there as a ring, the new page is revealed inside it, and operators land in order of distance, pushed outward a few pixels.</p>
+      <p>With no click position (keyboard, back button) it falls back to the top-to-bottom band.</p>
+    </div>
+    <div class="note">
+      <h3>2 · CABLES WIRE IN</h3>
+      <p>Once the operators have landed, the cables draw from source to destination in link order. It happens after the page change and never delays it.</p>
+      <p>PATCH mode only. READ mode has no cables.</p>
+    </div>
+    <div class="note">
+      <h3>6 · THE NAV REPORTS IT</h3>
+      <p>The status chip reads COOKING until the last cable is in, then COOKED. The path chip retypes to the new network path.</p>
+      <p>On the site both chips only show at 1280 and wider.</p>
+    </div>
+  </section>
+  <section class="found">
+    <span class="lbl">WHAT THIS WOULD TAKE ON THE SITE</span>
+    <p>1: the wipe mask becomes a radial gradient centred on the click, and the front becomes a ring in the dither cook. Both are small changes to what is already there.</p>
+    <p>2: the cables are rebuilt as SVG every frame today, so wiring in means drawing each cable up to a moving length for its first few hundred milliseconds. Small, inside the existing cable code.</p>
+    <p>6: the nav bar persists across pages, so both chips are a few lines in its existing script.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const stage = $('#stage'), scroller = $('#scroller'), bg = $('#bg'), wipe = $('#wipe');
+  const ctx = bg.getContext('2d'), wctx = wipe.getContext('2d');
+  const ST = { dir: 'handwipe', dim: true, origin: 'click', cables: 'wire', nav: 'live', read: false, reduced: false, slow: false, dur: 320, page: 'home', grown: false };
+  const ORDER = ['home', 'futurescaper', 'lab'];
+
+  /* ---------- mock pages ---------- */
+  const lines = (n) => Array.from({ length: n }, (_, i) => `<div class="ln" style="width:${[92, 78, 86, 64, 90, 72][i % 6]}%"></div>`).join('');
+  const PAGES = {
+    home: { h: 0, links: [[0, 2], [1, 2], [3, 2]], ops: [
+      { n: 'hero_txt', t: 'txt', x: 4, y: 76, w: 34, h: 196, b: '<h2>Designer who deploys. Engineer who dreams.</h2><p>I build what I design.</p>' },
+      { n: 'work_index', t: 'data', x: 4, y: 300, w: 30, h: 190, b: '<button class="row" data-go="futurescaper"><span>futurescaper</span><span>LIVE ▸</span></button><button class="row" data-go="lab"><span>lab</span><span>3 EXP ▸</span></button><button class="row" data-go="futurescaper"><span>futurity_engine</span><span>RECR ▸</span></button>' },
+      { n: 'futurescaper_view · OCEAN.scn', t: 'view', x: 44, y: 84, w: 52, h: 370, b: '<div class="paper"></div>' },
+      { n: 'bg_generator', t: 'sys', x: 44, y: 486, w: 26, h: 76, b: 'NOISE ▸ FEEDBK ▸ DITHER ▸ OUT' },
+    ] },
+    futurescaper: { h: 1720, links: [[0, 1], [0, 2], [2, 3], [2, 4], [2, 5], [4, 6], [6, 7], [7, 8]], ops: [
+      { n: 'title_txt', t: 'txt', x: 4, y: 76, w: 44, h: 170, b: '<h2>Futurescaper</h2><p>A canvas where people and AI map consequences together.</p>' },
+      { n: 'ownership', t: 'data', x: 54, y: 92, w: 30, h: 150, b: lines(4) },
+      { n: 'demo_view · AUTOPLAY', t: 'view', x: 10, y: 290, w: 80, h: 400, b: '<div class="paper"></div>' },
+      { n: 'problem_txt', t: 'txt', x: 4, y: 740, w: 28, h: 190, b: lines(6) },
+      { n: 'decision_01', t: 'txt', x: 36, y: 770, w: 28, h: 190, b: lines(6) },
+      { n: 'decision_02', t: 'txt', x: 68, y: 740, w: 28, h: 190, b: lines(6) },
+      { n: 'live_view · TRY IT', t: 'view', x: 10, y: 1010, w: 80, h: 420, b: '<div class="paper"></div>' },
+      { n: 'outcome_txt', t: 'txt', x: 4, y: 1490, w: 40, h: 160, b: lines(5) },
+      { n: 'next_case', t: 'sys', x: 62, y: 1530, w: 30, h: 90, b: '<button class="row" data-go="lab"><span>next · lab</span><span>▸</span></button>' },
+    ] },
+    lab: { h: 1060, links: [[0, 1], [0, 2], [2, 3], [3, 4]], ops: [
+      { n: 'experiments_index', t: 'data', x: 4, y: 76, w: 30, h: 200, b: '<h2>Lab</h2>' + lines(3) },
+      { n: 'presence_view', t: 'view', x: 40, y: 90, w: 56, h: 330, b: '<div class="paper"></div>' },
+      { n: 'notes_txt', t: 'txt', x: 4, y: 330, w: 30, h: 240, b: lines(8) },
+      { n: 'eye_txt', t: 'txt', x: 22, y: 640, w: 44, h: 190, b: lines(6) },
+      { n: 'queue · exp_003', t: 'sys', x: 34, y: 890, w: 32, h: 100, b: 'NEXT EXPERIMENT LANDS HERE · COOK 62%' },
+    ] },
+  };
+  function buildPage(name) {
+    const P = PAGES[name], el = document.createElement('div');
+    el.className = 'page';
+    if (P.h) el.style.height = P.h + (ST.grown ? 400 : 0) + 'px';
+    else if (ST.grown) el.style.height = 'calc(100% + 400px)';
+    el.innerHTML = P.ops.map((o) =>
+      `<div class="op op-${o.t}" style="left:${o.x}%;top:${o.y}px;width:${o.w}%;height:${o.h}px"><div class="ohead"><span>${o.n}</span><span class="otyp">${o.t.toUpperCase()}</span></div><div class="obody">${o.b}</div></div>`
+    ).join('');
+    return el;
+  }
+
+  /* ---------- dither engine (port of PatchField's cookDither: RIDGE noise, feedback, BAYER2) ---------- */
+  const B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], B2 = [[0, 2], [3, 1]];
+  const BASE = [0x23, 0x3b, 0x2c], HOT = [0x3d, 0xff, 0x88], BGC = [10, 10, 11];
+  const perm = new Uint8Array(512);
+  (() => { const p = Array.from({ length: 256 }, (_, i) => i); let sd = 1337; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0; const tmp = p[i]; p[i] = p[j]; p[j] = tmp; }
+    for (let i = 0; i < 512; i++) perm[i] = p[i & 255]; })();
+  const fade = (x) => x * x * (3 - 2 * x);
+  function vn(x, y) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    const a = perm[perm[X] + Y] / 255, b = perm[perm[X + 1] + Y] / 255, c = perm[perm[X] + Y + 1] / 255, d = perm[perm[X + 1] + Y + 1] / 255;
+    const u = fade(xf), v = fade(yf), l1 = a + (b - a) * u, l2 = c + (d - c) * u; return l1 + (l2 - l1) * v; }
+
+  let W = 0, H = 0, S = 3, FW = 0, FH = 0, field, lit, oc, octx, img, oc2, octx2, wimg, gridPat, gridBg, t = 0;
+  const DENS = 0.77, FB = 0.78;
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (w === W && h === H) return; /* the guard: nothing to do when the viewport is unchanged */
+    W = bg.width = wipe.width = w; H = bg.height = wipe.height = h;
+    S = 3; while (Math.ceil(W / S) * Math.ceil(H / S) > 140000) S++;
+    FW = Math.ceil(W / S); FH = Math.ceil(H / S);
+    field = new Float32Array(FW * FH); lit = new Uint8Array(FW * FH);
+    oc = document.createElement('canvas'); oc.width = FW; oc.height = FH; octx = oc.getContext('2d'); img = octx.createImageData(FW, FH);
+    oc2 = document.createElement('canvas'); oc2.width = FW; oc2.height = FH; octx2 = oc2.getContext('2d'); wimg = octx2.createImageData(FW, FH);
+    const mk = (col) => { const g = document.createElement('canvas'); g.width = g.height = S; const c = g.getContext('2d'); c.fillStyle = col; c.fillRect(S - 1, 0, 1, S); c.fillRect(0, S - 1, S, 1); return ctx.createPattern(g, 'repeat'); };
+    gridPat = mk('#000'); gridBg = mk('#0a0a0b');
+  }
+  function resetField() { field.fill(0); lit.fill(0); ctx.clearRect(0, 0, W, H); }
+
+  let mcx = -1e4, mcy = -1e4, energy = 0, lmx = 0, lmy = 0;
+  stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    energy = Math.min(70, energy + Math.hypot(x - lmx, y - lmy) * 0.6); lmx = mcx = x; lmy = mcy = y; }, { passive: true });
+
+  const FRONT = { on: false, u: 0, axis: 'x' };
+  const RING = { on: false, x: 0, y: 0, R: 0 };
+  function cook(k) {
+    if (!field) return;
+    if (!ST.reduced) t += 0.008 * k;
+    energy *= Math.pow(0.74, k);
+    const heatA = ST.reduced ? 0 : Math.min(1.5, energy * 0.03), R2 = 2 * 90 * 90, HB = 260;
+    const f1 = 0.012 * S, f2 = 0.027 * S, data = img.data;
+    /* the front: a gaussian band of heat along one axis, injected into the field like cursor heat */
+    let band = null;
+    if (FRONT.on) { const n = FRONT.axis === 'x' ? FW : FH, L = FRONT.axis === 'x' ? W : H; band = new Float32Array(n);
+      for (let i = 0; i < n; i++) { const d = (i / n - FRONT.u) * L; band[i] = 3.4 * Math.exp(-(d * d) / (2 * 55 * 55)); } }
+    for (let gy = 0; gy < FH; gy++) { const py = gy * S;
+      for (let gx = 0; gx < FW; gx++) { const px = gx * S;
+        let n1 = vn(gx * f1 + t * 0.55, gy * f1 + t * 0.18), n2 = vn(gx * f2 - t * 0.35 + 40.7, gy * f2 + 11.3);
+        n1 = 1 - Math.abs(2 * n1 - 1); n2 = 1 - Math.abs(2 * n2 - 1);
+        let n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.45) * 1.7);
+        const dx = px - mcx, dy = py - mcy;
+        if (heatA > 0.02 && dx > -HB && dx < HB && dy > -HB && dy < HB) n += heatA * Math.exp(-(dx * dx + dy * dy) / R2);
+        if (band) n += band[FRONT.axis === 'x' ? gx : gy];
+        if (RING.on) { const rx = px - RING.x, ry = py - RING.y, d = Math.sqrt(rx * rx + ry * ry) - RING.R; if (d > -170 && d < 170) n += 3.4 * Math.exp(-(d * d) / 6050); }
+        const i = gy * FW + gx, v = (field[i] = n * (1 - FB) + field[i] * FB), Lm = v * DENS * 1.2, th = (B2[gy & 1][gx & 1] + 0.5) / 4, o = i * 4;
+        if (Lm > th) { const hot = Lm - 0.55 > th, c = hot ? HOT : BASE; lit[i] = hot ? 2 : 1; data[o] = c[0]; data[o + 1] = c[1]; data[o + 2] = c[2]; data[o + 3] = 255; }
+        else { lit[i] = 0; data[o + 3] = 0; }
+      } }
+    octx.putImageData(img, 0, 0);
+    ctx.clearRect(0, 0, W, H); ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(oc, 0, 0, FW, FH, 0, 0, FW * S, FH * S);
+    ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = gridPat; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
+  }
+
+  /* C · COVER: an opaque layer above the operators. Each cell switches on when its coverage passes a
+     Bayer threshold. Covered cells repaint the background field, so the dither reads as continuous. */
+  function drawCover(f, back) {
+    const split = 0.4, soft = 0.35, cover = f < split, q = cover ? f / split : (f - split) / (1 - split);
+    const op = ST.read ? 0.28 : 0.75, mix = (c, k) => Math.round(BGC[k] + (c[k] - BGC[k]) * op);
+    const cb = [mix(BASE, 0), mix(BASE, 1), mix(BASE, 2)], ch = [mix(HOT, 0), mix(HOT, 1), mix(HOT, 2)], d = wimg.data, vert = ST.read;
+    for (let gy = 0; gy < FH; gy++) for (let gx = 0; gx < FW; gx++) {
+      let u = vert ? gy / FH : gx / FW; if (back) u = 1 - u;
+      let c = Math.min(1, Math.max(0, (q * (1 + soft) - u) / soft)); if (!cover) c = 1 - c;
+      const i = gy * FW + gx, o = i * 4, th = (B4[(gy >> 1) & 3][(gx >> 1) & 3] + 0.5) / 16;
+      if (c > th) { const edge = c < 0.45, l = lit[i], col = edge ? HOT : l === 2 ? ch : l === 1 ? cb : BGC;
+        d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255; } else d[o + 3] = 0;
+    }
+    octx2.putImageData(wimg, 0, 0);
+    wctx.clearRect(0, 0, W, H); wctx.imageSmoothingEnabled = false;
+    wctx.drawImage(oc2, 0, 0, FW, FH, 0, 0, FW * S, FH * S);
+    wctx.globalCompositeOperation = 'source-atop'; wctx.fillStyle = gridBg; wctx.fillRect(0, 0, W, H); wctx.globalCompositeOperation = 'source-over';
+  }
+
+  /* ---------- navigation ---------- */
+  let TR = null; /* the running transition */
+  const cookEl = $('#cook');
+  const setCook = (busy) => { cookEl.classList.toggle('busy', busy); cookEl.lastElementChild.textContent = busy ? 'COOKING' : 'COOKED'; };
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  /* cables: out-port (right centre) to in-port (left centre), same bezier as the site */
+  function drawWires(page, name) {
+    if (ST.read) return [];
+    const ops = page.querySelectorAll('.op'), svg = document.createElementNS(SVGNS, 'svg');
+    svg.setAttribute('class', 'wires');
+    const paths = [];
+    PAGES[name].links.forEach(([a, b]) => {
+      const A = ops[a], B = ops[b]; if (!A || !B) return;
+      const ax = A.offsetLeft + A.offsetWidth, ay = A.offsetTop + A.offsetHeight / 2, bx = B.offsetLeft, by = B.offsetTop + B.offsetHeight / 2;
+      const dx = Math.max(60, Math.abs(bx - ax) * 0.5), p = document.createElementNS(SVGNS, 'path');
+      p.setAttribute('d', `M ${ax} ${ay} C ${ax + dx} ${ay}, ${bx - dx} ${by}, ${bx} ${by}`);
+      svg.appendChild(p); paths.push(p);
+      [[ax, ay], [bx, by]].forEach(([x, y]) => { const c = document.createElementNS(SVGNS, 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 4); svg.appendChild(c); });
+    });
+    page.insertBefore(svg, page.firstChild);
+    return paths;
+  }
+  let WIRES = [];
+  const pathOf = (name) => '/network/' + name;
+  function mount(name) { const pg = buildPage(name); scroller.replaceChildren(pg); scroller.scrollTop = 0; ST.page = name; WIRES = drawWires(pg, name);
+    document.querySelectorAll('.navlink').forEach((b) => b.classList.toggle('on', b.dataset.go === name)); }
+  function makeGhost() { const g = document.createElement('div'); g.className = 'ghost'; const p = scroller.firstElementChild, y = scroller.scrollTop;
+    g.appendChild(p); p.style.transform = `translateY(${-y}px)`; stage.insertBefore(g, wipe); return g; }
+  let cookT = 0;
+  function finish() { if (!TR) return; if (TR.ghost) TR.ghost.remove();
+    scroller.style.animation = ''; stage.classList.remove('wiping', 'back', 'ringing'); ['--w', '--r', '--cx', '--cy'].forEach((p) => stage.style.removeProperty(p));
+    FRONT.on = false; RING.on = false; $('#pathchip').textContent = pathOf(ST.page);
+    clearTimeout(cookT); cookT = setTimeout(() => setCook(false), TR.tail || 0); TR = null; }
+  /* where an operator sits along the front's travel, 0..1 of the viewport */
+  function along(el, back) { const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    let u = (r.top - s.top) / s.height; u = Math.min(1, Math.max(0, u)); return back ? 1 - u : u; }
+
+  const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)', INOUT = 'cubic-bezier(0.65, 0, 0.35, 1)';
+  const inout = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  function opsIn(back, total, ring) {
+    const s = stage.getBoundingClientRect();
+    scroller.querySelectorAll('.op').forEach((o) => {
+      let u = along(o, back), dx = 0, dy = back ? 12 : -12;
+      if (ring) { /* distance from the click to the nearest point of the operator */
+        const r = o.getBoundingClientRect(), cx = ring.x + s.left, cy = ring.y + s.top;
+        const nx = Math.min(r.right, Math.max(r.left, cx)), ny = Math.min(r.bottom, Math.max(r.top, cy));
+        const mx = r.left + r.width / 2 - cx, my = r.top + r.height / 2 - cy, ml = Math.hypot(mx, my) || 1;
+        u = Math.min(1, Math.hypot(nx - cx, ny - cy) / ring.max); dx = (-mx / ml) * 12; dy = (-my / ml) * 12;
+      }
+      o.style.setProperty('--dx', dx.toFixed(1) + 'px'); o.style.setProperty('--dy', dy.toFixed(1) + 'px');
+      o.style.animation = `hoIn ${total * 0.45}ms ${EASE} ${u * total * 0.8}ms both`;
+      o.addEventListener('animationend', () => (o.style.animation = ''), { once: true });
+    });
+  }
+  function wireIn(total, k) {
+    WIRES.forEach((p, i) => {
+      const len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 260 * k, delay: total * 0.9 + i * 70 * k, easing: 'cubic-bezier(0.3, 0, 0.2, 1)', fill: 'backwards' });
+    });
+    return WIRES.length ? 260 * k + (WIRES.length - 1) * 70 * k - total * 0.1 : 0;
+  }
+  function go(name, at) {
+    if (name === ST.page && !TR) return;
+    finish(); clearTimeout(cookT);
+    const back = ORDER.indexOf(name) < ORDER.indexOf(ST.page), from = pathOf(ST.page);
+    const mode = ST.reduced ? 'fade' : 'handwipe', k = ST.slow ? 4 : 1;
+    const total = (mode === 'fade' ? 300 : ST.dur) * k;
+    TR = { mode, back, t0: performance.now(), total, ghost: null, ring: null, from, to: pathOf(name), tail: 0 };
+    if (ST.nav === 'live') setCook(true);
+    TR.ghost = makeGhost(); mount(name);
+    if (mode === 'fade') {
+      TR.ghost.style.animation = `fadeOut ${total}ms ${EASE} both`;
+      scroller.style.animation = `fadeIn ${total}ms ${EASE} both`;
+      return;
+    }
+    TR.ghost.style.animation = `dimOut ${total}ms linear both`;
+    if (ST.origin === 'click' && at) {
+      const max = Math.max(Math.hypot(at.x, at.y), Math.hypot(W - at.x, at.y), Math.hypot(at.x, H - at.y), Math.hypot(W - at.x, H - at.y)) + 90;
+      TR.ring = { x: at.x, y: at.y, max };
+      stage.style.setProperty('--cx', at.x + 'px'); stage.style.setProperty('--cy', at.y + 'px'); stage.style.setProperty('--r', '0px');
+      stage.classList.add('ringing');
+      energy = 70; mcx = at.x; mcy = at.y; /* the click itself heats the field */
+    } else {
+      stage.style.setProperty('--w', '0%');
+      stage.classList.add('wiping'); stage.classList.toggle('back', back);
+    }
+    opsIn(back, total, TR.ring);
+    if (ST.cables === 'wire') TR.tail = Math.max(0, wireIn(total, k));
+  }
+
+  /* ---------- loop: cooks at half frame rate, every frame while a transition runs ---------- */
+  let fc = 0, visible = true;
+  new IntersectionObserver((es) => (visible = es[0].isIntersecting)).observe(stage);
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible || document.hidden) return;
+    fc++;
+    let busy = false;
+    if (TR) {
+      const f = Math.min(1, (performance.now() - TR.t0) / TR.total); busy = TR.mode !== 'fade';
+      if (TR.ring) { const R = f * TR.ring.max; RING.on = f < 1; RING.x = TR.ring.x; RING.y = TR.ring.y; RING.R = R - 45; stage.style.setProperty('--r', R.toFixed(1) + 'px'); }
+      else if (busy) { const u = f * 1.14 - 0.07; FRONT.on = f < 1; FRONT.axis = 'y'; FRONT.u = TR.back ? 1 - u : u; stage.style.setProperty('--w', (f * 114).toFixed(2) + '%'); }
+      if (ST.nav === 'live') { /* the path chip retypes: delete back to the shared prefix, then type the rest */
+        let pre = 0; while (pre < TR.from.length && TR.from[pre] === TR.to[pre]) pre++;
+        const del = TR.from.length - pre, add = TR.to.length - pre, i = Math.floor(f * (del + add));
+        $('#pathchip').textContent = (i < del ? TR.from.slice(0, TR.from.length - i) : TR.to.slice(0, pre + i - del)) + '▮';
+      }
+      if (busy || (fc & 1) === 0) cook(busy ? 0.5 : 1);
+      if (f >= 1) finish();
+    } else if ((fc & 1) === 0) cook(1);
+  }
+
+  /* ---------- controls ---------- */
+  const press = (seg, key, val) => document.querySelectorAll(`${seg} .chipbtn`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[key] === val)));
+  const seg = (id, key) => $(id).addEventListener('click', (e) => { const b = e.target.closest('[data-' + key + ']'); if (!b) return; ST[key] = b.dataset[key]; press(id, key, ST[key]); });
+  seg('#originSeg', 'origin'); seg('#cablesSeg', 'cables'); seg('#navSeg', 'nav');
+  function setMode(read) { finish(); ST.read = read; stage.classList.toggle('read', read); press('#modeSeg', 'mode', read ? 'read' : 'patch'); mount(ST.page); }
+  $('#modeSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode === 'read'); });
+  const tog = (id, key) => $(id).addEventListener('click', (e) => { ST[key] = !ST[key]; e.currentTarget.setAttribute('aria-pressed', String(ST[key])); });
+  tog('#redBtn', 'reduced'); tog('#slowBtn', 'slow');
+
+  $('#durIn').addEventListener('input', (e) => { ST.dur = +e.target.value; $('#durOut').textContent = ST.dur + 'ms'; });
+  stage.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (!b) return; const r = stage.getBoundingClientRect();
+    go(b.dataset.go, e.detail === 0 ? null : { x: e.clientX - r.left, y: e.clientY - r.top }); });
+
+  new ResizeObserver(() => { size(); if (stage.clientWidth < 760 && !ST.read) setMode(true); }).observe(stage);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { ST.reduced = true; $('#redBtn').setAttribute('aria-pressed', 'true'); }
+  size(); mount('home');
+  if (stage.clientWidth < 760) setMode(true);
+  frame();
+})();
+</script>
+
+</body>
+</html>

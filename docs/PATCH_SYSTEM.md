@@ -32,3 +32,42 @@ Detailed notes on the site's runtime, layout and backgrounds. Moved out of `CLAU
 ## Shared previews (work index)
 
 - **Shared previews (2026-07-06)**: `src/lib/previs.js` (`window.Previs`, inlined via `PrevisEngine.astro` — same strip pipeline + no-`//`-in-string/regex-literals constraint as patch-runtime.js) owns all work_index viewer scenes: ALL 9 projects have a `V`-registry entry — 5 featured live previews + grid-lamp live mini + 3 recreated minis (equipment board, orb, sensor-zone room; vfoot label starts "RECREATION"). **2026-07-06 restructure:** biomimetic-eye/home-lighting/synthetic-plant were never built → removed from projects, live in /lab instead (eye = CAD study; presence + plant = plan + interactive sims, `public/js/presence-lab.js` + `plant-lab.js`, GridLab init pattern). GRID promoted from lab → `/projects/grid-lamp` (bespoke page hosts the full sim + `public/js/grid-lab.js`); the LIVE badge on /projects reads `p.live ?? p.featured`, so grid-lamp is LIVE without joining the 5 featured on the homepage. Homepage index = 5 featured + see-more row → /projects; /projects = the full-index network (`work_txt → work_index ─selection→ projects_view`; compact single-line rows, LIVE/RECR badges, no category filter — Carlton cut it 2026-07-05), READ mode reuses the homepage sticky-viewer rack. Navbar `/work` → `/projects` (prefix-aware active state); home is reachable via the brand mark. New previews go in previs.js's `V` registry, not in page scripts. **grid-lamp preview = real 3D (2026-07-06, Carlton's call):** the `V` entry is `gl: true`, which makes the engine overlay a WebGL canvas running the case study's actual studio scene — `public/js/previs-gl.js` (a controls-free port of grid-lab.js: Wave motion at speed 0.35, auto-orbit 0.07 rad/s, motors, bloom/DoF) lazy-loads three r128 + postprocessing from CDN only when a work index first selects grid_lamp, so pages that never select it ship nothing. The svg mini remains the reduced-motion / load-failure / load-gap fallback; the dither dissolve renders above the canvas so scene transitions still work; INVERT = css `invert(1) hue-rotate(180deg)` on the canvas. This is a sanctioned exception to "homepage ships ~zero framework JS" (selection-gated, not initial load).
+
+## Page change, boot and resize (2026-10-04)
+
+The prototypes are in `docs/prototypes/awwwards-transitions-1` to `-3`. What shipped:
+
+- **The background never restarts.** The dither canvas has `transition:persist` and carries its field with it (`canvas.__pf`). `size()` returns early when the viewport is unchanged, so a change in page height does nothing to it. A resize copies the old field across by position and redraws in the same task.
+- **A page change is a view transition with three parts on one clock.** The new page is revealed through a mask, the old page dims to 35%, and a front crosses the dither. The CSS animations (`pf-ring`, `pf-wipe`, `pf-dim` in `global.css`) stay paused. A loop in `Base.astro` moves them by hand and PatchField reads the same progress (`window.__pfNav.f`). A late frame only advances the clock by two frames' worth, so a busy browser plays the start slowly and does not skip it.
+- **The duration is 580ms and lives in three places:** `MS` in `Base.astro`, `FRONT_MS` in PatchField, and the `pf-*` durations in `global.css`. Change all three together.
+- **A click starts the front at the click.** `Base.astro` remembers the last click. A navigation within a second of it opens as a ring from that point (`data-pf="ring"` and `--pf-cx/--pf-cy/--pf-max` on `<html>`). Keyboard, back and forward have no click and get a band from the top (from the bottom on back).
+- **The front is a fixed brightness shaped by the background.** `FRONT_L` is the peak level and `FRONT_TEX` is how much it follows the noise underneath. It is divided by the visitor's density setting, so it looks the same whatever they set.
+- **Handoff.** Operators on screen ease into place as the front reaches them. Operators below the fold are left alone.
+- **Cables wire in** after the front, in link order, 260ms each. The gap shrinks on pages with many cables so the whole thing stays under about 860ms.
+- **The nav reports it.** The path chip retypes. The status chip reads COOKING until PatchField's `patch:cooking` event says the cables are in.
+- **The boot** is the same machinery on the first page of a session (`sessionStorage` key `pf-boot`): a front from the brand mark, the cables wire in, the chip counts `COOK 0%` up. It never hides or fades an operator. An element that starts invisible does not count as painted, so fading operators in would delay LCP.
+- **Resize** waits 80ms, then operators glide from the old place to the new one (a transform, 260ms). Width snaps.
+- **Reduced motion:** Astro switches the transition animations off, so pages swap. No front, no handoff, no boot. Cables draw whole.
+
+Traps found on the way:
+
+- Firefox does not interpolate a registered custom property whose keyframe value is a `var()` (bug 1899531). It jumps at the halfway point. Keyframes hold plain numbers and the mask works the radius out with `calc()`.
+- A view transition's page image is always opaque, so the dither cannot sit still behind a sliding page. That is why the pan was dropped.
+- The browser swallows clicks while a view transition runs. A second click during a page change is ignored.
+- Saved background settings change how the ring looks. Test in a private window before judging it.
+
+Tests: `npm test` (`tests/transitions.mjs`). It builds, serves `dist/` and drives a real browser. `BROWSERS=chromium,firefox,webkit npm test` for all three.
+
+## Fonts (2026-10-04)
+
+Every font is self-hosted: files in `public/fonts/` with their licence files, faces in `src/styles/fonts.css`. Red Hat Display replaced Proxima Nova as the display and sans face, and the Adobe Fonts kit is gone. The kit was a render-blocking stylesheet and hid the headline until its font arrived. Red Hat Display is one variable file (31KB, weights 300 to 900). Sometype Mono replaced IBM Plex Mono as the mono face (one 17KB variable file, weights 400 to 700; the few uses of 300 fall back to 400). IBM Plex Mono and JetBrains Mono stay in `public/fonts/` for the DomainClaim and Futurescaper interiors. The "Type and colour" note above describes the old setup. The DomainClaim demo is its own document and still loads its fonts from Google.
+
+## Hover: verb chip (2026-10-05)
+
+The system crosshair stays. In PATCH mode, for mouse and pen only, a chip sits beside it. It lives in `PatchField.astro` and does not touch the patch bus. A hover trace along the cables was tried and dropped: it lit things that did not need it.
+
+A small chip beside the pointer (`.pfverb`), only where a click or drag does something: DRAG, OPEN, OPEN ↗, WRITE, CYCLE, TOGGLE, SCRUB, and PRESS for any other button. Disabled controls get none. Ports get no chip, since they do nothing. It types itself out when it changes. The verb comes from the element, so most things need no markup. Add `data-verb="..."` to set one by hand, or `data-noverb` to keep the chip away. Demo islands and iframes never get a chip. 
+
+No `title` attributes on site controls: the native tooltip fights the chip. Give a control visible text or an `aria-label`.
+
+Prototype: `docs/prototypes/awwwards-cursor.html`.

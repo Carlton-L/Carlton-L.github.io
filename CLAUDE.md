@@ -15,9 +15,11 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - **Two modes**: PATCH (desktop ≥1280) and READ (default below 1280 and for reduced motion; internally `body.perform`). READ stacks operators in source order. Every component works in both.
 - The dither background is a visible chain of four SYS ops, persisted in localStorage (`patch-bg`). Keep the ImageData blit; don't regress to per-cell fills.
 - Controls: sliders are `.prange`; clickable chips are `.chipbtn` (signal border/text); static chips stay grey.
-- Type: Proxima Nova (Adobe Fonts kit) + Inter fallback + IBM Plex Mono (`--font-mono`). Never reintroduce self-hosted Gotham. `--signal: #3dff88` marks cables, live states and links.
+- Type: Red Hat Display (display and sans) + Inter fallback + Sometype Mono (`--font-mono`), all self-hosted. IBM Plex Mono and JetBrains Mono are for the DomainClaim and Futurescaper interiors only. Never reintroduce self-hosted Gotham, the Adobe Fonts kit, or a Google Fonts link. `--signal: #3dff88` marks cables, live states and links.
 - Demo interiors use each product's own visual language, scoped inside the VIEW.
 - New work-index previews go in `previs.js`'s `V` registry, never in page scripts.
+- Page changes, the boot and the resize glide are described in `docs/PATCH_SYSTEM.md` ("Page change, boot and resize"). The 580ms duration is set in three places; keep them equal. Never fade or hide an operator on first load. Run `npm test` after touching any of it.
+- Font files and their licences are in `public/fonts/`; the faces are in `src/styles/fonts.css`.
 
 ## Conventions
 

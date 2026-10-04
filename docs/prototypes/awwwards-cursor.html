@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Patch Cursor Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Sometype+Mono:wght@400;500;700&display=swap">
+<style>
+  /* Layout: switches on top, one mock home network (the stage), notes below.
+     Single dark look: carlton.dev's own tokens and its two new fonts. */
+  :root {
+    color-scheme: dark;
+    --bg: #0a0a0b; --bg-elevated: #101013; --bg-surface: #161619;
+    --signal: #3dff88; --signal-dim: rgba(61, 255, 136, 0.28);
+    --text: #e6e6e2; --text-muted: #8f8f8a; --text-dim: #5c5c58;
+    --border-color: #232326; --op-border: #2a2a2e;
+    --op-view-bg: #123c24; --op-view-fg: #3dff88; --op-txt-bg: #2a2a20; --op-txt-fg: #e6e6d8;
+    --op-data-bg: #0f2c3d; --op-data-fg: #56b4e9; --op-sys-bg: #232326; --op-sys-fg: #8f8f8a;
+    --paper: #f4f1ea; --amber: #e8a317;
+    --font-display: 'Red Hat Display', sans-serif; --font-mono: 'Sometype Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-display); padding-inline: 16px; padding-block: 28px 72px; }
+  main { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-dim); }
+  h1 { font-weight: 900; text-transform: uppercase; font-size: 26px; margin: 0; }
+  .lede { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 70ch; margin: 6px 0 0; }
+  .ctl { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; }
+  .grp { display: grid; gap: 6px; } .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tog { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; padding: 6px 10px; border-radius: 5px; background: transparent; border: 1px solid rgba(61, 255, 136, 0.45); color: var(--signal); cursor: pointer; }
+  .tog:hover { background: rgba(61, 255, 136, 0.09); }
+  .tog[aria-pressed='true'] { background: var(--signal); color: var(--bg); font-weight: 700; }
+  .tog:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+  .stage { position: relative; height: 620px; min-width: 980px; overflow: hidden; background: var(--bg); cursor: crosshair;
+    background-image: radial-gradient(#17171a 1px, transparent 1px); background-size: 26px 26px; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.75; pointer-events: none; }
+  .wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: visible; }
+  .wires path.w { fill: none; stroke: var(--signal); stroke-opacity: 0.28; stroke-width: 1.4; transition: stroke-opacity 0.15s, stroke-width 0.15s; }
+  .wires path.w.hot { stroke-opacity: 0.95; stroke-width: 2; }
+  .wires path.p { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; opacity: 0; }
+
+  .op { position: absolute; z-index: 5; background: var(--bg-elevated); border: 1px solid var(--op-border); border-radius: 7px; box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55); transition: border-color 0.15s, box-shadow 0.15s; }
+  .op.src { border-color: rgba(61, 255, 136, 0.55); }
+  .op.fed { border-color: rgba(61, 255, 136, 0.4); box-shadow: 0 0 0 1px rgba(61, 255, 136, 0.12), 0 14px 44px rgba(0, 0, 0, 0.55); }
+  .ohead { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--text-muted); cursor: grab; user-select: none; white-space: nowrap; }
+  .otyp { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+  .t-view { background: var(--op-view-bg); color: var(--op-view-fg); } .t-txt { background: var(--op-txt-bg); color: var(--op-txt-fg); }
+  .t-data { background: var(--op-data-bg); color: var(--op-data-fg); } .t-sys { background: var(--op-sys-bg); color: var(--op-sys-fg); }
+  .obody { padding: 12px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+  .port { position: absolute; top: 50%; width: 9px; height: 9px; margin-top: -5px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--signal); z-index: 6; }
+  .port::after { content: ''; position: absolute; inset: -9px; } /* a bigger target than the dot */
+  .port.in { left: -5px; } .port.out { right: -5px; }
+  .hero-h { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: 0.97; letter-spacing: -0.01em; margin: 0; color: var(--text); }
+  .hero-h .grn { color: var(--signal); } .hero-h .ghost { color: #000; -webkit-text-stroke: 1.3px var(--signal); }
+  .tag { color: var(--signal); display: block; margin-top: 10px; font-size: 11.5px; }
+  .row { display: flex; gap: 10px; align-items: baseline; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--border-color); padding: 7px 0; font-family: var(--font-mono); font-size: 12px; color: var(--text); text-align: left; cursor: pointer; }
+  .row span:first-child { font-size: 9.5px; color: var(--text-dim); } .row span:last-child { margin-left: auto; font-size: 10px; color: var(--text-dim); }
+  .row:hover { color: var(--signal); }
+  .chipbtn { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; border: 1px solid rgba(61, 255, 136, 0.45); color: var(--signal); background: transparent; border-radius: 4px; padding: 3px 8px; cursor: pointer; }
+  .chipbtn:hover { background: rgba(61, 255, 136, 0.09); }
+  .rng { display: flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: 0.1em; color: var(--text-dim); margin-top: 8px; }
+  .rng input { flex: 1; min-width: 0; accent-color: var(--signal); cursor: ew-resize; }
+  .paper { position: absolute; inset: 27px 0 30px 0; background: var(--paper); }
+  .paper::before { content: ''; position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 40px rgba(210, 202, 186, 0.45), 0 0 0 80px rgba(210, 202, 186, 0.25); }
+  .vfoot { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; display: flex; align-items: center; justify-content: flex-end; padding: 0 10px; border-top: 1px solid var(--border-color); }
+  a.lnk { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--signal); text-decoration: none; cursor: pointer; }
+  a.lnk:hover { text-decoration: underline; }
+  .row:focus-visible, .chipbtn:focus-visible, a.lnk:focus-visible { outline: 1px solid var(--signal); outline-offset: 2px; }
+
+  /* 2 · the verb: a small label that rides beside the pointer, only over things you can act on */
+  #verb { position: absolute; left: 0; top: 0; z-index: 40; pointer-events: none; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; font-weight: 700;
+    color: var(--bg); background: var(--signal); padding: 2px 6px; border-radius: 3px; white-space: nowrap; opacity: 0; transition: opacity 0.08s; will-change: transform; }
+  #verb.on { opacity: 1; }
+  #verb.invert { background: none; padding: 0; color: #fff; mix-blend-mode: difference; font-size: 10.5px; }
+  #verb.value { background: none; padding: 0; color: var(--text); font-size: 10.5px; }
+  #verb.value.dark { color: var(--bg); }
+  #verb .car { opacity: 0.7; }
+
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .note { border-top: 1px solid var(--border-color); padding-top: 12px; min-width: 0; }
+  .note h3 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; font-weight: 500; margin: 0 0 6px; }
+  .note h3 em { font-style: normal; color: var(--signal); margin-left: 6px; }
+  .note p { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin: 0 0 8px; }
+  @media (prefers-reduced-motion: reduce) { .wires path.w, .op, #verb { transition: none; } }
+</style>
+
+<main>
+  <header>
+    <span class="lbl">PROTOTYPE · CURSOR</span>
+    <h1>What the pointer shows you</h1>
+    <p class="lede">A mock of the home network. The pointer already paints heat into the background, as on the site. Two additions sit on top: the signal trace and a typed verb beside the pointer. Hover the operators and their ports, drag a header, and move over the rows, chips, sliders and links. This needs a mouse or trackpad.</p>
+  </header>
+
+  <section class="ctl" aria-label="Prototype controls">
+    <div class="grp"><span class="lbl">1 · TRACE THE SIGNAL</span>
+      <div class="seg" id="traceSeg">
+        <button class="tog" data-v="off" aria-pressed="false">OFF</button>
+        <button class="tog" data-v="next" aria-pressed="false">NEXT OPERATOR</button>
+        <button class="tog" data-v="chain" aria-pressed="true">WHOLE CHAIN</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">2 · VERB BESIDE THE POINTER</span>
+      <div class="seg" id="verbSeg">
+        <button class="tog" data-v="off" aria-pressed="false">OFF</button>
+        <button class="tog" data-v="on" aria-pressed="true">ON</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">3 · VERB LOOK</span>
+      <div class="seg" id="lookSeg">
+        <button class="tog" data-v="chip" aria-pressed="true">CHIP</button>
+        <button class="tog" data-v="invert" aria-pressed="false">INVERT</button>
+        <button class="tog" data-v="value" aria-pressed="false">VALUE ONLY</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">4 · VERB ENTRY</span>
+      <div class="seg" id="typeSeg">
+        <button class="tog" data-v="typed" aria-pressed="true">TYPED</button>
+        <button class="tog" data-v="instant" aria-pressed="false">INSTANT</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">TEST</span>
+      <div class="seg"><button class="tog" id="redBtn" aria-pressed="false">REDUCED MOTION</button></div>
+    </div>
+  </section>
+
+  <div class="scroll">
+    <div class="stage" id="stage">
+      <canvas id="bg" aria-hidden="true"></canvas>
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+      <div id="verb" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <section class="notes">
+    <div class="note">
+      <h3>1 · TRACE THE SIGNAL <em>WHOLE CHAIN</em></h3>
+      <p>Hover an operator and the signal runs downstream, one hop after another. Each cable brightens as the pulse reaches it and each operator it feeds picks up a border. Hover an out-port for just that cable, or an in-port to see what feeds it.</p>
+    </div>
+    <div class="note">
+      <h3>2 · THE VERB, TYPED</h3>
+      <p>The label types itself out when it changes, the way the path does in the nav. It takes about 20ms a letter and never more than 200ms. It moves with the pointer while it types. With reduced motion it appears whole.</p>
+    </div>
+    <div class="note">
+      <h3>3 · VERB LOOK</h3>
+      <p>INVERT is a true invert of whatever is behind each letter, so it reads on dark, on the paper view and across an edge. Over green it turns magenta.</p>
+      <p>VALUE ONLY flips between light and dark text by what the pointer is over. No colour shift, but a label that straddles an edge is one colour on both sides. CHIP is the first version.</p>
+    </div>
+    <div class="note">
+      <h3>POINTER</h3>
+      <p>The system crosshair, as on the site today. The drawn one is gone.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const stage = $('#stage'), svg = $('#wires'), verb = $('#verb'), bg = $('#bg');
+  const ST = { trace: 'chain', verb: 'on', look: 'chip', type: 'typed', reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
+
+  /* ---------- the network ---------- */
+  const OPS = [
+    { id: 'hero', n: 'hero_txt', t: 'txt', x: 30, y: 60, w: 320, h: 196, ports: 'out', b: '<h2 class="hero-h">Designer who <span class="grn">deploys</span>.<br><span class="ghost">Engineer who dreams.</span></h2><span class="tag">&gt; I build what I design▮</span>' },
+    { id: 'index', n: 'work_index · preview', t: 'data', x: 30, y: 320, w: 320, h: 200, ports: 'both', b: '<button class="row" data-verb="OPEN ↗"><span>01</span>futurescaper<span>2026</span></button><button class="row" data-verb="OPEN ↗"><span>02</span>domainclaim<span>2026</span></button><button class="row" data-verb="OPEN ↗"><span>03</span>futurity_engine<span>2026</span></button><button class="row" data-verb="OPEN ↗"><span>04</span>grid_lamp<span>2026</span></button>' },
+    { id: 'fdbk', n: 'bg_02 · feedback', t: 'sys', x: 410, y: 60, w: 190, h: 96, ports: 'out', b: '<div class="rng">FDBK<input type="range" min="0" max="95" value="78" aria-label="Feedback" data-verb="SCRUB"></div>' },
+    { id: 'dith', n: 'bg_03 · dither', t: 'sys', x: 410, y: 200, w: 190, h: 110, ports: 'in', b: '<button class="chipbtn" data-verb="CYCLE" data-cycle="BAYER2,BAYER4,SCAN,STATIC" data-pre="TYPE ▸ ">TYPE ▸ BAYER2</button><div class="rng">DENS<input type="range" min="5" max="95" value="50" aria-label="Density" data-verb="SCRUB"></div>' },
+    { id: 'clock', n: 'cycle_clock · 7.2s', t: 'sys', x: 410, y: 360, w: 170, h: 76, ports: 'out', b: '<button class="chipbtn" data-verb="CYCLE" data-cycle="AUTO,MANUAL" data-pre="● " data-suf=" ▸ CYCLE">● AUTO ▸ CYCLE</button>' },
+    { id: 'fx', n: 'post_fx', t: 'sys', x: 410, y: 486, w: 190, h: 76, ports: 'both', b: '<button class="chipbtn" data-verb="CYCLE" data-cycle="INVERT,MUTE,PASS" data-pre="IN ▸ " data-suf=" ▸ OUT">IN ▸ INVERT ▸ OUT</button>' },
+    { id: 'view', n: 'futurescaper_view · live_map', t: 'view', x: 650, y: 60, w: 300, h: 300, ports: 'both', b: '<div class="paper"></div><div class="vfoot"><a class="lnk" data-verb="OPEN ↗" tabindex="0">OPEN NETWORK →</a></div>' },
+    { id: 'read', n: 'readme_txt', t: 'txt', x: 650, y: 420, w: 300, h: 140, ports: 'in', b: '10 yrs in hardware labs. Every case study here is itself a network. <a class="lnk" data-verb="OPEN ↗" tabindex="0">Follow the cables.</a>' },
+  ];
+  const LINKS = [['hero', 'index'], ['clock', 'index'], ['index', 'fx'], ['fx', 'view'], ['view', 'read'], ['fdbk', 'dith']];
+  const NAME = Object.fromEntries(OPS.map((o) => [o.id, o.n.split(' ·')[0]]));
+  OPS.forEach((o) => {
+    const el = document.createElement('div');
+    el.className = 'op'; el.id = 'op-' + o.id; el.dataset.id = o.id;
+    el.style.cssText = `left:${o.x}px;top:${o.y}px;width:${o.w}px;height:${o.h}px`;
+    el.innerHTML = `<div class="ohead" data-verb="DRAG"><span>${o.n}</span><span class="otyp t-${o.t}">${o.t.toUpperCase()}</span></div><div class="obody">${o.b}</div>` +
+      (o.ports !== 'out' ? '<span class="port in" data-port="in"></span>' : '') + (o.ports !== 'in' ? '<span class="port out" data-port="out"></span>' : '');
+    stage.insertBefore(el, verb);
+  });
+  const opEl = (id) => document.getElementById('op-' + id);
+
+  let paths = [];
+  function drawWires() {
+    let html = '';
+    LINKS.forEach(([a, b], i) => {
+      const A = opEl(a), B = opEl(b);
+      const ax = A.offsetLeft + A.offsetWidth, ay = A.offsetTop + A.offsetHeight / 2, bx = B.offsetLeft, by = B.offsetTop + B.offsetHeight / 2;
+      const dx = Math.max(60, Math.abs(bx - ax) * 0.5), d = `M ${ax} ${ay} C ${ax + dx} ${ay}, ${bx - dx} ${by}, ${bx} ${by}`;
+      html += `<path class="w${hot.has(i) ? ' hot' : ''}" data-i="${i}" d="${d}"/><path class="p" data-i="${i}" pathLength="1" stroke-dasharray="0.08 2" d="${d}"/>`;
+    });
+    svg.innerHTML = html;
+    paths = [...svg.querySelectorAll('path.p')];
+  }
+
+  /* ---------- 1 · trace ---------- */
+  let hot = new Set(), running = [];
+  function clearTrace() {
+    hot = new Set(); running.forEach((a) => a.cancel()); running = [];
+    svg.querySelectorAll('path.w.hot').forEach((p) => p.classList.remove('hot'));
+    stage.querySelectorAll('.op.fed, .op.src').forEach((o) => o.classList.remove('fed', 'src'));
+  }
+  /* which links light, and at which hop: from an operator, an out-port, or an in-port */
+  function traceFrom(id, dir) {
+    const out = [];
+    if (dir === 'in') { LINKS.forEach(([a, b], i) => { if (b === id) out.push({ i, hop: 0, end: a }); }); return out; }
+    const seen = new Set([id]); let frontier = [id], hop = 0;
+    while (frontier.length) {
+      const next = [];
+      LINKS.forEach(([a, b], i) => { if (frontier.includes(a) && !seen.has(b)) { out.push({ i, hop, end: b }); seen.add(b); next.push(b); } });
+      if (ST.trace !== 'chain') break;
+      frontier = next; hop++;
+    }
+    return out;
+  }
+  function showTrace(id, dir) {
+    clearTrace();
+    if (ST.trace === 'off') return;
+    const list = traceFrom(id, dir);
+    if (!list.length) return;
+    opEl(id).classList.add('src');
+    list.forEach(({ i, hop, end }) => {
+      hot.add(i);
+      const w = svg.querySelector(`path.w[data-i="${i}"]`), p = paths[i], lit = () => { w.classList.add('hot'); opEl(end).classList.add('fed'); };
+      if (ST.reduced) return lit();
+      /* a pulse runs the cable; in-port traces run it backwards, toward what feeds the port */
+      const t = setTimeout(lit, hop * 220);
+      const a = p.animate([{ strokeDashoffset: dir === 'in' ? -1 : 0.08, opacity: 1 }, { strokeDashoffset: dir === 'in' ? 0.08 : -1, opacity: 1 }], { duration: 320, delay: hop * 220, easing: 'ease-out' });
+      a.oncancel = () => clearTimeout(t);
+      running.push(a);
+    });
+  }
+  let traceKey = '';
+  function updateTrace(target) {
+    const port = target.closest('.port'), op = target.closest('.op');
+    const key = !op ? '' : op.dataset.id + ':' + (port ? port.dataset.port : 'op') + ':' + ST.trace;
+    if (key === traceKey) return;
+    traceKey = key;
+    if (!op) return clearTrace();
+    showTrace(op.dataset.id, port ? port.dataset.port : 'out');
+  }
+
+  /* ---------- 2 · verb ---------- */
+  /* typed out when the label changes, like the path chip in the nav */
+  let vLabel = '', vTimer = 0;
+  function setVerb(label) {
+    if (label === vLabel) return;
+    vLabel = label; clearInterval(vTimer);
+    if (ST.reduced || ST.type !== 'typed') { verb.textContent = label; return; }
+    let n = 0; const step = Math.min(20, 200 / label.length);
+    const tick = () => { n++; verb.innerHTML = ''; verb.append(label.slice(0, n));
+      if (n < label.length) { const c = document.createElement('span'); c.className = 'car'; c.textContent = '▮'; verb.append(c); } else clearInterval(vTimer); };
+    tick(); vTimer = setInterval(tick, step);
+  }
+  const hideVerb = () => { verb.classList.remove('on'); vLabel = ''; clearInterval(vTimer); };
+  function verbFor(target) {
+    const port = target.closest('.port');
+    if (port) {
+      const id = port.closest('.op').dataset.id, out = port.dataset.port === 'out';
+      const ends = LINKS.filter(([a, b]) => (out ? a : b) === id).map(([a, b]) => NAME[out ? b : a]);
+      return ends.length ? (out ? '→ ' : '← ') + ends.join(', ') : '';
+    }
+    const v = target.closest('[data-verb]');
+    return v ? v.dataset.verb : '';
+  }
+  function onMove(e) {
+    const r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    energy = Math.min(70, energy + Math.hypot(x - mcx, y - mcy) * 0.6); mcx = x; mcy = y;
+    const t = e.target, label = drag ? 'DRAG' : verbFor(t);
+    updateTrace(t);
+    if (ST.verb === 'on' && label) {
+      setVerb(label);
+      verb.classList.toggle('dark', !!t.closest('.paper'));
+      const flip = x > r.width - 150; /* keep the label inside the stage near the right edge */
+      verb.style.transform = `translate(${flip ? x - 14 : x + 16}px, ${y + 18}px)` + (flip ? ' translateX(-100%)' : '');
+      verb.classList.add('on');
+    } else hideVerb();
+  }
+  stage.addEventListener('pointermove', onMove, { passive: true });
+  stage.addEventListener('pointerleave', () => { hideVerb(); traceKey = ''; clearTrace(); });
+
+  /* drag by the header, so DRAG is true; cables follow */
+  let drag = null;
+  stage.addEventListener('pointerdown', (e) => {
+    const head = e.target.closest('.ohead'); if (!head) return;
+    const op = head.closest('.op');
+    drag = { op, sx: e.clientX, sy: e.clientY, ox: op.offsetLeft, oy: op.offsetTop };
+    stage.querySelectorAll('.op').forEach((o) => (o.style.zIndex = 5)); op.style.zIndex = 20;
+    head.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.op.style.left = drag.ox + e.clientX - drag.sx + 'px'; drag.op.style.top = drag.oy + e.clientY - drag.sy + 'px';
+    drawWires();
+  });
+  const endDrag = () => { drag = null; };
+  stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-cycle]'); if (!c) return;
+    const opts = c.dataset.cycle.split(','), i = ((+c.dataset.k || 0) + 1) % opts.length;
+    c.dataset.k = i; c.textContent = (c.dataset.pre || '') + opts[i] + (c.dataset.suf || '');
+  });
+
+  /* ---------- the dither, as on the site (RIDGE noise, feedback, BAYER2, pointer heat) ---------- */
+  const ctx = bg.getContext('2d'), B2 = [[0, 2], [3, 1]], BASE = [0x23, 0x3b, 0x2c], HOT = [0x3d, 0xff, 0x88];
+  const perm = new Uint8Array(512);
+  (() => { const p = Array.from({ length: 256 }, (_, i) => i); let sd = 1337; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0; const tmp = p[i]; p[i] = p[j]; p[j] = tmp; } for (let i = 0; i < 512; i++) perm[i] = p[i & 255]; })();
+  const fade = (x) => x * x * (3 - 2 * x);
+  function vn(x, y) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, X = xi & 255, Y = yi & 255;
+    const a = perm[perm[X] + Y] / 255, b = perm[perm[X + 1] + Y] / 255, c = perm[perm[X] + Y + 1] / 255, d = perm[perm[X + 1] + Y + 1] / 255;
+    const u = fade(xf), v = fade(yf), l1 = a + (b - a) * u, l2 = c + (d - c) * u; return l1 + (l2 - l1) * v; }
+  let W = 0, H = 0, S = 3, FW = 0, FH = 0, field, oc, octx, img, grid, t = 0, mcx = -1e4, mcy = -1e4, energy = 0;
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight; if (w === W && h === H) return;
+    W = bg.width = w; H = bg.height = h; FW = Math.ceil(W / S); FH = Math.ceil(H / S); field = new Float32Array(FW * FH);
+    oc = document.createElement('canvas'); oc.width = FW; oc.height = FH; octx = oc.getContext('2d'); img = octx.createImageData(FW, FH);
+    const g = document.createElement('canvas'); g.width = g.height = S; const c = g.getContext('2d'); c.fillRect(S - 1, 0, 1, S); c.fillRect(0, S - 1, S, 1); grid = ctx.createPattern(g, 'repeat');
+  }
+  function cook() {
+    if (!ST.reduced) t += 0.008;
+    energy *= 0.74;
+    const heat = ST.reduced ? 0 : Math.min(1.5, energy * 0.03), f1 = 0.012 * S, f2 = 0.027 * S, d = img.data;
+    for (let gy = 0; gy < FH; gy++) for (let gx = 0; gx < FW; gx++) {
+      let n1 = vn(gx * f1 + t * 0.55, gy * f1 + t * 0.18), n2 = vn(gx * f2 - t * 0.35 + 40.7, gy * f2 + 11.3);
+      n1 = 1 - Math.abs(2 * n1 - 1); n2 = 1 - Math.abs(2 * n2 - 1);
+      let n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.45) * 1.7);
+      const dx = gx * S - mcx, dy = gy * S - mcy;
+      if (heat > 0.02 && dx > -260 && dx < 260 && dy > -260 && dy < 260) n += heat * Math.exp(-(dx * dx + dy * dy) / 16200);
+      const i = gy * FW + gx, v = (field[i] = n * 0.22 + field[i] * 0.78), L = v * 0.77 * 1.2, th = (B2[gy & 1][gx & 1] + 0.5) / 4, o = i * 4;
+      if (L > th) { const c = L - 0.55 > th ? HOT : BASE; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; } else d[o + 3] = 0;
+    }
+    octx.putImageData(img, 0, 0); ctx.clearRect(0, 0, W, H); ctx.imageSmoothingEnabled = false; ctx.drawImage(oc, 0, 0, FW, FH, 0, 0, FW * S, FH * S);
+    ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = grid; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
+  }
+  let fc = 0, visible = true;
+  new IntersectionObserver((es) => (visible = es[0].isIntersecting)).observe(stage);
+  (function frame() { requestAnimationFrame(frame); if (visible && !document.hidden && (++fc & 1) === 0) cook(); })();
+
+  /* ---------- switches ---------- */
+  const seg = (id, key, after) => $(id).addEventListener('click', (e) => { const b = e.target.closest('[data-v]'); if (!b) return; ST[key] = b.dataset.v;
+    $(id).querySelectorAll('.tog').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); if (after) after(); });
+  seg('#traceSeg', 'trace', () => { traceKey = ''; clearTrace(); });
+  seg('#verbSeg', 'verb', hideVerb);
+  seg('#lookSeg', 'look', () => { verb.classList.toggle('invert', ST.look === 'invert'); verb.classList.toggle('value', ST.look === 'value'); });
+  seg('#typeSeg', 'type');
+  $('#redBtn').setAttribute('aria-pressed', String(ST.reduced));
+  $('#redBtn').addEventListener('click', (e) => { ST.reduced = !ST.reduced; e.currentTarget.setAttribute('aria-pressed', String(ST.reduced)); });
+
+  new ResizeObserver(size).observe(stage);
+  size(); drawWires();
+})();
+</script>
+
+</body>
+</html>
