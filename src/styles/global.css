@@ -79,7 +79,9 @@ body {
 input.prange {
   -webkit-appearance: none;
   appearance: none;
-  height: 14px;
+  /* 24px tall to grab, 14px in the layout: the extra 5px each side is pulled back in */
+  height: 24px;
+  margin-block: -5px;
   background: transparent;
   cursor: ew-resize;
 }
