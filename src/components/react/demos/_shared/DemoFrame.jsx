@@ -51,7 +51,7 @@ export default function DemoFrame({ title, label = 'live', height = '540px', fil
         <span className="demoframe-title">{title}</span>
         <span className="demoframe-label">{LABELS[label] ?? <span>{label}</span>}</span>
         <span className="demoframe-controls">
-          <button type="button" onClick={reset} title="Reset demo">
+          <button type="button" onClick={reset}>
             RESET
           </button>
         </span>

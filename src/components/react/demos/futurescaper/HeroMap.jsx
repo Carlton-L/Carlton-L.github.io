@@ -118,7 +118,7 @@ function MiniCard({ node }) {
           boxShadow: '0 1px 2px rgba(0,0,0,0.07)',
         }}
       >
-        <span style={{ color: sent.bg, display: 'inline-flex', flexShrink: 0 }} title={sent.label}>
+        <span style={{ color: sent.bg, display: 'inline-flex', flexShrink: 0 }} role="img" aria-label={sent.label}>
           <SentimentGlyph sentiment={node.sentiment} size={12} strokeWidth={3.2} />
         </span>
         <span style={{ fontSize: 11, fontWeight: 600, color: INK, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1 }}>{node.label}</span>

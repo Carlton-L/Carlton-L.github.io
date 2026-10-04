@@ -49,7 +49,7 @@ const links: [string, string][] = [
 // Nudges are art direction.
 const layout = {
   mode: 'content',
-  padTop: 24,
+  padTop: 48, // the first operator sits at the same height on every page (78px, as on home and the case studies)
   tiers: [
     {
       min: 0,
@@ -127,7 +127,6 @@ const layout = {
                   data-slug={p.slug}
                   data-cat={group.slug}
                   class:list={['idxrow', { sel: gi === 0 && i === 0 }]}
-                  title="Preview in the viewer · select again to open the case study"
                 >
                   <span class="idxnum">{String(i + 1).padStart(2, '0')}</span>
                   <i class="catdot" data-c={catIdx[group.slug] ?? 0} aria-hidden="true"></i>

@@ -265,7 +265,7 @@ function ConsequenceNode({ data }) {
   return (
     <div className={cls} style={{ background: cat.c }}>
       {crit && (
-        <span className="metro-flag" title="Critical impact">
+        <span className="metro-flag" role="img" aria-label="Critical impact">
           <Svg s={13} sw={2.5}>
             {TRIANGLE}
           </Svg>

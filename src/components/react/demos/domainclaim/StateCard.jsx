@@ -93,7 +93,6 @@ export default function StateCard() {
               className={`dcs-mark m-${s.move}`}
               aria-pressed={i === index}
               aria-label={`${MOVES[s.move].toLowerCase()}: ${s.title}`}
-              title={s.title}
               onClick={() => pick(i)}
             />
           ))}

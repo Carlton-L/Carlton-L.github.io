@@ -175,7 +175,7 @@ const layout = {
     <!-- the background generator, patched into the page it's described on —
          identical controls to the homepage chain; state persists site-wide -->
     <Operator id="cdBgNoise" name="bg_01 · noise_src" type="sys" area="bgn" maxw={170} nudge="24 0" ports="out">
-      <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE" title="Click: cycle noise type">TYPE ▸ RIDGE</button>
+      <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE">TYPE ▸ RIDGE</button>
       <div class="prow">
         <span class="plab">SPEED</span>
         <input class="prange" type="range" data-param="speed" data-div="100" min="0" max="300" value="100" aria-label="Noise drift speed" />
@@ -193,7 +193,7 @@ const layout = {
     </Operator>
 
     <Operator id="cdBgDith" name="bg_03 · dither" type="sys" area="bgd" maxw={180} nudge="12 24">
-      <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE" title="Click: cycle dither pattern">TYPE ▸ BAYER2</button>
+      <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE">TYPE ▸ BAYER2</button>
       <div class="prow">
         <span class="plab">DENS</span>
         <input class="prange" type="range" data-param="density" data-div="100" min="5" max="95" value="30" aria-label="Dither density" />
@@ -207,7 +207,7 @@ const layout = {
     </Operator>
 
     <Operator id="cdBgOut" name="bg_04 · out" type="sys" area="bgo" maxw={160} nudge="24 -24" ports="in">
-      <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL" title="Click: cycle output palette">PAL ▸ GRN</button>
+      <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL">PAL ▸ GRN</button>
       <div class="genhint">RENDERS THE PAGE ▚</div>
     </Operator>
   </PatchField>

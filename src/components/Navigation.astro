@@ -82,7 +82,6 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
       id="modeToggle"
       class="modetog hidden xl:flex"
       aria-label="Toggle patch / read view"
-      title="P — toggle PATCH (spatial) / READ (linear)"
     >
       <span data-mode="network" class="mode-on">PATCH</span>
       <span data-mode="perform" class="text-text-muted">READ</span>
@@ -253,6 +252,10 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(61, 255, 136, 0.9); }
     50% { opacity: 0.45; box-shadow: none; }
   }
+  /* room for the longest state (COOK 99%) so the links beside it never shift */
+  .cook { min-width: 11ch; }
+  /* COOKING: a page change is in progress (the front, then the cables wiring in) */
+  .cook.busy i { background: transparent; border: 1px solid var(--signal); box-shadow: none; animation: none; }
   @media (prefers-reduced-motion: reduce) {
     .cook i { animation: none; }
   }
@@ -380,7 +383,64 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
         a.classList.toggle('on', href === path || (href !== '/' && path.indexOf(href + '/') === 0));
       });
       const chip = document.querySelector('header .pathchip');
-      if (chip) chip.textContent = path === '/' ? '/network/home' : '/network' + path;
+      if (chip && !typing) chip.textContent = netPath(path);
+    }
+    const netPath = (path) => (path === '/' ? '/network/home' : '/network' + path);
+
+    /* The nav reports a page change. The path chip retypes to the new network path (delete back
+       to the shared prefix, then type the rest), and the status chip reads COOKING until
+       PatchField says the network is in ('patch:cooking' carries how long that takes).
+       Under reduced motion both just switch. */
+    let typing = 0, cookT = 0, cookRaf = 0;
+    const STILL = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const cookEl = document.querySelector('header .cook');
+    const setCook = (busy) => {
+      if (!cookEl) return;
+      cookEl.classList.toggle('busy', busy);
+      cookEl.lastChild.textContent = busy ? 'COOKING' : 'COOKED';
+    };
+    function typePath(to) {
+      const chip = document.querySelector('header .pathchip');
+      if (!chip) return;
+      cancelAnimationFrame(typing); typing = 0;
+      const from = chip.textContent.replace('▮', '');
+      if (STILL.matches || from === to) { chip.textContent = to; return; }
+      let pre = 0;
+      while (pre < from.length && from[pre] === to[pre]) pre++;
+      const del = from.length - pre, steps = del + to.length - pre, t0 = performance.now();
+      const step = () => {
+        const i = Math.floor(Math.min(1, (performance.now() - t0) / 320) * steps);
+        if (i >= steps) { chip.textContent = to; typing = 0; return; }
+        chip.textContent = (i < del ? from.slice(0, from.length - i) : to.slice(0, pre + i - del)) + '▮';
+        typing = requestAnimationFrame(step);
+      };
+      typing = requestAnimationFrame(step);
+    }
+    if (!window.__pfNavBar) {
+    window.__pfNavBar = 1;
+    document.addEventListener('astro:before-preparation', (e) => {
+      typePath(netPath((e.to.pathname || '/').replace(/\/+$/, '') || '/'));
+      if (STILL.matches) return;
+      setCook(true);
+      clearTimeout(cookT);
+      cookT = setTimeout(() => setCook(false), 1500); // fallback if no network reports in
+    });
+    document.addEventListener('patch:cooking', (e) => {
+      const d = e.detail || {}, ms = d.ms || 0;
+      clearTimeout(cookT); cancelAnimationFrame(cookRaf);
+      setCook(true);
+      if (d.boot && cookEl) { // the boot counts up: COOK 0% to 99%, then COOKED
+        const t0 = performance.now();
+        let shown = -1;
+        const tick = () => {
+          const pct = Math.floor(Math.min(0.99, (performance.now() - t0) / ms) * 100);
+          if (pct !== shown) { shown = pct; cookEl.lastChild.textContent = 'COOK ' + pct + '%'; }
+          cookRaf = requestAnimationFrame(tick);
+        };
+        tick();
+      }
+      cookT = setTimeout(() => { cancelAnimationFrame(cookRaf); setCook(false); }, ms);
+    });
     }
 
     /* ---------- op-search palette ---------- */

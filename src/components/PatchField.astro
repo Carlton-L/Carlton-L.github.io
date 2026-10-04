@@ -126,7 +126,7 @@ const heightStyle =
   data-layout={layout ? JSON.stringify(layout) : undefined}
   style={heightStyle}
 >
-  {density > 0 && <canvas class="bgdither" aria-hidden="true"></canvas>}
+  {density > 0 && <canvas class="bgdither" aria-hidden="true" transition:persist="bgdither"></canvas>}
   <svg class="wires" aria-hidden="true"></svg>
   <slot />
 </section>
@@ -207,6 +207,18 @@ const heightStyle =
   .pfdock-body { overflow: hidden; pointer-events: none; border-radius: 4px; }
   /* docked surfaces may carry home-layout margins (e.g. flush-bleed wrappers) */
   .pfdock-body > * { margin: 0 !important; }
+  /* hover: the verb chip beside the pointer */
+  .pfverb {
+    position: fixed; left: 0; top: 0; z-index: 85; /* above ops, under the nav */
+    pointer-events: none;
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--bg); background: var(--signal);
+    padding: 2px 6px; border-radius: 3px; white-space: nowrap;
+    opacity: 0; transition: opacity 0.08s; will-change: transform;
+  }
+  .pfverb.on { opacity: 1; }
+  body.perform .pfverb { display: none; }
+  @media (prefers-reduced-motion: reduce) { .pfverb { transition: none; } }
   .pfdock-chip {
     display: block;
     margin-top: 6px;
@@ -478,7 +490,35 @@ const heightStyle =
 
       let rlT = null;
       const debRelayout = (ms) => { clearTimeout(rlT); rlT = setTimeout(relayout, ms); };
-      on(window, 'resize', () => debRelayout(80));
+      /* Resize: wait for it to pause, then ops ease from their old place to the new one. Only
+         position eases (a transform); width snaps. Cables follow because they read op positions
+         every frame. Off in READ mode and under reduced motion. */
+      let glideT = null;
+      const glideRelayout = () => {
+        const ops = Array.from(host.querySelectorAll('.op[data-area]'));
+        const was = ops.map((el) => [el.offsetLeft, el.offsetTop]);
+        relayout();
+        if (REDUCED || isRead()) return;
+        const moved = [];
+        ops.forEach((el, i) => {
+          const dx = was[i][0] - el.offsetLeft, dy = was[i][1] - el.offsetTop;
+          if (!dx && !dy) return;
+          el.style.transition = 'none';
+          el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+          moved.push(el);
+        });
+        if (!moved.length) return;
+        void host.offsetWidth; // commit the start positions before easing home
+        moved.forEach((el) => {
+          el.style.transition = 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1)';
+          el.style.transform = 'none';
+        });
+        // hand the operators back their own transitions (hover glow) once the glide is over;
+        // a timer, because transitionend does not fire if the glide is interrupted
+        clearTimeout(glideT);
+        glideT = setTimeout(() => moved.forEach((el) => { el.style.transition = ''; }), 320);
+      };
+      on(window, 'resize', () => { clearTimeout(rlT); rlT = setTimeout(glideRelayout, 80); });
       on(document, 'patchmode', () => debRelayout(60));
       if (sys) sys.cleanup(() => clearTimeout(rlT));
       if (LAYOUT.mode === 'content' && typeof ResizeObserver !== 'undefined') {
@@ -502,6 +542,35 @@ const heightStyle =
     const hex2rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
     PALETTES.forEach((p) => { p.baseRGB = hex2rgb(p.base); p.hotRGB = hex2rgb(p.hot); });
     let W = 0, H = 0, ctx = null, t = 0;
+    /* page-change front: a band of heat that crosses the field top to bottom (bottom to top going
+       back), in step with the wipe on ::view-transition-new(root) in global.css. Keep FRONT_MS
+       equal to the pf-wipe duration there. */
+    const FRONT_MS = 580; // the same number as MS in Base.astro and the pf-* durations in global.css
+    /* How bright the front is at its peak, as a level the dither turns into pixels: 0.55 lights
+       cells in the dim colour only, 1.05 makes about half of them the bright colour, 1.5 all. */
+    const FRONT_L = 1.2;
+    /* How much the front follows the background: [level where the noise is empty, extra where it
+       is full]. [1, 0] is a uniform front; [0, 1.7] shows only where the background already is. */
+    const FRONT_TEX = [0.3, 1.4];
+    let front = null;
+    const bootDue = () => {
+      try {
+        if (sessionStorage.getItem('pf-boot')) return false;
+        sessionStorage.setItem('pf-boot', '1');
+        return true;
+      } catch (e) { return false; }
+    };
+    let navPending = null; // set when this page was reached by a navigation; the front starts on 'pf:go'
+    /* The ring grows at a steady rate, the same as the wipe mask in global.css. Easing was tried
+       (squared, cubed) and looked worse. */
+    const ringEase = (f) => f;
+    /* cables wire in after a page change: each draws from source to destination, in link order,
+       once the operators have landed. wireT0 is when the first one starts; null means draw
+       them whole, as on a first load. */
+    let wireT0 = null;
+    const WIRE_MS = 260;
+    const wireGap = () => Math.min(70, 600 / Math.max(1, LINKS.length));
+    let pfReady = false; // set once the engine below is fully declared; size() may then redraw
     let FW = 0, FH = 0, FS = 4, FSbase = 0, field = null;
     let oc = null, octx = null, img = null, gridPat = null;
 
@@ -532,17 +601,56 @@ const heightStyle =
       // dither cell size is consistent regardless of the patch's total height.
       // clientWidth/Height exclude the scrollbar → match the inset:0 CSS box.
       const de = document.documentElement;
-      W = cv.width = de.clientWidth || window.innerWidth;
-      H = cv.height = de.clientHeight || window.innerHeight;
+      const w = de.clientWidth || window.innerWidth, h = de.clientHeight || window.innerHeight;
+      // The canvas is fixed to the viewport, so a change in page height is no reason to touch it.
+      // Setting width or height clears the canvas, and a new field starts empty: that was the blink.
+      if (field && w === W && h === H) return;
+      W = w; H = h;
+      if (cv.width !== W) cv.width = W;
+      if (cv.height !== H) cv.height = H;
       allocField();
+      // Resizing the canvas clears it. Redraw in the same task so no empty frame is ever painted.
+      if (pfReady) cookDither(0);
     }
     function allocField() {
+      const old = field, oW = FW, oH = FH, oS = FS;
       FSbase = Math.max(2, Math.round(P.scale));
       let s = FSbase;
       while (Math.ceil(W / s) * Math.ceil(H / s) > 140000) s++; // perf cap
       FS = s;
       FW = Math.max(1, Math.ceil(W / s)); FH = Math.max(1, Math.ceil(H / s));
-      field = new Float32Array(FW * FH);
+      // The canvas persists across page swaps (transition:persist) and carries the field with it.
+      // The first alloc on a new page picks that field up, so the background keeps cooking where
+      // it was, and a front crosses it to mark the page change.
+      const kept = !old && cv.__pf;
+      if (kept && kept.field.length === FW * FH) {
+        field = kept.field; t = kept.t;
+        // a navigation that came from a click starts its front at the click (Base.astro sets __pfNav)
+        if (!REDUCED) navPending = { back: document.documentElement.getAttribute('data-astro-transition') === 'back', ring: (window.__pfNav && window.__pfNav.ring) || null };
+      } else {
+        field = new Float32Array(FW * FH);
+        // The boot: on the first page of a session the patch starts up around content that is
+        // already painted. A front spreads from the brand mark, then the cables wire in, and the
+        // nav counts it. Nothing is hidden or faded, so it costs no paint time. Once per session,
+        // never under reduced motion.
+        if (!old && !REDUCED && bootDue()) navPending = { back: false, ring: null, boot: true };
+        // A resize (or a new cell size) keeps what was on screen: copy the old field across by
+        // position. Area that is new starts empty and cooks in over the next few frames.
+        if (old) {
+          const r = s / oS;
+          for (let gy = 0; gy < FH; gy++) {
+            const oy = (gy * r) | 0;
+            if (oy >= oH) break;
+            for (let gx = 0; gx < FW; gx++) {
+              const ox = (gx * r) | 0;
+              if (ox >= oW) break;
+              field[gy * FW + gx] = old[oy * oW + ox];
+            }
+          }
+        }
+      }
+      if (navPending) wireT0 = Infinity; // cables stay out until the front is done, then wire in
+      cv.__pf = { field, t };
       // offscreen cell buffer
       oc = document.createElement('canvas');
       oc.width = FW; oc.height = FH;
@@ -565,6 +673,55 @@ const heightStyle =
       on(window, 'resize', size);
       on(document, 'patchmode', () => setTimeout(size, 50));
       size();
+      /* A page change starts here, on 'pf:go' (Base.astro fires it once the new page's scripts
+         have run, and runs the wipe on the same clock, so the two stay in step).
+         The front starts, the click heats the field like a hard pointer move, each operator on
+         screen eases into place as the front reaches it, and the cables wire in afterwards.
+         Operators below the fold are left alone. Never on first load or under reduced motion. */
+      if (navPending) {
+        let started = false;
+        const start = () => {
+          if (started || !host.isConnected) return;
+          started = true;
+          let ring = navPending.ring;
+          const boot = !!navPending.boot;
+          if (boot) { // the boot's front starts at the brand mark
+            const m = document.querySelector('header .brand .mark');
+            const b = m ? m.getBoundingClientRect() : { left: 20, top: 14, width: 16, height: 16 };
+            const x = b.left + b.width / 2, y = b.top + b.height / 2, w = window.innerWidth, h = window.innerHeight;
+            ring = { x, y, max: Math.round(Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y)) + 160) };
+          }
+          front = { back: navPending.back, ring, boot };
+          wireT0 = Infinity;
+          // tell the nav bar how long until the network is cooked: the front, then the cables
+          const wiring = isRead() || !LINKS.length ? 0 : WIRE_MS + (LINKS.length - 1) * wireGap();
+          document.dispatchEvent(new CustomEvent('patch:cooking', { detail: { ms: FRONT_MS + wiring, boot } }));
+          if (front.ring) { mcx = lmx = front.ring.x; mcy = lmy = front.ring.y; energy = 70; lastReal = performance.now(); }
+          // the boot never touches the operators: hiding them, even briefly, would delay first paint
+          if (boot || typeof host.animate !== 'function') return;
+          const vh = window.innerHeight || 1;
+          host.querySelectorAll('.op').forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (!r.width || r.bottom < 0 || r.top > vh) return;
+            let u, dx = 0, dy = front.back ? 12 : -12;
+            if (ring) {
+              // order by distance from the click to the nearest point of the operator; start each
+              // one 12px toward the click, so it settles outward
+              const nx = Math.min(r.right, Math.max(r.left, ring.x)), ny = Math.min(r.bottom, Math.max(r.top, ring.y));
+              const mx = r.left + r.width / 2 - ring.x, my = r.top + r.height / 2 - ring.y, ml = Math.hypot(mx, my) || 1;
+              u = Math.min(1, Math.hypot(nx - ring.x, ny - ring.y) / ring.max);
+              dx = (-mx / ml) * 12; dy = (-my / ml) * 12;
+            } else if (front.back) u = Math.min(1, Math.max(0, 1 - r.bottom / vh));
+            else u = Math.min(1, Math.max(0, r.top / vh));
+            el.animate(
+              [{ opacity: 0, transform: 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)' }, { opacity: 1, transform: 'none' }],
+              { duration: FRONT_MS * 0.5, delay: u * FRONT_MS * 0.8, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'backwards' },
+            );
+          });
+        };
+        on(document, 'pf:go', start);
+        setTimeout(start, 800); // never leave a page waiting if the signal is missed
+      }
     }
 
     /* heat intake — desktop: velocity-driven cursor heat (a parked cursor
@@ -626,6 +783,19 @@ const heightStyle =
       const nt = P.noiseT | 0, dt = P.ditherT | 0;
       const B2 = [[0, 2], [3, 1]];
       const data = img.data;
+      const dn = Math.max(0.05, P.density) * 1.2;
+      if (cv.__pf) cv.__pf.t = t;
+      let band = null, ring = null, ringR = 0;
+      if (front) {
+        const f = frontF();
+        if (front.ring) { ring = front.ring; ringR = ringEase(f) * ring.max - 80; }
+        else {
+          // the wipe's soft edge runs from 0 to 114% of the viewport; the band sits inside it
+          const u = f * 1.14 - 0.07, c = (front.back ? 1 - u : u) * H;
+          band = new Float32Array(FH);
+          for (let gy = 0; gy < FH; gy++) { const d = gy * s - c; band[gy] = Math.exp(-(d * d) / 6050); }
+        }
+      }
 
       for (let gy = 0; gy < FH; gy++) {
         const py = gy * s;
@@ -654,9 +824,23 @@ const heightStyle =
           if (heatA > 0.02 && dx > -HB && dx < HB && dy > -HB && dy < HB) {
             n += heatA * Math.exp(-(dx * dx + dy * dy) / heatR2);
           }
+          // the front's strength at this cell, 0..1 (applied after the feedback step below)
+          let fg = 0;
+          if (band) fg = band[gy];
+          else if (ring) {
+            const rx = px - ring.x, ry = py - ring.y, d = Math.sqrt(rx * rx + ry * ry) - ringR;
+            // a wide soft skirt with a narrow hot core: blurry at both edges, hardest in the middle
+            if (d > -330 && d < 330) { const q = d * d; fg = 0.55 * Math.exp(-q / 24200) + 0.45 * Math.exp(-q / 3200); }
+          }
           // FEEDBK
           const i = gy * FW + gx;
-          const v = (field[i] = n * (1 - fb) + field[i] * fb);
+          let v = (field[i] = n * (1 - fb) + field[i] * fb);
+          // The front lifts the field to a fixed brightness. It is a floor and never adds up, and it
+          // is divided by the visitor's density so it looks the same whatever they set. It stays in
+          // the field, so it still cools through the feedback buffer like a cursor trail.
+          // It is shaped by the noise underneath (FRONT_TEX): strongest on the ridges, faint in the
+          // gaps, so the front takes on the pattern of whatever background the visitor has set.
+          if (fg > 0.02) { const fv = (FRONT_L * fg * (FRONT_TEX[0] + FRONT_TEX[1] * Math.min(1, n))) / dn; if (fv > v) v = field[i] = fv; }
           // DITHER (type-switched threshold), two-tone output → ImageData
           const L = v * P.density * 1.2;
           let th;
@@ -699,12 +883,14 @@ const heightStyle =
       return { x: (side === 'out' ? r.right : r.left) - h.left, y: r.top + r.height / 2 - h.top, v: 0 };
     }
     let phase = 0;
+
     function cookWires(k = 1) {
       if (!svg || isRead()) { if (svg && isRead()) svg.innerHTML = ''; return; }
       if (!REDUCED) phase += 0.008 * k;
       const sig = PALETTES[((P.pal % PALETTES.length) + PALETTES.length) % PALETTES.length].hot;
       let o = '';
       const geo = []; // per drawn cable: endpoints for the routed-delivery pulses
+      if (wireT0 !== null && performance.now() - wireT0 > WIRE_MS + LINKS.length * wireGap()) wireT0 = null; // all in
       for (let i = 0; i < LINKS.length; i++) {
         const a = document.getElementById(LINKS[i][0]), b = document.getElementById(LINKS[i][1]);
         if (!a || !b) continue;
@@ -715,6 +901,15 @@ const heightStyle =
         const c2x = Bp.v ? Bp.x : Bp.x - dx, c2y = Bp.v ? Bp.y - dx : Bp.y;
         geo.push({ f: LINKS[i][0], t: LINKS[i][1], A, Bp, dx, c1x, c1y, c2x, c2y });
         const d = `M ${A.x} ${A.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${Bp.x} ${Bp.y}`;
+        if (wireT0 !== null) {
+          const wp = (performance.now() - wireT0 - i * wireGap()) / WIRE_MS;
+          if (wp <= 0) { geo.pop(); continue; }
+          if (wp < 1) {
+            const e = 1 - Math.pow(1 - wp, 3);
+            o += `<path d="${d}" pathLength="1" fill="none" stroke="${sig}" stroke-opacity=".6" stroke-width="1.6" stroke-dasharray="${e.toFixed(3)} 1"/>`;
+            continue;
+          }
+        }
         o += `<path d="${d}" fill="none" stroke="${sig}" stroke-opacity=".28" stroke-width="1.4"/>`;
         if (!REDUCED) {
           const tt = (phase + i * 0.22) % 1;
@@ -750,14 +945,35 @@ const heightStyle =
        stall. Each quarter-rate cook stands in for the cooks it skips, so
        the motion keeps its speed. */
     let fc = 0, lastScrollT = -1e4;
+    pfReady = true;
+    /* The front's progress comes from the page-change clock in Base.astro, shared with the wipe
+       and the dim. When it is done the cables start wiring in. Checked every frame, apart from
+       the cook, so it ends even if the dither is not drawing. */
+    function frontF() { const n = window.__pfNav; return n && n.started ? n.f : 0; }
+    /* Coming into PATCH mode from READ (the window grew past 1280, or the toggle): the cables
+       wire in, the same as after a page change. They wait for the layout to place the operators. */
+    let wasRead = isRead();
+    on(document, 'patchmode', () => {
+      const read = isRead();
+      if (wasRead && !read && !REDUCED && !front && LINKS.length) {
+        wireT0 = performance.now() + 220;
+        document.dispatchEvent(new CustomEvent('patch:cooking', { detail: { ms: 220 + WIRE_MS + (LINKS.length - 1) * wireGap() } }));
+      }
+      wasRead = read;
+    });
+    function frontTick() { if (front && frontF() >= 1) { front = null; wireT0 = performance.now(); } }
     on(window, 'scroll', () => { lastScrollT = performance.now(); }, { passive: true });
     function frame() {
       if (!host.isConnected) return;
       fc++;
+      frontTick();
       if (performance.now() - lastScrollT < 150) {
         if ((fc & 3) === 0) { cookDither(2); cookWires(4); }
       } else {
-        if ((fc & 1) === 0) cookDither();
+        // the front is short, so it cooks every frame (at half time-step) to move smoothly;
+        // the boot keeps the normal rate, so it adds no work while the page is still loading
+        if (front && !front.boot) cookDither(0.5);
+        else if ((fc & 1) === 0) cookDither();
         cookWires();
       }
       requestAnimationFrame(frame);
@@ -798,6 +1014,67 @@ const heightStyle =
       });
       on(window, 'mouseup', () => (drag = false));
     });
+
+    /* ---------- hover: the verb beside the pointer ----------
+       Mouse and pen only, PATCH mode only. Nothing here touches the patch bus.
+       A chip beside the pointer, only where a click or drag does something. It types
+       itself out when it changes. */
+    (function () {
+      if (COARSE) return;
+      const chip = document.createElement('div');
+      chip.className = 'pfverb';
+      chip.setAttribute('aria-hidden', 'true');
+      host.appendChild(chip);
+      let label = '', typeT = 0;
+      function setVerb(to) {
+        if (to === label) return;
+        label = to; clearInterval(typeT);
+        if (REDUCED) { chip.textContent = to; return; }
+        let n = 0;
+        const tick = () => {
+          n++;
+          chip.textContent = to.slice(0, n) + (n < to.length ? '▮' : '');
+          if (n >= to.length) clearInterval(typeT);
+        };
+        tick();
+        if (to.length > 1) typeT = setInterval(tick, Math.min(20, 200 / to.length));
+      }
+      function hideVerb() { chip.classList.remove('on'); label = ''; clearInterval(typeT); }
+      if (sys) sys.cleanup(() => clearInterval(typeT));
+
+      function verbFor(t, op) {
+        if (t.closest('astro-island, iframe, [data-noverb]')) return ''; // demos keep their own pointer
+        if (t.closest('[aria-disabled="true"], :disabled')) return ''; // nothing to do there
+        const own = t.closest('[data-verb]');
+        if (own) return own.dataset.verb;
+        if (t.closest('.ohead') && op && op.hasAttribute('data-drag') && !op.closest('.patchdoc')) return 'DRAG';
+        if (t.closest('input[type="range"]')) return 'SCRUB';
+        if (t.closest('[data-cycle]')) return 'CYCLE';
+        if (t.closest('button[aria-pressed]')) return 'TOGGLE';
+        const a = t.closest('a[href]');
+        if (!a) return t.closest('button, [role="button"], [role="tab"]') ? 'PRESS' : '';
+        const href = a.getAttribute('href');
+        if (href.startsWith('mailto:')) return 'WRITE';
+        return a.target === '_blank' || (/^https?:/.test(href) && a.host !== location.host) ? 'OPEN ↗' : 'OPEN';
+      }
+
+      let held = false; // a header is being dragged: keep saying DRAG even if the pointer outruns it
+      on(host, 'mousedown', (e) => { held = !!e.target.closest('.ohead'); });
+      on(window, 'mouseup', () => { held = false; });
+      on(window, 'pointermove', (e) => {
+        const t = e.target;
+        if (e.pointerType === 'touch' || isRead() || !(t instanceof Element) || !host.contains(t)) { hideVerb(); return; }
+        const v = held ? 'DRAG' : verbFor(t, t.closest('.op'));
+        if (!v) { hideVerb(); return; }
+        setVerb(v);
+        // stay on screen: left of the pointer near the right edge, above it near the bottom
+        const flip = e.clientX > window.innerWidth - 180, up = e.clientY > window.innerHeight - 48;
+        chip.style.transform = `translate(${flip ? e.clientX - 14 : e.clientX + 16}px, ${up ? e.clientY - 30 : e.clientY + 18}px)` + (flip ? ' translateX(-100%)' : '');
+        chip.classList.add('on');
+      }, { passive: true });
+      on(window, 'scroll', hideVerb, { passive: true }); // the page moved under a still pointer
+      on(document.documentElement, 'pointerleave', hideVerb);
+    })();
 
     /* ---------- DUO dock: co-visibility for paired surfaces ---------- */
     (function () {
