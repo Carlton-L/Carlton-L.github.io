@@ -124,6 +124,23 @@
       });
       label();
     });
+    /* pickers: <button data-pick="palette" data-v="2"> sets the param to that value. The cycle
+       chips for the same param relabel through the channel, and the pressed picker follows. */
+    host.querySelectorAll('[data-pick]').forEach((btn) => {
+      const c = CYC[btn.dataset.pick];
+      if (!c) return;
+      const v = parseInt(btn.dataset.v || '0', 10);
+      const ch = LIVE ? net.channel('param:' + c.key) : null;
+      const mark = () => btn.setAttribute('aria-pressed', String((P[c.key] | 0) === v));
+      if (ch) ch.on(() => mark());
+      btn.addEventListener('click', () => {
+        if (ch) ch.emit(v); else P[c.key] = v;
+        persist();
+        if (btn.dataset.pick === 'palette') applySignal();
+        if (!ch) host.querySelectorAll(`[data-pick="${btn.dataset.pick}"]`).forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      });
+      mark();
+    });
     applySignal();
 
     /* audition (both modes): while a bg control is being touched the field
