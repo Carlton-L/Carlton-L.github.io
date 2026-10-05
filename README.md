@@ -228,7 +228,7 @@ All site content is centralized in `src/data/content.js`:
 - **Animations:** Framer Motion
 - **SEO:** React Helmet Async
 - **Utilities:** clsx
-- **Deployment:** gh-pages
+- **Deployment:** GitHub Actions to GitHub Pages (`.github/workflows/deploy.yml`)
 
 ---
 
