@@ -9,7 +9,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { patchSrc } from '../lib/bundles.js';
+import { patchSrc, clockJs } from '../lib/bundles.js';
 import '../styles/fonts.css';
 import '../styles/global.css';
 
@@ -67,91 +67,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
       })();
     </script>
 
-    <!-- Page-change front: remember where the last click was. A navigation that follows a click
-         starts its front there: the wipe opens as a ring from that point (global.css) and the
-         dither front and operator handoff follow it (PatchField reads window.__pfNav). Keyboard,
-         back and forward have no click, so they keep the top-to-bottom band. Root attributes and
-         inline styles are replaced on swap, so they are set again after it. -->
-    <script is:inline>
-      (function () {
-        var click = null, up = -1e4;
-        /* A click counts as a pointer click only if a pointer was released just before it.
-           detail === 0 marks a keyboard click in Chrome and Safari but not in Firefox. */
-        document.addEventListener('pointerup', function () { up = performance.now(); }, true);
-        document.addEventListener('click', function (e) {
-          var now = performance.now();
-          click = e.detail === 0 || now - up > 400 ? null : { x: e.clientX, y: e.clientY, t: now };
-        }, true);
-        function apply() {
-          var d = document.documentElement, n = window.__pfNav;
-          if (n && n.ring) {
-            d.setAttribute('data-pf', 'ring');
-            d.style.setProperty('--pf-cx', n.ring.x + 'px');
-            d.style.setProperty('--pf-cy', n.ring.y + 'px');
-            d.style.setProperty('--pf-max', n.ring.max + 'px');
-          } else d.removeAttribute('data-pf');
-        }
-        document.addEventListener('astro:before-preparation', function (e) {
-          var c = click, w = window.innerWidth, h = window.innerHeight;
-          click = null;
-          cancelAnimationFrame(raf);
-          window.__pfNav = { ring: null, f: 0, started: false, nav: true };
-          if (c && e.navigationType !== 'traverse' && performance.now() - c.t < 1000) {
-            var far = Math.max(Math.hypot(c.x, c.y), Math.hypot(w - c.x, c.y), Math.hypot(c.x, h - c.y), Math.hypot(w - c.x, h - c.y));
-            window.__pfNav.ring = { x: c.x, y: c.y, max: Math.round(far + 160) };
-          }
-          apply();
-        });
-        /* One clock for the whole page change. The wipe and the dim are CSS animations that stay
-           paused (global.css); this loop moves them by hand, and PatchField reads the same
-           progress (__pfNav.f) for the dither front. A late frame only advances the clock by two
-           frames' worth, so a busy browser plays the start slowly instead of skipping it, and the
-           three parts can never drift apart. It starts as soon as the new page's network is up
-           ('pf:ready' from patch-field.js), before the page's other scripts and its demos. Pages
-           with no network start it on astro:page-load. 'pf:done' marks the end; demos wait for it
-           before they hydrate (src/lib/client-settled.js). */
-        var MS = 580, goT = 0, raf = 0;
-        function go() {
-          var nav = window.__pfNav || (window.__pfNav = { ring: null });
-          if (nav.started) return; // already running: a second signal must not stop it
-          clearTimeout(goT); cancelAnimationFrame(raf);
-          nav.started = true; nav.f = 0;
-          // looked up every frame: the page images may not exist yet on the first one
-          var find = function () {
-            return (document.getAnimations ? document.getAnimations() : []).filter(function (a) {
-              return /^pf-(ring|wipe|dim)$/.test(a.animationName || '');
-            });
-          };
-          var finish = function () { find().forEach(function (a) { try { a.finish(); } catch (e) {} }); };
-          var last = performance.now(), el = 0;
-          document.dispatchEvent(new Event('pf:go'));
-          (function tick() {
-            var now = performance.now();
-            el += Math.min(34, now - last); last = now;
-            nav.f = Math.min(1, el / MS);
-            if (nav.f < 1) {
-              find().forEach(function (a) { try { a.currentTime = nav.f * MS; } catch (e) {} });
-              raf = requestAnimationFrame(tick);
-            } else {
-              finish();
-              setTimeout(finish, 250); // and again, in case a page image turned up late
-              nav.done = true;
-              document.dispatchEvent(new Event('pf:done'));
-            }
-          })();
-        }
-        document.addEventListener('astro:after-swap', function () {
-          apply();
-          clearTimeout(goT);
-          goT = setTimeout(go, 700); // never leave the page waiting
-        });
-        document.addEventListener('pf:ready', function () {
-          var n = window.__pfNav;
-          if (n && n.nav && !n.started) go();
-        });
-        document.addEventListener('astro:page-load', function () { requestAnimationFrame(go); });
-      })();
-    </script>
+    <!-- Page-change clock (src/lib/page-clock.js): remembers the last click, opens the wipe as a
+         ring from it, and drives the wipe, the dim and the dither front on one clock. -->
+    <script is:inline set:html={clockJs}></script>
 
     <!-- SEO -->
     <title>{title}</title>
@@ -192,12 +110,8 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <ClientRouter />
     <script>
       import '../lib/scroll-hold.js';
-      import { prefetch } from 'astro:prefetch';
-      // Touch has no hover, so start fetching the next page as the finger lands on a link.
-      document.addEventListener('touchstart', (e) => {
-        const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
-        if (a && a.origin === location.origin && a.pathname !== location.pathname && !a.hasAttribute('download') && a.target !== '_blank') prefetch(a.href);
-      }, { passive: true, capture: true });
+      // Fetch the next page and its stylesheets before the click.
+      import '../lib/warm.js';
     </script>
   </head>
   <body class="flex flex-col min-h-screen">

@@ -315,7 +315,7 @@
     /* page-change front: a band of heat that crosses the field top to bottom (bottom to top going
        back), in step with the wipe on ::view-transition-new(root) in global.css. Keep FRONT_MS
        equal to the pf-wipe duration there. */
-    const FRONT_MS = 580; // the same number as MS in Base.astro and the pf-* durations in global.css
+    const FRONT_MS = 580; // the same number as MS in page-clock.js and the pf-* durations in global.css
     /* How bright the front is at its peak, as a level the dither turns into pixels: 0.55 lights
        cells in the dim colour only, 1.05 makes about half of them the bright colour, 1.5 all. */
     const FRONT_L = 1.2;
@@ -395,7 +395,7 @@
       const kept = !old && cv.__pf;
       if (kept && kept.field.length === FW * FH) {
         field = kept.field; t = kept.t;
-        // a navigation that came from a click starts its front at the click (Base.astro sets __pfNav)
+        // a navigation that came from a click starts its front at the click (page-clock.js sets __pfNav)
         if (!REDUCED) navPending = { back: document.documentElement.getAttribute('data-astro-transition') === 'back', ring: (window.__pfNav && window.__pfNav.ring) || null };
       } else {
         field = new Float32Array(FW * FH);
@@ -443,7 +443,7 @@
       on(window, 'resize', size);
       on(document, 'patchmode', () => setTimeout(size, 50));
       size();
-      /* A page change starts here, on 'pf:go' (Base.astro fires it once the new page's scripts
+      /* A page change starts here, on 'pf:go' (page-clock.js fires it once the new page's scripts
          have run, and runs the wipe on the same clock, so the two stay in step).
          The front starts, the click heats the field like a hard pointer move, each operator on
          screen eases into place as the front reaches it, and the cables wire in afterwards.
@@ -716,7 +716,7 @@
        the motion keeps its speed. */
     let fc = 0, lastScrollT = -1e4;
     pfReady = true;
-    /* The front's progress comes from the page-change clock in Base.astro, shared with the wipe
+    /* The front's progress comes from the page-change clock in page-clock.js, shared with the wipe
        and the dim. When it is done the cables start wiring in. Checked every frame, apart from
        the cook, so it ends even if the dither is not drawing. */
     function frontF() { const n = window.__pfNav; return n && n.started ? n.f : 0; }
@@ -994,7 +994,7 @@
       on(document, 'patchmode', undock);
     })();
   });
-  /* The network is up. Base.astro starts the page-change clock on this, without waiting for the
+  /* The network is up. page-clock.js starts the page-change clock on this, without waiting for the
      rest of the page's scripts or its demos. */
   document.dispatchEvent(new Event('pf:ready'));
 })();

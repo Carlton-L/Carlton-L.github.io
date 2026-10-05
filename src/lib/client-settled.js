@@ -2,7 +2,7 @@
  * client:settled: hydrate a demo once the page change has finished.
  *
  * A page change runs for 580ms. Hydrating a React demo in the middle of it costs frames, so a
- * demo that arrives by navigation waits for 'pf:done' (Base.astro) and then for an idle moment.
+ * demo that arrives by navigation waits for 'pf:done' (page-clock.js) and then for an idle moment.
  * On a first load there is no page change to wait for and it hydrates at once.
  *
  *   <HeroMap client:settled />

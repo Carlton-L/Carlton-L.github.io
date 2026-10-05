@@ -144,11 +144,11 @@ input.prange:focus-visible { outline: 1px solid var(--signal); outline-offset: 2
   -webkit-mask-image: linear-gradient(to top, #000 calc(var(--pf-wipe) - 14%), transparent var(--pf-wipe));
   mask-image: linear-gradient(to top, #000 calc(var(--pf-wipe) - 14%), transparent var(--pf-wipe));
 }
-/* Both page images stay paused. Base.astro moves them by hand, on the same clock as the dither
+/* Both page images stay paused. page-clock.js moves them by hand, on the same clock as the dither
    front, and finishes them when the front is done. */
 ::view-transition-old(root),
 ::view-transition-new(root) { animation-play-state: paused; }
-/* A navigation that came from a click opens as a ring from the click point instead (Base.astro
+/* A navigation that came from a click opens as a ring from the click point instead (page-clock.js
    sets data-pf and the --pf-* values). */
 /* --pf-p is the ring's progress, 0 to 1, and the radius is worked out from it in the mask.
    The keyframes must hold plain numbers: Firefox does not interpolate a registered property whose
