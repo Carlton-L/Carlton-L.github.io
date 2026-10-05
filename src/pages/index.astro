@@ -97,7 +97,7 @@ const indexRows = ORDER_SLUGS
   .filter(Boolean)
   .map((p) => ({
     slug: p.slug,
-    href: `/projects/${p.slug}`,
+    href: `/projects/${p.slug}/`,
     name: p.slug.replace(/-/g, '_'),
     meta: p.facts?.role?.toUpperCase() ?? p.category.toUpperCase(),
     year: (p.facts?.year ?? '').split('–').pop(),
@@ -140,7 +140,7 @@ const ICONS: Record<string, string> = {
           </div>
           <div class="vfoot">
             <span id="viewerFoot">SELF-GENERATING · STEEPLE · METRO EDGES</span>
-            <a id="viewerOpen" href="/projects/futurescaper"><b>OPEN NETWORK →</b></a>
+            <a id="viewerOpen" href="/projects/futurescaper/"><b>OPEN NETWORK →</b></a>
           </div>
         </div>
       </Operator>
@@ -159,7 +159,7 @@ const ICONS: Record<string, string> = {
               <span class="idxgo" aria-hidden="true">OPEN ↗</span>
             </a>
           ))}
-          <a href="/projects" class="idxmore">
+          <a href="/projects/" class="idxmore">
             <span class="idxnum">+{String(moreCount).padStart(2, '0')}</span>
             <span class="idxmorename">MORE ▸ FULL_INDEX</span>
             <span class="idxgo idxmorego" aria-hidden="true">/projects ↗</span>
@@ -192,7 +192,7 @@ const ICONS: Record<string, string> = {
         design, Barcelona → Design Engineer at Futurity Systems, building AI
         research instruments.<br />
         <span class="k">## wiring</span><br />
-        Every case study here is itself a network. <a href="/about">Follow the cables.</a>
+        Every case study here is itself a network. <a href="/about/">Follow the cables.</a>
       </div>
     </Operator>
 
@@ -462,7 +462,7 @@ const ICONS: Record<string, string> = {
           const meta = eng.meta(eng.current());
           if (nameEl) nameEl.textContent = meta.name;
           if (footEl) footEl.textContent = meta.foot;
-          if (openEl) openEl.href = '/projects/' + eng.current();
+          if (openEl) openEl.href = '/projects/' + eng.current() + '/';
           if (op) {
             op.classList.add('cooking');
             view.timeout(450, () => op.classList.remove('cooking'));

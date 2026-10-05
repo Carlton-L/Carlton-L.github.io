@@ -37,7 +37,7 @@ const jsonLd = {
     getCreativeWorkJsonLd(project),
     getBreadcrumbJsonLd([
       { name: 'Home', url: '/' },
-      { name: 'Projects', url: '/projects' },
+      { name: 'Projects', url: '/projects/' },
       { name: 'Campus AI — Learning Research' },
     ]),
   ],
@@ -379,7 +379,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     <Operator id="caOutc" name="out · what_it_settled" type="txt" area="outc" ports="in">
       <h2 class="ca-h2">What it settled</h2>
       {cs['What it settled'].map((p) => <p class="ca-p">{p}</p>)}
-      <a class="ca-req" href="/contact">▸ WANT THE FULL WRITE-UP? CONTACT ME</a>
+      <a class="ca-req" href="/contact/">▸ WANT THE FULL WRITE-UP? CONTACT ME</a>
     </Operator>
 
     <NextCase id="caOut" from="campus-ai" />

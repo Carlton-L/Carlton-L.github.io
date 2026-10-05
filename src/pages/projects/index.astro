@@ -107,7 +107,7 @@ const layout = {
           </div>
           <div class="vfoot">
             <span id="pvFoot">KNOWLEDGE GRAPH · SEMANTIC TYPES</span>
-            <a id="pvOpen" href={`/projects/${first.slug}`}><b>OPEN NETWORK →</b></a>
+            <a id="pvOpen" href={`/projects/${first.slug}/`}><b>OPEN NETWORK →</b></a>
           </div>
         </div>
       </Operator>
@@ -123,7 +123,7 @@ const layout = {
               </div>
               {group.items.map((p, i) => (
                 <a
-                  href={`/projects/${p.slug}`}
+                  href={`/projects/${p.slug}/`}
                   data-slug={p.slug}
                   data-cat={group.slug}
                   class:list={['idxrow', { sel: gi === 0 && i === 0 }]}
@@ -301,7 +301,7 @@ const layout = {
           const meta = eng.meta(eng.current());
           if (nameEl) nameEl.textContent = meta.name;
           if (footEl) footEl.textContent = meta.foot;
-          if (openEl) openEl.href = '/projects/' + eng.current();
+          if (openEl) openEl.href = '/projects/' + eng.current() + '/';
           if (op) {
             op.classList.add('cooking');
             view.timeout(450, () => op.classList.remove('cooking'));
@@ -328,7 +328,7 @@ const layout = {
       const meta = eng.meta(eng.current());
       if (nameEl) nameEl.textContent = meta.name;
       if (footEl) footEl.textContent = meta.foot;
-      if (openEl) openEl.href = '/projects/' + eng.current();
+      if (openEl) openEl.href = '/projects/' + eng.current() + '/';
     }
   }
   idxRows.forEach((row) => {

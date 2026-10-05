@@ -30,7 +30,7 @@ const next = nextCase(from);
 <Operator id={id} name="out · next_network" type="data" area={doc ? undefined : area} nudge={doc ? undefined : nudge} maxw={maxw} ports={doc ? 'none' : 'in'}>
   <div class="cs-out">
     {tagline && <div class="cs-outline">{tagline}</div>}
-    <LinkButton href={`/projects/${next.slug}`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block>
+    <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block>
       <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
     </LinkButton>
   </div>

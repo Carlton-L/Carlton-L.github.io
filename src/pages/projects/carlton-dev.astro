@@ -27,7 +27,7 @@ const jsonLd = {
     getCreativeWorkJsonLd(project),
     getBreadcrumbJsonLd([
       { name: 'Home', url: '/' },
-      { name: 'Projects', url: '/projects' },
+      { name: 'Projects', url: '/projects/' },
       { name: 'carlton.dev' },
     ]),
   ],
@@ -167,7 +167,7 @@ const layout = {
         embedded demo, and a signal monitor that live-prints the message bus.
         You'll be able to watch this site think.
       </p>
-      <LinkButton href={`/projects/${next.slug}`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
+      <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
         <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
       </LinkButton>
     </Operator>

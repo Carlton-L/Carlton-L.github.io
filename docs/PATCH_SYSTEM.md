@@ -38,9 +38,9 @@ Detailed notes on the site's runtime, layout and backgrounds. Moved out of `CLAU
 The prototypes are in `docs/prototypes/awwwards-transitions-1` to `-3`. What shipped:
 
 - **The background never restarts.** The dither canvas has `transition:persist` and carries its field with it (`canvas.__pf`). `size()` returns early when the viewport is unchanged, so a change in page height does nothing to it. A resize copies the old field across by position and redraws in the same task.
-- **A page change is a view transition with three parts on one clock.** The new page is revealed through a mask, the old page dims to 35%, and a front crosses the dither. The CSS animations (`pf-ring`, `pf-wipe`, `pf-dim` in `global.css`) stay paused. A loop in `Base.astro` moves them by hand and PatchField reads the same progress (`window.__pfNav.f`). A late frame only advances the clock by two frames' worth, so a busy browser plays the start slowly and does not skip it.
-- **The duration is 580ms and lives in three places:** `MS` in `Base.astro`, `FRONT_MS` in PatchField, and the `pf-*` durations in `global.css`. Change all three together.
-- **A click starts the front at the click.** `Base.astro` remembers the last click. A navigation within a second of it opens as a ring from that point (`data-pf="ring"` and `--pf-cx/--pf-cy/--pf-max` on `<html>`). Keyboard, back and forward have no click and get a band from the top (from the bottom on back).
+- **A page change is a view transition with three parts on one clock.** The new page is revealed through a mask, the old page dims to 35%, and a front crosses the dither. The CSS animations (`pf-ring`, `pf-wipe`, `pf-dim` in `global.css`) stay paused. A loop in `src/lib/page-clock.js` moves them by hand and PatchField reads the same progress (`window.__pfNav.f`). A late frame only advances the clock by two frames' worth, so a busy browser plays the start slowly and does not skip it.
+- **The duration is 580ms and lives in three places:** `MS` in `src/lib/page-clock.js`, `FRONT_MS` in `patch-field.js`, and the `pf-*` durations in `global.css`. Change all three together. A unit test fails if they differ.
+- **A click starts the front at the click.** `page-clock.js` remembers the last click. A navigation within a second of it opens as a ring from that point (`data-pf="ring"` and `--pf-cx/--pf-cy/--pf-max` on `<html>`). Keyboard, back and forward have no click and get a band from the top (from the bottom on back).
 - **The front is a fixed brightness shaped by the background.** `FRONT_L` is the peak level and `FRONT_TEX` is how much it follows the noise underneath. It is divided by the visitor's density setting, so it looks the same whatever they set.
 - **Handoff.** Operators on screen ease into place as the front reaches them. Operators below the fold are left alone.
 - **Cables wire in** after the front, in link order, 260ms each. The gap shrinks on pages with many cables so the whole thing stays under about 860ms.
@@ -56,7 +56,15 @@ Traps found on the way:
 - The browser swallows clicks while a view transition runs. A second click during a page change is ignored.
 - Saved background settings change how the ring looks. Test in a private window before judging it.
 
-Tests: `npm test` (`tests/transitions.mjs`). It builds, serves `dist/` and drives a real browser. `BROWSERS=chromium,firefox,webkit npm test` for all three.
+Tests: `npm test` runs three things in order and stops at the first failure.
+
+1. `tests/unit/` in Node, with no browser and no build (`npm run test:unit`, under a second). `patch-runtime.test.mjs` covers routing, filters, the hop cap and teardown. `page-clock.test.mjs` covers the clock, the click rule and the ring. `client-settled.test.mjs` covers when a demo hydrates. `warm.test.mjs` covers early fetching. `source.test.mjs` checks numbers and lists that have to agree across files: the 580ms, the home order, the layout tiers.
+2. The build, then `tests/built/`, which checks `dist/`: the shared scripts parse, carry no dev code, and every page asks for the version that was built.
+3. `tests/transitions.mjs`, which serves `dist/` and drives a real browser. `BROWSERS=chromium,firefox,webkit npm test` for all three.
+
+The clock is a module so that it can be tested. `bundles.js` wraps it as a plain script and `Base.astro` inlines it in the head.
+
+`node tests/measure.mjs` is a separate tool. It times how long a page change takes to start for each kind of link, on a server that behaves like GitHub Pages. `BROWSER=firefox` picks the engine.
 
 ## Fonts (2026-10-04)
 
@@ -67,9 +75,11 @@ Every font is self-hosted: files in `public/fonts/` with their licence files, fa
 On the live site a click did nothing for up to a second or two, worst on phones. The animation was waiting for the next page to download, parse and start up. Four changes fixed it. Keep all four.
 
 - **Shared scripts are cached files.** The runtime, the network script and the previews used to be inlined in every page (78% of the home page's HTML). They are now `/js/patch.js` and `/js/previs.js`, built by `src/lib/bundles.js`, minified with esbuild and served by the endpoints in `src/pages/js/`. The script tags carry `data-astro-rerun`, so they run again on every page from the browser's cache. Home went from 55KB to 16KB compressed. The notes above that say these files are inlined and stripped describe the old setup.
-- **Pages are fetched early.** Hover prefetches a link (Astro's default). The four nav routes are fetched as soon as they are on screen (`data-astro-prefetch="viewport"`). Touch has no hover, so `Base.astro` prefetches on `touchstart`.
+- **Pages are fetched early, with their stylesheets.** `src/lib/warm.js` does it (Astro's own prefetch is off). Resting on a link for 80ms fetches the page, then the stylesheets that page links to. A press or a touch fetches at once. The four nav routes are marked `data-warm` and are fetched when the page is idle. A page change cannot start until the page and its stylesheets are in hand, so both have to be in the cache before the click.
+- **A fetched page is refreshed after 5 minutes.** GitHub Pages lets the browser keep a page for 10 minutes. A hover on a link fetched more than 5 minutes ago fetches it again, so a tab left open does not pay at the click.
+- **Internal links end in a slash.** Every page is a folder, and GitHub Pages answers `/about` with a redirect to `/about/`. That redirect is a round trip before the page change can start. `trailingSlash: 'always'` makes the dev server answer 404 to a link without the slash. Three checks keep it that way: `tests/unit/source.test.mjs` reads the links written in source, `tests/built/dist.test.mjs` reads every link in the built pages, and the browser tests fail if any request in the run was redirected.
 - **The click answers at once.** While the next page is on its way, `patch-field.js` holds the heat at the click point (`__pfNav.nav && !__pfNav.started`), on the page being left and on the new one until the clock starts.
-- **The clock starts when the network is up.** `patch-field.js` fires `pf:ready` when it has finished setting up, and `Base.astro` starts the clock on that. It no longer waits for the page's other scripts or `astro:page-load`. Pages with no network still start on `astro:page-load`. The clock fires `pf:done` at the end.
+- **The clock starts when the network is up.** `patch-field.js` fires `pf:ready` when it has finished setting up, and `page-clock.js` starts the clock on that. It no longer waits for the page's other scripts or `astro:page-load`. Pages with no network still start on `astro:page-load`. The clock fires `pf:done` at the end.
 - **Demos hydrate after the change.** `client:settled` (`src/lib/client-settled.js`, registered in `astro.config.mjs`) waits for `pf:done` when the page was reached by a link, and hydrates at once on a direct load. With `{ rootMargin }` it also waits until the demo is near the screen.
 
 Measured in Chromium with the processor slowed four times and no network delay, click to first frame of the ring: Futurescaper on a phone 562ms before, 294ms after. With 300ms of network latency, a tap on a nav route: 380ms before, 79ms after. First-load LCP did not change.

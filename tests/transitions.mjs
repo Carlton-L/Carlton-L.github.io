@@ -26,9 +26,9 @@ if (!fs.existsSync(path.join(DIST, 'index.html'))) {
 const SETTLE = 2600;
 
 const PAGES = [
-  '/', '/projects', '/about', '/lab', '/contact',
-  '/projects/futurescaper', '/projects/fast', '/projects/domainclaim', '/projects/campus-ai',
-  '/projects/futurity-engine', '/projects/carlton-dev', '/projects/grid-lamp',
+  '/', '/projects/', '/about/', '/lab/', '/contact/',
+  '/projects/futurescaper/', '/projects/fast/', '/projects/domainclaim/', '/projects/campus-ai/',
+  '/projects/futurity-engine/', '/projects/carlton-dev/', '/projects/grid-lamp/',
 ];
 
 const MIME = {
@@ -36,14 +36,21 @@ const MIME = {
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
   '.woff2': 'font/woff2',
 };
-// Tests can slow pages down (net.delay, in ms) and read which paths were asked for (net.log).
-const net = { delay: 0, log: [] };
+// Tests can slow pages down (net.delay, in ms) and read which pages (net.log) and stylesheets
+// (net.css) were asked for. Like GitHub Pages, a page asked for without its trailing slash gets a
+// redirect. Those are kept in net.redirects, and the last check fails if a link caused one.
+const net = { delay: 0, log: [], css: [], redirects: [] };
 const server = http.createServer((req, res) => {
-  let file = path.join(DIST, decodeURIComponent(req.url.split('?')[0]));
-  if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
+  const url = decodeURIComponent(req.url.split('?')[0]);
+  let file = path.join(DIST, url);
+  if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+    if (!url.endsWith('/')) { net.redirects.push(url); res.writeHead(301, { location: url + '/' }); return res.end(); }
+    file = path.join(file, 'index.html');
+  }
   if (!fs.existsSync(file)) { res.writeHead(404); return res.end(); }
   const html = file.endsWith('.html');
   if (html) net.log.push(req.url);
+  if (file.endsWith('.css')) net.css.push(url);
   setTimeout(() => {
     res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream', 'cache-control': 'max-age=600' });
     res.end(fs.readFileSync(file));
@@ -105,15 +112,17 @@ async function run(name) {
     return page;
   };
   const clickLink = async (page, href) => {
-    const link = await page.$(`header a.navlink[href="${href}"]`);
+    const link = await page.$(`header a.navlink[href="${href}/"]`);
     const box = await link.boundingBox();
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   };
   const settled = (s) => s.pausedAnimations === 0 && !s.active && s.hiddenOps === 0;
   const brief = (s, page) => `paused=${s.pausedAnimations} hiddenOps=${s.hiddenOps} cables=${s.cables}/${s.links} ${page.errors[0] || ''}`;
 
+  net.redirects.length = 0;
   // 1. Every page loads clean, with every cable drawn.
   const freshHeight = {};
+  const slashless = [];
   {
     const page = await open();
     for (const url of PAGES) {
@@ -122,6 +131,11 @@ async function run(name) {
       await page.waitForTimeout(900);
       const s = await readState(page);
       freshHeight[url] = s.height;
+      const unslashed = await page.evaluate(() => [...document.querySelectorAll('a[href], [data-href]')]
+        .map((el) => new URL(el.getAttribute('href') || el.dataset.href, location.href))
+        .filter((u) => u.origin === location.origin && !u.pathname.endsWith('/') && !/\.[a-z0-9]+$/i.test(u.pathname))
+        .map((u) => u.pathname));
+      if (unslashed.length) slashless.push(...unslashed.map((u) => `${u} on ${url}`));
       check(`loads ${url}`, !page.errors.length && settled(s) && s.cables === s.links, brief(s, page));
     }
     await page.context().close();
@@ -146,7 +160,7 @@ async function run(name) {
       check(`click to ${url}: cables all in`, s.cables === s.links, `${s.cables}/${s.links}`);
       check(`click to ${url}: canvas kept, background not blank`, kept && s.lit > 50, `kept=${kept} lit=${s.lit}`);
       check(`click to ${url}: nav reports it`, s.cook === 'COOKED' && s.chip === '/network' + url, `cook=${s.cook} chip=${s.chip}`);
-      check(`click to ${url}: same height as a fresh load`, Math.abs(s.height - freshHeight[url]) <= 2, `${s.height} vs ${freshHeight[url]}`);
+      check(`click to ${url}: same height as a fresh load`, Math.abs(s.height - freshHeight[url + '/']) <= 2, `${s.height} vs ${freshHeight[url + '/']}`);
     }
 
     // The runtime tears everything down on each swap, so these counts should not climb.
@@ -157,7 +171,7 @@ async function run(name) {
     check('no leaked listeners or timers', JSON.stringify(before) === JSON.stringify(after), `${JSON.stringify(before)} then ${JSON.stringify(after)}`);
 
     // 3. No click position means no ring: keyboard, then browser back.
-    await page.focus('header a.navlink[href="/lab"]');
+    await page.focus('header a.navlink[href="/lab/"]');
     await page.keyboard.press('Enter');
     await page.waitForTimeout(150);
     let pf = await page.evaluate(() => document.documentElement.getAttribute('data-pf'));
@@ -333,7 +347,7 @@ async function run(name) {
   {
     const page = await open();
     const found = [];
-    for (const path of ['/', '/projects', '/projects/carlton-dev', '/about', '/lab', '/contact']) {
+    for (const path of ['/', '/projects/', '/projects/carlton-dev/', '/about/', '/lab/', '/contact/']) {
       await page.goto(ORIGIN + path);
       await page.waitForTimeout(600);
       const n = await page.evaluate(() => [...document.querySelectorAll('[title]')].filter((e) => e.tagName !== 'IFRAME' && !e.closest('astro-island')).map((e) => e.getAttribute('title')));
@@ -347,7 +361,7 @@ async function run(name) {
   {
     const page = await open();
     const bad = [];
-    for (const path of ['/', '/projects', '/projects/futurescaper']) {
+    for (const path of ['/', '/projects/', '/projects/futurescaper/']) {
       await page.goto(ORIGIN + path);
       const r = await page.evaluate(() => ({
         patch: !!document.querySelector('script[src^="/js/patch.js"]'),
@@ -367,6 +381,29 @@ async function run(name) {
     await page.waitForTimeout(SETTLE + 1500);
     const got = ['/projects', '/about', '/lab', '/contact'].filter((r) => net.log.some((u) => u.replace(/\/$/, '') === r));
     check('nav routes are prefetched', got.length === 4, 'fetched: ' + got.join(', '));
+    await page.context().close();
+  }
+
+  // 15b. A page fetched early brings its stylesheets with it, so the click does not wait for them.
+  {
+    const sheets = (file) => [...fs.readFileSync(path.join(DIST, file), 'utf8').matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map((m) => m[1]);
+    const home = sheets('index.html');
+    const page = await open();
+    net.log.length = 0; net.css.length = 0;
+    await page.goto(ORIGIN + '/');
+    await page.waitForTimeout(SETTLE + 1500);
+    const navCss = [...new Set(['projects', 'about', 'lab', 'contact'].flatMap((r) => sheets(r + '/index.html')))].filter((c) => !home.includes(c));
+    const navMissing = navCss.filter((c) => !net.css.includes(c));
+    check('nav routes: stylesheets fetched early', navMissing.length === 0, `${navCss.length} wanted, missing: ${navMissing.join(', ')}`);
+    const rowCss = sheets('projects/domainclaim/index.html').filter((c) => !home.includes(c));
+    const row = await page.locator('a.idxrow[data-slug="domainclaim"]').boundingBox();
+    await page.mouse.move(row.x + 60, row.y + 8, { steps: 3 });
+    await page.waitForTimeout(700);
+    const rowPage = net.log.some((u) => u.startsWith('/projects/domainclaim/'));
+    const rowMissing = rowCss.filter((c) => !net.css.includes(c));
+    const open2 = await page.getAttribute('#viewerOpen', 'href');
+    check('hover: the page and its stylesheets are fetched before the click', rowPage && rowMissing.length === 0 && page.url() === ORIGIN + '/', `page fetched=${rowPage}, ${rowCss.length} stylesheets wanted, missing: ${rowMissing.join(', ')}`);
+    check('hover: the viewer link ends in a slash', /^\/projects\/[\w-]+\/$/.test(open2 || ''), String(open2));
     await page.context().close();
   }
 
@@ -404,7 +441,7 @@ async function run(name) {
   //     and a demo reached by a page change hydrates only once the change is done.
   {
     const page = await open();
-    await page.goto(ORIGIN + '/projects');
+    await page.goto(ORIGIN + '/projects/');
     await page.waitForTimeout(SETTLE);
     await page.evaluate(() => {
       const T = (window.__t = { samples: [] });
@@ -415,7 +452,7 @@ async function run(name) {
         if (i) T.samples.push([n ? n.f : -1, !i.hasAttribute('ssr')]);
         if (T.samples.length > 60) clearInterval(iv);
       }, 40);
-      document.querySelector('a[href="/projects/futurescaper"]').click();
+      document.querySelector('a[href="/projects/futurescaper/"]').click();
     });
     await page.waitForTimeout(SETTLE + 600);
     const t = await page.evaluate(() => window.__t);
@@ -423,12 +460,16 @@ async function run(name) {
     const hydrated = t.samples.length > 0 && t.samples[t.samples.length - 1][1];
     check('clock starts before the page finishes loading', t.go > 0 && t.go <= t.load, `go=${Math.round(t.go)} page-load=${Math.round(t.load)}`);
     check('demo hydrates after the page change', early === 0 && hydrated && !page.errors.length, `hydrated mid-change in ${early} samples, hydrated at end=${hydrated} ${page.errors[0] || ''}`);
-    await page.goto(ORIGIN + '/projects/futurescaper');
+    await page.goto(ORIGIN + '/projects/futurescaper/');
     await page.waitForTimeout(1500);
     const direct = await page.evaluate(() => { const i = document.querySelector('astro-island'); return !!i && !i.hasAttribute('ssr'); });
     check('demo hydrates on a direct load', direct, '');
     await page.context().close();
   }
+
+  // 18. Links end in a slash, so nothing in the whole run was sent through a redirect.
+  check('every internal link ends in a slash', slashless.length === 0, [...new Set(slashless)].slice(0, 5).join('; '));
+  check('no link was redirected', net.redirects.length === 0, [...new Set(net.redirects)].join(', '));
 
   await browser.close();
 }

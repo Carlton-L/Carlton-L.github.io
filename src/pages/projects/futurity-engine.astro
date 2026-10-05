@@ -32,7 +32,7 @@ const jsonLd = {
     getCreativeWorkJsonLd(project),
     getBreadcrumbJsonLd([
       { name: 'Home', url: '/' },
-      { name: 'Projects', url: '/projects' },
+      { name: 'Projects', url: '/projects/' },
       { name: 'Futurity Engine' },
     ]),
   ],
@@ -85,7 +85,7 @@ const layout = {
       <p class="eng-meta">{project.meta}</p>
       <h1 class="eng-h">Watch the machine <span class="sig">think</span></h1>
       <p class="eng-sub">{"// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. MOST UIS SHOW A SPINNER. THIS ONE SHOWS THE REASONING."}</p>
-      <a class="eng-live" href="/contact">▸ CONTACT FOR MORE INFORMATION</a>
+      <a class="eng-live" href="/contact/">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
 
     <!-- OWNERSHIP (git-verified; see engine-case-study/06-ROLE_EVIDENCE.md) -->
@@ -165,7 +165,7 @@ const layout = {
     <Operator id="engOutcome" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="eng-p">{p}</p>)}
       <p class="eng-p">The Engine is client software, so there is no public build to poke at. Everything on this page is a recreation built for the portfolio, on synthetic data. If you want to know more about the work, get in touch.</p>
-      <a class="eng-live" href="/contact">▸ CONTACT FOR MORE INFORMATION</a>
+      <a class="eng-live" href="/contact/">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
 
     <NextCase id="engOut" from="futurity-engine" tagline="TRUST IS EARNED IN THE TRANSCRIPT." />

@@ -18,9 +18,13 @@ const settled = {
 export default defineConfig({
   site: 'https://carlton.dev',
 
-  // Hover prefetches a link on desktop. The nav routes are fetched as soon as they are on screen
-  // (data-astro-prefetch="viewport"), and touch fetches on touchstart (Base.astro).
-  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  // Every page is a folder with an index.html, and GitHub Pages redirects /about to /about/.
+  // Internal links end in a slash so they skip that redirect. With 'always' the dev server
+  // answers 404 to a link that forgets it, and tests/built/dist.test.mjs fails the build.
+  trailingSlash: 'always',
+
+  // Pages are fetched early by src/lib/warm.js, which also fetches their stylesheets.
+  prefetch: false,
 
   integrations: [
     settled,

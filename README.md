@@ -65,7 +65,8 @@ The dev server prints its address (usually `http://localhost:4321`).
 | `npm run dev` | Start the dev server |
 | `npm run build` | Build the static site into `dist/` |
 | `npm run preview` | Serve the built site |
-| `npm test` | Build, then drive a real browser over the result |
+| `npm run test:unit` | Run the unit tests in Node (no build, under a second) |
+| `npm test` | Unit tests, then build, then drive a real browser over the result |
 
 The tests need the browsers once: `npx playwright install`. To run all three engines: `BROWSERS=chromium,firefox,webkit npm test`.
 
@@ -82,7 +83,12 @@ The tests need the browsers once: `npx playwright install`. To run all three eng
 | `src/components/react/demos/` | The case-study demos |
 | `src/data/content.js` | All project and case-study copy |
 | `src/styles/` | Tokens, fonts and global styles |
+| `src/lib/page-clock.js` | The clock every page change runs on |
+| `src/lib/warm.js` | Fetches the next page and its stylesheets before the click |
+| `tests/unit/` | Unit tests for the message bus, the clock, early fetching and demo hydration |
+| `tests/built/` | Checks on the built site |
 | `tests/transitions.mjs` | The browser tests |
+| `tests/measure.mjs` | Times how fast a page change starts |
 | `docs/` | Notes on the patch system, the demos and the case-study format |
 
 ## How it works
