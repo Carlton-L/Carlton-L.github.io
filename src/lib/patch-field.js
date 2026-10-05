@@ -66,22 +66,29 @@
     host.querySelectorAll('[data-param]').forEach((inp) => {
       const k = inp.dataset.param;
       const div = parseFloat(inp.dataset.div || '1');
-      const out = host.querySelector(`[data-out="${k}"]`);
+      // the readout in the same row; two controls on one page may drive the same param
+      const row = inp.closest('.prow');
+      const out = (row && row.querySelector(`[data-out="${k}"]`)) || host.querySelector(`[data-out="${k}"]`);
       const ch = LIVE ? net.channel('param:' + k) : null;
-      if (ch) ch.on((v) => { P[k] = v; });
-      // reflect current (possibly persisted) value in the control
-      inp.value = String(P[k] * div);
-      const upd = (save) => {
-        const v = parseFloat(inp.value) / div;
-        if (ch) ch.emit(v); else P[k] = v;
+      let mine = false; // true while this control is the one being moved
+      const show = () => {
+        if (!mine) inp.value = String(P[k] * div);
         if (out) out.textContent = div === 1 ? String(P[k]) : P[k].toFixed(2);
         // track fill up to the thumb (consumed by .prange CSS)
         const mn = parseFloat(inp.min || '0'), mx = parseFloat(inp.max || '100');
         inp.style.setProperty('--p', (((parseFloat(inp.value) - mn) / (mx - mn)) * 100).toFixed(1) + '%');
+      };
+      // every control on the channel redraws, so a second slider for the same param stays in step
+      if (ch) ch.on((v) => { P[k] = v; show(); });
+      const upd = (save) => {
+        const v = parseFloat(inp.value) / div;
+        mine = true;
+        if (ch) ch.emit(v); else { P[k] = v; show(); }
+        mine = false;
         if (save) persist();
       };
+      show(); // reflect the current (possibly persisted) value in the control
       inp.addEventListener('input', () => upd(true));
-      upd(false);
     });
     /* type cyclers — <button data-cycle="palette|noise|dither" data-prefix="..."> */
     const CYC = {
@@ -103,7 +110,7 @@
       const c = CYC[btn.dataset.cycle];
       if (!c) return;
       const ch = LIVE ? net.channel('param:' + c.key) : null;
-      if (ch) ch.on((v) => { P[c.key] = v; });
+      if (ch) ch.on((v) => { P[c.key] = v; label(); }); // every chip for this param relabels
       const pre = btn.dataset.prefix || btn.dataset.cycle.toUpperCase();
       const label = () => {
         P[c.key] = ((P[c.key] | 0) % c.opts.length + c.opts.length) % c.opts.length;

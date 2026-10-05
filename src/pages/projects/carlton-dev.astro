@@ -2,11 +2,10 @@
 /**
  * carlton.dev — the site as its own case study.
  *
- * INPUT (the claim) → PROCESS (grammar, layout resolver, patch runtime, and a
+ * INPUT (the claim) → PROCESS (grammar and its parts, how the background cooks, patch runtime, and a
  * side branch: the page-change clock and what it took to make a click answer) →
  * VIEW (you're inside it: there is no demo embed, the page IS the demo) →
- * OUT (next: containers + signal monitor). Placed by the layout resolver
- * it describes; wired through the runtime it describes.
+ * OUT (next: containers + signal monitor). Wired through the runtime it describes.
  *
  * Copy rules: facts only (stack, budgets, modes are all verifiable in the
  * repo); no embellished roles or numbers. Solo project, so 100% meters are
@@ -48,8 +47,8 @@ find().forEach((a) => {
 const links: [string, string][] = [
   ['cdTitle', 'cdGrammar'],
   ['cdTitle', 'cdStack'],
-  ['cdGrammar', 'cdLayout'],
-  ['cdLayout', 'cdView'],
+  ['cdGrammar', 'cdDither'],
+  ['cdDither', 'cdView'],
   ['cdView', 'cdRuntime'],
   ['cdRuntime', 'cdClock'],
   ['cdClock', 'cdSpeed'],
@@ -67,7 +66,7 @@ const layout = {
   gap: 2,
   rows: [
     { row: ['title:5', 'stack:3'], justify: 'between' },
-    { row: ['gram:4', 'lay:4'], justify: 'center', gap: 8 },
+    { row: ['gram:4', 'dith:4'], justify: 'center', gap: 8 },
     { row: ['view:6'], justify: 'center' },
     { row: ['bgn', 'bgf', 'bgd', 'bgo'], justify: 'center', gap: 6 },
     { row: ['rt:5'], justify: 'center' },
@@ -101,38 +100,147 @@ const layout = {
     <Operator id="cdGrammar" name="process · the_grammar" type="txt" area="gram">
       <h3 class="cd-h3">One grammar, everywhere</h3>
       <p class="cs-p">
-        Every content block on this site is an operator with a typed header:
-        VIEW for live things, TXT for prose, DATA for facts, SYS for
-        instruments. Cables connect them. The dither field behind everything
-        comes out of a visible chain of four SYS nodes, and that same
-        bg_01 → bg_04 chain is patched into this page. Turn the knobs. The
-        field re-cooks, and your settings follow you between visits.
+        Every block on this site is an operator. The chip in its header
+        says what it holds. Cables connect them.
       </p>
+      <div class="cd-parts">
+        <div class="cd-part">
+          <span class="cd-plab">OPERATOR TYPES</span>
+          <dl class="cd-types">
+            <div><dt class="cd-typ t-view">VIEW</dt><dd>live things</dd></div>
+            <div><dt class="cd-typ t-txt">TXT</dt><dd>prose</dd></div>
+            <div><dt class="cd-typ t-data">DATA</dt><dd>facts</dd></div>
+            <div><dt class="cd-typ t-sys">SYS</dt><dd>instruments</dd></div>
+          </dl>
+        </div>
+        <div class="cd-part">
+          <span class="cd-plab">CHIPS</span>
+          <div class="cd-chips">
+            <span class="chip">STATIC</span>
+            <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL">PAL ▸ GRN</button>
+          </div>
+          <span class="cd-pnote">A GREEN BORDER CAN BE CLICKED.</span>
+        </div>
+        <div class="cd-part">
+          <span class="cd-plab">SLIDER</span>
+          <div class="prow">
+            <span class="plab">DENS</span>
+            <input class="prange" type="range" data-param="density" data-div="100" min="5" max="95" value="30" aria-label="Dither density" />
+            <b class="pval" data-out="density">0.30</b>
+          </div>
+        </div>
+        <div class="cd-part">
+          <span class="cd-plab">METER</span>
+          <div class="cd-meter"><div class="bar"><i id="cdDensBar" style="width:77%"></i></div></div>
+        </div>
+      </div>
       <p class="cs-p">
-        There are two modes.
-        <span class="cap-fine">PATCH is the spatial view, and it's probably
-        where you are now. READ strips the boxes away and stacks the same
-        content as a clean document.</span>
-        <span class="cap-coarse">PATCH is the spatial view, a draggable node
-        network built for big screens. This is READ, the same content
-        stacked as a clean document.</span>
-        Small screens and reduced-motion visitors get READ by default.
-        Nobody has to fight the metaphor.
+        The chip and the slider change the whole site. PATCH is the spatial
+        view. READ stacks the same content as a document, and small screens
+        and reduced-motion visitors get it by default.
       </p>
+      <SourceButton file="src/styles/tokens.css" label="READ THE TOKENS" block class="cd-src" />
     </Operator>
 
-    <Operator id="cdLayout" name="process · layout_resolver" type="txt" area="lay">
-      <h3 class="cd-h3">Layouts are ASCII pictures</h3>
+    <Operator id="cdDither" name="process · how_it_cooks" type="txt" area="dith">
+      <h3 class="cd-h3">Two colours, one comparison</h3>
       <p class="cs-p">
-        Node placement isn't hand-tuned pixels. Each page declares its
-        network as an ASCII sketch, the kind you'd type into a grid-areas
-        rule. A small resolver reads it at runtime, snaps every node to the
-        background dot grid, and pushes overlaps apart when copy grows.
+        The background is a grid of cells. On every cook each cell gets a
+        level from the noise. The level is mixed with what the cell held
+        last time (78% old and 22% new by default), so the pointer leaves
+        a trail.
       </p>
+      <div class="cd-stages">
+        <div><canvas id="cdCvL" width="72" height="48" role="img" aria-label="The level in each cell, shown as grey"></canvas><span class="cd-cap">THE LEVEL IN EACH CELL</span></div>
+        <div><canvas id="cdCvO" width="72" height="48" role="img" aria-label="The same cells after the comparison, in two colours"></canvas><span class="cd-cap">AFTER THE COMPARISON</span></div>
+      </div>
+      <div class="cd-thr">
+        <table aria-label="The 2 by 2 threshold grid, BAYER2">
+          <tr><td>0.125</td><td>0.625</td></tr>
+          <tr><td>0.875</td><td>0.375</td></tr>
+        </table>
+        <p>BAYER2, the default. Each cell is compared with one of these four numbers. Above it, the cell lights. More than 0.55 above it, the cell lights in the bright colour.</p>
+      </div>
       <p class="cs-p">
-        This page is placed by the system it describes. Resize the window
-        and watch it re-cook.
+        The field is drawn into a buffer at one pixel per cell and scaled
+        up once. The gaps between cells are cut out with one pattern fill.
+        These two views follow the bg chain below.
       </p>
+      <ul class="cd-facts">
+        <li><b>3px</b><span>per cell by default</span></li>
+        <li><b>1 in 2</b><span>frames cook, 1 in 4 while scrolling</span></li>
+        <li><b>140,000</b><span>cells at most</span></li>
+      </ul>
+      <!-- The cook from src/lib/patch-field.js on a 72 by 48 field. It reads the visitor's saved
+           background settings, so it follows the bg chain on this page. Draws only while on screen. -->
+      <script is:inline data-astro-rerun>
+        (function () {
+          var cL = document.getElementById('cdCvL'), cO = document.getElementById('cdCvO'), host = document.getElementById('cdNet');
+          if (!cL || !cO || !host) return;
+          var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var PAL = [[[35, 59, 44], [61, 255, 136]], [[58, 44, 20], [232, 163, 23]], [[21, 48, 61], [86, 180, 233]], [[38, 38, 42], [159, 159, 152]]]; // PALETTES in patch-field.js
+          var P = { density: parseFloat(host.dataset.density || '0.77'), speed: 1, feedback: 0.78, pal: 0, noiseT: 1, ditherT: 1 };
+          function readP() {
+            try {
+              var o = JSON.parse(localStorage.getItem('patch-bg') || '{}') || {};
+              Object.keys(P).forEach(function (k) { if (typeof o[k] === 'number' && isFinite(o[k])) P[k] = o[k]; });
+            } catch (e) {}
+          }
+          var dbar = document.getElementById('cdDensBar'); // the meter in the_grammar follows the density
+          function meter() { if (dbar) dbar.style.width = Math.round(Math.min(1, Math.max(0, P.density)) * 100) + '%'; }
+          readP(); meter();
+          var FW = 72, FH = 48, field = new Float32Array(FW * FH);
+          var perm = new Uint8Array(512);
+          (function () { var p = [], s = 7, i, j, x; for (i = 0; i < 256; i++) p[i] = i; for (i = 255; i > 0; i--) { s = (s * 16807) % 2147483647; j = s % (i + 1); x = p[i]; p[i] = p[j]; p[j] = x; } for (i = 0; i < 512; i++) perm[i] = p[i & 255]; })();
+          function h(a, b) { return perm[(perm[a & 255] + b) & 255] / 255; }
+          function vn(x, y) { var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi; xf = xf * xf * (3 - 2 * xf); yf = yf * yf * (3 - 2 * yf); var a = h(xi, yi), b = h(xi + 1, yi), c = h(xi, yi + 1), d = h(xi + 1, yi + 1); return a + (b - a) * xf + (c - a) * yf + (a - b - c + d) * xf * yf; }
+          var xL = cL.getContext('2d'), xO = cO.getContext('2d');
+          if (!xL || !xO) return;
+          var iL = xL.createImageData(FW, FH), iO = xO.createImageData(FW, FH);
+          var B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], B2 = [[0, 2], [3, 1]];
+          var t = 0, mx = -99, my = -99, heat = 0, seen = true, fc = 0;
+          function cook() {
+            if (!REDUCED) t += 0.016 * P.speed;
+            heat *= 0.9;
+            var fb = Math.min(0.95, Math.max(0, P.feedback)), pal = PAL[((P.pal | 0) % 4 + 4) % 4], nt = P.noiseT | 0, dt = P.ditherT | 0;
+            for (var gy = 0; gy < FH; gy++) for (var gx = 0; gx < FW; gx++) {
+              var n;
+              if (nt === 2) { n = 0.5 + (Math.sin(gx * 0.19 + t * 1.2) + Math.sin(gy * 0.24 - t * 0.8) + Math.sin((gx + gy) * 0.12 + t * 0.5)) / 6; n = Math.max(0, (n - 0.35) * 1.6); }
+              else {
+                var n1 = vn(gx * 0.085 + t * 0.55, gy * 0.085 + t * 0.18), n2 = vn(gx * 0.19 - t * 0.35 + 40.7, gy * 0.19 + 11.3);
+                if (nt === 1) { n1 = 1 - Math.abs(2 * n1 - 1); n2 = 1 - Math.abs(2 * n2 - 1); n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.45) * 1.7); }
+                else n = Math.max(0, (0.62 * n1 + 0.38 * n2 - 0.32) * 1.55);
+              }
+              if (heat > 0.02) { var dx = gx - mx, dy = gy - my; n += heat * Math.exp(-(dx * dx + dy * dy) / 40); }
+              var i = gy * FW + gx, v = (field[i] = n * (1 - fb) + field[i] * fb), L = v * P.density * 1.2, th, o = i * 4;
+              if (dt === 1) th = (B2[gy & 1][gx & 1] + 0.5) / 4;
+              else if (dt === 2) th = ((gy & 3) + 0.5) / 4.4;
+              else if (dt === 3) { var q = ((gx * 73856093) ^ (gy * 19349663)) >>> 0; th = ((q >>> 8) & 1023) / 1024; }
+              else th = (B4[gy & 3][gx & 3] + 0.5) / 16;
+              var g = Math.min(255, L * 255);
+              iL.data[o] = iL.data[o + 1] = iL.data[o + 2] = g; iL.data[o + 3] = 255;
+              var c = L > th ? pal[L - 0.55 > th ? 1 : 0] : null;
+              iO.data[o] = c ? c[0] : 0; iO.data[o + 1] = c ? c[1] : 0; iO.data[o + 2] = c ? c[2] : 0; iO.data[o + 3] = 255;
+            }
+            xL.putImageData(iL, 0, 0); xO.putImageData(iO, 0, 0);
+          }
+          function still() { for (var i = 0; i < 24; i++) cook(); }
+          // the bg chain saves its settings on every change: read them back just after
+          function changed() { setTimeout(function () { readP(); meter(); if (REDUCED) still(); }, 0); }
+          host.addEventListener('input', changed);
+          host.addEventListener('click', changed);
+          if (REDUCED) { still(); return; }
+          [cL, cO].forEach(function (c) {
+            c.addEventListener('pointermove', function (e) { var r = c.getBoundingClientRect(); mx = ((e.clientX - r.left) / r.width) * FW; my = ((e.clientY - r.top) / r.height) * FH; heat = 1.4; });
+          });
+          if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }).observe(cL);
+          (function frame() {
+            if (!cL.isConnected) return;
+            if (seen && (fc++ & 1) === 0) cook();
+            requestAnimationFrame(frame);
+          })();
+        })();
+      </script>
     </Operator>
 
     <Operator id="cdView" name="carlton_dev_view · you_are_here" type="view" area="view" maxw={640}>
@@ -331,6 +439,40 @@ const layout = {
     span.cap-coarse { display: inline; }
   }
 
+
+  /* the_grammar: the parts, each under a small label */
+  .cd-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; margin: 4px 0 2px; }
+  .cd-part { display: grid; gap: 8px; align-content: start; padding: 12px 0; border-top: 1px solid var(--border-color); min-width: 0; }
+  .cd-plab { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); }
+  .cd-pnote { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; color: var(--text-dim); }
+  .cd-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .cd-part .prow { margin-top: 0; }
+  .cd-part .cd-meter .bar { margin: 4px 0; }
+  .cd-types { display: grid; grid-template-columns: auto 1fr; gap: 6px 0; }
+  .cd-types div { display: contents; }
+  .cd-types dt { justify-self: start; margin-right: 8px; }
+  .cd-types dd { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+  .cd-typ { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+  .cd-typ.t-view { background: var(--op-view-bg); color: var(--op-view-fg); }
+  .cd-typ.t-txt { background: var(--op-txt-bg); color: var(--op-txt-fg); }
+  .cd-typ.t-data { background: var(--op-data-bg); color: var(--op-data-fg); }
+  .cd-typ.t-sys { background: var(--op-sys-bg); color: var(--op-sys-fg); }
+
+  /* how_it_cooks: the two views, the threshold grid, three numbers */
+  .cd-stages { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .cd-stages div { display: grid; gap: 5px; min-width: 0; }
+  .cd-stages canvas { width: 100%; aspect-ratio: 3 / 2; display: block; background: #000; border: 1px solid var(--border-color); border-radius: 3px; image-rendering: pixelated; }
+  .cd-cap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; color: var(--text-dim); }
+  .cd-thr { display: flex; gap: 14px; align-items: center; margin: 12px 0; }
+  .cd-thr table { border-collapse: collapse; font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; flex: none; }
+  .cd-thr td { width: 44px; height: 30px; text-align: center; border: 1px solid #2a2a2e; color: var(--signal); }
+  .cd-thr p { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--text-muted); min-width: 0; }
+  /* READ mode sizes every paragraph in a card as body text: this one stays a caption */
+  :global(body.perform) .cd-thr.cd-thr p { font-size: 11px; line-height: 1.6; }
+  .cd-facts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-family: var(--font-mono); }
+  .cd-facts li { border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 9px; min-width: 0; }
+  .cd-facts b { display: block; font-size: 16px; color: var(--signal); font-weight: 400; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .cd-facts span { font-size: 9px; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; }
 
   /* bg_generator controls — same grammar as the homepage chain */
   .chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
