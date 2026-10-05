@@ -339,6 +339,8 @@ const ICONS: Record<string, string> = {
   :global(body.perform) .readme { font-size: 13.5px; line-height: 1.9; max-width: 62ch; }
   :global(body.perform) .idx { font-size: 13px; }
   :global(body.perform) .hero-tag { font-size: 13px; }
+  /* READ mode: the outlined sentence always starts its own line, so the outline never begins mid-line */
+  :global(body.perform) .hero-h .ghost { display: block; }
 
   /* ---- the work rack ----
      PATCH mode: the wrapper doesn't exist layout-wise — both ops float free. */
