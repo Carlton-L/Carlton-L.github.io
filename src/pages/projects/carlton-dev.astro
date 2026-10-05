@@ -2,7 +2,8 @@
 /**
  * carlton.dev — the site as its own case study.
  *
- * INPUT (the claim) → PROCESS (grammar, layout resolver, patch runtime) →
+ * INPUT (the claim) → PROCESS (grammar, layout resolver, patch runtime, and a
+ * side branch: the page-change clock and what it took to make a click answer) →
  * VIEW (you're inside it: there is no demo embed, the page IS the demo) →
  * OUT (next: containers + signal monitor). Placed by the layout resolver
  * it describes; wired through the runtime it describes.
@@ -14,6 +15,8 @@
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import LinkButton from '../../components/LinkButton.astro';
+import SourceButton from '../../components/SourceButton.astro';
+import CodeExcerpt from '../../components/case/CodeExcerpt.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects, nextCase } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -33,12 +36,23 @@ const jsonLd = {
   ],
 };
 
+// Lines from src/lib/page-clock.js. The loop is trimmed to the lines that do the work.
+const clockExcerpt = `// FRAME_CAP is 34ms. MS is 580ms.
+var t = now();
+el += Math.min(FRAME_CAP, t - last); last = t;
+nav.f = Math.min(1, el / MS);
+find().forEach((a) => {
+  a.currentTime = nav.f * MS;
+});`;
+
 const links: [string, string][] = [
   ['cdTitle', 'cdGrammar'],
   ['cdTitle', 'cdStack'],
   ['cdGrammar', 'cdLayout'],
   ['cdLayout', 'cdRuntime'],
   ['cdRuntime', 'cdView'],
+  ['cdRuntime', 'cdClock'],
+  ['cdClock', 'cdSpeed'],
   ['cdView', 'cdOut'],
   ['cdBgNoise', 'cdBgFdbk'],
   ['cdBgFdbk', 'cdBgDith'],
@@ -57,8 +71,8 @@ const layout = {
     areas: `
       title title title title title .     .     .     .     stack stack stack
       .     gram  gram  gram  gram  .     .     lay   lay   lay   lay   .
-      bgn   bgn   .     rt    rt    rt    rt    rt    .     .     .     .
-      bgf   bgf   view  view  view  view  view  view  .     .     .     .
+      bgn   bgn   .     rt    rt    rt    rt    rt    clock clock clock clock
+      bgf   bgf   view  view  view  view  view  view  .     speed speed speed
       bgd   bgd   .     .     out   out   out   out   .     .     .     .
       bgo   bgo   .     .     .     .     .     .     .     .     .     .
     `,
@@ -140,6 +154,42 @@ const layout = {
         homepage's auto-cycle is a visible node: a cycle_clock operator ticks
         the index, and hovering the index dims it.
       </p>
+    </Operator>
+
+    <Operator id="cdClock" name="process · one_clock" type="txt" area="clock">
+      <h3 class="cd-h3">Three animations, one clock</h3>
+      <p class="cd-p">
+        A page change has three parts. The new page wipes in, the old one
+        dims, and a front crosses the dither. They used to run on their own
+        timers and drift apart on a busy frame.
+      </p>
+      <p class="cd-p">
+        Now the two CSS animations stay paused and one loop moves all three
+        by hand. A late frame moves the clock 34ms at most, so a slow browser
+        plays the start slowly. It never skips it.
+      </p>
+      <CodeExcerpt code={clockExcerpt} file="src/lib/page-clock.js" note="the wipe, the dim and the front all read nav.f" />
+      <SourceButton file="src/lib/page-clock.js" block class="cd-src" />
+    </Operator>
+
+    <Operator id="cdSpeed" name="data · click_to_start" type="data" area="speed" ports="in">
+      <h3 class="cd-h3">The click answers first</h3>
+      <p class="cd-p">
+        A click used to do nothing for up to a second. The animation was
+        waiting for the next page. Lighthouse scored it 97, because
+        Lighthouse never clicks a link.
+      </p>
+      <p class="cd-p">
+        Heat now holds at the click. The next page and its stylesheets are
+        fetched on hover. Every link ends in a slash, because GitHub Pages
+        answers /about with a redirect first.
+      </p>
+      <ul class="cd-ba">
+        <li><span class="what">Home page HTML</span><span><s>55KB</s><b>16KB</b></span></li>
+        <li><span class="what">Nav click to start, 300ms latency</span><span><s>380ms</s><b>79ms</b></span></li>
+        <li><span class="what">Redirects per new page</span><span><s>1</s><b>0</b></span></li>
+      </ul>
+      <SourceButton file="src/lib/warm.js" block class="cd-src" />
     </Operator>
 
     <Operator id="cdView" name="carlton_dev_view · you_are_here" type="view" area="view" maxw={640}>
@@ -304,4 +354,13 @@ const layout = {
   :global(#cdBgNoise) .prow, :global(#cdBgFdbk) .prow,
   :global(#cdBgDith) .prow, :global(#cdBgOut) .prow { margin-top: 6px; }
   .cd-p + :global(.cd-next) { margin-top: 14px; }
+  :global(.cd-src) { margin-top: 12px; }
+
+  /* before and after, one measure per row */
+  .cd-ba { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; font-family: var(--font-mono); font-size: 10px; line-height: 1.5; }
+  .cd-ba li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 8px; }
+  .cd-ba .what { color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .cd-ba s { color: var(--text-dim); margin-right: 8px; }
+  .cd-ba b { color: var(--signal); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cd-ba li > span:last-child { white-space: nowrap; }
 </style>

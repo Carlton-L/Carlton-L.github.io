@@ -71,6 +71,8 @@ Case-study cards that repeat are components in `src/components/case/`, styled on
 - Clickable means a green outline (`--signal`). Hover adds a faint green fill.
 - Something disabled or "available later" keeps the same shape, dashed and grey. Nothing moves when it goes live.
 - Large link buttons use `src/components/GithubButton.astro` (variant A in `docs/prototypes/github-button.html`).
+- A link to one source file uses `src/components/SourceButton.astro`: the same button with a file icon and the path under the label.
+- Code excerpts use `src/components/case/CodeExcerpt.astro`: plain text, no syntax colours, the file path underneath. Keep lines under 46 characters so nothing scrolls at 1280 wide or on a phone.
 - The main control of a demo gets a real button, wide enough to hit on a phone. Small arrows in a corner read as decoration.
 
 ## Copy

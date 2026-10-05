@@ -1,0 +1,33 @@
+---
+/**
+ * SourceButton: LinkButton with a source-file icon, naming the file under the label.
+ * For a link to one file. GithubButton is for a whole repo.
+ *
+ *   <SourceButton file="src/lib/page-clock.js" block />
+ *   <SourceButton file="tests" label="READ THE TESTS" />          a folder works too
+ *   <SourceButton file="src/x.ts" repo="Carlton-L/domainclaim" branch="main" />
+ */
+import LinkButton from './LinkButton.astro';
+
+interface Props {
+  /** Path in the repo. */
+  file: string;
+  repo?: string;
+  branch?: string;
+  label?: string;
+  block?: boolean;
+  class?: string;
+}
+
+const { file, repo = 'Carlton-L/Carlton-L.github.io', branch = 'astro', label = 'READ THE SOURCE', block = false, class: extra = '' } = Astro.props;
+const kind = /\.[a-z0-9]+$/i.test(file) ? 'blob' : 'tree';
+---
+
+<LinkButton href={`https://github.com/${repo}/${kind}/${branch}/${file}`} label={label} sub={file} block={block} class={extra}>
+  <!-- a page with a folded corner and a pair of angle brackets -->
+  <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="none" d="M3.5 1.5h5.8l3.2 3.2v9.8h-9z" />
+    <path fill="none" d="M9.3 1.5v3.2h3.2" />
+    <path fill="none" d="M6.7 8 5.1 9.7l1.6 1.7M9.3 8l1.6 1.7-1.6 1.7" />
+  </svg>
+</LinkButton>

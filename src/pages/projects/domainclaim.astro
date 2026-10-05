@@ -26,6 +26,7 @@ import SectionBreak from '../../components/case/SectionBreak.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import GithubButton from '../../components/GithubButton.astro';
+import CodeExcerpt from '../../components/case/CodeExcerpt.astro';
 import SignInHero from '../../components/react/demos/domainclaim/SignInHero.jsx';
 import FailureView from '../../components/react/demos/domainclaim/FailureView.jsx';
 import { projects } from '../../data/content.js';
@@ -246,8 +247,7 @@ const unionExcerpt = `export type FailureReason =
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
       <h2 class="dc-h2">For the <span class="grn">code</span> reader</h2>
       {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
-      <pre class="dc-code"><code>{unionExcerpt}</code></pre>
-      <div class="dc-codecap">src/lib/claims/state.ts · every failure the check can report</div>
+      <CodeExcerpt code={unionExcerpt} file="src/lib/claims/state.ts" note="every failure the check can report" />
     </Operator>
 
     <Operator id="dcFiles" name="read_first" type="data" area="files">
@@ -419,11 +419,5 @@ const unionExcerpt = `export type FailureReason =
   .dc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
   .dc-pair figure { margin: 0; }
 
-  .dc-code {
-    margin: 12px 0 6px; padding: 10px 12px; overflow-x: auto;
-    font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: var(--text-muted);
-    background: #0a0a0b; border: 1px solid var(--border-color); border-radius: 4px;
-  }
-  .dc-codecap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; color: var(--text-dim); }
 
 </style>

@@ -1,0 +1,30 @@
+---
+/**
+ * CodeExcerpt: a few lines of real source, with the file they came from underneath.
+ * One look for every case study. Plain text, no syntax colours.
+ *
+ *   <CodeExcerpt code={excerpt} file="src/lib/claims/state.ts" note="every failure the check can report" />
+ *
+ * Long lines scroll inside the block, so the card keeps its width.
+ */
+interface Props {
+  code: string;
+  /** Path in the repo. */
+  file: string;
+  /** What the reader is looking at, in a few words. */
+  note?: string;
+}
+const { code, file, note } = Astro.props;
+---
+
+<pre class="codex"><code>{code}</code></pre>
+<div class="codex-cap">{file}{note && ` · ${note}`}</div>
+
+<style>
+  .codex {
+    margin: 12px 0 6px; padding: 10px 12px; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: var(--text-muted);
+    background: #0a0a0b; border: 1px solid var(--border-color); border-radius: 4px;
+  }
+  .codex-cap { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; color: var(--text-dim); }
+</style>
