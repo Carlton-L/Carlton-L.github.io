@@ -35,7 +35,7 @@ I designed and built the site on my own.
 |---|---|
 | Site | Astro 6, static output |
 | Styling | Tailwind 4, with design tokens in `src/styles/tokens.css` |
-| Patch runtime, layout, cables | Vanilla JavaScript, inlined at build |
+| Patch runtime, layout, cables | Vanilla JavaScript, served as one cached file |
 | Background | Canvas 2D |
 | Cables | SVG |
 | Page changes | The View Transitions API, through Astro's client router |
@@ -74,7 +74,8 @@ The tests need the browsers once: `npx playwright install`. To run all three eng
 | Path | What is there |
 |---|---|
 | `src/pages/` | One file per page. Case studies are in `src/pages/projects/` |
-| `src/components/PatchField.astro` | The network: background, cables, layout, page changes |
+| `src/components/PatchField.astro` | The network's markup and styles |
+| `src/lib/patch-field.js` | The network's script: background, cables, layout, page changes |
 | `src/components/Operator.astro` | One content block |
 | `src/lib/patch-runtime.js` | The message bus behind the cables |
 | `src/lib/previs.js` | The previews shown in the work index viewer |

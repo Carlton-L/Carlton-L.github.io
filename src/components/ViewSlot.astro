@@ -3,7 +3,7 @@
  * ViewSlot: the loading contract for everything inside a VIEW operator.
  *
  *  - The content's box is its final size from the first paint. React islands are server-rendered
- *    (client:load or client:visible, never client:only), so their real markup holds the space;
+ *    (client:settled, never client:only), so their real markup holds the space;
  *    vanilla demos give the slot a `height` or `aspect`, and `phoneHeight` for narrow containers.
  *  - A COOKING VIEWER poster covers the content until it's ready, then fades out while the content
  *    fades in (0.3s; instant with reduced motion).
@@ -16,7 +16,7 @@
  * while the element is within 200px of the viewport and the tab is visible.
  *
  *   <ViewSlot poster="COOKING VIEWER · SELF-GENERATING MAP…">
- *     <HeroMap client:load />
+ *     <HeroMap client:settled />
  *   </ViewSlot>
  *
  *   <ViewSlot poster="…" aspect="880 / 440" wait="event"> vanilla canvas </ViewSlot>

@@ -129,7 +129,7 @@ const layout = {
     <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · SELF-PLAYING SUBJECT PAGE…" bg="#111111">
-          <FastHero client:load />
+          <FastHero client:settled />
         </ViewSlot>
       </div>
     </Operator>
@@ -170,7 +170,7 @@ const layout = {
     <Operator id="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…" bg="#111111">
-          <FastGraphDemo client:visible={{ rootMargin: '600px' }} />
+          <FastGraphDemo client:settled={{ rootMargin: '600px' }} />
         </ViewSlot>
       </div>
     </Operator>
@@ -268,7 +268,7 @@ const layout = {
     <Operator id="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…" bg="#111111">
-          <FastGatherDemo client:visible={{ rootMargin: '600px' }} />
+          <FastGatherDemo client:settled={{ rootMargin: '600px' }} />
         </ViewSlot>
       </div>
     </Operator>

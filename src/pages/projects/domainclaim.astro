@@ -177,7 +177,7 @@ const unionExcerpt = `export type FailureReason =
     <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
       <div class="dc-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · THE PRODUCT'S HOME-PAGE DEMO…" wait="event">
-          <SignInHero client:load />
+          <SignInHero client:settled />
         </ViewSlot>
       </div>
     </Operator>
@@ -223,7 +223,7 @@ const unionExcerpt = `export type FailureReason =
     <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
       <div class="dc-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · THE LIVE APP · EVERYTHING IS CLICKABLE…" wait="event">
-          <FailureView client:visible={{ rootMargin: '600px' }} />
+          <FailureView client:settled={{ rootMargin: '600px' }} />
         </ViewSlot>
       </div>
     </Operator>

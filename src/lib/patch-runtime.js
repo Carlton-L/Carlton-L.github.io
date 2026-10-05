@@ -3,7 +3,7 @@
  *
  * One declaration (PatchField's `links` array) renders a cable AND creates a
  * subscription; every routed delivery pulses the wire that carries it
- * (visual = truth). Vanilla IIFE, inlined by PatchField (comments/indentation
+ * (visual = truth). Vanilla IIFE, served in /js/patch.js (comments/indentation
  * are stripped there in prod — keep this file free of `//` and `/*` inside
  * string/regex literals). One singleton per document that survives
  * ClientRouter swaps — but every REGISTRATION (fields, nodes, timers,

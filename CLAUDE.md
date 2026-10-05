@@ -8,9 +8,9 @@ This file holds the rules. The detail behind them lives in `docs/` (listed at th
 
 The site is a live dataflow network (TouchDesigner-derived grammar). **Read `design/DIRECTION_PATCH.md` in the "Carlton Portfolio" folder before any UI work.** Detail: `docs/PATCH_SYSTEM.md`.
 
-- Content blocks are **operators** (`src/components/Operator.astro`): typed header (VIEW / TXT / DATA / SYS), ports, draggable in PATCH mode. The network runtime is `PatchField.astro`; document pages use `PatchDoc.astro`.
+- Content blocks are **operators** (`src/components/Operator.astro`): typed header (VIEW / TXT / DATA / SYS), ports, draggable in PATCH mode. The network's markup and styles are `PatchField.astro`; its script is `src/lib/patch-field.js`; document pages use `PatchDoc.astro`.
 - **Cables are real subscriptions** through `src/lib/patch-runtime.js` (`window.Patch`). The bus is interaction-driven only; nothing emits per frame. Selections re-cook the network (Carlton's north star): extend that pattern.
-- ⚠️ `patch-runtime.js` and `previs.js` must have no `//` or `/*` inside string or regex literals (PatchField strips comments at build).
+- `patch-runtime.js`, `patch-field.js` and `previs.js` are served as cached files (`/js/patch.js`, `/js/previs.js`), built in `src/lib/bundles.js` and minified with esbuild. Never inline them into pages again: it made every page change slow. Dev-only code in the runtime sits between `//<dev` and `//>dev`.
 - **Layout** is authored as ASCII grid areas (`layout` on PatchField, `area` on Operator). Every tier names every area op. Never hardcode field heights; don't reintroduce `pos` strings or `translateX(-50%)`.
 - **Two modes**: PATCH (desktop ≥1280) and READ (default below 1280 and for reduced motion; internally `body.perform`). READ stacks operators in source order. Every component works in both.
 - The dither background is a visible chain of four SYS ops, persisted in localStorage (`patch-bg`). Keep the ImageData blit; don't regress to per-cell fills.
@@ -27,7 +27,7 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - Content: `src/data/content.js` is the single source for project and case-study copy. Copy is fact-checked: don't embellish roles or numbers. **Never name Futurity clients.**
 - Tagline: **"Designer who deploys. Engineer who dreams. I build what I design."** Carlton doesn't sketch; never reintroduce "engineer who sketches". The CV is `public/cv/Carlton_Lindsay_Design_Engineer_CV.pdf` (generator: portfolio folder `archive/gen-cv.js`).
 - FAST is "Futurity Analysis & Synthesis Tools". Never reintroduce "Accelerated Science" in copy.
-- Prefer zero-JS Astro; inline `<script is:inline data-astro-rerun>` for patch behaviors; React islands only for demos.
+- Prefer zero-JS Astro; inline `<script is:inline data-astro-rerun>` for a page's own patch behaviors (keep them small); React islands only for demos, mounted with `client:settled` so they hydrate after a page change, never during it.
 - SEO: every page uses the JSON-LD helpers in `src/lib/seo.js`, with a unique title and description.
 - Astro quirks: variables used by `getStaticPaths` must be defined inside it; a `<p>` whose text starts with `//` is dropped, so write `{'// …'}`.
 - Performance: the homepage ships about zero framework JS (the grid-lamp 3D preview is the one selection-gated exception); demo islands ≤300 KB gz; never scroll-jack; respect reduced motion.

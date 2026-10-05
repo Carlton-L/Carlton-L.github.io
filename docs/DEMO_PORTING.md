@@ -26,7 +26,7 @@ A port that edits component source is a recreation, however close. The label say
 3. **Shim the framework.** Map framework imports to small local modules through a Vite plugin that only rewrites imports coming from the demo's own folder, so nothing else on the site is affected. Record every shim in the port manifest.
 4. **Scope the style.** Compile the product's styling system as its own root and keep it out of the site's cascade (see "Style" below).
 5. **Vendor with provenance.** Copy the product files verbatim into `src/components/react/demos/<project>/vendor/`, keeping their relative paths. A `PORT.md` beside them records the source repo, the commit, the file list, each shim, and any edit (the target is zero). `scripts/port-sync.mjs <project>` re-copies from a checkout and prints the diff, so the demo follows the product instead of drifting.
-6. **Mount.** An Astro island inside `DemoFrame`, `client:visible` (or `client:only` with a poster for DOM-only libraries), inside a VIEW operator. Check the gz size of the island's chunks against the 300 KB budget from the build manifest.
+6. **Mount.** An Astro island inside `DemoFrame`, `client:settled={{ rootMargin: '600px' }}` (or `client:only` with a poster for DOM-only libraries), inside a VIEW operator. Check the gz size of the island's chunks against the 300 KB budget from the build manifest.
 7. **Prove nothing was lost.** Screenshot the product and the island at the same size and state (Playwright), and compare. Differences are either a documented seam or a bug.
 
 ## Where the product runs: its own document

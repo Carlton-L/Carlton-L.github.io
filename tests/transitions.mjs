@@ -36,12 +36,18 @@ const MIME = {
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
   '.woff2': 'font/woff2',
 };
+// Tests can slow pages down (net.delay, in ms) and read which paths were asked for (net.log).
+const net = { delay: 0, log: [] };
 const server = http.createServer((req, res) => {
   let file = path.join(DIST, decodeURIComponent(req.url.split('?')[0]));
   if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
   if (!fs.existsSync(file)) { res.writeHead(404); return res.end(); }
-  res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
-  res.end(fs.readFileSync(file));
+  const html = file.endsWith('.html');
+  if (html) net.log.push(req.url);
+  setTimeout(() => {
+    res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream', 'cache-control': 'max-age=600' });
+    res.end(fs.readFileSync(file));
+  }, html ? net.delay : 0);
 }).listen(0);
 const ORIGIN = `http://localhost:${server.address().port}`;
 
@@ -334,6 +340,93 @@ async function run(name) {
       if (n.length) found.push(path + ': ' + n.join(' | '));
     }
     check('no title tooltips on site controls', !found.length, found.join('; '));
+    await page.context().close();
+  }
+
+  // 14. Shared scripts are cached files, and pages do not carry them inline.
+  {
+    const page = await open();
+    const bad = [];
+    for (const path of ['/', '/projects', '/projects/futurescaper']) {
+      await page.goto(ORIGIN + path);
+      const r = await page.evaluate(() => ({
+        patch: !!document.querySelector('script[src^="/js/patch.js"]'),
+        inline: Math.max(0, ...[...document.querySelectorAll('script:not([src])')].map((x) => x.textContent.length)),
+      }));
+      if (!r.patch || r.inline > 20000) bad.push(`${path}: patch.js=${r.patch} largest inline script=${r.inline}`);
+    }
+    check('shared scripts are files, not inline', !bad.length && !page.errors.length, bad.join('; ') + (page.errors[0] || ''));
+    await page.context().close();
+  }
+
+  // 15. The nav routes are fetched before anyone clicks.
+  {
+    const page = await open();
+    net.log.length = 0;
+    await page.goto(ORIGIN + '/');
+    await page.waitForTimeout(SETTLE + 1500);
+    const got = ['/projects', '/about', '/lab', '/contact'].filter((r) => net.log.some((u) => u.replace(/\/$/, '') === r));
+    check('nav routes are prefetched', got.length === 4, 'fetched: ' + got.join(', '));
+    await page.context().close();
+  }
+
+  // 16. A slow page: the heat holds at the click while it loads, then the change runs and settles.
+  {
+    const page = await open();
+    await page.goto(ORIGIN + '/');
+    await page.waitForTimeout(SETTLE);
+    const row = await page.locator('a.idxrow[data-slug="domainclaim"]').boundingBox();
+    const at = [row.x + 60, row.y + 8];
+    const hotNear = () => page.evaluate(([cx, cy]) => {
+      const c = document.querySelector('canvas.bgdither'), k = c.width / innerWidth;
+      const d = c.getContext('2d').getImageData(Math.max(0, (cx - 150) * k), Math.max(0, (cy - 150) * k), 300 * k, 300 * k).data;
+      let n = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 0 && d[i] + d[i + 1] + d[i + 2] > 380) n++;
+      return n;
+    }, at);
+    net.delay = 900;
+    await page.mouse.move(at[0], at[1], { steps: 1 });
+    await page.mouse.down(); await page.mouse.up();
+    await page.waitForTimeout(150);
+    const early = await hotNear();
+    await page.waitForTimeout(450);
+    const late = await hotNear();
+    const waiting = await page.evaluate(() => !!(window.__pfNav && window.__pfNav.nav && !window.__pfNav.started));
+    net.delay = 0;
+    await page.waitForTimeout(SETTLE + 900);
+    const s = await readState(page);
+    check('slow page: heat holds at the click', waiting && late > early && late > 500, `waiting=${waiting} hot cells ${early} then ${late}`);
+    check('slow page: change still settles', s.path === '/projects/domainclaim' && settled(s), `${s.path} ${brief(s, page)}`);
+    await page.context().close();
+  }
+
+  // 17. The clock starts when the network is up, before the page's other scripts and demos,
+  //     and a demo reached by a page change hydrates only once the change is done.
+  {
+    const page = await open();
+    await page.goto(ORIGIN + '/projects');
+    await page.waitForTimeout(SETTLE);
+    await page.evaluate(() => {
+      const T = (window.__t = { samples: [] });
+      document.addEventListener('pf:go', () => { T.go = performance.now(); });
+      document.addEventListener('astro:page-load', () => { T.load = performance.now(); });
+      const iv = setInterval(() => {
+        const n = window.__pfNav, i = document.querySelector('astro-island');
+        if (i) T.samples.push([n ? n.f : -1, !i.hasAttribute('ssr')]);
+        if (T.samples.length > 60) clearInterval(iv);
+      }, 40);
+      document.querySelector('a[href="/projects/futurescaper"]').click();
+    });
+    await page.waitForTimeout(SETTLE + 600);
+    const t = await page.evaluate(() => window.__t);
+    const early = t.samples.filter(([f, h]) => h && f >= 0 && f < 1).length;
+    const hydrated = t.samples.length > 0 && t.samples[t.samples.length - 1][1];
+    check('clock starts before the page finishes loading', t.go > 0 && t.go <= t.load, `go=${Math.round(t.go)} page-load=${Math.round(t.load)}`);
+    check('demo hydrates after the page change', early === 0 && hydrated && !page.errors.length, `hydrated mid-change in ${early} samples, hydrated at end=${hydrated} ${page.errors[0] || ''}`);
+    await page.goto(ORIGIN + '/projects/futurescaper');
+    await page.waitForTimeout(1500);
+    const direct = await page.evaluate(() => { const i = document.querySelector('astro-island'); return !!i && !i.hasAttribute('ssr'); });
+    check('demo hydrates on a direct load', direct, '');
     await page.context().close();
   }
 

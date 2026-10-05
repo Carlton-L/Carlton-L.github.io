@@ -62,6 +62,20 @@ Tests: `npm test` (`tests/transitions.mjs`). It builds, serves `dist/` and drive
 
 Every font is self-hosted: files in `public/fonts/` with their licence files, faces in `src/styles/fonts.css`. Red Hat Display replaced Proxima Nova as the display and sans face, and the Adobe Fonts kit is gone. The kit was a render-blocking stylesheet and hid the headline until its font arrived. Red Hat Display is one variable file (31KB, weights 300 to 900). Sometype Mono replaced IBM Plex Mono as the mono face (one 17KB variable file, weights 400 to 700; the few uses of 300 fall back to 400). IBM Plex Mono and JetBrains Mono stay in `public/fonts/` for the DomainClaim and Futurescaper interiors. The "Type and colour" note above describes the old setup. The DomainClaim demo is its own document and still loads its fonts from Google.
 
+## Page-change speed (2026-10-05)
+
+On the live site a click did nothing for up to a second or two, worst on phones. The animation was waiting for the next page to download, parse and start up. Four changes fixed it. Keep all four.
+
+- **Shared scripts are cached files.** The runtime, the network script and the previews used to be inlined in every page (78% of the home page's HTML). They are now `/js/patch.js` and `/js/previs.js`, built by `src/lib/bundles.js`, minified with esbuild and served by the endpoints in `src/pages/js/`. The script tags carry `data-astro-rerun`, so they run again on every page from the browser's cache. Home went from 55KB to 16KB compressed. The notes above that say these files are inlined and stripped describe the old setup.
+- **Pages are fetched early.** Hover prefetches a link (Astro's default). The four nav routes are fetched as soon as they are on screen (`data-astro-prefetch="viewport"`). Touch has no hover, so `Base.astro` prefetches on `touchstart`.
+- **The click answers at once.** While the next page is on its way, `patch-field.js` holds the heat at the click point (`__pfNav.nav && !__pfNav.started`), on the page being left and on the new one until the clock starts.
+- **The clock starts when the network is up.** `patch-field.js` fires `pf:ready` when it has finished setting up, and `Base.astro` starts the clock on that. It no longer waits for the page's other scripts or `astro:page-load`. Pages with no network still start on `astro:page-load`. The clock fires `pf:done` at the end.
+- **Demos hydrate after the change.** `client:settled` (`src/lib/client-settled.js`, registered in `astro.config.mjs`) waits for `pf:done` when the page was reached by a link, and hydrates at once on a direct load. With `{ rootMargin }` it also waits until the demo is near the screen.
+
+Measured in Chromium with the processor slowed four times and no network delay, click to first frame of the ring: Futurescaper on a phone 562ms before, 294ms after. With 300ms of network latency, a tap on a nav route: 380ms before, 79ms after. First-load LCP did not change.
+
+Tried and not done: placing blank operators before their content arrives. Setting up the network, layout included, is not what is slow (9ms on a slowed phone, 38ms on a slowed desktop), and sizes depend on content, so there was nothing to gain.
+
 ## Hover: verb chip (2026-10-05)
 
 The system crosshair stays. In PATCH mode, for mouse and pen only, a chip sits beside it. It lives in `PatchField.astro` and does not touch the patch bus. A hover trace along the cables was tried and dropped: it lit things that did not need it.

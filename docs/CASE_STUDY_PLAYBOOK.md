@@ -46,7 +46,7 @@ Futurescaper is the template. Top to bottom:
 **Hero previews** open the page, right after the title and ownership card.
 
 - It plays by itself and can't be interacted with. It loops, and pauses off screen.
-- It is wide and centred (`maxw={900}`), with a fixed aspect ratio, and loads with the page (`client:load`).
+- It is wide and centred (`maxw={900}`), with a fixed aspect ratio, and loads with the page (`client:settled`: at once on a direct load, after the page change when reached by a link).
 - It shows the product doing its one thing, with no explanation needed: Futurescaper's map drawing itself, DomainClaim's check landing step by step, the Engine's run.
 - With reduced motion it shows a settled frame.
 
