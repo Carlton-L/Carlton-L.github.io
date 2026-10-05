@@ -17,6 +17,7 @@ import Operator from '../../components/Operator.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import LinkedViews from '../../components/LinkedViews.astro';
 import NextCase from '../../components/case/NextCase.astro';
+import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -39,6 +40,7 @@ const jsonLd = {
 
 const links: [string, string][] = [
   ['glTitle', 'glWhat'],
+  ['glTitle', 'glOwn'],
   ['glTitle', 'glFacts'],
   ['glWhat', 'gridPhoto'],
   ['glWhat', 'ctrlHelp'],
@@ -52,24 +54,22 @@ const links: [string, string][] = [
   ['gridOut', 'glNext'],
 ];
 
-// layout: content mode — same GRID viewport band as the old lab layout,
-// wrapped in case-study chrome (title/facts up top, next-network at the end).
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title title .     .     facts facts facts facts
-      what  what  what  what  what  what  .     .     photo photo photo photo
-      chelp chelp chelp chelp .     .     .     .     shelp shelp shelp shelp
-      app   app   app   app   .     gview gview gview gview gview gview gview
-      .     .     .     .     .     .     .     .     .     tel   tel   tel
-      cdes  cdes  cdes  cdes  cdes  cdes  .     gout  gout  gout  gout  .
-      .     .     .     .     nxt   nxt   nxt   nxt   .     .     .     .
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:6', 'own:3'], justify: 'between' },
+    // what it is on the left; the facts and the build photo stacked beside it
+    { row: ['what:6', { col: ['facts:4', 'photo:4'], gap: 1 }], justify: 'center', gap: 8 },
+    { row: ['chelp:4', 'shelp:4'], justify: 'center', gap: 8 },
+    { row: ['app:4', 'gview:7'], justify: 'center', gap: 2 },
+    { row: ['tel:3'], justify: 'end', inset: 1 },
+    { row: ['cdes:6', 'gout:4'], justify: 'center', gap: 8 },
+    { row: ['nxt:4'], justify: 'center' },
+  ],
 };
 ---
 
@@ -78,7 +78,7 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="glNet" links={links} density={0.3} height="3200px" layout={layout} label="GRID case-study network — press P for reading mode">
+  <PatchField id="glNet" links={links} height="3200px" layout={layout} label="GRID case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="glTitle" name="input · the_brief" type="txt" area="title" ports="out">
       <p class="gl-meta">{project.meta} · SIM FOR A HARDWARE BUILD IN PROGRESS</p>
@@ -88,6 +88,9 @@ const layout = {
         {project.tags.map((tag) => <span class="gl-chip">{tag}</span>)}
       </div>
     </Operator>
+
+    <!-- OWNERSHIP: second in the source, so it is second in READ mode and on phones -->
+    <OwnershipMeter id="glOwn" rows={[['CONCEPT', 100], ['DESIGN', 100], ['SIMULATION', 100], ['HARDWARE PLAN', 100]]} note="SOLO. THE SIM IS BUILT. THE HARDWARE BUILD IS IN PROGRESS." />
 
     <Operator id="glFacts" name="facts_data" type="data" area="facts" maxw={300} ports="in">
       <dl class="gl-facts">
@@ -99,8 +102,8 @@ const layout = {
     </Operator>
 
     <Operator id="glWhat" name="txt · what_it_is" type="txt" area="what">
-      {cs['What it is'].map((p) => <p class="pd-p">{p}</p>)}
-      <p class="pd-p">
+      {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
+      <p class="cs-p">
         Both views below run off the same state. Change something in the app
         and the lamp follows. Works the other way too.
       </p>
@@ -257,17 +260,17 @@ const layout = {
     <!-- PROCESS: why the controls work the way they do — read after playing -->
     <Operator id="controlDesign" name="process · control_design" type="txt" area="cdes">
       <h3 class="gl-h3">Why the controls work this way</h3>
-      {cs['Why the controls work this way'].map((p) => <p class="pd-p">{p}</p>)}
+      {cs['Why the controls work this way'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- OUT: sim-first method + what only hardware can answer -->
     <Operator id="gridOut" name="out · the_build" type="txt" area="gout" ports="in">
-      {cs['Sim first, hardware second'].map((p) => <p class="pd-p">{p}</p>)}
-      {cs['What only the build can answer'].map((p) => <p class="pd-p">{p}</p>)}
+      {cs['Sim first, hardware second'].map((p) => <p class="cs-p">{p}</p>)}
+      {cs['What only the build can answer'].map((p) => <p class="cs-p">{p}</p>)}
       <p class="gl-outnext">▸ NEXT · BUILD PHOTOS LAND IN grid_photo AS THE HARDWARE COMES TOGETHER</p>
     </Operator>
 
-    <NextCase id="glNext" from="grid-lamp" area="nxt" nudge="0 0" />
+    <NextCase id="glNext" from="grid-lamp" area="nxt" />
   </PatchField>
 
   <!-- Lazy bootstrap: nothing GRID-related loads until a sim op nears the
@@ -341,9 +344,6 @@ const layout = {
   .gl-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
   .gl-facts dd { font-size: 12.5px; color: var(--text); }
 
-  .pd-p { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 8px; }
-  .pd-p:last-of-type { margin-bottom: 0; }
-  .pd-p b { color: var(--text); font-weight: 600; }
 
   .gl-meta {
     font-family: var(--font-mono);

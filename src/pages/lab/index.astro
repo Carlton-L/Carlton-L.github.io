@@ -64,32 +64,23 @@ const links: [string, string][] = [
   ['labDiv3', 'labCook'],
 ];
 
-// layout: content mode — concept text left, artifact (sim / renders) right,
-// per experiment. div rows are the full-width section bars.
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
-  padTop: 48, // the first operator sits at the same height on every page (78px, as on home and the case studies)
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      intro intro intro intro intro .     .     .     index index index index
-      .     .     .     .     .     .     .     .     .     .     .     .
-      div1  div1  div1  div1  div1  div1  div1  div1  div1  div1  div1  div1
-      .     .     .     .     .     .     .     .     .     .     .     .
-      hlc   hlc   hlc   hlc   hlc   .     plv   plv   plv   plv   plv   plv
-      .     .     .     .     .     .     .     .     .     .     .     .
-      div2  div2  div2  div2  div2  div2  div2  div2  div2  div2  div2  div2
-      .     .     .     .     .     .     .     .     .     .     .     .
-      econc econc econc econc econc .     ehero ehero ehero ehero ehero ehero
-      .     erend erend erend erend erend erend .     eled  eled  eled  .
-      .     .     .     eout  eout  eout  eout  eout  eout  .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3  div3
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     .     .     cook  cook  cook  cook  .     .     .     .
-    `,
-  }],
+  mode: 'flex',
+  padTop: 48,
+  gap: 2,
+  rows: [
+    { row: ['intro:5', 'index:4'], justify: 'between' },
+    { row: ['div1:12'], mt: 1 },
+    { row: ['hlc:5', 'plv:6'], justify: 'between', mt: 1 },
+    { row: ['div2:12'], mt: 1 },
+    { row: ['econc:5', 'ehero:6'], justify: 'between', mt: 1 },
+    { row: ['erend:6', 'eled:3'], justify: 'center', gap: 8 },
+    { row: ['eout:6'], justify: 'center' },
+    { row: ['div3:12'], mt: 1 },
+    { row: ['cook:4'], justify: 'center', mt: 1 },
+  ],
 };
 ---
 
@@ -98,7 +89,7 @@ const layout = {
   description="Interactive experiments, generative sketches, and technical explorations."
   jsonLd={jsonLd}
 >
-  <PatchField id="labNet" links={links} density={0.3} height="2300px" layout={layout} label="Lab network — press P for reading mode">
+  <PatchField id="labNet" links={links} height="2300px" layout={layout} label="Lab network — press P for reading mode">
     <Operator id="labIntro" name="input · lab_txt" type="txt" area="intro" ports="out">
       <h1 class="pd-h">Lab</h1>
       <p class="pd-p">
@@ -107,7 +98,7 @@ const layout = {
       </p>
     </Operator>
 
-    <Operator id="labIndex" name="experiments_index" type="data" area="index" nudge="0 24">
+    <Operator id="labIndex" name="experiments_index" type="data" area="index">
       <div class="pd-exps">
         {experiments.map((exp) => (
           <a href={exp.href} class="pd-exp">

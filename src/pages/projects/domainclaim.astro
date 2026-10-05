@@ -72,39 +72,30 @@ const links: [string, string][] = [
   ['dcOutc', 'dcOut'],
 ];
 
-// Three SYS breaks (br1 to br3) with blank rows around them, the same grammar as the FAST page. The
-// first one sits right before the live demo, so the page slows down there.
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title title .     .     .     own   own   own
-      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      .     wrong wrong wrong wrong wrong .     rsrch rsrch rsrch rsrch .
-      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     .     .     next  next  next  next  next  next  .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     .     try   try   try   try   try   try   .     .     .
-      .     fx    fx    fx    fx    fx    fx    fx    fx    fx    fx    .
-      .     real  real  real  real  real  .     rules rules rules rules .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     code  code  code  code  code  code  .     files files files files
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     twice twice twice twice twice .     bfr   bfr   bfr   bfr   .
-      .     cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   cpt   .
-      .     .     .     miss  miss  miss  miss  miss  miss  .     .     .
-      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:6', 'own:3'], justify: 'between' },
+    { row: ['hero:10'], justify: 'center' },
+    { row: ['wrong:5', 'rsrch:4'], justify: 'center', gap: 8 },
+    { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['next:6'], justify: 'center' },
+    { row: ['br1:8'], justify: 'center', mt: 1 },
+    { row: ['try:6'], justify: 'center', mt: 1 },
+    { row: ['fx:10'], justify: 'center' },
+    { row: ['real:5', 'rules:4'], justify: 'center', gap: 8 },
+    { row: ['br2:8'], justify: 'center', mt: 1 },
+    { row: ['code:6', 'files:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['br3:8'], justify: 'center', mt: 1 },
+    { row: ['twice:5', 'bfr:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['cpt:10'], justify: 'center' },
+    { row: ['miss:6'], justify: 'center' },
+    { row: ['outc:5', 'out:4'], justify: 'between' },
+  ],
 };
 
 
@@ -160,12 +151,12 @@ const unionExcerpt = `export type FailureReason =
   ogImage={project.image}
   jsonLd={jsonLd}
 >
-  <PatchField id="dcNet" links={links} density={0.3} layout={layout} label="DomainClaim case-study network — press P for reading mode">
+  <PatchField id="dcNet" links={links} layout={layout} label="DomainClaim case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="dcTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="dc-meta">{project.meta}</p>
       <h1 class="dc-h">Proof you can <span class="grn">watch</span></h1>
-      {cs['What it is'].map((p) => <p class="dc-p dc-lede">{p}</p>)}
+      {cs['What it is'].map((p) => <p class="cs-p dc-lede">{p}</p>)}
       <div class="dc-links">
         <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
         <a class="dc-live" href="https://github.com/Carlton-L/domainclaim" target="_blank" rel="noopener">▸ REPO · Carlton-L/domainclaim ↗</a>
@@ -186,7 +177,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- the problem, and what it decided -->
     <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
       <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
-      {cs['What goes wrong'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['What goes wrong'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="dcRsrch" name="research_in" type="data" area="rsrch">
@@ -198,19 +189,19 @@ const unionExcerpt = `export type FailureReason =
     </Operator>
 
     <DecisionCard id="dcD1" area="d1" num={1} slug="ask_the_source" title="Ask the source">
-      {cs['Ask the source'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Ask the source'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <DecisionCard id="dcD2" area="d2" num={2} slug="whose_move" title="Whose move is next">
-      {cs['Whose move is next'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Whose move is next'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <DecisionCard id="dcD3" area="d3" num={3} slug="claim_then_prove" title="Claim, then prove">
-      {cs['Claim, then prove'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Claim, then prove'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <DecisionCard id="dcNext" area="next" num={4} slug="progressive_disclosure" title="Progressive disclosure">
-      {cs['Progressive disclosure'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Progressive disclosure'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <SectionBreak id="dcBr1" area="br1" num={1} label="THE LIVE DEMO" />
@@ -218,7 +209,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- 01 THE LIVE DEMO: how to use it, then one view with its state card underneath -->
     <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
       <h2 class="dc-h2">Try <span class="grn">it</span></h2>
-      {cs['Try it'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Try it'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
@@ -232,7 +223,7 @@ const unionExcerpt = `export type FailureReason =
 
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
       <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
-      {cs['Only real states'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Only real states'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="dcRules" name="rules_out" type="data" area="rules">
@@ -246,7 +237,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- 02 THE CODE -->
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
       <h2 class="dc-h2">For the <span class="grn">code</span> reader</h2>
-      {cs['For the code reader'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['For the code reader'].map((p) => <p class="cs-p">{p}</p>)}
       <CodeExcerpt code={unionExcerpt} file="src/lib/claims/state.ts" note="every failure the check can report" />
     </Operator>
 
@@ -264,7 +255,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- 03 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
       <h2 class="dc-h2">Two <span class="grn">passes</span></h2>
-      {cs['Two passes'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Two passes'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- the first pass: its claim screen, from the old README -->
@@ -297,7 +288,7 @@ const unionExcerpt = `export type FailureReason =
     </Operator>
 
     <Operator id="dcMiss" name="txt · one_change_at_a_time" type="txt" area="miss">
-      {cs['One change at a time'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['One change at a time'].map((p) => <p class="cs-p">{p}</p>)}
       <div class="dc-pair">
         <figure>
           <img src="/images/projects/domainclaim/proto-04.webp" alt="Prototype 04: every change applied at once, with collapsed cards and a pin button" width="1440" height="900" loading="lazy" decoding="async" />
@@ -312,7 +303,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- OUT -->
     <Operator id="dcOutc" name="out · outcome" type="txt" area="outc" ports="in">
-      {cs['Outcome'].map((p) => <p class="dc-p">{p}</p>)}
+      {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
       <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · domainclaim-pi.vercel.app ↗</a>
     </Operator>
 
@@ -365,8 +356,6 @@ const unionExcerpt = `export type FailureReason =
     margin: 14px 0 8px;
   }
   .dc-h2:first-child { margin-top: 0; }
-  .dc-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
-  .dc-p:last-child { margin-bottom: 0; }
 
   .dc-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .dc-live {

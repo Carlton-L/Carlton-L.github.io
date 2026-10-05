@@ -174,3 +174,9 @@ html[data-pf='ring']::view-transition-new(root) {
   from { --pf-wipe: 0%; }
   to { --pf-wipe: 114%; }
 }
+
+/* Case-study body text. One class for every case study (it was a copy per page, and two had
+   drifted to grey). Cards hold it in their own markup, so it is global. */
+.cs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
+.cs-p:last-child { margin-bottom: 0; }
+.cs-p b { color: var(--text); font-weight: 600; }

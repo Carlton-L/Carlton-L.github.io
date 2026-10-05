@@ -29,18 +29,17 @@ const links = [
 // ever sees this URL.
 const MAIL_ENDPOINT = 'https://api.carlton.dev/api/contact';
 
-// layout: say_hi holds the left column beside the channel stack (one row per
-// channel; hi spans all but the last so the columns balance). Content mode —
-// the field height is computed from the ops.
-const areas = [
-  ...channelIds.map((id, i) => `${i < channelIds.length - 1 ? 'hi hi hi hi hi' : '.  .  .  .  .'} . . ${id} ${id} ${id} ${id} .`),
-  '. . . . . . . . . . . .',
-  'msg msg msg msg msg msg . relay relay relay relay .',
-].join('\n');
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{ min: 0, cols: 12, areas }],
+  gap: 2,
+  rows: [
+    // the greeting on the left, one card per channel stacked on the right
+    { row: ['hi:5', { col: channelIds.map((id) => `${id}:4`), gap: 1 }], justify: 'between', inset: [0, 1] },
+    { row: ['msg:6', 'relay:4'], justify: 'between', inset: [0, 1], mt: 1 },
+  ],
 };
 ---
 
@@ -49,7 +48,7 @@ const layout = {
   description="Get in touch — available for design technology, creative engineering, and AI-focused frontend roles."
   jsonLd={jsonLd}
 >
-  <PatchField id="contactNet" links={links} density={0.3} height="640px" layout={layout} label="Contact network — press P for reading mode">
+  <PatchField id="contactNet" links={links} height="640px" layout={layout} label="Contact network — press P for reading mode">
     <Operator id="ctHi" name="input · say_hi" type="txt" area="hi" ports="out">
       <h1 class="ct-h">Contact</h1>
       <p class="ct-p">

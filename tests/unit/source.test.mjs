@@ -177,3 +177,19 @@ test('the site does not use Astro\'s prefetch, which fetches the page without it
     assert.equal(/data-astro-prefetch/.test(read(f)), false, `${f}: use data-warm`);
   }
 });
+
+test('on a flex page, every card with an area is in the layout, and the layout names no card twice', () => {
+  let pages = 0;
+  for (const f of walk('src/pages').filter((f) => f.endsWith('.astro'))) {
+    const src = read(f);
+    const m = src.match(/const layout = \{\s*mode: 'flex'[\s\S]*?\n\};/);
+    if (!m) continue;
+    pages++;
+    const named = [...m[0].matchAll(/'([\w-]+)(?::[\d.*]+)?'/g)].map((x) => x[1]).filter((n) => !['flex', 'between', 'center', 'start', 'end', 'around', 'evenly', 'stretch'].includes(n));
+    assert.equal(new Set(named).size, named.length, `${f}: a card is placed twice (${named.filter((n, i) => named.indexOf(n) !== i).join(', ')})`);
+    for (const a of src.matchAll(/<(?:Operator|SectionBreak|DecisionCard|NextCase|OwnershipMeter)\b[^>]*?\sarea="([\w-]+)"/g)) {
+      assert.ok(named.includes(a[1]), `${f}: "${a[1]}" has no place in the layout`);
+    }
+  }
+  assert.ok(pages >= 10, `only ${pages} flex pages found`);
+});

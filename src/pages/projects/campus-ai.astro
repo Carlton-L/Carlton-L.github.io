@@ -20,6 +20,7 @@
  * Data: src/data/demos/campus-ai/coded-excerpts.json (sanitized; README).
  */
 import Base from '../../layouts/Base.astro';
+import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import Operator from '../../components/Operator.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
@@ -112,9 +113,10 @@ const FUN = {
 };
 
 const links: [string, string][] = [
-  ['caTitle', 'caFacts'],
+  ['caTitle', 'caOwn'],
   ['caTitle', 'caFunView'],
-  ['caFunView', 'caBreak1'],
+  ['caFunView', 'caFacts'],
+  ['caFacts', 'caBreak1'],
   ['caBreak1', 'caQ'],
   ['caQ', 'caBuilt'],
   ['caBuilt', 'caProto'],
@@ -147,40 +149,32 @@ const links: [string, string][] = [
   ['caOutc', 'caOut'],
 ];
 
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title .     .     .     .     facts facts facts
-      .     .     fv    fv    fv    fv    fv    fv    fv    fv    .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     q     q     q     q     .     .     built built built built .
-      .     proto proto proto proto proto .     scr   scr   scr   scr   .
-      .     .     .     pipe  pipe  pipe  pipe  pipe  pipe  .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     meth  meth  meth  meth  .     .     .     .     .     .     .
-      .     view  view  view  view  view  view  view  view  view  view  .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     i1    i1    i1    .     i2    i2    i2    .     i3    i3    i3
-      .     i4    i4    i4    .     i5    i5    i5    .     i6    i6    i6
-      .     .     .     .     i7    i7    i7    i7    .     .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br4   br4   br4   br4   br4   br4   br4   br4   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     r1    r1    r1    r1    .     .     r2    r2    r2    r2    .
-      .     r3    r3    r3    r3    .     .     r4    r4    r4    r4    .
-      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:5', 'own:3'], justify: 'between' },
+    { row: ['fv:8'], justify: 'center' },
+    { row: ['facts:4'], justify: 'center' },
+    { row: ['br1:8'], justify: 'center', mt: 1 },
+    { row: ['q:4', 'built:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['proto:5', 'scr:4'], justify: 'center', gap: 8 },
+    { row: ['pipe:6'], justify: 'center' },
+    { row: ['br2:8'], justify: 'center', mt: 1 },
+    { row: ['meth:4'], inset: 1, mt: 1 },
+    { row: ['view:10'], justify: 'center' },
+    { row: ['br3:8'], justify: 'center', mt: 1 },
+    { row: ['i1:3', { op: 'i2', w: 3, mt: 1.5 }, { op: 'i3', w: 3, mt: 3 }], justify: 'between', inset: 1, mt: 1 },
+    { row: ['i4:3', { op: 'i5', w: 3, mt: 1.5 }, { op: 'i6', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['i7:4'], justify: 'center' },
+    { row: ['br4:8'], justify: 'center', mt: 1 },
+    { row: ['r1:4', { op: 'r2', w: 4, mt: 1.5 }], justify: 'center', gap: 8, mt: 1 },
+    { row: ['r3:4', { op: 'r4', w: 4, mt: 1.5 }], justify: 'center', gap: 8 },
+    { row: ['outc:5', 'out:4'], justify: 'between' },
+  ],
 };
 
 const AREA_INS = ['i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7'];
@@ -192,23 +186,16 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="caNet" links={links} density={0.3} height="7900px" layout={layout} label="Campus AI case-study network — press P for reading mode">
+  <PatchField id="caNet" links={links} height="7900px" layout={layout} label="Campus AI case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="caTitle" name="input · the_brief" type="txt" area="title" ports="out">
       <p class="ca-meta">{project.meta}</p>
       <h1 class="ca-h">Claims with <span class="sig">receipts</span></h1>
       <p class="ca-sub">{"// 42 SURVEYED · 8 INTERVIEWED · 1,117 CODED MOMENTS. PICK ANY CLAIM AND WALK TO THE EVIDENCE IT STANDS ON."}</p>
-      {cs['The question'].map((p) => <p class="ca-p">{p}</p>)}
+      {cs['The question'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="caFacts" name="facts_data" type="data" area="facts" maxw={300}>
-      <dl class="ca-facts">
-        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
-        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
-        <div><dt>METHOD</dt><dd>{project.facts.stack}</dd></div>
-        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
-      </dl>
-    </Operator>
+    <OwnershipMeter id="caOwn" rows={[['CARLTON LINDSAY', 100], ['MARIO CÁCERES', 100], ['RED RIVERA', 100], ['TOMI AKINADE', 100]]} note="TEAM OF 4. EVERYONE WORKED ON EVERY PART." />
 
     <!-- VIEW: FUNNEL.scn — the pipeline cooking (same scene as the homepage preview) -->
     <Operator id="caFunView" name="campus_ai_view · FUNNEL.scn" type="view" area="fv" maxw={680}>
@@ -238,6 +225,15 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     </Operator>
 
     <!-- CHAPTER 01 · THE STUDY -->
+    <Operator id="caFacts" name="facts_data" type="data" area="facts" maxw={420}>
+      <dl class="ca-facts">
+        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
+        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
+        <div><dt>METHOD</dt><dd>{project.facts.stack}</dd></div>
+        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
+      </dl>
+    </Operator>
+
     <SectionBreak id="caBreak1" area="br1" num={1} label="THE STUDY" />
 
     <Operator id="caQ" name="process · research_questions" type="txt" area="q">
@@ -255,14 +251,14 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
       </div>
     </Operator>
 
-    <Operator id="caBuilt" name="process · how_it_was_built" type="txt" area="built" nudge="0 40">
+    <Operator id="caBuilt" name="process · how_it_was_built" type="txt" area="built">
       <h2 class="ca-h2">How the study was built</h2>
-      {cs['How the study was built'].map((p) => <p class="ca-p">{p}</p>)}
+      {cs['How the study was built'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="caProto" name="process · how_a_session_ran" type="txt" area="proto" maxw={620}>
       <h2 class="ca-h2">How a session ran</h2>
-      {cs['How a session ran'].map((p) => <p class="ca-p">{p}</p>)}
+      {cs['How a session ran'].map((p) => <p class="cs-p">{p}</p>)}
       <div class="ca-proto" role="img" aria-label="The 90-minute interview protocol: eight movements from intro to stakeholder questions, sized by minutes">
         {PROTO.map(([label, min], i) => (
           <div class="ca-prow">
@@ -275,7 +271,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
       </div>
     </Operator>
 
-    <Operator id="caScreen" name="data · screener_quotas" type="data" area="scr" maxw={360} nudge="0 40">
+    <Operator id="caScreen" name="data · screener_quotas" type="data" area="scr" maxw={360}>
       <h2 class="ca-h2">Who got a seat</h2>
       <ul class="ca-quota">
         <li><b>42</b> SCREENED → <b>8</b> SEATS</li>
@@ -305,7 +301,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 
     <Operator id="caMethod" name="process · the_coding" type="txt" area="meth">
       <h2 class="ca-h2">Method</h2>
-      {cs['Method'].map((p) => <p class="ca-p">{p}</p>)}
+      {cs['Method'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- VIEW: featured quote + evidence map + coded excerpts -->
@@ -346,12 +342,12 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     <SectionBreak id="caBreak3" area="br3" num={3} label="WHAT WE FOUND" />
 
     {INSIGHTS.map((ins, i) => (
-      <Operator id={ins.id} name={`insight_${ins.num}`} type="txt" area={AREA_INS[i]} nudge={['', '0 40', '0 80', '', '0 40', '0 80', ''][i] || undefined}>
+      <Operator id={ins.id} name={`insight_${ins.num}`} type="txt" area={AREA_INS[i]}>
         <div class="ca-ins">
           <span class="ca-inum" aria-hidden="true">{ins.num}</span>
           <h3 class="ca-ih">{ins.heading}</h3>
           <div class="ca-vig" set:html={VIGS[ins.vig]} />
-          {cs[ins.heading].map((p) => <p class="ca-p">{p}</p>)}
+          {cs[ins.heading].map((p) => <p class="cs-p">{p}</p>)}
           <div class="ca-chips">
             {ins.chips.map((c) => <span class="ca-chip">{c}</span>)}
           </div>
@@ -364,12 +360,12 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     <SectionBreak id="caBreak4" area="br4" num={4} label="WHAT WE RECOMMENDED" />
 
     {RECS.map((rec, i) => (
-      <Operator id={rec.id} name={`rec_${rec.num}`} type="txt" area={AREA_REC[i]} nudge={i % 2 ? '0 40' : undefined}>
+      <Operator id={rec.id} name={`rec_${rec.num}`} type="txt" area={AREA_REC[i]}>
         <div class="ca-ins">
           <span class="ca-inum ca-rnum" aria-hidden="true">{rec.num}</span>
           <h3 class="ca-ih">{rec.heading}</h3>
           <div class="ca-vig" set:html={VIGS[rec.vig]} />
-          {cs[rec.heading].map((p) => <p class="ca-p">{p}</p>)}
+          {cs[rec.heading].map((p) => <p class="cs-p">{p}</p>)}
           <p class="ca-ev">{rec.ev}</p>
         </div>
       </Operator>
@@ -378,7 +374,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     <!-- OUT -->
     <Operator id="caOutc" name="out · what_it_settled" type="txt" area="outc" ports="in">
       <h2 class="ca-h2">What it settled</h2>
-      {cs['What it settled'].map((p) => <p class="ca-p">{p}</p>)}
+      {cs['What it settled'].map((p) => <p class="cs-p">{p}</p>)}
       <a class="ca-req" href="/contact/">▸ WANT THE FULL WRITE-UP? CONTACT ME</a>
     </Operator>
 
@@ -697,10 +693,8 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     color: var(--signal);
     margin-bottom: 10px;
   }
-  .ca-p { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
-  .ca-p:last-of-type { margin-bottom: 0; }
 
-  .ca-facts { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .ca-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
   .ca-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
   .ca-facts dd { font-size: 12px; color: var(--text); }
 

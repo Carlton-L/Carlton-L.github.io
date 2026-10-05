@@ -119,12 +119,11 @@
     });
     applySignal();
 
-    /* audition (READ mode): while a bg control is being touched the field
+    /* audition (both modes): while a bg control is being touched the field
        comes forward for a beat so the change is visible under the finger.
        CSS does the fade (body.bg-audition rules in this component). */
     let audT = null;
     const audition = () => {
-      if (!isRead()) return;
       document.body.classList.add('bg-audition');
       clearTimeout(audT);
       audT = setTimeout(() => document.body.classList.remove('bg-audition'), 1200);
@@ -140,6 +139,8 @@
     (function () {
       let LAYOUT = null;
       try { LAYOUT = JSON.parse(host.dataset.layout || 'null'); } catch (e) {}
+      const FLEX = !!LAYOUT && LAYOUT.mode === 'flex';
+      if (FLEX && !Array.isArray(LAYOUT.tiers)) LAYOUT.tiers = [{ min: 0, rows: LAYOUT.rows || [] }];
       if (!LAYOUT || !Array.isArray(LAYOUT.tiers) || !LAYOUT.tiers.length) return;
 
       const guRaw = parseFloat(getComputedStyle(host).getPropertyValue('--grid-size'));
@@ -166,13 +167,99 @@
       };
 
       let lastSig = '';
+
+      /* ---------- flex mode (layout.mode: 'flex') ----------
+         The page is described as flexbox: a column of rows, rows of cards, and columns inside rows
+         where a card sits beside a stack. The browser does the layout. A hidden skeleton of plain
+         boxes is built from the spec, one box per card. Each box takes its width from the spec,
+         the card is set to that width and measured, the box takes the card's height, and the card
+         is then put where its box landed. Cards stay absolutely placed, so dragging, the resize
+         glide, the page-change handoff and the cables work as before.
+
+           rows: [
+             { row: ['title:5', 'own:3'], justify: 'between' },
+             { row: ['what:4', 'role:4'], justify: 'center', gap: 2 },
+             { row: ['bio:5', { col: ['xp:4', 'edu:4'], gap: 1 }], justify: 'between', inset: 1 },
+             { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+           ]
+
+         A card is 'area' or 'area:w' (w in twelfths of the field; no w means its maxw, or 4) or
+         { op, w, mt, self, grow }. A row or column takes justify (start center end between around
+         evenly), align (start center end stretch), gap, mt, inset (side padding in columns, or
+         [left, right]), w and h.
+         gap, mt and h are in grid units. Nudges are ignored in this mode: use mt. */
+      const JUST = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' };
+      const ALIGN = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' };
+      function flexLayout(tier, areaEls, W, colW, top) {
+        const u = (n) => (typeof n === 'string' ? n : (n || 0) * GU + 'px');
+        const cols = (n) => Math.max(GU, n * colW - GU / 2);
+        const leaves = [];
+        const box = (css) => { const d = document.createElement('div'); d.style.cssText = 'box-sizing:border-box;min-width:0;flex:0 0 auto;' + css; return d; };
+        function build(node, parent, inRow) {
+          if (typeof node === 'string') { const p = node.split(':'); node = { op: p[0], w: p[1] === '*' ? null : p[1] ? parseFloat(p[1]) : undefined, grow: p[1] === '*' }; }
+          if (node.op) {
+            const el = areaEls[node.op] || host.querySelector('.op[data-area="' + node.op + '"]');
+            if (!el || el.offsetParent !== host) return;
+            const manual = el.hasAttribute('data-manual');
+            const d = box('');
+            if (manual || el.dataset.fit === 'auto') d.style.width = el.offsetWidth + 'px';
+            else if (node.grow) d.style.flex = '1 1 0';
+            else {
+              const mw = parseFloat(el.dataset.maxw);
+              let w = typeof node.w === 'string' ? null : cols(node.w != null ? node.w : isFinite(mw) ? 12 : 4);
+              if (w != null && isFinite(mw) && mw < w) w = mw;
+              d.style.width = w != null ? Math.round(w) + 'px' : node.w;
+            }
+            if (node.mt) d.style.marginTop = u(node.mt);
+            if (node.self) d.style.alignSelf = ALIGN[node.self] || node.self;
+            parent.appendChild(d);
+            leaves.push({ d, el, manual });
+            return;
+          }
+          const isRow = !!node.row, kids = node.row || node.col || [];
+          const d = box('display:flex;flex-direction:' + (isRow ? 'row' : 'column') + ';');
+          d.style.justifyContent = JUST[node.justify] || (isRow ? 'flex-start' : 'flex-start');
+          d.style.alignItems = ALIGN[node.align] || 'flex-start';
+          d.style.gap = u(node.gap != null ? node.gap : isRow ? 2 : 1);
+          if (node.mt) d.style.marginTop = u(node.mt);
+          if (node.h) d.style.height = u(node.h);
+          if (node.inset) { const i = [].concat(node.inset); d.style.paddingLeft = i[0] * colW + 'px'; d.style.paddingRight = (i.length > 1 ? i[1] : i[0]) * colW + 'px'; }
+          if (node.self) d.style.alignSelf = ALIGN[node.self] || node.self;
+          if (node.w != null) d.style.width = typeof node.w === 'string' ? node.w : Math.round(cols(node.w)) + 'px';
+          else if (node.grow) d.style.flex = '1 1 0';
+          else if (!inRow) d.style.alignSelf = 'stretch'; // a row of the page is the full width
+          parent.appendChild(d);
+          kids.forEach((k) => build(k, d, isRow));
+        }
+        const sk = box('position:absolute;visibility:hidden;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;');
+        sk.style.left = GU + 'px'; sk.style.top = top + 'px'; sk.style.width = W - 2 * GU + 'px';
+        sk.style.gap = u(LAYOUT.gap != null ? LAYOUT.gap : 2);
+        (tier.rows || []).forEach((r) => build(r, sk, false));
+        host.appendChild(sk);
+        // widths, then heights against those widths, then places
+        leaves.forEach((l) => { if (!l.manual && l.el.dataset.fit !== 'auto') l.el.style.width = Math.round(l.d.offsetWidth) + 'px'; });
+        leaves.forEach((l) => { l.d.style.height = l.el.offsetHeight + 'px'; });
+        const hr = host.getBoundingClientRect();
+        leaves.forEach((l) => {
+          if (l.manual) return;
+          const r = l.d.getBoundingClientRect();
+          l.el.style.left = Math.round(r.left - hr.left) + 'px'; l.el.style.top = Math.round(r.top - hr.top) + 'px';
+          l.el.style.right = 'auto'; l.el.style.bottom = 'auto'; l.el.style.transform = 'none';
+        });
+        const bottom = sk.getBoundingClientRect().bottom - hr.top;
+        sk.remove();
+        host.style.height = 'auto';
+        host.style.minHeight = Math.max(640, Math.round(bottom) + 2 * GU) + 'px';
+        lastSig = Array.from(host.querySelectorAll('.op[data-area]')).map((el) => el.offsetHeight).join(',');
+      }
+
       function relayout() {
         if (isRead()) return;
         const W = host.clientWidth;
         if (W < 2) return;
         let tier = LAYOUT.tiers[0];
         for (const t of LAYOUT.tiers) if (W >= (t.min || 0)) tier = t;
-        const { nrows, cells } = parseAreas(tier.areas);
+        const { nrows, cells } = FLEX ? { nrows: 0, cells: {} } : parseAreas(tier.areas);
         const cols = tier.cols || 12;
         const PAD = GU, padTop = LAYOUT.padTop || 0;
         const colW = (W - 2 * PAD) / cols;
@@ -185,6 +272,8 @@
           if (el.hasAttribute('data-manual') || el.offsetParent !== host) return;
           areaEls[el.dataset.area] = el;
         });
+
+        if (FLEX) { flexLayout(tier, areaEls, W, colW, PAD + padTop); return; }
 
         // 1. widths first (content mode measures heights against final widths)
         Object.keys(areaEls).forEach((name) => {
@@ -291,7 +380,7 @@
       on(window, 'resize', () => { clearTimeout(rlT); rlT = setTimeout(glideRelayout, 80); });
       on(document, 'patchmode', () => debRelayout(60));
       if (sys) sys.cleanup(() => clearTimeout(rlT));
-      if (LAYOUT.mode === 'content' && typeof ResizeObserver !== 'undefined') {
+      if ((LAYOUT.mode === 'content' || FLEX) && typeof ResizeObserver !== 'undefined') {
         // late-hydrating islands change op heights → re-relax (signature-guarded, no loops)
         const ro = new ResizeObserver(() => {
           const sig = Array.from(host.querySelectorAll('.op[data-area]')).map((el) => el.offsetHeight).join(',');
@@ -419,7 +508,9 @@
           }
         }
       }
-      if (navPending) wireT0 = Infinity; // cables stay out until the front is done, then wire in
+      // cables stay out until the front is done, then wire in. Only on the first alloc: a resize
+      // allocs again after the front has finished, and nothing would bring the cables back.
+      if (navPending && !old) wireT0 = Infinity;
       cv.__pf = { field, t };
       // offscreen cell buffer
       oc = document.createElement('canvas');

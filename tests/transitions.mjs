@@ -204,6 +204,15 @@ async function run(name) {
     await page.waitForTimeout(700);
     const stuck = await page.evaluate(() => [...document.querySelectorAll('.op')].filter((o) => o.style.transition).length);
     check('resize: glide cleans up', stuck === 0, `operators with an inline transition: ${stuck}`);
+    s = await readState(page);
+    check('resize: cables still drawn', s.links > 0 && s.cables === s.links, `cables=${s.cables} links=${s.links}`);
+    // down to the READ layout and back up: the cables wire in again
+    await page.setViewportSize({ width: 900, height: 820 });
+    await page.waitForTimeout(500);
+    await page.setViewportSize({ width: 1440, height: 820 });
+    await page.waitForTimeout(SETTLE + 600);
+    s = await readState(page);
+    check('READ and back: cables redraw', s.links > 0 && s.cables === s.links, `cables=${s.cables} links=${s.links}`);
     await page.context().close();
   }
 

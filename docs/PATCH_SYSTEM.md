@@ -12,6 +12,29 @@ Detailed notes on the site's runtime, layout and backgrounds. Moved out of `CLAU
 
 ## Layout resolver
 
+**Flex layouts (2026-10-05).** Every page except the home page now describes its layout as flexbox (`mode: 'flex'`), and the browser does the layout. The page is a column of rows; a row holds cards, or a column of cards where one card sits beside a stack. Why: the sketch placed cards on fixed cells, so spacing between cards of different heights was uneven, and pages leaned on nudges. With flex the gap between rows is the same everywhere (two grid units) and a row is centred, spread or indented by one word.
+
+```js
+const layout = {
+  mode: 'flex', padTop: 48, gap: 2,
+  rows: [
+    { row: ['title:5', 'own:3'], justify: 'between' },
+    { row: ['hero:10'], justify: 'center' },
+    { row: ['what:4', 'role:4'], justify: 'between', inset: 1 },
+    { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['bio:5', { col: ['xp:4', 'edu:4'], gap: 1 }], justify: 'between' },
+  ],
+};
+```
+
+- `'area:w'` is a card `w` twelfths of the field wide. No `w` means the card's `maxw`, or 4. `maxw` still caps the width.
+- A row or column takes `justify` (start, center, end, between, around, evenly), `align` (start, center, end, stretch), `gap`, `mt`, `inset` (side padding in columns, or `[left, right]`), `w` and `h`. `gap`, `mt` and `h` are in grid units of 26px.
+- A stepped row is a row whose cards have `mt` 0, 1.5 and 3.
+- How it works: `flexLayout` in `patch-field.js` builds a hidden skeleton of plain boxes from the spec, one per card, lets the browser lay it out, and puts each card where its box landed. Cards stay absolutely placed, so dragging, the resize glide, the page-change handoff and the cables are unchanged.
+- Nudges are ignored in flex mode. Cards may sit off the dot grid.
+- The home page keeps its sketch (`mode: 'fill'`), described in the next paragraph. It fits one screen and was arranged by hand.
+
+**What was tried first (2026-10-05).** Three hand-rolled systems, all dropped: automatic packing and signal-flow ranks (they ignore reading order), float with ghost nodes and groups in the sketch, and a dev-only editor for arranging pages by hand. Flexbox already solved the problem. The float patch is kept at `design/layout-system-2-pilot.patch` in the Carlton Portfolio folder.
 - **Layout resolver (2026-07-05)**: patch-mode node placement is authored as ASCII grid-areas — PatchField takes `layout` (`mode: 'fill'|'content'`, `padTop`, `jitter`, width `tiers` each with `cols` + `areas` string); Operator takes `area` (+ optional `nudge="x y"`, `fit="auto"`, `maxw={px}`). The resolver snaps to the dot grid, relaxes overlaps down-column, computes content-mode field heights (never hardcode field heights again), and re-resolves on resize / mode toggle / island hydration. Dragged ops (`data-manual`) and DUO-docked ops are left alone; centered spans = middle cells + `maxw` (the `translateX(-50%)` idiom is dead). ALL five network pages are migrated — don't reintroduce `pos` strings (still supported, but it's the escape hatch, not the norm). Every tier must name every area op. Reference docs: portfolio folder `design/LAYOUT_ROLLOUT_PLAN.md` + `design/LAYOUT_SYSTEM_NOTES.md`.
 
 ## Dither background

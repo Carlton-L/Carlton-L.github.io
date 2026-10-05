@@ -53,24 +53,23 @@ const links: [string, string][] = [
   ['engOutcome', 'engOut'],
 ];
 
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title .     .     .     .     own   own   own
-      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      .     sect  sect  sect  sect  sect  sect  .     .     .     .     .
-      .     what  what  what  what  .     .     role  role  role  role  .
-      .     .     .     how   how   how   how   how   how   .     .     .
-      .     .     hard  hard  hard  hard  hard  hard  hard  .     .     .
-      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     view  view  view  view  view  view  view  view  view  view  .
-      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:5', 'own:3'], justify: 'between' },
+    { row: ['hero:10'], justify: 'center' },
+    { row: ['sect:6'], justify: 'center' },
+    { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
+    { row: ['how:6'], justify: 'center' },
+    { row: ['hard:7'], justify: 'center' },
+    { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['view:10'], justify: 'center' },
+    { row: ['outc:5', 'out:4'], justify: 'between' },
+  ],
 };
 ---
 
@@ -79,7 +78,7 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="engNet" links={links} density={0.3} height="4200px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
+  <PatchField id="engNet" links={links} height="4200px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="engTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="eng-meta">{project.meta}</p>
@@ -112,33 +111,33 @@ const layout = {
     </Operator>
 
     <Operator id="engWhat" name="txt · what_it_is" type="txt" area="what">
-      {cs['What it is'].map((p) => <p class="eng-p">{p}</p>)}
+      {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="engRole" name="txt · my_role" type="txt" area="role" nudge="0 48">
-      {cs['My role'].map((p) => <p class="eng-p">{p}</p>)}
+    <Operator id="engRole" name="txt · my_role" type="txt" area="role">
+      {cs['My role'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="engHow" name="process · how_it_works" type="txt" area="how" maxw={600}>
-      {cs['How it works'].map((p) => <p class="eng-p">{p}</p>)}
+      {cs['How it works'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="engHard" name="process · the_hard_problem" type="txt" area="hard" maxw={620}>
       <h3 class="cs-dh">The hard interaction problem</h3>
-      {cs['The hard interaction problem'].map((p) => <p class="eng-p">{p}</p>)}
+      {cs['The hard interaction problem'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- PROCESS: the three design decisions -->
     <DecisionCard id="engD1" area="d1" num={1} slug="graph_not_log" title="A graph, not a log">
-      <p class="eng-p">Every entity the pipeline touches becomes a typed node. Subjects are hexagons, signals are diamonds, and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
+      <p class="cs-p">Every entity the pipeline touches becomes a typed node. Subjects are hexagons, signals are diamonds, and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
     </DecisionCard>
 
-    <DecisionCard id="engD2" area="d2" num={2} slug="incremental" title="Incremental everything" nudge="0 40">
-      <p class="eng-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. On saved reports the heavy map is lazy-loaded on request, and the report stays responsive without it.</p>
+    <DecisionCard id="engD2" area="d2" num={2} slug="incremental" title="Incremental everything">
+      <p class="cs-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. On saved reports the heavy map is lazy-loaded on request, and the report stays responsive without it.</p>
     </DecisionCard>
 
-    <DecisionCard id="engD3" area="d3" num={3} slug="honest_liveness" title="Honest liveness" nudge="0 80">
-      <p class="eng-p">Some steps run ten minutes without an event. The status system tells the truth in three states: events flowing, quiet but alive, actually stalled. The heartbeat contract behind it is one I wrote for the backend before the backend emitted it.</p>
+    <DecisionCard id="engD3" area="d3" num={3} slug="honest_liveness" title="Honest liveness">
+      <p class="cs-p">Some steps run ten minutes without an event. The status system tells the truth in three states: events flowing, quiet but alive, actually stalled. The heartbeat contract behind it is one I wrote for the backend before the backend emitted it.</p>
     </DecisionCard>
 
     <!-- VIEW: one agent, thinking — miniature of the live transcript card -->
@@ -163,8 +162,8 @@ const layout = {
 
     <!-- OUT -->
     <Operator id="engOutcome" name="out · outcome" type="txt" area="outc" ports="in">
-      {cs['Outcome'].map((p) => <p class="eng-p">{p}</p>)}
-      <p class="eng-p">The Engine is client software, so there is no public build to poke at. Everything on this page is a recreation built for the portfolio, on synthetic data. If you want to know more about the work, get in touch.</p>
+      {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
+      <p class="cs-p">The Engine is client software, so there is no public build to poke at. Everything on this page is a recreation built for the portfolio, on synthetic data. If you want to know more about the work, get in touch.</p>
       <a class="eng-live" href="/contact/">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
 
@@ -426,8 +425,6 @@ const layout = {
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .eng-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
-  .eng-p:last-child { margin-bottom: 0; }
   .eng-live {
     display: inline-block;
     margin-top: 14px;

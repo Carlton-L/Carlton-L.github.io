@@ -51,6 +51,10 @@
  *       ` },
  *     ],
  *   }
+ * FLEX MODE (`mode: 'flex'`): no sketch. `rows` describes the page as flexbox (a column of rows,
+ * rows of cards, columns inside rows) and the browser lays it out. The words are listed above
+ * flexLayout in src/lib/patch-field.js. Cards may sit off the dot grid.
+ *
  * Rules: resolver only touches `.op[data-area]`; `pos` ops are never touched;
  * dragged ops (data-manual) and DUO-docked ops are left alone; overlaps get
  * relaxed down-column; every tier should name every area op (missing ones keep
@@ -85,10 +89,13 @@ interface Props {
   height?: string;
   label?: string;
   layout?: {
-    mode?: 'fill' | 'content';
+    mode?: 'fill' | 'content' | 'flex';
     padTop?: number;
     jitter?: boolean;
-    tiers: { min?: number; cols?: number; areas: string }[];
+    tiers?: { min?: number; cols?: number; areas?: string; rows?: unknown[] }[];
+    /** mode 'flex': the page as flexbox. See flexLayout in src/lib/patch-field.js for the words. */
+    rows?: unknown[];
+    gap?: number;
   };
 }
 import { patchSrc } from '../lib/bundles.js';
@@ -131,7 +138,8 @@ const heightStyle =
   /* width/height:100% of the fixed viewport (NOT 100vw/100vh) so the canvas
      never overhangs the scrollbar and forces a horizontal scroll — that
      overflow was clipping the navbar/footer right edge. */
-  .bgdither { position: fixed; inset: 0; width: 100%; height: 100%; opacity: 0.75; pointer-events: none; }
+  /* 0.28 in both modes since 2026-10-05. PATCH used to be 0.75, which fought the cards for attention. */
+  .bgdither { position: fixed; inset: 0; width: 100%; height: 100%; opacity: 0.28; pointer-events: none; transition: opacity 0.35s; }
   .wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
 
   /* READ mode: the network becomes a document; the dither drops behind
@@ -153,9 +161,11 @@ const heightStyle =
   }
   /* audition: a bg control is being touched — the field comes forward so the
      change is legible under the finger; content steps back for a beat
-     (body class set by the engine, auto-clears ~1.2s after last input) */
-  :global(body.perform.bg-audition) .bgdither { opacity: 0.65; }
-  :global(body.perform.bg-audition) .patchfield :global(.op:not(.op-sys)) { opacity: 0.25; }
+     (body class set by the engine, auto-clears ~1.2s after last input).
+     Both modes since 2026-10-05; it used to be READ only. */
+  .patchfield :global(.op) { transition: opacity 0.35s, box-shadow var(--duration-normal), border-color var(--duration-normal); }
+  :global(body.bg-audition) .bgdither { opacity: 0.65; }
+  :global(body.bg-audition) .patchfield :global(.op:not(.op-sys)) { opacity: 0.25; }
 </style>
 
 <!-- resolver-managed ops stay invisible until first placement (no flash at 0,0);

@@ -65,27 +65,23 @@ const links: [string, string][] = [
   ['fsOutcome', 'fsOut'],
 ];
 
-// layout: content mode — the narrative spine as rows; hero/demo/core-argument
-// are centered spans (maxw re-centers them inside their cells, replacing the
-// old translateX(-50%) idiom); field height is computed (was hardcoded 3800px).
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title .     .     .     .     own   own   own
-      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      .     sect  sect  sect  sect  sect  sect  .     bfr   bfr   bfr   bfr
-      .     what  what  what  what  .     .     role  role  role  role  .
-      .     .     .     .     craft craft craft craft .     .     .     .
-      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     .     .     lay   lay   lay   lay   lay   lay   .     .     .
-      .     view  view  view  view  view  view  view  view  view  view  .
-      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:5', 'own:3'], justify: 'between' },
+    { row: ['hero:10'], justify: 'center' },
+    { row: ['sect:6', 'bfr:4'], justify: 'center', gap: 8 },
+    { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
+    { row: ['craft:4'], justify: 'center' },
+    { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['lay:6'], justify: 'center' },
+    { row: ['view:10'], justify: 'center' },
+    { row: ['outc:5', 'out:4'], justify: 'between' },
+  ],
 };
 ---
 
@@ -94,7 +90,7 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="fsNet" links={links} density={0.3} height="3800px" layout={layout} label="Futurescaper case-study network — press P for reading mode">
+  <PatchField id="fsNet" links={links} height="3800px" layout={layout} label="Futurescaper case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="fsTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="fs-meta">{project.meta}</p>
@@ -122,7 +118,7 @@ const layout = {
     </Operator>
 
     <!-- reserved slot: screenshot of the original POC, once it's dug up -->
-    <Operator id="fsBefore" name="before · original_poc" type="view" area="bfr" maxw={360} nudge="0 24" ports="in">
+    <Operator id="fsBefore" name="before · original_poc" type="view" area="bfr" maxw={360} ports="in">
       <div class="fs-photoslot">
         <span>// SCREENSHOT PENDING · THE APP BEFORE THE REBUILD</span>
         <span class="fs-photosub">ORIGINAL PROOF-OF-CONCEPT · SLOT RESERVED</span>
@@ -130,34 +126,34 @@ const layout = {
     </Operator>
 
     <Operator id="fsWhat" name="txt · what_it_is" type="txt" area="what">
-      {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
 
-    <Operator id="fsRole" name="txt · my_role" type="txt" area="role" nudge="0 48">
-      {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
+    <Operator id="fsRole" name="txt · my_role" type="txt" area="role">
+      {cs['My role'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="fsCraft" name="process · craft_notes" type="txt" area="craft">
-      {cs['Craft notes'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['Craft notes'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- PROCESS: the three design-engineering decisions -->
     <DecisionCard id="fsD1" area="d1" num={1} slug="spatial_memory" title="Spatial memory">
-      <p class="fs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
+      <p class="cs-p">When new AI-generated scenarios arrive, existing nodes barely move. Users keep their mental map; stability beats elegance.</p>
     </DecisionCard>
 
-    <DecisionCard id="fsD2" area="d2" num={2} slug="provenance" title="Visible provenance" nudge="0 40">
-      <p class="fs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
+    <DecisionCard id="fsD2" area="d2" num={2} slug="provenance" title="Visible provenance">
+      <p class="cs-p">Machine-generated content renders visually distinct until a human promotes it. Trust needs a visible seam.</p>
     </DecisionCard>
 
-    <DecisionCard id="fsD3" area="d3" num={3} slug="off_thread" title="Off the main thread" nudge="0 80">
-      <p class="fs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
+    <DecisionCard id="fsD3" area="d3" num={3} slug="off_thread" title="Off the main thread">
+      <p class="cs-p">Layouts recompute off the main thread. Interaction latency stays imperceptible even as the scenario space grows.</p>
     </DecisionCard>
 
     <!-- PROCESS: the core argument, set up right before the live demo -->
     <Operator id="fsLayout" name="process · the_layout_problem" type="txt" area="lay" maxw={600}>
-      {cs['The layout problem'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['The layout problem'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- VIEW: the real product, live — real layout code, synthetic data -->
@@ -171,7 +167,7 @@ const layout = {
 
     <!-- OUT -->
     <Operator id="fsOutcome" name="out · outcome" type="txt" area="outc" ports="in">
-      {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
       <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · futurescape.futurity.science ↗</a>
     </Operator>
 
@@ -217,8 +213,6 @@ const layout = {
   .fs-h2 .amb { color: var(--signal); }
 
 
-  .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
-  .fs-p:last-child { margin-bottom: 0; }
 
   .fs-live {
     display: inline-block;

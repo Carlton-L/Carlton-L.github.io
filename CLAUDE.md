@@ -19,6 +19,7 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - Demo interiors use each product's own visual language, scoped inside the VIEW.
 - New work-index previews go in `previs.js`'s `V` registry, never in page scripts.
 - Page changes, the boot and the resize glide are described in `docs/PATCH_SYSTEM.md` ("Page change, boot and resize"). The page-change clock is `src/lib/page-clock.js` (inlined in the head by `Base.astro`). The 580ms duration is set in three places (`page-clock.js`, `patch-field.js`, `global.css`); a unit test fails if they differ.
+- Layout: every page except home is described as flexbox in its frontmatter (`mode: 'flex'`, `rows`); see "Flex layouts" in `docs/PATCH_SYSTEM.md`. The order and grouping of rows is Carlton's reading order: change spacing and alignment words, not the order, unless he asks. Home keeps its hand-made sketch.
 - Internal links end in a slash (`/about/`, `/projects/fast/`). Without it GitHub Pages redirects, and the page change starts late. The tests fail on a link without one. Pages are fetched early by `src/lib/warm.js`; mark a link `data-warm` to fetch it on load. Never fade or hide an operator on first load. Run `npm test` after touching any of it.
 - Font files and their licences are in `public/fonts/`; the faces are in `src/styles/fonts.css`.
 

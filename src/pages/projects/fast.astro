@@ -70,42 +70,32 @@ const links: [string, string][] = [
   ['fastOutcome', 'fastOut'],
 ];
 
-// content mode: field height computed by the layout resolver.
-// Sections are separated by SYS break ops (br1/br2/br3) with blank rows
-// around them, so the network reads as clustered chapters, not one stream.
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title .     .     .     .     own   own   own
-      .     hero  hero  hero  hero  hero  hero  hero  hero  hero  hero  .
-      .     what  what  what  what  .     .     role  role  role  role  .
-      .     .     facts facts facts facts  .     .     .     .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br1   br1   br1   br1   br1   br1   br1   br1   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     ssect ssect ssect ssect .     .     subj  subj  subj  subj  .
-      .     sview sview sview sview sview sview sview sview sview sview .
-      .     d1    d1    d1    .     d2    d2    d2    .     d3    d3    d3
-      .     .     src   src   src   src   src   src   .     .     .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br2   br2   br2   br2   br2   br2   br2   br2   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     lsect lsect lsect lsect .     .     ltabs ltabs ltabs ltabs .
-      .     lflow lflow lflow lflow .     .     l1    l1    l1    .     .
-      .     .     .     .     .     l2    l2    l2    .     .     .     .
-      .     lview lview lview lview lview lview lview lview lview lview .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     .     br3   br3   br3   br3   br3   br3   br3   br3   .     .
-      .     .     .     .     .     .     .     .     .     .     .     .
-      .     sys   sys   sys   sys   .     .     cap   cap   cap   cap   .
-      .     .     .     demo  demo  demo  demo  demo  demo  .     .     .
-      outc  outc  outc  outc  outc  .     .     .     out   out   out   out
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:5', 'own:3'], justify: 'between' },
+    { row: ['hero:10'], justify: 'center' },
+    { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
+    { row: ['facts:4'], justify: 'center' },
+    { row: ['br1:8'], justify: 'center', mt: 1 },
+    { row: ['ssect:4', 'subj:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['sview:10'], justify: 'center' },
+    { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['src:6'], justify: 'center' },
+    { row: ['br2:8'], justify: 'center', mt: 1 },
+    { row: ['lsect:4', 'ltabs:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['lflow:4', 'l1:3'], justify: 'center', gap: 8 },
+    { row: ['l2:3'], justify: 'center' },
+    { row: ['lview:10'], justify: 'center' },
+    { row: ['br3:8'], justify: 'center', mt: 1 },
+    { row: ['sys:4', 'cap:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['demo:6'], justify: 'center' },
+    { row: ['outc:5', 'out:4'], justify: 'between' },
+  ],
 };
 ---
 
@@ -114,7 +104,7 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="fastNet" links={links} density={0.3} height="6200px" layout={layout} label="FAST case-study network — press P for reading mode">
+  <PatchField id="fastNet" links={links} height="6200px" layout={layout} label="FAST case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="fastTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="fs-meta">{project.meta}</p>
@@ -136,11 +126,11 @@ const layout = {
 
 
     <Operator id="fastWhat" name="txt · what_it_is" type="txt" area="what">
-      {cs['What it is'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fastRole" name="txt · my_role" type="txt" area="role" nudge="0 32">
-      {cs['My role'].map((p) => <p class="fs-p">{p}</p>)}
+    <Operator id="fastRole" name="txt · my_role" type="txt" area="role">
+      {cs['My role'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="fastFacts" name="facts_data" type="data" area="facts">
@@ -162,8 +152,8 @@ const layout = {
       <p class="fs-sub">One page pattern carries the product: the live graph underneath, glass identity above, analytics below. Three decisions made it work.</p>
     </Operator>
 
-    <Operator id="fastSubjTxt" name="txt · the_page_in_layers" type="txt" area="subj" nudge="0 24">
-      {cs['The subject page'].map((p) => <p class="fs-p">{p}</p>)}
+    <Operator id="fastSubjTxt" name="txt · the_page_in_layers" type="txt" area="subj">
+      {cs['The subject page'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- VIEW: the interactive graph — click a node, traverse to its subject -->
@@ -176,20 +166,20 @@ const layout = {
     </Operator>
 
     <DecisionCard id="fastD1" area="d1" num={1} slug="traversal" title="Traversal, not search">
-      <p class="fs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
+      <p class="cs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
     </DecisionCard>
 
-    <DecisionCard id="fastD2" area="d2" num={2} slug="honest_waiting" title="Honest waiting" nudge="0 40">
-      <p class="fs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
+    <DecisionCard id="fastD2" area="d2" num={2} slug="honest_waiting" title="Honest waiting">
+      <p class="cs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
     </DecisionCard>
 
-    <DecisionCard id="fastD3" area="d3" num={3} slug="one_click_deep" title="Overview to detail in one click" nudge="0 80">
-      <p class="fs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
+    <DecisionCard id="fastD3" area="d3" num={3} slug="one_click_deep" title="Overview to detail in one click">
+      <p class="cs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
     </DecisionCard>
 
     <Operator id="fastSources" name="txt · source_pages" type="txt" area="src" maxw={600}>
       <h2 class="fs-h2">One pattern, <span class="amb">five more citizens</span></h2>
-      {cs['Source pages'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['Source pages'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <!-- SECTION BREAK 02 -->
@@ -203,7 +193,7 @@ const layout = {
     </Operator>
 
     <!-- VIEW: the lab's process tabs — what each step is for -->
-    <Operator id="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs" nudge="0 24">
+    <Operator id="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs">
       <div class="fs-labtabs" id="fastLabTabsWidget">
         <div class="fs-lt-strip" role="tablist" aria-label="Lab process tabs">
           <button type="button" class="fs-lt-tab" role="tab" data-tab="plan" aria-selected="true">PLAN</button>
@@ -252,16 +242,16 @@ const layout = {
       </script>
     </Operator>
 
-    <Operator id="fastLabFlow" name="txt · plan_gather_analyze" type="txt" area="lflow" nudge="0 24">
-      {cs['The lab flow'].map((p) => <p class="fs-p">{p}</p>)}
+    <Operator id="fastLabFlow" name="txt · plan_gather_analyze" type="txt" area="lflow">
+      {cs['The lab flow'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <DecisionCard id="fastL1" area="l1" num={4} slug="optimistic_undo" title="Optimistic, with an undo">
-      <p class="fs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
+      <p class="cs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
     </DecisionCard>
 
-    <DecisionCard id="fastL2" area="l2" num={5} slug="wizards" title="Wizards for hard questions" nudge="0 40">
-      <p class="fs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
+    <DecisionCard id="fastL2" area="l2" num={5} slug="wizards" title="Wizards for hard questions">
+      <p class="cs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
     </DecisionCard>
 
     <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
@@ -278,12 +268,12 @@ const layout = {
 
     <Operator id="fastSystem" name="txt · design_system" type="txt" area="sys">
       <h2 class="fs-h2">One token system <span class="amb">under everything</span></h2>
-      {cs['Design system'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['Design system'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" area="cap" nudge="0 24">
+    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" area="cap">
       <h2 class="fs-h2">Companion tooling: browser extension</h2>
-      <p class="fs-p">
+      <p class="cs-p">
         Research happens in the browser, but research platforms live in another tab.
         I designed and built a companion extension that closes the gap: it extracts
         structured content from the page a researcher is reading and files it into
@@ -295,7 +285,7 @@ const layout = {
 
     <Operator id="fastDemo" name="txt · deck_to_demo" type="txt" area="demo" maxw={600}>
       <h2 class="fs-h2">The product that <span class="amb">demos itself</span></h2>
-      <p class="fs-p">
+      <p class="cs-p">
         FAST also had to sell itself. I built a public demo explorer and the pitch
         deck that hands off to it: the deck captures a visitor's industry, passes it
         along in the URL, and the demo quietly floats matching content to the top.
@@ -306,7 +296,7 @@ const layout = {
 
     <!-- OUT -->
     <Operator id="fastOutcome" name="out · outcome" type="txt" area="outc" ports="in">
-      {cs['Outcome'].map((p) => <p class="fs-p">{p}</p>)}
+      {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <NextCase id="fastOut" from="fast" tagline="THE PAGE IS A PLACE IN THE GRAPH." />
@@ -351,8 +341,6 @@ const layout = {
   .fs-h2 .amb { color: var(--signal); }
 
 
-  .fs-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
-  .fs-p:last-child { margin-bottom: 0; }
 
   .fs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
   .fs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }

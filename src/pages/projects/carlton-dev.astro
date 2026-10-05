@@ -49,34 +49,31 @@ const links: [string, string][] = [
   ['cdTitle', 'cdGrammar'],
   ['cdTitle', 'cdStack'],
   ['cdGrammar', 'cdLayout'],
-  ['cdLayout', 'cdRuntime'],
-  ['cdRuntime', 'cdView'],
+  ['cdLayout', 'cdView'],
+  ['cdView', 'cdRuntime'],
   ['cdRuntime', 'cdClock'],
   ['cdClock', 'cdSpeed'],
-  ['cdView', 'cdOut'],
+  ['cdSpeed', 'cdOut'],
   ['cdBgNoise', 'cdBgFdbk'],
   ['cdBgFdbk', 'cdBgDith'],
   ['cdBgDith', 'cdBgOut'],
 ];
 
-// the bg_generator chain arcs down the left edge, mirroring the homepage —
-// same controls, same persisted state (PatchField binds data-param/data-cycle
-// per field, so the chain is live wherever it's patched in)
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
+  mode: 'flex',
   padTop: 48,
-  tiers: [{
-    min: 0,
-    cols: 12,
-    areas: `
-      title title title title title .     .     .     .     stack stack stack
-      .     gram  gram  gram  gram  .     .     lay   lay   lay   lay   .
-      bgn   bgn   .     rt    rt    rt    rt    rt    clock clock clock clock
-      bgf   bgf   view  view  view  view  view  view  .     speed speed speed
-      bgd   bgd   .     .     out   out   out   out   .     .     .     .
-      bgo   bgo   .     .     .     .     .     .     .     .     .     .
-    `,
-  }],
+  gap: 2,
+  rows: [
+    { row: ['title:5', 'stack:3'], justify: 'between' },
+    { row: ['gram:4', 'lay:4'], justify: 'center', gap: 8 },
+    { row: ['view:6'], justify: 'center' },
+    { row: ['bgn', 'bgf', 'bgd', 'bgo'], justify: 'center', gap: 6 },
+    { row: ['rt:5'], justify: 'center' },
+    { row: ['clock:4', 'speed:4'], justify: 'center', gap: 8 },
+    { row: ['out:4'], justify: 'center' },
+  ],
 };
 ---
 
@@ -85,7 +82,7 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="cdNet" links={links} density={0.3} height="1900px" layout={layout} label="carlton.dev case-study network — press P for reading mode">
+  <PatchField id="cdNet" links={links} height="1900px" layout={layout} label="carlton.dev case-study network — press P for reading mode">
     <Operator id="cdTitle" name="input · the_claim" type="txt" area="title" ports="out">
       <p class="cd-meta">{project.meta}</p>
       <h1 class="cd-h">The portfolio is the <span class="grn">product</span></h1>
@@ -103,7 +100,7 @@ const layout = {
 
     <Operator id="cdGrammar" name="process · the_grammar" type="txt" area="gram">
       <h3 class="cd-h3">One grammar, everywhere</h3>
-      <p class="cd-p">
+      <p class="cs-p">
         Every content block on this site is an operator with a typed header:
         VIEW for live things, TXT for prose, DATA for facts, SYS for
         instruments. Cables connect them. The dither field behind everything
@@ -111,7 +108,7 @@ const layout = {
         bg_01 → bg_04 chain is patched into this page. Turn the knobs. The
         field re-cooks, and your settings follow you between visits.
       </p>
-      <p class="cd-p">
+      <p class="cs-p">
         There are two modes.
         <span class="cap-fine">PATCH is the spatial view, and it's probably
         where you are now. READ strips the boxes away and stacks the same
@@ -124,76 +121,22 @@ const layout = {
       </p>
     </Operator>
 
-    <Operator id="cdLayout" name="process · layout_resolver" type="txt" area="lay" nudge="0 40">
+    <Operator id="cdLayout" name="process · layout_resolver" type="txt" area="lay">
       <h3 class="cd-h3">Layouts are ASCII pictures</h3>
-      <p class="cd-p">
+      <p class="cs-p">
         Node placement isn't hand-tuned pixels. Each page declares its
         network as an ASCII sketch, the kind you'd type into a grid-areas
         rule. A small resolver reads it at runtime, snaps every node to the
         background dot grid, and pushes overlaps apart when copy grows.
       </p>
-      <p class="cd-p">
+      <p class="cs-p">
         This page is placed by the system it describes. Resize the window
         and watch it re-cook.
       </p>
     </Operator>
 
-    <Operator id="cdRuntime" name="process · patch_runtime" type="txt" area="rt" nudge="0 24">
-      <h3 class="cd-h3">The cables are real</h3>
-      <p class="cd-p">
-        The wires aren't decoration. Each link is a subscription on a small
-        vanilla-JS message bus. On the homepage the work index emits a
-        selection, a post_fx node transforms it in transit (that's the INVERT
-        chip), and the viewer renders whatever arrives. Every delivery sends
-        a pulse down the cable that carried it. What you see drawn is what
-        actually ran.
-      </p>
-      <p class="cd-p">
-        The same runtime owns every timer, listener and observer behind a
-        page, and tears them all down between navigations. Even the
-        homepage's auto-cycle is a visible node: a cycle_clock operator ticks
-        the index, and hovering the index dims it.
-      </p>
-    </Operator>
-
-    <Operator id="cdClock" name="process · one_clock" type="txt" area="clock">
-      <h3 class="cd-h3">Three animations, one clock</h3>
-      <p class="cd-p">
-        A page change has three parts. The new page wipes in, the old one
-        dims, and a front crosses the dither. They used to run on their own
-        timers and drift apart on a busy frame.
-      </p>
-      <p class="cd-p">
-        Now the two CSS animations stay paused and one loop moves all three
-        by hand. A late frame moves the clock 34ms at most, so a slow browser
-        plays the start slowly. It never skips it.
-      </p>
-      <CodeExcerpt code={clockExcerpt} file="src/lib/page-clock.js" note="the wipe, the dim and the front all read nav.f" />
-      <SourceButton file="src/lib/page-clock.js" block class="cd-src" />
-    </Operator>
-
-    <Operator id="cdSpeed" name="data · click_to_start" type="data" area="speed" ports="in">
-      <h3 class="cd-h3">The click answers first</h3>
-      <p class="cd-p">
-        A click used to do nothing for up to a second. The animation was
-        waiting for the next page. Lighthouse scored it 97, because
-        Lighthouse never clicks a link.
-      </p>
-      <p class="cd-p">
-        Heat now holds at the click. The next page and its stylesheets are
-        fetched on hover. Every link ends in a slash, because GitHub Pages
-        answers /about with a redirect first.
-      </p>
-      <ul class="cd-ba">
-        <li><span class="what">Home page HTML</span><span><s>55KB</s><b>16KB</b></span></li>
-        <li><span class="what">Nav click to start, 300ms latency</span><span><s>380ms</s><b>79ms</b></span></li>
-        <li><span class="what">Redirects per new page</span><span><s>1</s><b>0</b></span></li>
-      </ul>
-      <SourceButton file="src/lib/warm.js" block class="cd-src" />
-    </Operator>
-
     <Operator id="cdView" name="carlton_dev_view · you_are_here" type="view" area="view" maxw={640}>
-      <p class="cd-p"><b>There's no demo embed on this one.</b> You're inside it. Things worth trying:</p>
+      <p class="cs-p"><b>There's no demo embed on this one.</b> You're inside it. Things worth trying:</p>
       <!-- input-aware: keyboard/hover instructions only exist where they're true -->
       <ul class="cd-try cap-fine">
         <li><b>P</b> toggles PATCH / READ · the same content, two renderings</li>
@@ -211,20 +154,9 @@ const layout = {
       </ul>
     </Operator>
 
-    <Operator id="cdOut" name="out · next_cook" type="txt" area="out" ports="in">
-      <p class="cd-p">
-        Next on the bench: container operators, one lazy-boot path for every
-        embedded demo, and a signal monitor that live-prints the message bus.
-        You'll be able to watch this site think.
-      </p>
-      <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
-        <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
-      </LinkButton>
-    </Operator>
-
-    <!-- the background generator, patched into the page it's described on —
-         identical controls to the homepage chain; state persists site-wide -->
-    <Operator id="cdBgNoise" name="bg_01 · noise_src" type="sys" area="bgn" maxw={170} nudge="24 0" ports="out">
+    <!-- the background generator, patched into the page it is described on:
+         the same controls as the homepage chain, and the state is kept site-wide -->
+    <Operator id="cdBgNoise" name="bg_01 · noise_src" type="sys" area="bgn" maxw={182} ports="out">
       <button class="chip chipbtn" data-cycle="noise" data-prefix="TYPE">TYPE ▸ RIDGE</button>
       <div class="prow">
         <span class="plab">SPEED</span>
@@ -233,7 +165,7 @@ const layout = {
       </div>
     </Operator>
 
-    <Operator id="cdBgFdbk" name="bg_02 · feedback" type="sys" area="bgf" maxw={160} nudge="0 24">
+    <Operator id="cdBgFdbk" name="bg_02 · feedback" type="sys" area="bgf" maxw={182}>
       <div class="prow">
         <span class="plab">FDBK</span>
         <input class="prange" type="range" data-param="feedback" data-div="100" min="0" max="95" value="78" aria-label="Feedback amount, higher leaves longer cursor trails" />
@@ -242,7 +174,7 @@ const layout = {
       <div class="genhint">CURSOR PAINTS THE FIELD ▚</div>
     </Operator>
 
-    <Operator id="cdBgDith" name="bg_03 · dither" type="sys" area="bgd" maxw={180} nudge="12 24">
+    <Operator id="cdBgDith" name="bg_03 · dither" type="sys" area="bgd" maxw={182}>
       <button class="chip chipbtn" data-cycle="dither" data-prefix="TYPE">TYPE ▸ BAYER2</button>
       <div class="prow">
         <span class="plab">DENS</span>
@@ -256,9 +188,74 @@ const layout = {
       </div>
     </Operator>
 
-    <Operator id="cdBgOut" name="bg_04 · out" type="sys" area="bgo" maxw={160} nudge="24 -24" ports="in">
+    <Operator id="cdBgOut" name="bg_04 · out" type="sys" area="bgo" maxw={182} ports="in">
       <button class="chip chipbtn" data-cycle="palette" data-prefix="PAL">PAL ▸ GRN</button>
       <div class="genhint">RENDERS THE PAGE ▚</div>
+    </Operator>
+
+    <Operator id="cdRuntime" name="process · patch_runtime" type="txt" area="rt">
+      <h3 class="cd-h3">The cables are real</h3>
+      <p class="cs-p">
+        The wires aren't decoration. Each link is a subscription on a small
+        vanilla-JS message bus. On the homepage the work index emits a
+        selection, a post_fx node transforms it in transit (that's the INVERT
+        chip), and the viewer renders whatever arrives. Every delivery sends
+        a pulse down the cable that carried it. What you see drawn is what
+        actually ran.
+      </p>
+      <p class="cs-p">
+        The same runtime owns every timer, listener and observer behind a
+        page, and tears them all down between navigations. Even the
+        homepage's auto-cycle is a visible node: a cycle_clock operator ticks
+        the index, and hovering the index dims it.
+      </p>
+    </Operator>
+
+    <Operator id="cdClock" name="process · one_clock" type="txt" area="clock">
+      <h3 class="cd-h3">Three animations, one clock</h3>
+      <p class="cs-p">
+        A page change has three parts. The new page wipes in, the old one
+        dims, and a front crosses the dither. They used to run on their own
+        timers and drift apart on a busy frame.
+      </p>
+      <p class="cs-p">
+        Now the two CSS animations stay paused and one loop moves all three
+        by hand. A late frame moves the clock 34ms at most, so a slow browser
+        plays the start slowly. It never skips it.
+      </p>
+      <CodeExcerpt code={clockExcerpt} file="src/lib/page-clock.js" note="the wipe, the dim and the front all read nav.f" />
+      <SourceButton file="src/lib/page-clock.js" block class="cd-src" />
+    </Operator>
+
+    <Operator id="cdSpeed" name="data · click_to_start" type="data" area="speed">
+      <h3 class="cd-h3">The click answers first</h3>
+      <p class="cs-p">
+        A click used to do nothing for up to a second. The animation was
+        waiting for the next page. Lighthouse scored it 97, because
+        Lighthouse never clicks a link.
+      </p>
+      <p class="cs-p">
+        Heat now holds at the click. The next page and its stylesheets are
+        fetched on hover. Every link ends in a slash, because GitHub Pages
+        answers /about with a redirect first.
+      </p>
+      <ul class="cd-ba">
+        <li><span class="what">Home page HTML</span><span><s>55KB</s><b>16KB</b></span></li>
+        <li><span class="what">Nav click to start, 300ms latency</span><span><s>380ms</s><b>79ms</b></span></li>
+        <li><span class="what">Redirects per new page</span><span><s>1</s><b>0</b></span></li>
+      </ul>
+      <SourceButton file="src/lib/warm.js" block class="cd-src" />
+    </Operator>
+
+    <Operator id="cdOut" name="out · next_cook" type="txt" area="out" ports="in">
+      <p class="cs-p">
+        Next on the bench: container operators, one lazy-boot path for every
+        embedded demo, and a signal monitor that live-prints the message bus.
+        You'll be able to watch this site think.
+      </p>
+      <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
+        <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+      </LinkButton>
     </Operator>
   </PatchField>
 </Base>
@@ -296,9 +293,6 @@ const layout = {
     font-size: 16px;
     margin-bottom: 10px;
   }
-  .cd-p { font-size: 13px; color: var(--text); line-height: 1.68; margin-bottom: 8px; }
-  .cd-p:last-child { margin-bottom: 0; }
-  .cd-p b { color: var(--text); font-weight: 600; }
 
   .cd-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
   .cd-meter .bar {
@@ -353,7 +347,7 @@ const layout = {
   :global(#cdBgDith .ohead), :global(#cdBgOut .ohead) { padding: 4px 9px; font-size: 9px; }
   :global(#cdBgNoise) .prow, :global(#cdBgFdbk) .prow,
   :global(#cdBgDith) .prow, :global(#cdBgOut) .prow { margin-top: 6px; }
-  .cd-p + :global(.cd-next) { margin-top: 14px; }
+  .cs-p + :global(.cd-next) { margin-top: 14px; }
   :global(.cd-src) { margin-top: 12px; }
 
   /* before and after, one measure per row */

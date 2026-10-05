@@ -45,32 +45,14 @@ const links: [string, string][] = [
   ['prIndex:selection', 'prView'],
 ];
 
-// layout: content mode — index column left, viewer block right.
-// Nudges are art direction.
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
 const layout = {
-  mode: 'content',
-  padTop: 48, // the first operator sits at the same height on every page (78px, as on home and the case studies)
-  tiers: [
-    {
-      min: 0,
-      cols: 12,
-      areas: `
-        intro intro intro intro .     .     view  view  view  view  view  view
-        index index index index .     .     view  view  view  view  view  view
-        index index index index .     .     view  view  view  view  view  view
-        index index index index .     .     .     .     .     .     .     .
-      `,
-    },
-    {
-      min: 1600,
-      cols: 14,
-      areas: `
-        intro intro intro intro .     .     .     view  view  view  view  view  view  .
-        index index index index .     .     .     view  view  view  view  view  view  .
-        index index index index .     .     .     view  view  view  view  view  view  .
-        index index index index .     .     .     .     .     .     .     .     .     .
-      `,
-    },
+  mode: 'flex',
+  padTop: 48,
+  gap: 2,
+  rows: [
+    { row: [{ col: ['intro:4', 'index:4'], gap: 1 }, 'view:6'], justify: 'between' },
   ],
 };
 ---
@@ -99,7 +81,7 @@ const layout = {
     <!-- the work rack: viewer + index are one unit in READ mode (player/playlist);
          display:contents in PATCH mode so both ops float free on the canvas -->
     <div class="rack" data-rack="projects">
-      <Operator id="prView" name="fast_view · SYNBIO.scn" type="view" area="view" nudge="0 24" maxw={640}>
+      <Operator id="prView" name="fast_view · SYNBIO.scn" type="view" area="view" maxw={640}>
         <div class="viewer-wrap">
           <div class="viewer-stage">
             <svg class="viewer" id="pvSvg" viewBox="0 0 420 240" role="img" aria-label="FAST clustered knowledge graph, live synthetic demo"></svg>
