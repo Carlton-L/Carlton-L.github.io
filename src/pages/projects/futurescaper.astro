@@ -120,16 +120,77 @@ const layout = {
     <!-- reserved slot: screenshot of the original POC, once it's dug up -->
     <Operator id="fsBefore" name="before · original_poc" type="view" area="bfr" maxw={360} ports="in">
       <figure class="fs-photoslot has-img">
-        <a href="/images/projects/futurescaper/before-poc.webp" target="_blank" rel="noopener" aria-label="Open the screenshot at full size">
+        <!-- a lens follows the mouse, and a click or tap expands the picture to fill the window -->
+        <button type="button" class="fs-shot" id="fsShot" data-noverb data-full="/images/projects/futurescaper/before-poc.webp" aria-label="Expand the screenshot">
           <img
             src="/images/projects/futurescaper/before-poc.webp"
             width="1600" height="806"
             alt="The original Futurescaper proof of concept. A sidebar with a summary and filters sits beside a canvas of about 85 small red and green consequence cards, scattered around one central event and joined to it by straight lines."
             loading="lazy"
           />
-        </a>
-        <figcaption class="fs-photosub">THE ORIGINAL PROOF OF CONCEPT · BEFORE THE REBUILD</figcaption>
+          <span class="fs-lens" aria-hidden="true"></span>
+        </button>
+        <figcaption class="fs-photosub"><span>THE ORIGINAL PROOF OF CONCEPT</span><i class="cap-fine">HOVER · CLICK</i><i class="cap-coarse">TAP TO EXPAND</i></figcaption>
       </figure>
+      <script is:inline data-astro-rerun>
+        (function () {
+          var btn = document.getElementById('fsShot');
+          if (!btn) return;
+          var img = btn.querySelector('img'), lens = btn.querySelector('.fs-lens'), SRC = btn.dataset.full;
+          var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var RATIO = 1600 / 806, ZOOM = 4, R = 75, close = null;
+
+          // expand: the picture flies from its card to the middle of the window
+          btn.addEventListener('click', function () {
+            if (close) return;
+            lens.classList.remove('on');
+            var r = img.getBoundingClientRect();
+            var veil = document.createElement('div'), fly = document.createElement('img'), hint = document.createElement('div');
+            veil.className = 'fs-veil'; fly.className = 'fs-fly'; hint.className = 'fs-flyhint';
+            fly.src = SRC; fly.alt = ''; hint.textContent = 'ESC OR CLICK TO CLOSE';
+            var W = Math.min(window.innerWidth - 32, 1600, (window.innerHeight - 96) * RATIO), H = W / RATIO;
+            fly.style.width = W + 'px'; fly.style.height = H + 'px';
+            fly.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + r.width / W + ')';
+            document.body.append(veil, fly, hint);
+            img.style.visibility = 'hidden';
+            void fly.offsetWidth;
+            veil.classList.add('on');
+            fly.style.transform = 'translate(' + (window.innerWidth - W) / 2 + 'px,' + (window.innerHeight - H) / 2 + 'px) scale(1)';
+            function key(e) { if (e.key === 'Escape') close(); }
+            close = function (now) {
+              if (!close) return;
+              close = null;
+              window.removeEventListener('keydown', key); window.removeEventListener('scroll', shut); window.removeEventListener('resize', shut);
+              document.removeEventListener('astro:before-swap', cut);
+              hint.remove(); veil.classList.remove('on');
+              function done() { fly.remove(); veil.remove(); img.style.visibility = ''; }
+              if (now === true || REDUCED || !img.isConnected) { done(); return; }
+              var b = img.getBoundingClientRect();
+              fly.style.transform = 'translate(' + b.left + 'px,' + b.top + 'px) scale(' + b.width / W + ')';
+              setTimeout(done, 340);
+              btn.focus({ preventScroll: true });
+            };
+            function shut() { if (close) close(); }
+            function cut() { if (close) close(true); } // a page change: no animation
+            veil.addEventListener('click', shut); fly.addEventListener('click', shut);
+            window.addEventListener('keydown', key); window.addEventListener('scroll', shut, { passive: true }); window.addEventListener('resize', shut);
+            document.addEventListener('astro:before-swap', cut);
+          });
+
+          // lens: four times the size, centred on the pointer. Mouse and pen only.
+          lens.style.backgroundImage = 'url(' + SRC + ')';
+          btn.addEventListener('pointermove', function (e) {
+            if (e.pointerType === 'touch' || close) return;
+            var r = img.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+            if (x < 0 || y < 0 || x > r.width || y > r.height) { lens.classList.remove('on'); return; }
+            lens.style.left = x - R + 'px'; lens.style.top = y - R + 'px';
+            lens.style.backgroundSize = r.width * ZOOM + 'px ' + r.height * ZOOM + 'px';
+            lens.style.backgroundPosition = (R - x * ZOOM) + 'px ' + (R - y * ZOOM) + 'px';
+            lens.classList.add('on');
+          });
+          btn.addEventListener('pointerleave', function () { lens.classList.remove('on'); });
+        })();
+      </script>
     </Operator>
 
     <Operator id="fsWhat" name="txt · what_it_is" type="txt" area="what">
@@ -253,10 +314,36 @@ const layout = {
   }
   .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
   .fs-photoslot.has-img { aspect-ratio: auto; display: block; margin: 0; padding: 0; border: 1px solid var(--border-color); }
-  .fs-photoslot.has-img a { display: block; }
-  .fs-photoslot.has-img a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
   .fs-photoslot.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
-  .fs-photoslot.has-img .fs-photosub { display: block; padding: 6px 8px; text-align: left; }
+  .fs-photoslot.has-img .fs-photosub { display: flex; justify-content: space-between; gap: 10px; padding: 6px 8px; text-align: left; opacity: 1; }
+  .fs-photosub i { font-style: normal; color: var(--signal); white-space: nowrap; }
+  .fs-photosub .cap-coarse { display: none; }
+  @media (hover: none) and (pointer: coarse) { .fs-photosub .cap-fine { display: none; } .fs-photosub .cap-coarse { display: inline; } }
+  .fs-shot { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .fs-shot:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  @media (hover: hover) and (pointer: fine) { .fs-shot { cursor: none; } }
+  /* the lens: a round window onto the same picture, four times the size */
+  .fs-lens {
+    position: absolute; width: 150px; height: 150px; border-radius: 50%; z-index: 5; pointer-events: none;
+    border: 1px solid var(--signal); box-shadow: 0 10px 34px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(10, 10, 11, 0.9);
+    background-repeat: no-repeat; background-color: #fff;
+    opacity: 0; transform: scale(0.6); transition: opacity 0.14s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .fs-lens:global(.on) { opacity: 1; transform: scale(1); }
+  /* the expanded picture and the dim behind it are made by the script, so they are global */
+  :global(.fs-veil) { position: fixed; inset: 0; z-index: 1000; background: rgba(5, 5, 6, 0.86); opacity: 0; transition: opacity 0.28s ease; cursor: zoom-out; }
+  :global(.fs-veil.on) { opacity: 1; }
+  :global(.fs-fly) {
+    position: fixed; z-index: 1001; left: 0; top: 0; max-width: none; transform-origin: 0 0; cursor: zoom-out;
+    border: 1px solid #2a2a2e; border-radius: 4px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform;
+  }
+  :global(.fs-flyhint) {
+    position: fixed; z-index: 1002; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted);
+    background: rgba(10, 10, 11, 0.85); border: 1px solid #2a2a2e; border-radius: 3px; padding: 5px 9px; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .fs-lens, :global(.fs-veil), :global(.fs-fly) { transition: none; } }
 
   .fs-viewerwrap { margin: -12px -14px; }
 
