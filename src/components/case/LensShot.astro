@@ -1,0 +1,138 @@
+---
+/**
+ * LensShot: a screenshot in a VIEW operator. A round lens follows the mouse at four times
+ * the size, and a click or tap expands the picture to fill the window. The same behaviour as
+ * Futurescaper's before · original_poc card, made reusable so a page can hold more than one.
+ *
+ *   <LensShot id="engBefore" area="bfr" name="before · node_graph"
+ *     src="/images/projects/futurity-engine/before-graph.webp" width={1600} height={892}
+ *     alt="…" caption="THE ORIGINAL NODE GRAPH" />
+ *
+ * `lensBg` is the colour the lens shows past the picture's edge (dark screenshots want dark).
+ */
+import Operator from '../Operator.astro';
+
+interface Props {
+  id: string;
+  area: string;
+  name: string;
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+  caption: string;
+  ports?: 'both' | 'in' | 'out' | 'none';
+  maxw?: number;
+  lensBg?: string;
+}
+const { id, area, name, src, width, height, alt, caption, ports = 'both', maxw, lensBg = '#fff' } = Astro.props;
+---
+
+<Operator id={id} name={name} type="view" area={area} maxw={maxw} ports={ports}>
+  <figure class="ls-fig">
+    <button type="button" class="ls-shot" data-lens data-noverb data-full={src} data-ratio={width / height} aria-label="Expand the screenshot">
+      <img src={src} width={width} height={height} alt={alt} loading="lazy" />
+      <span class="ls-lens" aria-hidden="true" style={`background-color:${lensBg}`}></span>
+    </button>
+    <figcaption class="ls-cap"><span>{caption}</span><i class="cap-fine">HOVER · CLICK</i><i class="cap-coarse">TAP TO EXPAND</i></figcaption>
+  </figure>
+</Operator>
+
+<script is:inline data-astro-rerun>
+  (function () {
+    var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var ZOOM = 4, R = 75;
+    document.querySelectorAll('[data-lens]:not([data-booted])').forEach(function (btn) {
+      btn.dataset.booted = '1';
+      var img = btn.querySelector('img'), lens = btn.querySelector('.ls-lens');
+      var SRC = btn.dataset.full, RATIO = parseFloat(btn.dataset.ratio), NATW = img.getAttribute('width') * 1, close = null;
+
+      // expand: the picture flies from its card to the middle of the window
+      btn.addEventListener('click', function () {
+        if (close) return;
+        lens.classList.remove('on');
+        var r = img.getBoundingClientRect();
+        var veil = document.createElement('div'), fly = document.createElement('img'), hint = document.createElement('div');
+        veil.className = 'ls-veil'; fly.className = 'ls-fly'; hint.className = 'ls-flyhint';
+        fly.src = SRC; fly.alt = ''; hint.textContent = 'ESC OR CLICK TO CLOSE';
+        var W = Math.min(window.innerWidth - 32, NATW, (window.innerHeight - 96) * RATIO), H = W / RATIO;
+        fly.style.width = W + 'px'; fly.style.height = H + 'px';
+        fly.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + r.width / W + ')';
+        document.body.append(veil, fly, hint);
+        img.style.visibility = 'hidden';
+        void fly.offsetWidth;
+        veil.classList.add('on');
+        fly.style.transform = 'translate(' + (window.innerWidth - W) / 2 + 'px,' + (window.innerHeight - H) / 2 + 'px) scale(1)';
+        function key(e) { if (e.key === 'Escape') close(); }
+        close = function (now) {
+          if (!close) return;
+          close = null;
+          window.removeEventListener('keydown', key); window.removeEventListener('scroll', shut); window.removeEventListener('resize', shut);
+          document.removeEventListener('astro:before-swap', cut);
+          hint.remove(); veil.classList.remove('on');
+          function done() { fly.remove(); veil.remove(); img.style.visibility = ''; }
+          if (now === true || REDUCED || !img.isConnected) { done(); return; }
+          var b = img.getBoundingClientRect();
+          fly.style.transform = 'translate(' + b.left + 'px,' + b.top + 'px) scale(' + b.width / W + ')';
+          setTimeout(done, 340);
+          btn.focus({ preventScroll: true });
+        };
+        function shut() { if (close) close(); }
+        function cut() { if (close) close(true); } // a page change: no animation
+        veil.addEventListener('click', shut); fly.addEventListener('click', shut);
+        window.addEventListener('keydown', key); window.addEventListener('scroll', shut, { passive: true }); window.addEventListener('resize', shut);
+        document.addEventListener('astro:before-swap', cut);
+      });
+
+      // lens: four times the size, centred on the pointer. Mouse and pen only.
+      lens.style.backgroundImage = 'url(' + SRC + ')';
+      btn.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'touch' || close) return;
+        var r = img.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        if (x < 0 || y < 0 || x > r.width || y > r.height) { lens.classList.remove('on'); return; }
+        lens.style.left = x - R + 'px'; lens.style.top = y - R + 'px';
+        lens.style.backgroundSize = r.width * ZOOM + 'px ' + r.height * ZOOM + 'px';
+        lens.style.backgroundPosition = (R - x * ZOOM) + 'px ' + (R - y * ZOOM) + 'px';
+        lens.classList.add('on');
+      });
+      btn.addEventListener('pointerleave', function () { lens.classList.remove('on'); });
+    });
+  })();
+</script>
+
+<style>
+  .ls-fig { display: block; margin: 0; padding: 0; border: 1px solid var(--border-color); border-radius: 4px; }
+  .ls-fig img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
+  .ls-cap {
+    display: flex; justify-content: space-between; gap: 10px; padding: 6px 8px;
+    font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; color: var(--text-dim);
+  }
+  .ls-cap i { font-style: normal; color: var(--signal); white-space: nowrap; }
+  .ls-cap .cap-coarse { display: none; }
+  @media (hover: none) and (pointer: coarse) { .ls-cap .cap-fine { display: none; } .ls-cap .cap-coarse { display: inline; } }
+  .ls-shot { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .ls-shot:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  @media (hover: hover) and (pointer: fine) { .ls-shot { cursor: none; } }
+  /* the lens: a round window onto the same picture, four times the size */
+  .ls-lens {
+    position: absolute; width: 150px; height: 150px; border-radius: 50%; z-index: 5; pointer-events: none;
+    border: 1px solid var(--signal); box-shadow: 0 10px 34px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(10, 10, 11, 0.9);
+    background-repeat: no-repeat;
+    opacity: 0; transform: scale(0.6); transition: opacity 0.14s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ls-lens:global(.on) { opacity: 1; transform: scale(1); }
+  /* the expanded picture and the dim behind it are made by the script, so they are global */
+  :global(.ls-veil) { position: fixed; inset: 0; z-index: 1000; background: rgba(5, 5, 6, 0.86); opacity: 0; transition: opacity 0.28s ease; cursor: zoom-out; }
+  :global(.ls-veil.on) { opacity: 1; }
+  :global(.ls-fly) {
+    position: fixed; z-index: 1001; left: 0; top: 0; max-width: none; transform-origin: 0 0; cursor: zoom-out;
+    border: 1px solid #2a2a2e; border-radius: 4px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform;
+  }
+  :global(.ls-flyhint) {
+    position: fixed; z-index: 1002; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted);
+    background: rgba(10, 10, 11, 0.85); border: 1px solid #2a2a2e; border-radius: 3px; padding: 5px 9px; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .ls-lens, :global(.ls-veil), :global(.ls-fly) { transition: none; } }
+</style>

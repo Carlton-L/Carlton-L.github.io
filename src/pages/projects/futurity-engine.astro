@@ -17,6 +17,7 @@
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import DecisionCard from '../../components/case/DecisionCard.astro';
+import LensShot from '../../components/case/LensShot.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -41,6 +42,8 @@ const jsonLd = {
 const links: [string, string][] = [
   ['engTitle', 'engHero'],
   ['engHero', 'engSect'],
+  ['engSect', 'engBefore'],
+  ['engBefore', 'engAfter'],
   ['engSect', 'engWhat'],
   ['engSect', 'engRole'],
   ['engWhat', 'engHow'],
@@ -63,6 +66,7 @@ const layout = {
     { row: ['title:5', 'own:3'], justify: 'between' },
     { row: ['hero:10'], justify: 'center' },
     { row: ['sect:6'], justify: 'center' },
+    { row: ['bfr:4', 'aft:6'], justify: 'center' },
     { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
     { row: ['how:6'], justify: 'center' },
     { row: ['hard:7'], justify: 'center' },
@@ -109,6 +113,17 @@ const layout = {
       <h2 class="eng-h2">Reasoning you can <span class="sig">navigate</span></h2>
       <p class="eng-sub">What the Engine does, where I fit, and the three interaction decisions that make a long-running AI legible. Then one of its agents, thinking, below.</p>
     </Operator>
+
+    <!-- before / after: the same kind of run, as a graph and as a board. Lens + expand, as on Futurescaper. -->
+    <LensShot id="engBefore" area="bfr" name="before · node_graph"
+      src="/images/projects/futurity-engine/before-graph.webp" width={1600} height={892} lensBg="#111"
+      alt="The original Engine view of a finished run. A summary panel (blurred here) sits beside a dark canvas of about 12,000 coloured nodes in dense clusters, with a legend of node types and a chat panel on the right."
+      caption="BEFORE · THE NODE GRAPH" />
+
+    <LensShot id="engAfter" area="aft" name="after · workflow_board" ports="in"
+      src="/images/projects/futurity-engine/after-board.webp" width={2496} height={975} lensBg="#111"
+      alt="The Engine workflow board for a finished run. The Futurity Engine node fans out to seven agents, each running a short chain of steps, sources and tools, which all meet at an Intelligence Synthesizer and a Research Report node. A status list sits on the left and an activity log on the right."
+      caption="AFTER · THE WORKFLOW BOARD" />
 
     <Operator id="engWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
