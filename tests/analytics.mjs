@@ -231,6 +231,90 @@ const answered = (list, a) => list.some((e) => e.event === 'consent_answered' &&
   await page.context().close();
 }
 
+// 5. Navigation and reading events, on one scripted visit: each fires once under its condition,
+//    with its properties. Links to other sites (GitHub, LinkedIn, a product site, email) are
+//    link_out; carlton.dev pages and the CV never are. Clicks are kept from navigating away.
+//    [E1 E3]
+{
+  const page = await visitor();
+  await page.context().route(/github\.com|linkedin\.com/, (r) => r.abort());
+  const mark = host.captured.length;
+  const custom = () => since(mark).filter((e) => !e.event.startsWith('$'));
+  // the event's own properties: without PostHog's ($…), the token, the id and the registered mode
+  const own = (props) => Object.fromEntries(Object.entries(props).filter(([k]) => !k.startsWith('$') && !['token', 'distinct_id', 'mode'].includes(k)));
+  const named = (name) => custom().filter((e) => e.event === name).map((e) => own(e.properties));
+  const stay = () => page.evaluate(() => window.addEventListener('click', (e) => {
+    if (e.target.closest('a[href^="mailto:"], a[href^="http"], a[href^="/cv/"]')) e.preventDefault();
+  }));
+
+  // Home: a row the mouse moves over, twice, is one preview; the auto-cycle adds none
+  await page.goto(host.origin + '/');
+  await ready(page);
+  await stay();
+  const rows = await page.$$('#workIndex [data-slug]');
+  const slugs = await Promise.all(rows.map((r) => r.getAttribute('data-slug')));
+  await rows[2].hover();
+  await page.mouse.move(5, 5);
+  await rows[2].hover();
+  await page.mouse.move(5, 5);
+  await page.waitForTimeout(8000); // longer than one auto-cycle tick (7.2s)
+  await until(() => named('preview_hovered').length >= 1);
+  const previews = named('preview_hovered');
+  check('preview_hovered: once per row per page, never from the auto-cycle', previews.length === 1 && previews[0].slug === slugs[2], JSON.stringify(previews));
+
+  // PATCH to READ and back, with the key
+  await page.keyboard.press('p');
+  await page.keyboard.press('p');
+  await until(() => named('mode_changed').length >= 2);
+  check('mode_changed: one per switch, with where it went', JSON.stringify(named('mode_changed')) === '[{"to":"READ"},{"to":"PATCH"}]', JSON.stringify(named('mode_changed')));
+
+  // Links in the footer: GitHub, LinkedIn, email, and the CV
+  for (const href of ['https://github.com/Carlton-L', 'https://linkedin.com/in/carltonl', 'mailto:carlton@carlton.dev', '/cv/Carlton_Lindsay_Design_Engineer_CV.pdf']) {
+    await page.click(`footer a[href="${href}"]`);
+    await page.waitForTimeout(150);
+  }
+  for (const p of page.context().pages()) if (p !== page) await p.close();
+  // a carlton.dev page: no link_out
+  await nav(page, '/projects/');
+  await stay();
+  await page.goto(host.origin + '/projects/domainclaim/');
+  await ready(page);
+  await stay();
+  await page.click('a[href="https://domainclaim-pi.vercel.app"]');
+  await page.waitForTimeout(150);
+  for (const p of page.context().pages()) if (p !== page) await p.close();
+  await until(() => named('link_out').length >= 4 && named('cv_downloaded').length >= 1);
+  const outs = named('link_out');
+  check('link_out: GitHub, LinkedIn, email and a product site, with href, label and page [E3]',
+    JSON.stringify(outs.map((o) => [o.href, o.label, o.page])) === JSON.stringify([
+      ['https://github.com/Carlton-L', 'GitHub', '/'],
+      ['https://linkedin.com/in/carltonl', 'LinkedIn', '/'],
+      ['mailto:carlton@carlton.dev', 'Email', '/'],
+      ['https://domainclaim-pi.vercel.app/', outs[3]?.label, '/projects/domainclaim/'],
+    ]) && !!outs[3]?.label, JSON.stringify(outs));
+  check('cv_downloaded: the CV link, with the page; never link_out [E3]', JSON.stringify(named('cv_downloaded')) === '[{"page":"/"}]', JSON.stringify(named('cv_downloaded')));
+
+  // The end of a case study: the card in view, then its link
+  const before = named('case_finished').length;
+  await page.waitForTimeout(1500);
+  const early = named('case_finished').length - before;
+  const card = await page.$('[data-next-case]');
+  await card.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await page.mouse.wheel(0, 300);
+  await page.waitForTimeout(300);
+  const to = await page.$eval('[data-next-case] a', (a) => a.getAttribute('href').split('/')[2]);
+  await page.click('[data-next-case] a');
+  await page.waitForTimeout(SETTLE);
+  await until(() => named('case_finished').length >= 1 && named('next_case_clicked').length >= 1);
+  check('case_finished: once, when the next-case card is in view', early === 0 && JSON.stringify(named('case_finished')) === '[{"slug":"domainclaim"}]', `before scrolling: ${early}, ${JSON.stringify(named('case_finished'))}`);
+  check('next_case_clicked: from and to', JSON.stringify(named('next_case_clicked')) === JSON.stringify([{ from: 'domainclaim', to }]), JSON.stringify(named('next_case_clicked')));
+  const all = custom().map((e) => e.event).filter((n) => n !== 'consent_answered');
+  check('nothing else was sent', all.every((n) => ['preview_hovered', 'mode_changed', 'link_out', 'cv_downloaded', 'case_finished', 'next_case_clicked'].includes(n)), all.join(' '));
+  check('events: no page errors', !page.errors.length, page.errors[0] || '');
+  await page.context().close();
+}
+
 await browser.close();
 await host.close();
 

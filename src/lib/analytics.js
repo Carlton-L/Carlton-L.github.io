@@ -151,6 +151,62 @@
   // Navigation.astro dispatches 'patchmode' whenever it applies a mode, a page change included
   document.addEventListener('patchmode', () => { if (loaded()) window.posthog.register({ mode: mode() }); });
 
+  /* ---------- navigation and reading events (the RFC's table) ---------- */
+  // mode_changed is sent by Navigation.astro's toggle, the only place a visitor changes the mode.
+
+  const path = () => location.pathname;
+  const slugOf = (p) => (/^\/projects\/([^/]+)\/?$/.exec(p) || [])[1] || null;
+  let seen = new Set(); // events sent once per page; emptied on every page
+  const once = (key) => !seen.has(key) && !!seen.add(key);
+
+  // Clicks on links: to another site (or an email), the CV, and the next case study. Listened for in
+  // the capture phase, so a page script that stops a click can't hide it.
+  const label = (a) => (a.textContent.replace(/\s+/g, ' ').trim() || a.getAttribute('aria-label') || '').slice(0, 80);
+  function onLink(e) {
+    if (e.type === 'auxclick' && e.button !== 1) return; // a middle click opens a tab too
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    let url;
+    try { url = new URL(a.getAttribute('href'), location.href); } catch (err) { return; }
+    const away = url.protocol === 'mailto:' ||
+      (/^https?:$/.test(url.protocol) && url.host !== location.host && url.hostname !== 'carlton.dev');
+    if (away) window.track('link_out', { href: url.href, label: label(a), page: path() });
+    else if (url.pathname.startsWith('/cv/')) window.track('cv_downloaded', { page: path() });
+    else if (a.closest('[data-next-case]')) window.track('next_case_clicked', { from: slugOf(path()), to: slugOf(url.pathname) });
+  }
+  document.addEventListener('click', onLink, true);
+  document.addEventListener('auxclick', onLink, true);
+
+  // A work-index row the visitor points at, focuses or taps shows its preview (home and /projects/).
+  // The auto-cycle moves the selection by itself and is never counted. Once per row per page.
+  const ROWS = '#workIndex [data-slug], #projIndex [data-slug]';
+  function onRow(e) {
+    if (e.type === 'pointerover' && e.pointerType !== 'mouse') return;
+    const row = e.target.closest && e.target.closest(ROWS);
+    if (row && once('preview:' + row.dataset.slug)) window.track('preview_hovered', { slug: row.dataset.slug });
+  }
+  document.addEventListener('pointerover', onRow, true);
+  document.addEventListener('focusin', onRow, true);
+  document.addEventListener('click', onRow, true);
+
+  // A case study read to the end: its next-case card (NextCase.astro, carlton-dev.astro) is half in view.
+  let io = null;
+  function arm() {
+    seen = new Set();
+    if (io) io.disconnect();
+    io = null;
+    const card = document.querySelector('[data-next-case]');
+    if (!card || !('IntersectionObserver' in window)) return;
+    io = new IntersectionObserver((entries) => {
+      if (!entries.some((x) => x.isIntersecting) || !once('case_finished')) return;
+      io.disconnect();
+      window.track('case_finished', { slug: slugOf(path()) });
+    }, { threshold: 0.5 });
+    io.observe(card);
+  }
+  document.addEventListener('astro:page-load', arm); // every page, the first included
+  if (document.readyState !== 'loading') arm();
+
   const OPTIONS = {
     api_host: 'https://eu.i.posthog.com',
     // Pinned. From '2026-06-25' the defaults stream network bodies into replays, and the contact

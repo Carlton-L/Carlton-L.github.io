@@ -520,6 +520,7 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     const toggle = () => {
       const next = document.body.classList.contains('perform') ? 'network' : 'perform';
       apply(next, true);
+      if (window.track) window.track('mode_changed', { to: next === 'perform' ? 'READ' : 'PATCH' });
     };
     btn && btn.addEventListener('click', toggle);
     window.addEventListener('keydown', (e) => {
