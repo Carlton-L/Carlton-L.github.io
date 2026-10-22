@@ -157,7 +157,7 @@ const layout = {
     </Operator>
 
     <!-- VIEW: the interactive graph — click a node, traverse to its subject -->
-    <Operator id="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
+    <Operator id="fastSubjView" demo="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…" bg="#111111">
           <FastGraphDemo client:settled={{ rootMargin: '600px' }} />
@@ -193,7 +193,7 @@ const layout = {
     </Operator>
 
     <!-- VIEW: the lab's process tabs — what each step is for -->
-    <Operator id="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs">
+    <Operator id="fastTabsView" demo="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs">
       <div class="fs-labtabs" id="fastLabTabsWidget">
         <div class="fs-lt-strip" role="tablist" aria-label="Lab process tabs">
           <button type="button" class="fs-lt-tab" role="tab" data-tab="plan" aria-selected="true">PLAN</button>
@@ -255,7 +255,7 @@ const layout = {
     </DecisionCard>
 
     <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
-    <Operator id="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
+    <Operator id="fastLabView" demo="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…" bg="#111111">
           <FastGatherDemo client:settled={{ rootMargin: '600px' }} />

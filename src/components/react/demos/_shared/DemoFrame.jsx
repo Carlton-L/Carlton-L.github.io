@@ -17,6 +17,7 @@
  *                     (React-Flow-style demos that need a sized container);
  *             false → body sizes to its content (aspect-driven SVG demos).
  *  - onReset: optional extra reset side-effect; children always remount via key
+ *    (RESET carries data-demo-reset: src/lib/analytics.js sends demo_reset for the nearest data-demo)
  *  - children
  */
 import { useCallback, useState } from 'react';
@@ -51,7 +52,7 @@ export default function DemoFrame({ title, label = 'live', height = '540px', fil
         <span className="demoframe-title">{title}</span>
         <span className="demoframe-label">{LABELS[label] ?? <span>{label}</span>}</span>
         <span className="demoframe-controls">
-          <button type="button" onClick={reset}>
+          <button type="button" onClick={reset} data-demo-reset>
             RESET
           </button>
         </span>

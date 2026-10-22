@@ -22,6 +22,8 @@
  *          the cell only anchors it — for small SYS chips)
  *  - maxw:  cap in px on the resolved width; the op re-centers inside its cells
  *          (for wide centered spans like case-study viewers)
+ *  - demo:  marks a demo a visitor can act on, for the demo_touched and demo_reset events
+ *          (src/lib/analytics.js). Use the operator's id.
  */
 interface Props {
   id: string;
@@ -36,11 +38,12 @@ interface Props {
   /** wire anchoring: 'vertical' = cables enter at top center, leave at
       bottom center (bus-bar ops like the lab section dividers). */
   flow?: 'vertical';
+  demo?: string;
 }
-const { id, name, type = 'txt', pos = '', ports = 'both', area, nudge, fit, maxw, flow } = Astro.props;
+const { id, name, type = 'txt', pos = '', ports = 'both', area, nudge, fit, maxw, flow, demo } = Astro.props;
 ---
 
-<div class={`op op-${type}`} id={id} data-drag style={pos} data-area={area} data-nudge={nudge} data-fit={fit} data-maxw={maxw} data-flow={flow}>
+<div class={`op op-${type}`} id={id} data-drag style={pos} data-area={area} data-nudge={nudge} data-fit={fit} data-maxw={maxw} data-flow={flow} data-demo={demo}>
   <div class="ohead">
     <span class="oname">{name}</span>
     <span class="otyp">{type.toUpperCase()}</span>

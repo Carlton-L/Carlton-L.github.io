@@ -315,6 +315,95 @@ const answered = (list, a) => list.some((e) => e.event === 'consent_answered' &&
   await page.context().close();
 }
 
+// 6. Demo, patch and contact events, on one scripted visit. A demo counts its first touch on a
+//    page, DomainClaim's iframe included, and never the messages the product sends by itself.
+//    message_sent carries nothing, and nothing typed in the form reaches PostHog. [E1 E2]
+{
+  const page = await visitor();
+  const TYPED = { name: 'Harness Visitor', email: 'harness-visitor@example.org', message: 'A message only the harness writes.' };
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type', 'access-control-allow-methods': 'POST, OPTIONS' };
+  let posted = 0;
+  await page.context().route('https://api.carlton.dev/**', (r) => {
+    if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cors });
+    posted++;
+    return r.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: JSON.stringify({ id: 'harness-0001', ack: null }) });
+  });
+  const mark = host.captured.length;
+  const custom = () => since(mark).filter((e) => !e.event.startsWith('$'));
+  const own = (props) => Object.fromEntries(Object.entries(props).filter(([k]) => !k.startsWith('$') && !['token', 'distinct_id', 'mode'].includes(k)));
+  const named = (name) => custom().filter((e) => e.event === name).map((e) => own(e.properties));
+
+  // carlton.dev's background chain, in PATCH: two of each, one event per kind
+  await page.goto(host.origin + '/projects/carlton-dev/');
+  await ready(page);
+  await page.waitForTimeout(SETTLE);
+  for (const v of ['40', '60']) await page.fill('#cdBgNoise [data-param="speed"]', v);
+  for (let i = 0; i < 2; i++) await page.click('#cdBgNoise [data-cycle="noise"]');
+  await page.click('[data-pick="palette"][data-v="2"]');
+  await page.click('#cdBgOut [data-cycle="palette"]');
+  await page.click('[data-pick="palette"][data-v="0"]');
+  const head = await page.$('#cdGrammar .ohead');
+  await head.scrollIntoViewIfNeeded();
+  for (let i = 0; i < 2; i++) {
+    const b = await head.boundingBox();
+    await page.mouse.move(b.x + 40, b.y + b.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b.x + 80, b.y + b.height / 2 + 20, { steps: 4 });
+    await page.mouse.up();
+  }
+  // a press on a header that doesn't move is no drag; checked on the next page, where nothing else drags
+  await until(() => named('patch_used').length >= 4);
+  const kinds = named('patch_used').map((p) => p.kind).sort();
+  check('patch_used: once per kind per page, slider, chip, palette and drag', JSON.stringify(kinds) === '["chip","drag","palette","slider"]', JSON.stringify(named('patch_used')));
+
+  // Futurescaper's live demo: two touches are one demo_touched, every RESET is a demo_reset
+  await page.goto(host.origin + '/projects/futurescaper/');
+  await ready(page);
+  await page.click('#fsTitle .ohead'); // a press that doesn't move
+  const reset = '#fsView [data-demo-reset]';
+  await page.$eval('#fsView', (el) => el.scrollIntoView({ block: 'center' }));
+  await page.waitForSelector(reset, { timeout: 15000 });
+  await page.waitForTimeout(800);
+  await page.click('#fsView .demoframe-title');
+  await page.click('#fsView .demoframe-title');
+  await page.click(reset);
+  await page.click(reset);
+  await until(() => named('demo_reset').length >= 2);
+  check('demo_touched: the first touch in a demo, with its name', JSON.stringify(named('demo_touched')) === '[{"demo":"fsView"}]', JSON.stringify(named('demo_touched')));
+  check('demo_reset: every RESET, with the demo', JSON.stringify(named('demo_reset')) === '[{"demo":"fsView"},{"demo":"fsView"}]', JSON.stringify(named('demo_reset')));
+  check('patch_used: a press on a header without a move is no drag', named('patch_used').length === 4, JSON.stringify(named('patch_used')));
+
+  // DomainClaim's product runs in an iframe: its own messages don't count, a touch inside it does
+  await page.goto(host.origin + '/projects/domainclaim/');
+  await ready(page);
+  await page.$eval('#dcFx', (el) => el.scrollIntoView({ block: 'center' }));
+  const frame = page.frameLocator('#dcFx iframe');
+  await frame.locator('h1').first().waitFor({ timeout: 20000 });
+  await page.waitForTimeout(1500);
+  const quiet = named('demo_touched').filter((d) => d.demo === 'dcFx').length;
+  await frame.locator('h1').first().click();
+  await until(() => named('demo_touched').some((d) => d.demo === 'dcFx'));
+  check('demo_touched: a touch inside DomainClaim\'s iframe, never the product\'s own messages', quiet === 0 && named('demo_touched').filter((d) => d.demo === 'dcFx').length === 1, `before the touch: ${quiet}, ${JSON.stringify(named('demo_touched'))}`);
+
+  // The contact form: message_sent with nothing in it, and nothing typed sent anywhere
+  await page.goto(host.origin + '/contact/');
+  await ready(page);
+  await page.waitForTimeout(SETTLE);
+  for (const [k, v] of Object.entries(TYPED)) await page.fill(`#ctForm [name="${k}"]`, v);
+  await page.click('#ctForm .ct-send');
+  await page.waitForSelector('#ctDone:not([hidden])', { timeout: 10000 });
+  await until(() => named('message_sent').length >= 1);
+  await page.waitForTimeout(1500);
+  const raw = JSON.stringify(since(mark));
+  check('message_sent: once, with no properties [E2]', posted === 1 && JSON.stringify(named('message_sent')) === '[{}]', `posted ${posted}, ${JSON.stringify(named('message_sent'))}`);
+  check('nothing typed in the form reached PostHog [E2]', Object.values(TYPED).every((v) => !raw.includes(v) && !raw.includes(v.split('@')[0])));
+
+  const all = custom().map((e) => e.event);
+  check('nothing else was sent', all.every((n) => ['patch_used', 'demo_touched', 'demo_reset', 'message_sent'].includes(n)), all.join(' '));
+  check('demos and contact: no page errors', !page.errors.length, page.errors[0] || '');
+  await page.context().close();
+}
+
 await browser.close();
 await host.close();
 

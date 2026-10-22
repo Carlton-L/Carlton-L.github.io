@@ -2,7 +2,7 @@
 // PostHog options in src/lib/analytics.js, checked against the RFC (docs/rfc/analytics.md).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { installAnalyticsLoader } from '../../src/lib/analytics-loader.js';
@@ -162,4 +162,38 @@ test('a yes opts in and records, a no opts out', () => {
   assert.match(src, /'no'\) \{\s*if \(status !== 'denied'\) ph\.opt_out_capturing\(\);/);
   assert.match(src, /localStorage\.setItem\('rec-consent', a\)/);
   assert.match(src, /window\.track\('consent_answered', \{ answer: a \}\)/);
+});
+
+test('the contact form sends nothing typed: fields stay masked, message_sent carries nothing', () => {
+  // E2. PostHog masks every input; nothing on the page may undo that
+  const page = read('src/pages/contact.astro');
+  for (const w of ['ph-unmask', 'data-ph-capture', 'ph-capture', 'maskAllInputs', 'posthog.']) assert.ok(!page.includes(w), w);
+  const sends = page.match(/window\.track\([^)]*\)/g) || [];
+  assert.deepEqual(sends, ["window.track('message_sent')"]);
+  // what's shown back to the visitor (their address) stays out of recordings
+  assert.match(page, /class="ct-done-p ph-no-capture" id="ctDoneP"/);
+  assert.match(page, /class="ct-log ph-no-capture" id="ctLog"/);
+  assert.match(read('src/lib/analytics.js'), /maskAllInputs: true/);
+});
+
+test('every demo with a RESET is marked as a demo', () => {
+  // demo_reset needs a name: each island in a DemoFrame sits in an Operator with demo set to its id
+  const framed = readdirSync(join(ROOT, 'src/components/react/demos'), { recursive: true })
+    .filter((f) => /\.jsx$/.test(f) && !f.includes('_shared') && read(`src/components/react/demos/${f}`).includes('<DemoFrame'))
+    .map((f) => f.split('/').pop().replace('.jsx', ''));
+  assert.ok(framed.length >= 6, framed.join(' '));
+  let seen = 0;
+  for (const f of readdirSync(join(ROOT, 'src/pages/projects'))) {
+    for (const op of read(`src/pages/projects/${f}`).split('<Operator ').slice(1)) {
+      const body = op.slice(0, op.indexOf('</Operator>'));
+      if (!framed.some((name) => body.includes(`<${name} `))) continue;
+      seen++;
+      assert.match(op, /^id="([^"]+)" demo="\1"/, op.slice(0, 60));
+    }
+  }
+  assert.equal(seen, framed.length);
+  assert.match(read('src/components/react/demos/_shared/DemoFrame.jsx'), /onClick=\{reset\} data-demo-reset/);
+  assert.match(read('src/pages/projects/campus-ai.astro'), /<Operator id="caViewer" demo="caViewer"[\s\S]*id="caReset" data-demo-reset/);
+  assert.match(read('src/components/Operator.astro'), /data-demo=\{demo\}/);
+  assert.match(read('src/components/react/demos/_shared/ProductFrame.jsx'), /new CustomEvent\('demo:touch', \{ bubbles: true \}\)/);
 });

@@ -207,6 +207,44 @@
   document.addEventListener('astro:page-load', arm); // every page, the first included
   if (document.readyState !== 'loading') arm();
 
+  /* ---------- demo, patch and contact events ---------- */
+  // message_sent is sent by contact.astro, on a send that worked.
+
+  // A demo is anything marked data-demo (Operator's `demo`, a LinkedViews surface). The first
+  // pointer down in it, once per demo per page. ProductFrame passes on the ones inside its iframe.
+  function onDemo(e) {
+    const el = e.target.closest && e.target.closest('[data-demo]');
+    if (el && once('demo:' + el.dataset.demo)) window.track('demo_touched', { demo: el.dataset.demo });
+  }
+  document.addEventListener('pointerdown', onDemo, true);
+  document.addEventListener('demo:touch', onDemo, true);
+
+  // A RESET (DemoFrame's, Campus's back to stars) carries data-demo-reset. Every click counts.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest && e.target.closest('[data-demo-reset]');
+    const el = btn && btn.closest('[data-demo]');
+    if (el) window.track('demo_reset', { demo: el.dataset.demo });
+  }, true);
+
+  // The patch's own controls (patch-field.js), once per kind per page: a background slider, a
+  // type chip, the palette (its chip or a swatch), and dragging an operator by its header.
+  const used = (kind) => { if (once('patch:' + kind)) window.track('patch_used', { kind }); };
+  document.addEventListener('input', (e) => { if (e.target.closest && e.target.closest('[data-param]')) used('slider'); }, true);
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest && e.target.closest('[data-cycle], [data-pick]');
+    if (c) used(c.dataset.pick === 'palette' || c.dataset.cycle === 'palette' ? 'palette' : 'chip');
+  }, true);
+  // A drag is a press on a header that then moves. Never in READ, where nothing drags.
+  let press = null;
+  document.addEventListener('mousedown', (e) => {
+    press = e.button === 0 && !document.body.classList.contains('perform') && e.target.closest &&
+      e.target.closest('.op .ohead') ? [e.clientX, e.clientY] : null;
+  }, true);
+  document.addEventListener('mousemove', (e) => {
+    if (press && Math.hypot(e.clientX - press[0], e.clientY - press[1]) > 4) { press = null; used('drag'); }
+  }, true);
+  document.addEventListener('mouseup', () => { press = null; }, true);
+
   const OPTIONS = {
     api_host: 'https://eu.i.posthog.com',
     // Pinned. From '2026-06-25' the defaults stream network bodies into replays, and the contact
