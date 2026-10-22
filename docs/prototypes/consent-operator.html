@@ -1,0 +1,328 @@
+<!-- Status: accepted · 2026-10-22 · consent operator and REC nav chip. Decided: docked SYS operator, accent body, solid black buttons, copy below, drop-and-fade exit, reopens under the chip -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Consent operator · prototype</title>
+<style>
+  @font-face { font-family: 'Red Hat Display'; src: url('../../public/fonts/red-hat-display-latin-wght-normal.woff2') format('woff2'), url('https://carlton.dev/fonts/red-hat-display-latin-wght-normal.woff2') format('woff2'); font-weight: 300 900; font-display: swap; }
+  @font-face { font-family: 'Sometype Mono'; src: url('../../public/fonts/sometype-mono-latin-wght-normal.woff2') format('woff2'), url('https://carlton.dev/fonts/sometype-mono-latin-wght-normal.woff2') format('woff2'); font-weight: 400 700; font-display: swap; }
+  :root {
+    --bg: #0a0a0b; --bg-elevated: #101013; --bg-surface: #161619;
+    --signal: #3dff88;
+    --text: #e6e6e2; --text-muted: #8f8f8a; --text-dim: #7e7e79;
+    --border-color: #232326; --grid-dot: #17171a;
+    --op-sys-bg: #232326; --op-sys-fg: #8f8f8a; --op-txt-bg: #2a2a20; --op-txt-fg: #e6e6d8;
+    --op-view-bg: #123c24; --op-view-fg: #3dff88;
+    --radius-md: 7px; --nav-h: 44px; --playbar-h: 40px;
+    --font-display: 'Red Hat Display', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'Sometype Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-display); padding: 40px 16px 96px; }
+  main { max-width: 1240px; margin: 0 auto; }
+  h1 { font-weight: 800; text-transform: uppercase; font-size: 28px; margin: 0 0 6px; }
+  h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--signal); font-weight: 500; margin: 48px 0 10px; text-transform: uppercase; }
+  .lede { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 72ch; margin: 0 0 24px; }
+  ul.spec { margin: 0; padding-left: 18px; color: var(--text-muted); font-size: 13.5px; line-height: 1.65; max-width: 80ch; }
+  ul.spec li { margin-bottom: 4px; }
+  ul.spec b { color: var(--text); font-weight: 600; }
+  code { font-family: var(--font-mono); font-size: 0.92em; color: var(--text); }
+
+  /* sheet controls */
+  .ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }
+  .ctl .lab { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-dim); margin: 0 2px 0 10px; }
+  .ctl .lab:first-child { margin-left: 0; }
+  .chip { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; padding: 4px 9px; border-radius: 4px; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); }
+  .chipbtn { border: 1px solid color-mix(in srgb, var(--signal) 45%, transparent); color: var(--signal); cursor: pointer; transition: background .15s, box-shadow .15s; }
+  .chipbtn:hover { background: color-mix(in srgb, var(--signal) 9%, transparent); box-shadow: 0 0 8px color-mix(in srgb, var(--signal) 15%, transparent); }
+  .chipbtn[aria-pressed='true'] { background: var(--signal); color: var(--bg); font-weight: 700; }
+  .chipbtn:focus-visible { outline: 1px solid var(--signal); outline-offset: 2px; }
+
+  /* page mock */
+  .frame { position: relative; overflow: hidden; border: 1px solid #2a2a2e; border-radius: 10px; background-color: var(--bg); background-image: radial-gradient(var(--grid-dot) 1.4px, transparent 1.4px); background-size: 26px 26px; width: 820px; max-width: 100%; height: 440px; }
+  .frame.phone { width: 375px; height: 600px; }
+  .mnav { position: absolute; inset: 0 0 auto 0; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 16px; background: rgba(10,10,11,.85); border-bottom: 1px solid var(--border-color); z-index: 90; }
+  .mnav .who { font-weight: 800; font-size: 12px; letter-spacing: .08em; }
+  .mnav .right { display: flex; align-items: center; gap: 8px; }
+  .mode { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; border: 1px solid var(--border-color); border-radius: 4px; padding: 3px 7px; color: var(--text-muted); }
+  .mode b { color: var(--signal); font-weight: 600; }
+  .mplay { position: absolute; inset: auto 0 0 0; height: var(--playbar-h); display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--bg-elevated); border-top: 1px solid var(--border-color); z-index: 10; }
+  .mplay .tri { font-family: var(--font-mono); font-size: 11px; color: var(--signal); }
+  .mplay .track { flex: 1; height: 5px; border-radius: 3px; background: var(--bg-surface); position: relative; overflow: hidden; }
+  .mplay .track i { position: absolute; top: 0; bottom: 0; left: 20%; width: 30%; background: linear-gradient(90deg, transparent, var(--signal)); opacity: .8; border-radius: 3px; }
+  .mop { position: absolute; background: var(--bg-elevated); border: 1px solid #2a2a2e; border-radius: var(--radius-md); box-shadow: 0 14px 44px rgba(0,0,0,.55); }
+  .ohead { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: var(--text-muted); }
+  .otyp { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+  .t-txt .otyp { background: var(--op-txt-bg); color: var(--op-txt-fg); }
+  .t-view .otyp { background: var(--op-view-bg); color: var(--op-view-fg); }
+  .t-sys .otyp { background: var(--op-sys-bg); color: var(--op-sys-fg); }
+  .obody { padding: 12px 14px; }
+  .ghost { height: 10px; border-radius: 3px; background: #1d1d21; margin: 0 0 8px; }
+  .ghost.w60 { width: 60%; } .ghost.w80 { width: 80%; }
+  .ghost.big { height: 22px; width: 70%; background: #26262b; margin-bottom: 14px; }
+  .viewbox { height: 120px; border-radius: 4px; background: repeating-linear-gradient(45deg, #121215 0 6px, #15151a 6px 12px); }
+  .port { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--signal); top: 50%; transform: translateY(-50%); }
+  .port.out { right: -5px; } .port.in { left: -5px; }
+  .cable { position: absolute; height: 1.5px; background: var(--signal); opacity: .55; }
+  .frame.read .mop { position: static; width: auto !important; max-width: 600px; margin: 0 auto 26px; background: transparent; border: none; box-shadow: none; }
+  .frame.read .mop .ohead { padding: 0 0 7px; margin-bottom: 12px; }
+  .frame.read .mop .obody { padding: 0; }
+  .frame.read .mop .port, .frame.read .cable { display: none; }
+  .frame.read .page { position: absolute; inset: var(--nav-h) 0 var(--playbar-h) 0; padding: 26px 16px; overflow: hidden; }
+  .frame:not(.read) .page { position: absolute; inset: 0; }
+
+  /* ===== the component: sys · recorder ===== */
+  .rec-op {
+    position: absolute; left: 16px; bottom: calc(var(--playbar-h) + 16px); width: 300px; z-index: 80;
+    background: var(--bg-elevated); border: 1px solid #2a2a2e; border-radius: var(--radius-md);
+    box-shadow: 0 18px 50px rgba(0,0,0,.6); transition: box-shadow .3s;
+  }
+  .rec-op .ohead .st { color: var(--text-dim); }
+  .rec-op .obody { background: var(--signal); color: #0a0a0b; border-radius: 0 0 var(--radius-md) var(--radius-md); }
+  .rec-op .stub { position: absolute; right: -26px; top: 50%; width: 22px; height: 1.5px; background: var(--signal); opacity: .55; }
+  .rec-op .stub::after { content: ''; position: absolute; right: -4px; top: -3.5px; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--signal); background: var(--bg); }
+  .rec-op.gone { visibility: hidden; pointer-events: none; }
+  /* Exit: drop and fade. Only translate and opacity move, so the compositor does all the work.
+     The individual translate property leaves READ mode's translateX(-50%) centring alone. */
+  .rec-op.leave { animation: rec-leave 220ms cubic-bezier(.4, 0, 1, 1) forwards; }
+  .rec-op.arrive { animation: rec-arrive 200ms cubic-bezier(0, 0, .2, 1) forwards; }
+  .rec-op.leave, .rec-op.arrive { pointer-events: none; will-change: translate, opacity; }
+  @keyframes rec-leave { to { translate: 0 16px; opacity: 0; } }
+  @keyframes rec-arrive { from { translate: 0 -8px; opacity: 0; } }
+
+  /* Reopened from the chip: hangs under the chip, top right, with a cable up to it. */
+  .rec-op.anchored { left: auto; bottom: auto; top: calc(var(--nav-h) + 12px); right: var(--ar, 16px); }
+  .rec-op.anchored .stub { right: auto; left: var(--sx, 50%); top: -13px; width: 1.5px; height: 12px; }
+  .rec-op.anchored .stub::after { right: auto; left: -3.25px; top: -5px; }
+  .frame.read .rec-op.anchored { left: auto; transform: none; width: 300px; }
+  .frame.read .rec-op.anchored .stub, .frame.phone .rec-op.anchored .stub { display: block; }
+  .frame.phone .rec-op.anchored { left: 12px; right: 12px; width: auto; }
+  .rec-op.nudge { box-shadow: 0 0 0 2px var(--signal), 0 18px 50px rgba(0,0,0,.6); }
+  .rec-copy { margin: 0 0 10px; font-size: 13px; line-height: 1.55; font-weight: 500; }
+  .rec-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .rec-row .chipbtn { background: var(--bg); border-color: color-mix(in srgb, var(--signal) 45%, transparent); color: var(--signal); }
+  .rec-row .chipbtn:hover { background: color-mix(in srgb, var(--signal) 12%, var(--bg)); box-shadow: none; }
+  .rec-row .chipbtn:focus-visible { outline: 2px solid #0a0a0b; outline-offset: 2px; }
+  .rec-row a { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: rgba(10,10,11,.7); text-decoration: none; margin-left: auto; }
+  .rec-row a:hover { color: #0a0a0b; text-decoration: underline; }
+  .frame.phone .rec-op { left: 12px; right: 12px; width: auto; }
+  .frame.phone .rec-op .stub { display: none; }
+  .frame.read .rec-op { left: 50%; transform: translateX(-50%); width: min(600px, calc(100% - 32px)); }
+  .frame.read .rec-op .stub { display: none; }
+
+  /* ===== the component: REC nav chip ===== */
+  .navrec { font-size: 10px; padding: 3px 8px; }
+  .navrec .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 0; background: var(--signal); box-shadow: 0 0 8px var(--signal); }
+  .navrec .dot.off { background: transparent; border: 1.5px solid var(--text-dim); box-shadow: none; }
+  .navrec.ask { box-shadow: 0 0 0 0 transparent; animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe { 50% { box-shadow: 0 0 0 1px var(--signal); } }
+  @media (prefers-reduced-motion: reduce) { .rec-op.leave, .rec-op.arrive { animation-duration: 1ms; } .navrec.ask { animation: none; } }
+
+  /* all four states at once */
+  .states { display: grid; grid-template-columns: repeat(auto-fill, minmax(410px, 1fr)); gap: 18px; }
+  .state .cap { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; color: var(--text-dim); text-transform: uppercase; margin: 0 0 6px; }
+  .state .cap b { color: var(--text); font-weight: 600; }
+  .mini { width: 410px; height: 220px; overflow: hidden; border-radius: 6px; }
+  .mini .frame { width: 820px; max-width: none; transform: scale(.5); transform-origin: 0 0; pointer-events: none; }
+  @media (max-width: 860px) { .frame { width: 100%; } .states { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Consent operator</h1>
+  <p class="lede">Asks once whether a visit may be recorded. Every visit is counted without cookies either way; the answer only decides session replay. The REC chip in the nav shows the answer on every page and is how a visitor changes it.</p>
+
+  <div class="ctl" id="ctl"></div>
+  <div class="frame" id="live"></div>
+
+  <h2>All states</h2>
+  <div class="states" id="states"></div>
+
+  <h2>Spec</h2>
+  <ul class="spec">
+    <li><b>Operator, first time:</b> <code>sys · recorder</code>, a SYS operator fixed at the bottom left, with a cable stub. It floats over the page and never pushes it, so no card moves. Bottom left keeps it clear of the phone dock (bottom right). In READ it sits in the reading column. It is there when the page loads, with no entrance animation.</li>
+    <li><b>Operator, reopened from the chip:</b> hangs just under the REC chip, top right, its right edge lined up with the chip's, with a short cable from the chip down to it. On phones it spans the width under the nav. It drops in from the chip (200 ms, 8 px, fading in).</li>
+    <li><b>Header:</b> the normal operator header. The status reads <code>waiting</code>, then <code>● rec</code> or <code>○ off</code> after an answer.</li>
+    <li><b>Body:</b> the accent colour (it follows the visitor's palette) with near-black text.</li>
+    <li><b>Copy:</b> "Mind if I record your visit? It helps me make the site better. Anything you type stays hidden."</li>
+    <li><b>Buttons:</b> <code>▶ ok</code> and <code>■ no thanks</code>. Solid: the page's black behind green text and a green border, so they look like the site's outline buttons do on black. Hover tints them green.</li>
+    <li><b>Link:</b> <code>privacy →</code> goes to <code>/privacy/</code>, which says that a "no thanks" visit is still counted without cookies.</li>
+    <li><b>After an answer:</b> the operator leaves at once: it drops 16 px and fades out in 220 ms. The nav chip changes in the same instant, which is the confirmation. It doesn't come back on its own.</li>
+    <li><b>Closing without answering again:</b> when reopened, clicking the chip again or pressing Escape closes it the same way and keeps the current answer.</li>
+    <li><b>Exit, decided 2026-10-22:</b> drop and fade. Considered: slide down, slide left, shrink into the chip, wipe down. All but the wipe are compositor-only; drop and fade moves the least and reads as the quietest.</li>
+    <li><b>Performance:</b> only <code>translate</code> and <code>opacity</code> animate, so there's no layout and no repaint per frame. <code>will-change</code> is set only while it moves. When the exit ends (<code>animationend</code>, with a timeout as a fallback) the element leaves the DOM. Placing the reopened operator needs one measurement of the chip.</li>
+    <li><b>REC chip:</b> beside PATCH / READ on every page.
+      <ul>
+        <li>No answer: <code>REC ?</code>, breathing. Clicking it flashes the operator.</li>
+        <li>Yes: <code>● REC</code>. No: <code>○ REC OFF</code>.</li>
+        <li>After an answer, clicking it reopens the operator under the chip with the current answer ticked. Clicking it again closes it.</li>
+      </ul>
+    </li>
+    <li><b>Reduced motion:</b> the operator appears and disappears without moving, and the chip doesn't breathe.</li>
+    <li><b>Keyboard:</b> opening from the chip moves focus to the current answer's button; closing returns focus to the chip.</li>
+  </ul>
+</main>
+
+<script>
+(function () {
+  var COPY = { text: 'Mind if I record your visit? It helps me make the site better. Anything you type stays hidden.', yes: '▶ ok', no: '■ no thanks' };
+  var PALS = ['#3dff88', '#e8a317', '#56b4e9', '#9f9f98'];
+  var st = { s: 'pending', ans: null, view: 'patch', pal: 0 };
+
+  // Leave: drop and fade. Arrive: drop in from the chip. Remove from view when done.
+  function leave(el, done) {
+    el.classList.add('leave');
+    var finished = false;
+    var finish = function () { if (finished) return; finished = true; el.classList.remove('leave'); el.classList.add('gone'); if (done) done(); };
+    el.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, 300);
+  }
+  function arrive(el) {
+    el.classList.add('arrive');
+    var off = function () { el.classList.remove('arrive'); };
+    el.addEventListener('animationend', off, { once: true });
+    setTimeout(off, 280);
+  }
+  // Line the reopened operator up under the chip: right edges aligned, cable at the chip's centre.
+  function anchor(frame, scale) {
+    var el = frame.querySelector('.rec-op.anchored'); if (!el) return;
+    var c = frame.querySelector('[data-chip]').getBoundingClientRect();
+    var f = frame.getBoundingClientRect();
+    var right = (f.right - c.right) / scale;
+    if (!frame.classList.contains('phone')) el.style.setProperty('--ar', right + 'px');
+    var o = el.getBoundingClientRect();
+    el.style.setProperty('--sx', ((c.left + c.width / 2 - o.left) / scale - 1) + 'px');
+  }
+  var timer = null;
+
+  function page(phone) {
+    if (phone) {
+      return '<div class="page">' +
+        '<div class="mop t-txt" style="left:12px;right:12px;top:66px"><div class="ohead"><span>input · hello</span><span class="otyp">TXT</span></div><div class="obody"><div class="ghost big"></div><div class="ghost"></div><div class="ghost w80"></div><div class="ghost w60"></div></div></div>' +
+        '<div class="mop t-view" style="left:12px;right:12px;top:250px"><div class="ohead"><span>view · futurescaper</span><span class="otyp">VIEW</span></div><div class="obody"><div class="viewbox"></div></div></div></div>';
+    }
+    return '<div class="page">' +
+      '<div class="mop t-txt" style="left:60px;top:80px;width:300px"><div class="ohead"><span>input · hello</span><span class="otyp">TXT</span></div><div class="obody"><div class="ghost big"></div><div class="ghost"></div><div class="ghost w80"></div><div class="ghost w60"></div></div><span class="port out"></span></div>' +
+      '<div class="cable" style="left:366px;top:146px;width:94px"></div>' +
+      '<div class="mop t-view" style="left:460px;top:80px;width:320px"><div class="ohead"><span>view · futurescaper</span><span class="otyp">VIEW</span></div><div class="obody"><div class="viewbox"></div></div><span class="port in"></span></div></div>';
+  }
+
+  function chip(s) {
+    if (!s.ans || s.s === 'pending') return '<button class="chip chipbtn navrec ask" data-chip title="Recording: not answered yet">REC ?</button>';
+    return s.ans === 'yes'
+      ? '<button class="chip chipbtn navrec" data-chip title="Recording. Click to change"><span class="dot"></span>REC</button>'
+      : '<button class="chip chipbtn navrec" data-chip title="Not recording. Click to change"><span class="dot off"></span>REC OFF</button>';
+  }
+
+  function op(s) {
+    var show = s.s === 'pending' || s.s === 'reopen';
+    var anim = '';
+    var status = s.s === 'pending' ? 'waiting' : s.ans === 'yes' ? '● rec' : '○ off';
+    var yes = COPY.yes + (s.s === 'reopen' && s.ans === 'yes' ? ' ✓' : '');
+    var no = COPY.no + (s.s === 'reopen' && s.ans === 'no' ? ' ✓' : '');
+    return '<div class="rec-op t-sys' + (show ? '' : ' gone') + (s.s === 'reopen' ? ' anchored' : '') + anim + '">' +
+      '<div class="ohead"><span>sys · recorder</span><span><span class="st">' + status + '</span> <span class="otyp">SYS</span></span></div>' +
+      '<div class="obody"><p class="rec-copy">' + COPY.text + '</p><div class="rec-row">' +
+      '<button class="chip chipbtn" data-a="yes">' + yes + '</button><button class="chip chipbtn" data-a="no">' + no + '</button>' +
+      '<a href="#" onclick="return false">privacy →</a></div></div><span class="stub"></span></div>';
+  }
+
+  function frameHTML(s) {
+    var read = s.view !== 'patch';
+    return '<div class="mnav"><span class="who">CARLTON LINDSAY</span><span class="right">' + chip(s) +
+      '<span class="mode">' + (read ? 'PATCH <b>READ</b>' : '<b>PATCH</b> READ') + '</span></span></div>' +
+      page(s.view === 'phone') +
+      '<div class="mplay"><span class="tri">▶</span><span class="track"><i></i></span></div>' + op(s);
+  }
+
+  function paint(el, s) {
+    el.className = 'frame' + (s.view === 'phone' ? ' phone' : '') + (s.view !== 'patch' ? ' read' : '');
+    el.style.setProperty('--signal', PALS[s.pal]);
+    el.innerHTML = frameHTML(s);
+  }
+
+  function close() {
+    var live = document.getElementById('live');
+    st.s = 'done';
+    leave(live.querySelector('.rec-op'), function () { render(); controls(); live.querySelector('[data-chip]').focus(); });
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && st.s === 'reopen') close(); });
+
+  function render() {
+    var live = document.getElementById('live');
+    paint(live, st);
+    anchor(live, 1);
+    live.querySelectorAll('[data-a]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        // The chip changes at once; the operator leaves with the chosen exit, then is gone.
+        st.ans = b.dataset.a; st.s = 'done';
+        var oldChip = live.querySelector('[data-chip]');
+        var tmp = document.createElement('div'); tmp.innerHTML = chip(st); oldChip.replaceWith(tmp.firstChild);
+        leave(live.querySelector('.rec-op'), function () { render(); controls(); live.querySelector('[data-chip]').focus(); });
+      });
+    });
+    var c = live.querySelector('[data-chip]');
+    c.addEventListener('click', function () {
+      if (st.s === 'pending') {
+        var o = live.querySelector('.rec-op'); o.classList.add('nudge');
+        setTimeout(function () { o.classList.remove('nudge'); }, 600);
+        return;
+      }
+      if (st.s === 'reopen') { close(); return; }
+      st.s = 'reopen'; render(); controls();
+      var el = live.querySelector('.rec-op');
+      arrive(el);
+      var cur = el.querySelector('[data-a=' + st.ans + ']'); if (cur) cur.focus();
+    });
+    renderStates();
+  }
+
+  function renderStates() {
+    var list = [
+      ['pending', null, 'No answer', 'operator up, chip asks'],
+      ['done', 'yes', 'Said yes', 'operator gone, recording'],
+      ['done', 'no', 'Said no', 'operator gone, counted only'],
+      ['reopen', 'yes', 'Changing their mind', 'opens under the chip, answer ticked'],
+    ];
+    var box = document.getElementById('states');
+    box.innerHTML = '';
+    list.forEach(function (x) {
+      var wrap = document.createElement('div'); wrap.className = 'state';
+      wrap.innerHTML = '<p class="cap"><b>' + x[2] + '</b> · ' + x[3] + '</p><div class="mini"><div class="frame"></div></div>';
+      box.appendChild(wrap);
+      var fr = wrap.querySelector('.frame');
+      paint(fr, { s: x[0], ans: x[1], view: 'patch', pal: st.pal });
+      anchor(fr, 0.5);
+    });
+  }
+
+  function controls() {
+    var key = st.s === 'pending' ? 'pending' : st.s === 'reopen' ? 'reopen' : st.ans;
+    var el = document.getElementById('ctl');
+    var group = function (label, items, cur, attr) {
+      return '<span class="lab">' + label + '</span>' + items.map(function (i) {
+        return '<button class="chip chipbtn" ' + attr + '="' + i[0] + '" aria-pressed="' + (String(cur) === String(i[0])) + '">' + i[1] + '</button>';
+      }).join('');
+    };
+    el.innerHTML =
+      group('STATE', [['pending', 'no answer'], ['yes', 'said yes'], ['no', 'said no'], ['reopen', 'changing their mind']], key, 'data-s') +
+      group('VIEW', [['patch', 'PATCH 1440'], ['read', 'READ'], ['phone', 'PHONE 375']], st.view, 'data-v') +
+      group('PALETTE', [[0, 'GRN'], [1, 'AMB'], [2, 'CYN'], [3, 'MONO']], st.pal, 'data-p');
+    el.querySelectorAll('[data-s]').forEach(function (b) { b.addEventListener('click', function () {
+      var k = b.dataset.s; clearTimeout(timer);
+      if (k === 'pending') { st.s = 'pending'; st.ans = null; }
+      else if (k === 'reopen') { st.s = 'reopen'; st.ans = st.ans || 'yes'; }
+      else { st.s = 'done'; st.ans = k; }
+      render(); controls();
+    }); });
+    el.querySelectorAll('[data-v]').forEach(function (b) { b.addEventListener('click', function () { st.view = b.dataset.v; render(); controls(); }); });
+    el.querySelectorAll('[data-p]').forEach(function (b) { b.addEventListener('click', function () { st.pal = +b.dataset.p; render(); controls(); }); });
+  }
+
+  render(); controls();
+})();
+</script>
+</body>
+</html>
