@@ -96,6 +96,7 @@ const readState = (page) => page.evaluate(() => {
 async function run(name) {
   const browser = await ENGINES[name].launch();
   const check = (test, pass, info = '') => results.push({ browser: name, test, pass, info });
+  const posthog = [];
 
   const open = async ({ boot = false, ...options } = {}) => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options });
@@ -109,6 +110,9 @@ async function run(name) {
     });
     // Fonts and third-party scripts are not under test, and the run should work offline.
     await page.route(/typekit|googleapis|gstatic|cdnjs|unpkg|jsdelivr|vercel\.app/, (r) => r.abort());
+    // PostHog never starts on localhost. Anything asked of it is kept, stopped, and fails the run (19).
+    page.on('request', (r) => { if (/posthog\.com/.test(r.url())) posthog.push(r.url()); });
+    await page.route(/posthog\.com/, (r) => r.abort());
     return page;
   };
   const clickLink = async (page, href) => {
@@ -123,6 +127,7 @@ async function run(name) {
   // 1. Every page loads clean, with every cable drawn.
   const freshHeight = {};
   const slashless = [];
+  const started = [];
   {
     const page = await open();
     for (const url of PAGES) {
@@ -136,6 +141,7 @@ async function run(name) {
         .filter((u) => u.origin === location.origin && !u.pathname.endsWith('/') && !/\.[a-z0-9]+$/i.test(u.pathname))
         .map((u) => u.pathname));
       if (unslashed.length) slashless.push(...unslashed.map((u) => `${u} on ${url}`));
+      if (await page.evaluate(() => 'posthog' in window || !!window.__posthog_initialized)) started.push(url);
       check(`loads ${url}`, !page.errors.length && settled(s) && s.cables === s.links, brief(s, page));
     }
     await page.context().close();
@@ -479,6 +485,22 @@ async function run(name) {
   // 18. Links end in a slash, so nothing in the whole run was sent through a redirect.
   check('every internal link ends in a slash', slashless.length === 0, [...new Set(slashless)].slice(0, 5).join('; '));
   check('no link was redirected', net.redirects.length === 0, [...new Set(net.redirects)].join(', '));
+
+  // 19. Analytics on localhost: ?notrack=1 sets the flag and ?notrack=0 clears it, and in the whole
+  //     run PostHog was never asked for anything and never started.
+  {
+    const page = await open();
+    await page.goto(ORIGIN + '/?notrack=1');
+    const set = await page.evaluate(() => localStorage.getItem('notrack'));
+    await page.goto(ORIGIN + '/about/');
+    const kept = await page.evaluate(() => localStorage.getItem('notrack'));
+    await page.goto(ORIGIN + '/?notrack=0');
+    const cleared = await page.evaluate(() => localStorage.getItem('notrack'));
+    check('notrack: set, kept, cleared', set === '1' && kept === '1' && cleared === null && !page.errors.length, `${set} ${kept} ${cleared} ${page.errors[0] || ''}`);
+    await page.context().close();
+  }
+  check('analytics: PostHog never starts on localhost', !started.length, started.join(', '));
+  check('analytics: nothing asked of PostHog on localhost', !posthog.length, [...new Set(posthog)].slice(0, 3).join(', '));
 
   await browser.close();
 }

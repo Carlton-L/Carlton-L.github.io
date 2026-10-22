@@ -20,7 +20,7 @@ test('the build has pages', () => {
   assert.ok(pages.includes('index.html'));
 });
 
-for (const name of ['patch', 'previs']) {
+for (const name of ['patch', 'previs', 'analytics']) {
   test(`/js/${name}.js parses`, () => {
     assert.doesNotThrow(() => new vm.Script(read(`js/${name}.js`)));
   });
@@ -84,6 +84,26 @@ test('every page on the site layout has the page-change clock in its head, and t
     seen.add(m[0]);
   }
   assert.equal(seen.size, 1);
+});
+
+test('every page on the site layout has the same small analytics loader in its head, and no PostHog inline', () => {
+  const seen = new Set();
+  const laid = pages.filter((p) => read(p).includes('astro-view-transitions-enabled'));
+  for (const p of laid) {
+    const html = read(p);
+    const head = html.slice(0, html.indexOf('</head>'));
+    const m = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((x) => x[1]).filter((s) => s.includes('notrack'));
+    assert.equal(m.length, 1, p);
+    assert.doesNotThrow(() => new vm.Script(m[0]), p);
+    assert.ok(m[0].length < 600, `${p}: the loader is ${m[0].length} chars`);
+    assert.equal(html.includes('posthog.com'), false, `${p}: PostHog belongs in /js/analytics.js`);
+    seen.add(m[0]);
+  }
+  assert.equal(seen.size, 1);
+});
+
+test('/js/analytics.js is minified', () => {
+  assert.ok(read('js/analytics.js').split('\n').length < 5, 'not minified');
 });
 
 test('the home page stays light', () => {
