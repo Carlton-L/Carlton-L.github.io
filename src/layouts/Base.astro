@@ -71,8 +71,9 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
          ring from it, and drives the wipe, the dim and the dither front on one clock. -->
     <script is:inline set:html={clockJs}></script>
 
-    <!-- Analytics loader (src/lib/analytics-loader.js): the ?notrack flag, then PostHog on carlton.dev
-         only, loaded once the page has settled. docs/rfc/analytics.md -->
+    <!-- Analytics loader (src/lib/analytics-loader.js): the ?notrack flag, the recording answer on
+         <html data-rec>, then /js/analytics.js. PostHog starts on carlton.dev only, once the page
+         has settled. docs/rfc/analytics.md -->
     <script is:inline set:html={loaderJs}></script>
 
     <!-- SEO -->

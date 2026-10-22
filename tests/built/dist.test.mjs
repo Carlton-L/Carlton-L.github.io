@@ -95,7 +95,7 @@ test('every page on the site layout has the same small analytics loader in its h
     const m = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((x) => x[1]).filter((s) => s.includes('notrack'));
     assert.equal(m.length, 1, p);
     assert.doesNotThrow(() => new vm.Script(m[0]), p);
-    assert.ok(m[0].length < 600, `${p}: the loader is ${m[0].length} chars`);
+    assert.ok(m[0].length < 800, `${p}: the loader is ${m[0].length} chars`);
     assert.equal(html.includes('posthog.com'), false, `${p}: PostHog belongs in /js/analytics.js`);
     seen.add(m[0]);
   }

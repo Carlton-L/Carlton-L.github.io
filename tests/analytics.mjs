@@ -140,7 +140,7 @@ const stored = async (page) => {
 }
 
 // 2. Link tags reach the first pageview: for a visitor who hasn't answered, and for one who said no
-//    on an earlier visit. The UI comes in step 4, so the answer is given through PostHog. [L9]
+//    on an earlier visit. [L9]
 {
   const page = await visitor();
   let mark = host.captured.length;
@@ -150,7 +150,7 @@ const stored = async (page) => {
   let p = pageviews(since(mark))[0]?.properties || {};
   check('link tags on the first pageview, no answer [L9]', p.utm_source === 'cv' && p.utm_campaign === '261020-1620', `${p.utm_source} ${p.utm_campaign}`);
 
-  await page.evaluate(() => window.posthog.opt_out_capturing());
+  await page.click('[data-rec-a="no"]');
   await page.waitForTimeout(500);
   mark = host.captured.length;
   await page.goto(host.origin + '/projects/?utm_source=cv&utm_campaign=261020-1620');
@@ -177,6 +177,57 @@ const stored = async (page) => {
   check('notrack: PostHog is never loaded or asked [L4]', !state.ph && !state.guard && !touched.length, `${JSON.stringify(state)} ${touched.slice(0, 3).join(', ')}`);
   await page.goto(host.origin + '/?notrack=0');
   check('notrack=0: PostHog loads again [L4]', await ready(page));
+  await page.context().close();
+}
+
+// 4. Yes: PostHog opts in and a recording starts, also when the answer comes before the library
+//    has loaded. No: no recording, pageviews keep coming without cookies, and the question doesn't
+//    come back. Both are sent as consent_answered. [L6]
+const snapshots = (list) => list.filter((e) => e.event === '$snapshot' || e.endpoint.startsWith('/s'));
+const answered = (list, a) => list.some((e) => e.event === 'consent_answered' && e.properties?.answer === a);
+{
+  const page = await visitor();
+  const mark = host.captured.length;
+  await page.goto(host.origin + '/');
+  // Before the library loads. The operator only shows 500 ms after the page, by when the library has
+  // usually loaded here; on a slow connection it hasn't, so the click is sent straight away.
+  await page.evaluate(() => document.querySelector('[data-rec-a="yes"]').click());
+  const early = await page.evaluate(() => !!(window.posthog && window.posthog.__loaded));
+  await ready(page);
+  await page.waitForTimeout(500);
+  const st = await page.evaluate(() => ({ consent: window.posthog.get_explicit_consent_status(), recording: window.posthog.sessionRecordingStarted(), id: window.posthog.get_distinct_id() }));
+  await nav(page, '/about/');
+  const got = await until(() => snapshots(since(mark)).length > 0 && answered(since(mark), 'yes'));
+  const views = pageviews(since(mark));
+  check('yes, answered before the library loaded: opted in, recording [L6]', !early && st.consent === 'granted' && st.recording && got,
+    `early=${early} ${JSON.stringify(st)} snapshots=${snapshots(since(mark)).length} answered=${answered(since(mark), 'yes')}`);
+  check('yes: later events are no longer cookieless [L6]', views.length >= 2 && views.at(-1).properties.distinct_id !== '$posthog_cookieless', views.map((e) => e.properties.distinct_id).join(' '));
+  check('yes: no page errors', !page.errors.length, page.errors[0] || '');
+  await page.context().close();
+}
+{
+  const page = await visitor();
+  let mark = host.captured.length;
+  await page.goto(host.origin + '/');
+  await ready(page);
+  await page.click('[data-rec-a="no"]');
+  await nav(page, '/about/');
+  await nav(page, '/lab/');
+  await until(() => pageviews(since(mark)).length >= 3 && answered(since(mark), 'no'));
+  await page.waitForTimeout(3000); // a recording would have flushed by now
+  const st = await page.evaluate(() => ({ consent: window.posthog.get_explicit_consent_status(), recording: window.posthog.sessionRecordingStarted() }));
+  const views = pageviews(since(mark));
+  check('no: opted out, no recording [L6]', st.consent === 'denied' && !st.recording && !snapshots(since(mark)).length && answered(since(mark), 'no'),
+    `${JSON.stringify(st)} snapshots=${snapshots(since(mark)).length}`);
+  check('no: pageviews keep coming, without cookies [L6]', views.length >= 3 && views.slice(1).every((e) => e.properties.distinct_id === '$posthog_cookieless'), views.map((e) => e.properties.distinct_id).join(' '));
+  mark = host.captured.length;
+  await page.reload();
+  await ready(page);
+  await page.waitForTimeout(1000);
+  const back = await page.evaluate(() => ({ rec: document.documentElement.dataset.rec, up: getComputedStyle(document.getElementById('recOp')).display !== 'none' }));
+  await until(() => pageviews(since(mark)).length >= 1);
+  check('no: the question does not come back on reload, and the visit is still counted [L6]', back.rec === 'no' && !back.up && pageviews(since(mark)).length >= 1, JSON.stringify(back));
+  check('no: no page errors', !page.errors.length, page.errors[0] || '');
   await page.context().close();
 }
 
