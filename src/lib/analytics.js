@@ -13,7 +13,7 @@
 (function () {
   if (window.track) return;
 
-  const TOKEN = '__POSTHOG_TOKEN__'; // public by design (RFC)
+  const TOKEN = 'phc_uSej8gSS7uLzRmbrvf2nWtRSgAKX879Yfsd7MyN3vsWL'; // public by design (RFC)
   const LIB = 'https://eu-assets.i.posthog.com/static/array.js';
 
   const mode = () => (document.body.classList.contains('perform') ? 'READ' : 'PATCH');
