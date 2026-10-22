@@ -9,3 +9,7 @@ gotham-fonts/
 
 # local session notes, never published
 Claude outputs/
+
+# agent plans and worktrees (docs/workflow.md), never published
+.agent-work/
+.claude/worktrees/

@@ -11,7 +11,7 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - Content blocks are **operators** (`src/components/Operator.astro`): typed header (VIEW / TXT / DATA / SYS), ports, draggable in PATCH mode. The network's markup and styles are `PatchField.astro`; its script is `src/lib/patch-field.js`; document pages use `PatchDoc.astro`.
 - **Cables are real subscriptions** through `src/lib/patch-runtime.js` (`window.Patch`). The bus is interaction-driven only; nothing emits per frame. Selections re-cook the network (Carlton's north star): extend that pattern.
 - `patch-runtime.js`, `patch-field.js` and `previs.js` are served as cached files (`/js/patch.js`, `/js/previs.js`), built in `src/lib/bundles.js` and minified with esbuild. Never inline them into pages again: it made every page change slow. Dev-only code in the runtime sits between `//<dev` and `//>dev`.
-- **Layout** is authored as ASCII grid areas (`layout` on PatchField, `area` on Operator). Every tier names every area op. Never hardcode field heights; don't reintroduce `pos` strings or `translateX(-50%)`.
+- **Layout** on the home page is authored as ASCII grid areas (`layout` on PatchField, `area` on Operator); every other page uses flex (next bullet). On home, every tier names every area op. On every page, never hardcode field heights; don't reintroduce `pos` strings or `translateX(-50%)`.
 - **Two modes**: PATCH (desktop ≥1280) and READ (default below 1280 and for reduced motion; internally `body.perform`). READ stacks operators in source order. Every component works in both.
 - The dither background is a visible chain of four SYS ops, persisted in localStorage (`patch-bg`). Keep the ImageData blit; don't regress to per-cell fills.
 - Controls: sliders are `.prange`; clickable chips are `.chipbtn` (signal border/text); static chips stay grey.
@@ -56,6 +56,19 @@ Read `docs/CASE_STUDY_PLAYBOOK.md` before building or reshaping a case study, an
 - Claude edits, Carlton commits. Before overwriting a file in his working copy, check it still matches what was last delivered. Commit messages are his: conventional, short, no AI mentions or co-author trailers.
 - A git command meant for another repo starts with `cd` into that repo.
 
+## Workflow
+
+The full policy is docs/workflow.md. Read it before planning, before resuming work, and before preparing a merge.
+
+- Start or resume: check branch and git status, read the PR (gh pr view) or .agent-work/<branch>.md, continue an existing plan. Never write a second one.
+- Plans live in .agent-work/<branch>.md until promoted to a draft PR. After promotion the PR body is authoritative.
+- Agree acceptance criteria and how each is checked before substantive implementation.
+- Stay inside the plan's scope. Ask before changing it, and record the change.
+- Ask first: new dependency, destructive command, migration, anything in production.
+- When code conflicts with a current product contract, RFC or ADR, flag it. Change neither on your own. Superseded docs are context only.
+- Stage changes and propose a commit message. The owner (see docs/workflow.md) creates every commit, pushes, and merges.
+- Before calling work done: whole diff against the integration branch, every criterion with evidence, reconcile the plan (section 7).
+
 ## Demos
 
 Detail: `docs/DEMOS.md` (infrastructure, data, embedding), `docs/DEMO_PORTING.md` (running a product's own code), and the `NOTES.md` or `PORT.md` beside each demo.
@@ -72,11 +85,9 @@ The mounted repo's `.vite`/`.astro`/`dist` caches are NOT writable from the Linu
 
 ## Related docs (in the "Carlton Portfolio" project folder — `~/Documents/Claude/Projects/Carlton Portfolio/`)
 
-- `HANDOFF_2026-07-02.md` — session state + gap list (read first in a new session)
-- `REVAMP_PLAN_2026-07.md` — overall strategy, positioning, job-spec→evidence matrix
 - `design/DIRECTION_PATCH.md` — the chosen creative direction + Awwwards strategy
 - `design/concept-patch.html` — living mockup of home + Futurescaper case-study network
 - `live-demos/` — master plan, per-project demo session prompts, intake answers (incl. Futurity publish permissions: FAST/Engine recreated-only, Futurescaper/extension public)
 - `archive/` — salvaged pages from the pre-patch site (e.g. immersive-experience-builder.astro)
 
-In this repo: `docs/CASE_STUDY_PLAYBOOK.md`, `docs/DEMO_PORTING.md`, `docs/DEMOS.md`, `docs/PATCH_SYSTEM.md`, `docs/AI_LAYER.md`, `docs/prototypes/`, and a `NOTES.md` or `PORT.md` beside each demo.
+In this repo: `docs/workflow.md`, `docs/CASE_STUDY_PLAYBOOK.md`, `docs/DEMO_PORTING.md`, `docs/DEMOS.md`, `docs/PATCH_SYSTEM.md`, `docs/rfc/`, `docs/prototypes/`, and a `NOTES.md` or `PORT.md` beside each demo.

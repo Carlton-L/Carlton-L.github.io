@@ -1,0 +1,34 @@
+# Checks every pull request to astro: the doc check, then npm test (docs/workflow.md, section 2).
+# Deploying stays in deploy.yml.
+
+name: checks
+
+on:
+  pull_request:
+    branches: [astro]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Chromium for the transition tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Check docs
+        run: npm run check:docs
+
+      - name: Test
+        run: npm test

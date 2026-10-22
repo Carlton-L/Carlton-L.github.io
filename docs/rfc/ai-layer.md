@@ -1,6 +1,8 @@
 # AI layer: ask any node
 
-Status: idea, not scheduled (2026-09-26). Working notes, not published copy.
+Status: draft · 2026-09-26
+
+Not scheduled. Working notes, not published copy.
 
 ## The idea
 
@@ -25,7 +27,8 @@ lives in the page answers from that layer, and answers in the patch's own gramma
   per project), an embedding script, a Supabase pgvector schema, an edge function, and two versions of
   a chat widget. `chatbot/docs/self-hosting-and-enhancement-plan.md` plans a v2 on a Raspberry Pi 5
   (Ollama, sqlite-vec, Fastify, Cloudflare Tunnel).
-- `PROJECT_PLAN.md` Phase 5: the same chatbot as a widget island.
+- An earlier plan, never built: the same chatbot as a React widget island on the site, served from the
+  Pi, with streamed answers, source citations and conversation starters.
 - `mail/`: Vercel functions already live at `api.carlton.dev`, with CORS, origin checks and the
   patterns a question endpoint needs.
 - The patch runtime (`src/lib/patch-runtime.js`): cables are real subscriptions, and a delivery pulses
