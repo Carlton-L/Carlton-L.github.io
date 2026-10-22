@@ -1,6 +1,6 @@
 # RFC: Usage analytics on carlton.dev
 
-Draft, 2026-10-21.
+Status: accepted · 2026-10-22
 
 ## Purpose
 
@@ -37,10 +37,10 @@ The questions the data should answer:
 
 - The PostHog snippet goes in the head of `Base.astro` as an `is:inline` script, inside a `window.__posthog_initialized` guard. Without the guard the ClientRouter re-runs it on every page change.
 - It only starts on `carlton.dev`. Local dev and previews send nothing.
-- Options: `api_host: 'https://eu.i.posthog.com'`, `defaults: '2026-05-30'`, `capture_pageview: 'history_change'`, `cookieless_mode: 'on_reject'`.
+- Options: `api_host: 'https://eu.i.posthog.com'`, `defaults: '2026-05-30'`, `capture_pageview: 'history_change'`, `cookieless_mode: 'on_reject'`, `opt_out_capturing_by_default: true`. Without the last one PostHog captures nothing until the visitor answers, so step 1 of the proposal wouldn't hold.
 - Autocapture stays on. It gives click counts and heatmaps for free; the custom events below carry the meaning.
 - Custom events go through one helper, `track(name, props)`, that does nothing when PostHog isn't there (an ad blocker, or `?nopatch=1`). A page never breaks because analytics is missing.
-- I opt out in my own browsers so my visits don't count.
+- My own visits don't count. Visiting with `?notrack=1` sets a localStorage flag, and the loader skips PostHog's init while the flag is set. PostHog's own opt-out isn't enough: with `on_reject`, an opt-out still counts me, cookieless.
 - The project token is public by design.
 
 ### Events
@@ -72,6 +72,8 @@ The loader is small. The full library and the recorder are not. Load PostHog onc
 
 A short `/privacy/` page: what is collected, that it stays in the EU, how long it's kept, and how to opt out. Linked from the footer and from the consent operator.
 
+Cookieless visits get no location data and no bot filtering: PostHog hashes the IP and strips it before storing anything.
+
 ## Implementation plan
 
 1. Prototype the consent operator in `docs/prototypes/`, a few directions with one recommended. I pick.
@@ -87,3 +89,5 @@ A short `/privacy/` page: what is collected, that it stays in the EU, how long i
 - Consent operator wording and where it sits, in PATCH and in READ.
 - How long to keep data (PostHog's retention setting).
 - Ad blockers will hide some visitors. A reverse proxy would fix that. Not now.
+
+## Changes after acceptance

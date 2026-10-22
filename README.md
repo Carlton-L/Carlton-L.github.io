@@ -23,7 +23,7 @@ I designed and built the site on my own.
 
 - **The design system.** Operators, ports, cables and two modes (PATCH and READ). The grammar comes from node-based tools like TouchDesigner.
 - **The patch runtime.** A small message bus with no framework. One line declares a cable, and that line both draws it and subscribes the operator at the far end.
-- **The layout resolver.** Each page's layout is written as an ASCII grid. The resolver places the operators, snaps them to the dot grid and moves them apart if they overlap.
+- **The layout resolver.** Every page except home describes its layout as flexbox: rows of cards, each centred, spread or indented by one word, and the browser lays them out, so the gap between rows is the same everywhere. Home keeps its hand-made ASCII sketch, which the resolver places, snaps to the dot grid and moves apart if operators overlap.
 - **The background.** A noise source, a feedback buffer, a dither stage and an output, drawn to one canvas that stays in place across pages.
 - **Page changes.** A front of heat crosses the background, the new page is revealed behind it, and the cables draw in.
 - **The demos.** Each case study rebuilds part of the real product inside the page, in that product's own visual language.
