@@ -91,3 +91,29 @@ Cookieless visits get no location data and no bot filtering: PostHog hashes the 
 - Ad blockers will hide some visitors. A reverse proxy would fix that. Not now.
 
 ## Changes after acceptance
+
+
+### 2026-10-22: questions, events, settings, retention, consent operator
+
+- Questions. The list in the Proposal becomes:
+  - Which case studies get opened, and from where?
+  - Which work-index previews do people hover? Where do they click?
+  - How many people read a case study to the end? How long do they stay, and how far do they scroll?
+  - How many people click an external link (e.g. the code on GitHub)? Which ones?
+  - How many touch a demo? Which demos?
+  - How many reach the CV or send a message?
+  - Which page do people leave from?
+  - Does anyone drag operators or move the background sliders, or switch to READ?
+  - What device and screen size do people visit from?
+  - Which links I sent brought a visit?
+  - How many say yes to recording?
+  - Does anything break for visitors?
+  - Where do people click on something that isn't clickable?
+  - How fast is the site for real visitors?
+- Hover means the work-index previews only. PostHog's heatmaps record mouse movement, but the free plan collects them for 3 pages, and operators move when they're dragged, so positions don't line up between visitors. Heatmaps stay off.
+- Three events added: `preview_hovered` (a work-index row shows its preview, once per row per page; slug), `link_out` (a link to another site is clicked; href, label, page), `consent_answered` (the operator is answered; answer).
+- Settings added: `capture_exceptions: true`, `capture_dead_clicks: true`, `capture_performance: true` (web vitals), `capture_heatmaps: false`. Every event carries the current mode, PATCH or READ, as a registered property. READ is forced below 1280 px, so a switch only means something above it.
+- Link tags. Links I hand out carry `utm_source` (where the link sits) and `utm_campaign` (an ID I keep outside this repo). PostHog reads both from the landing URL.
+- Retention. Events are kept 1 year, PostHog's period on the free plan. It can't be made shorter. Recordings are kept 30 days, the most the free plan allows. The privacy page says both.
+- Consent operator. Settled by the accepted prototype `docs/prototypes/consent-operator.html`: a docked SYS operator at the bottom left on the first visit, and a REC chip beside PATCH / READ that shows the answer on every page and reopens the question. This answers the first open question.
+- `defaults` stays at `2026-05-30`. From `2026-06-25` the defaults turn on `session_recording.streamNetworkBody`, and the contact form's request should never reach a replay. A bump needs that set to false first.
