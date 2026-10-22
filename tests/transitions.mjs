@@ -28,7 +28,7 @@ const SETTLE = 2600;
 const PAGES = [
   '/', '/projects/', '/about/', '/lab/', '/contact/',
   '/projects/futurescaper/', '/projects/fast/', '/projects/domainclaim/', '/projects/campus-ai/',
-  '/projects/futurity-engine/', '/projects/carlton-dev/', '/projects/grid-lamp/',
+  '/projects/futurity-engine/', '/projects/carlton-dev/', '/projects/grid-lamp/', '/privacy/',
 ];
 
 const MIME = {
