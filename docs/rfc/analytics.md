@@ -91,3 +91,49 @@ Cookieless visits get no location data and no bot filtering: PostHog hashes the 
 - Ad blockers will hide some visitors. A reverse proxy would fix that. Not now.
 
 ## Changes after acceptance
+
+
+### 2026-10-22: questions, events, settings, retention, consent operator
+
+- Questions. The list in the Proposal becomes:
+  - Which case studies get opened, and from where?
+  - Which work-index previews do people hover? Where do they click?
+  - How many people read a case study to the end? How long do they stay, and how far do they scroll?
+  - How many people click an external link (e.g. the code on GitHub)? Which ones?
+  - How many touch a demo? Which demos?
+  - How many reach the CV or send a message?
+  - Which page do people leave from?
+  - Does anyone drag operators or move the background sliders, or switch to READ?
+  - What device and screen size do people visit from?
+  - Which links I sent brought a visit?
+  - How many say yes to recording?
+  - Does anything break for visitors?
+  - Where do people click on something that isn't clickable?
+  - How fast is the site for real visitors?
+- Hover means the work-index previews only. PostHog's heatmaps record mouse movement, but the free plan collects them for 3 pages, and operators move when they're dragged, so positions don't line up between visitors. Heatmaps stay off.
+- Three events added: `preview_hovered` (a work-index row shows its preview, once per row per page; slug), `link_out` (a link to another site is clicked; href, label, page), `consent_answered` (the operator is answered; answer).
+- Settings added: `capture_exceptions: true`, `capture_dead_clicks: true`, `capture_performance: true` (web vitals), `capture_heatmaps: false`. Every event carries the current mode, PATCH or READ, as a registered property. READ is forced below 1280 px, so a switch only means something above it.
+- Link tags. Links I hand out carry `utm_source` (where the link sits) and `utm_campaign` (an ID I keep outside this repo). PostHog reads both from the landing URL.
+- Retention. Events are kept 1 year, PostHog's period on the free plan. It can't be made shorter. Recordings are kept 30 days, the most the free plan allows. The privacy page says both.
+- Consent operator. Settled by the accepted prototype `docs/prototypes/consent-operator.html`: a docked SYS operator at the bottom left on the first visit, and a REC chip beside PATCH / READ that shows the answer on every page and reopens the question. This answers the first open question.
+- `defaults` stays at `2026-05-30`. From `2026-06-25` the defaults turn on `session_recording.streamNetworkBody`, and the contact form's request should never reach a replay. A bump needs that set to false first.
+
+### 2026-10-23: as built
+
+- Setup. The head holds a small inline loader (`src/lib/analytics-loader.js`): it reads the `?notrack` flag, puts the recording answer on `<html data-rec>` before the first paint, and loads `/js/rec.js`, a cached file built in `src/lib/bundles.js`. That file holds the question, the REC chip, `track()` and the events. It's named for the recording question because ad blockers often block files named `analytics.js`, and the question has to work for those visitors too. PostHog's own hosts can still be blocked. PostHog's library comes from its CDN once the page change has finished and the browser is idle, on `carlton.dev` only.
+- Storage. The answer is kept in localStorage as `rec-consent` (`yes` or `no`). `?notrack=1` sets `notrack` to `1`, and `?notrack=0` clears it.
+- Correction to Setup. `?nopatch=1` has nothing to do with PostHog: under it PostHog loads as usual. `track()` does nothing when PostHog isn't there: an ad blocker, a host other than `carlton.dev`, or `notrack`. The background controls and dragging still work under `?nopatch=1`, so `patch_used` still fires there.
+- Events, as built:
+  - `case_finished` fires when half the next-case card is in view, once per page.
+  - `link_out` covers `mailto:` and any site other than `carlton.dev`; a middle click counts. Links inside DomainClaim's live demo aren't counted, because it runs in an iframe.
+  - `demo_touched` counts demos marked `data-demo` (Operator's `demo`), once per demo per page. A pointer down inside DomainClaim's iframe is passed on to the page; the product's own messages never count.
+  - `demo_reset` counts every RESET click, and Campus's "back to stars".
+  - `patch_used` fires once per kind per page: `drag` (a header pressed and moved), `slider`, `chip` and `palette` (the PAL chip or a swatch).
+  - `mode_changed` comes only from the PATCH / READ toggle, never from a switch forced by screen width.
+- Recordings. The contact page's relay readout and its "sent" text show the visitor's email, so both are hidden in recordings (`ph-no-capture`), on top of the masked inputs.
+- REC chip. Its states are named with `aria-label`, not `title` (the site has no `title` tooltips). Below 1280 px it is the size of the OPS chip, and at 500 px and under it shows only its glyph.
+- Consent operator. Changed from the prototype after review:
+  - In PATCH it appears under the REC chip, where it opens when reopened. In READ it sits at the bottom of the reading column. On phones it spans the width.
+  - No cable.
+  - On a first visit it comes in half a second after the page: 220 ms, 16 px, fading in, down from the top in PATCH and up from the bottom in READ. This replaces "no entrance animation". It still floats, so nothing on the page moves.
+  - After an answer it is hidden (`display: none`) instead of removed, because it persists across page changes.

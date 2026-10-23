@@ -9,7 +9,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { patchSrc, clockJs } from '../lib/bundles.js';
+import { patchSrc, clockJs, loaderJs } from '../lib/bundles.js';
 import '../styles/fonts.css';
 import '../styles/global.css';
 
@@ -70,6 +70,11 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <!-- Page-change clock (src/lib/page-clock.js): remembers the last click, opens the wipe as a
          ring from it, and drives the wipe, the dim and the dither front on one clock. -->
     <script is:inline set:html={clockJs}></script>
+
+    <!-- Analytics loader (src/lib/analytics-loader.js): the ?notrack flag, the recording answer on
+         <html data-rec>, then /js/rec.js. PostHog starts on carlton.dev only, once the page
+         has settled. docs/rfc/analytics.md -->
+    <script is:inline set:html={loaderJs}></script>
 
     <!-- SEO -->
     <title>{title}</title>

@@ -17,6 +17,9 @@
  * Talks to the product with postMessage, same origin only: `ref.current.send(command)` in, and
  * `onEvent(data)` for every message out. The frame mounts when it comes within 400px of the screen,
  * and never moves in the DOM afterwards (moving an iframe reloads it).
+ *
+ * A pointer down inside the product never reaches this page, so the frame passes it on as a
+ * `demo:touch` event from the box (demo_touched, src/lib/analytics.js).
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
@@ -84,6 +87,12 @@ const ProductFrame = forwardRef(function ProductFrame(
     return () => window.removeEventListener('message', listen);
   }, [onEvent, revealOn, messageKey]);
 
+  const onLoad = () => {
+    const win = frameRef.current?.contentWindow;
+    const touch = () => boxRef.current?.dispatchEvent(new CustomEvent('demo:touch', { bubbles: true }));
+    try { win?.addEventListener('pointerdown', touch, true); } catch (e) {} // same origin only
+  };
+
   // The same answer read straight from the frame's document, whatever happened to the message.
   useEffect(() => {
     if (!near || shown || !drawn) return undefined;
@@ -116,6 +125,7 @@ const ProductFrame = forwardRef(function ProductFrame(
             height={nativeHeight}
             tabIndex={interactive ? undefined : -1}
             className="pframe-frame"
+            onLoad={onLoad}
             style={{ transform: `scale(${scale})`, pointerEvents: interactive ? 'auto' : 'none' }}
           />
         )}

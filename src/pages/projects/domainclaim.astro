@@ -166,7 +166,7 @@ const unionExcerpt = `export type FailureReason =
     <OwnershipMeter id="dcOwn" rows={[['RESEARCH', 100], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO. SEPTEMBER 2026." />
 
     <!-- the product's own home-page demo, playing by itself -->
-    <Operator id="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
+    <Operator id="dcHero" demo="dcHero" name="signin_view · VERIFY.scn" type="view" area="hero" maxw={900}>
       <div class="dc-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · THE PRODUCT'S HOME-PAGE DEMO…" wait="event">
           <SignInHero client:settled />
@@ -212,7 +212,7 @@ const unionExcerpt = `export type FailureReason =
       {cs['Try it'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <Operator id="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
+    <Operator id="dcFx" demo="dcFx" name="claim_view · DEMO_NAMES.scn" type="view" area="fx" ports="in">
       <div class="dc-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · THE LIVE APP · EVERYTHING IS CLICKABLE…" wait="event">
           <FailureView client:settled={{ rootMargin: '600px' }} />

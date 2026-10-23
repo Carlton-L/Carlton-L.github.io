@@ -103,7 +103,7 @@ const layout = {
     <OwnershipMeter id="fsOwn" rows={[['CONCEPT', 35], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO." />
 
     <!-- VIEW (opener): the product's landing hero — a map generating itself -->
-    <Operator id="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
+    <Operator id="fsHero" demo="fsHero" name="futurescaper_view · live_map" type="view" area="hero" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · SELF-GENERATING MAP…" bg="var(--paper)" ink="var(--ink-muted)">
           <HeroMap client:settled />
@@ -225,7 +225,7 @@ const layout = {
     </Operator>
 
     <!-- VIEW: the real product, live — real layout code, synthetic data -->
-    <Operator id="fsView" name="futurescaper_view · AGENTS.scn" type="view" area="view" maxw={900}>
+    <Operator id="fsView" demo="fsView" name="futurescaper_view · AGENTS.scn" type="view" area="view" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · REAL LAYOUT CODE, SYNTHETIC DATA…" bg="var(--paper)" ink="var(--ink-muted)">
           <FuturescaperDemo client:settled={{ rootMargin: '600px' }} />

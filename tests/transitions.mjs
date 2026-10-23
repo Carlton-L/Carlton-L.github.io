@@ -28,7 +28,7 @@ const SETTLE = 2600;
 const PAGES = [
   '/', '/projects/', '/about/', '/lab/', '/contact/',
   '/projects/futurescaper/', '/projects/fast/', '/projects/domainclaim/', '/projects/campus-ai/',
-  '/projects/futurity-engine/', '/projects/carlton-dev/', '/projects/grid-lamp/',
+  '/projects/futurity-engine/', '/projects/carlton-dev/', '/projects/grid-lamp/', '/privacy/',
 ];
 
 const MIME = {
@@ -96,6 +96,7 @@ const readState = (page) => page.evaluate(() => {
 async function run(name) {
   const browser = await ENGINES[name].launch();
   const check = (test, pass, info = '') => results.push({ browser: name, test, pass, info });
+  const posthog = [];
 
   const open = async ({ boot = false, ...options } = {}) => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...options });
@@ -109,6 +110,9 @@ async function run(name) {
     });
     // Fonts and third-party scripts are not under test, and the run should work offline.
     await page.route(/typekit|googleapis|gstatic|cdnjs|unpkg|jsdelivr|vercel\.app/, (r) => r.abort());
+    // PostHog never starts on localhost. Anything asked of it is kept, stopped, and fails the run (19).
+    page.on('request', (r) => { if (/posthog\.com/.test(r.url())) posthog.push(r.url()); });
+    await page.route(/posthog\.com/, (r) => r.abort());
     return page;
   };
   const clickLink = async (page, href) => {
@@ -123,6 +127,7 @@ async function run(name) {
   // 1. Every page loads clean, with every cable drawn.
   const freshHeight = {};
   const slashless = [];
+  const started = [];
   {
     const page = await open();
     for (const url of PAGES) {
@@ -136,6 +141,7 @@ async function run(name) {
         .filter((u) => u.origin === location.origin && !u.pathname.endsWith('/') && !/\.[a-z0-9]+$/i.test(u.pathname))
         .map((u) => u.pathname));
       if (unslashed.length) slashless.push(...unslashed.map((u) => `${u} on ${url}`));
+      if (await page.evaluate(() => 'posthog' in window || !!window.__posthog_initialized)) started.push(url);
       check(`loads ${url}`, !page.errors.length && settled(s) && s.cables === s.links, brief(s, page));
     }
     await page.context().close();
@@ -479,6 +485,98 @@ async function run(name) {
   // 18. Links end in a slash, so nothing in the whole run was sent through a redirect.
   check('every internal link ends in a slash', slashless.length === 0, [...new Set(slashless)].slice(0, 5).join('; '));
   check('no link was redirected', net.redirects.length === 0, [...new Set(net.redirects)].join(', '));
+
+  // 19. Analytics on localhost: ?notrack=1 sets the flag and ?notrack=0 clears it, and in the whole
+  //     run PostHog was never asked for anything and never started.
+  {
+    const page = await open();
+    await page.goto(ORIGIN + '/?notrack=1');
+    const set = await page.evaluate(() => localStorage.getItem('notrack'));
+    await page.goto(ORIGIN + '/about/');
+    const kept = await page.evaluate(() => localStorage.getItem('notrack'));
+    await page.goto(ORIGIN + '/?notrack=0');
+    const cleared = await page.evaluate(() => localStorage.getItem('notrack'));
+    check('notrack: set, kept, cleared', set === '1' && kept === '1' && cleared === null && !page.errors.length, `${set} ${kept} ${cleared} ${page.errors[0] || ''}`);
+    await page.context().close();
+  }
+  check('analytics: PostHog never starts on localhost', !started.length, started.join(', '));
+  check('analytics: nothing asked of PostHog on localhost', !posthog.length, [...new Set(posthog)].slice(0, 3).join(', '));
+
+  // 20. The recording question, with no PostHog: comes in on the first visit and settles, still up
+  //     after a page change, an answer is stored and the chip says so at once, the page height
+  //     stays, and it doesn't come back. The chip reopens it under itself with the answer focused;
+  //     Escape closes it and gives the focus back.
+  {
+    const page = await open();
+    const rec = () => page.evaluate(() => {
+      const op = document.getElementById('recOp'), chip = document.getElementById('recChip');
+      const el = document.activeElement;
+      return {
+        rec: document.documentElement.dataset.rec,
+        up: getComputedStyle(op).display !== 'none',
+        moving: op.getAnimations().length,
+        text: [...chip.querySelectorAll('.rc')].find((s) => getComputedStyle(s).visibility === 'visible')?.textContent,
+        label: chip.getAttribute('aria-label'),
+        stored: localStorage.getItem('rec-consent'),
+        focus: (el && (el.id || el.dataset.recA)) || '',
+        kept: !!op.__kept,
+        height: document.documentElement.scrollHeight,
+        chipW: Math.round(chip.getBoundingClientRect().width),
+      };
+    });
+    await page.goto(ORIGIN + '/about/');
+    await page.waitForTimeout(900);
+    const underChip = () => page.evaluate(() => {
+      const o = document.getElementById('recOp').getBoundingClientRect(), c = document.getElementById('recChip').getBoundingClientRect();
+      return Math.abs(o.right - c.right) < 1.5 && o.top > c.bottom && o.top - c.bottom < 30;
+    });
+    let r = await rec();
+    let placed = await underChip();
+    const shown = await page.evaluate(() => { const o = document.getElementById('recOp'); return o.classList.contains('in') && getComputedStyle(o).visibility === 'visible' && getComputedStyle(o).opacity === '1'; });
+    check('recording: comes in on a first visit, under the chip in PATCH, and settles', r.rec === 'ask' && r.up && shown && placed && r.moving === 0 && r.text === 'REC ?' && r.label === 'Recording: not answered yet', `shown=${shown} placed=${placed} ${JSON.stringify(r)}`);
+    await page.evaluate(() => { document.getElementById('recOp').__kept = true; });
+    await clickLink(page, '/lab');
+    await page.waitForTimeout(SETTLE);
+    r = await rec();
+    check('recording: a question that is up stays up across a page change', r.rec === 'ask' && r.up && r.kept, JSON.stringify(r));
+
+    const before = r;
+    await page.click('[data-rec-a="no"]');
+    const now = await rec();
+    await page.waitForTimeout(400);
+    r = await rec();
+    check('recording: an answer is stored, the chip changes at once, the operator leaves',
+      now.rec === 'no' && now.text === 'REC OFF' && now.label === 'Not recording. Click to change' && r.stored === 'no' && !r.up && r.focus === 'recChip', `${JSON.stringify(now)} ${JSON.stringify(r)}`);
+    check('recording: the page height and the chip width stay', r.height === before.height && r.chipW === before.chipW, `${before.height} ${r.height} ${before.chipW} ${r.chipW}`);
+
+    await clickLink(page, '/contact');
+    await page.waitForTimeout(SETTLE);
+    r = await rec();
+    check('recording: the answer holds across a page change', r.rec === 'no' && !r.up && r.text === 'REC OFF', JSON.stringify(r));
+    await page.reload();
+    await page.waitForTimeout(900);
+    r = await rec();
+    check('recording: the question does not come back on reload', r.rec === 'no' && !r.up && r.text === 'REC OFF', JSON.stringify(r));
+
+    await page.click('#recChip');
+    await page.waitForTimeout(350);
+    r = await rec();
+    placed = await underChip();
+    check('recording: the chip reopens it under itself, the answer focused', r.up && placed && r.focus === 'no', `placed=${placed} ${JSON.stringify(r)}`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+    r = await rec();
+    check('recording: Escape closes it, keeps the answer, focus back on the chip', !r.up && r.rec === 'no' && r.stored === 'no' && r.focus === 'recChip', JSON.stringify(r));
+
+    await page.click('#recChip');
+    await page.waitForTimeout(350);
+    await page.click('[data-rec-a="yes"]');
+    await page.waitForTimeout(400);
+    r = await rec();
+    check('recording: the answer can be changed', r.rec === 'yes' && r.stored === 'yes' && r.text === 'REC' && !r.up, JSON.stringify(r));
+    check('recording: no page errors', !page.errors.length, page.errors[0] || '');
+    await page.context().close();
+  }
 
   await browser.close();
 }

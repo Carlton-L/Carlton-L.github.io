@@ -40,6 +40,8 @@ interface Side {
   wrapClass?: string;
   /** Classes on the surface itself (the element that docks). */
   class?: string;
+  /** Marks the surface as a demo for analytics (Operator's `demo`). On the surface, because it docks. */
+  demo?: string;
 }
 
 interface Props {
@@ -60,7 +62,7 @@ const duo = (side: Side) => (dock ? { 'data-duo': pair, 'data-duo-name': side.la
 
 <Operator id={controller.id} name={controller.name} type="view" area={controller.area} maxw={controller.maxw} nudge={controller.nudge} ports={controller.ports}>
   <div class={controller.wrapClass}>
-    <div class={controller.class} {...duo(controller)} data-link-field={field} data-link-from={controller.id} data-link-port={port}>
+    <div class={controller.class} {...duo(controller)} data-demo={controller.demo} data-link-field={field} data-link-from={controller.id} data-link-port={port}>
       <slot name="controller" />
     </div>
   </div>
@@ -70,7 +72,7 @@ const duo = (side: Side) => (dock ? { 'data-duo': pair, 'data-duo-name': side.la
 
 <Operator id={viewer.id} name={viewer.name} type="view" area={viewer.area} maxw={viewer.maxw} nudge={viewer.nudge} ports={viewer.ports}>
   <div class={viewer.wrapClass}>
-    <div class={viewer.class} {...duo(viewer)} data-link-to={controller.id}>
+    <div class={viewer.class} {...duo(viewer)} data-demo={viewer.demo} data-link-to={controller.id}>
       <slot name="viewer" />
     </div>
   </div>

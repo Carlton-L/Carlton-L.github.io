@@ -379,9 +379,12 @@ const layout = {
         embedded demo, and a signal monitor that live-prints the message bus.
         You'll be able to watch this site think.
       </p>
-      <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block class="cd-next">
-        <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
-      </LinkButton>
+      <!-- data-next-case: the same analytics marker as NextCase.astro -->
+      <div class="cd-next" data-next-case>
+        <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block>
+          <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>
+        </LinkButton>
+      </div>
     </Operator>
   </PatchField>
 </Base>
@@ -521,7 +524,7 @@ const layout = {
   :global(#cdBgDith .ohead), :global(#cdBgOut .ohead) { padding: 4px 9px; font-size: 9px; }
   :global(#cdBgNoise) .prow, :global(#cdBgFdbk) .prow,
   :global(#cdBgDith) .prow, :global(#cdBgOut) .prow { margin-top: 6px; }
-  .cs-p + :global(.cd-next) { margin-top: 14px; }
+  .cs-p + .cd-next { margin-top: 14px; }
   :global(.cd-src) { margin-top: 12px; }
 
   /* before and after, one measure per row */

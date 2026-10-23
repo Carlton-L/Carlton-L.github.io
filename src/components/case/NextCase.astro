@@ -7,6 +7,9 @@
  *
  *   <NextCase id="dcOut" from="domainclaim" tagline="EVERY FAILURE HAS AN ANSWER." />
  *   <NextCase id="csOut" from={project.slug} doc />       (PatchDoc pages: no layout area, no ports)
+ *
+ * data-next-case: analytics (src/lib/analytics.js) counts the card in view as a case read to the end,
+ * and its link as next_case_clicked.
  */
 import Operator from '../Operator.astro';
 import LinkButton from '../LinkButton.astro';
@@ -28,7 +31,7 @@ const next = nextCase(from);
 ---
 
 <Operator id={id} name="out · next_network" type="data" area={doc ? undefined : area} nudge={doc ? undefined : nudge} maxw={maxw} ports={doc ? 'none' : 'in'}>
-  <div class="cs-out">
+  <div class="cs-out" data-next-case>
     {tagline && <div class="cs-outline">{tagline}</div>}
     <LinkButton href={`/projects/${next.slug}/`} label={`NEXT · ${next.slug.replace(/-/g, '_').toUpperCase()}`} sub={next.teaser} block>
       <svg slot="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h10.2M8.6 3.6 13 8l-4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" /></svg>

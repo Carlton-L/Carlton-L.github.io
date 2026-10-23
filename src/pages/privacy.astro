@@ -1,0 +1,125 @@
+---
+/**
+ * Privacy: what the analytics collect, where it's kept and for how long, and how to change the
+ * answer. The design is docs/rfc/analytics.md; the retention periods are set in PostHog.
+ * READ stacks the cards in source order.
+ */
+import Base from '../layouts/Base.astro';
+import Operator from '../components/Operator.astro';
+import PatchField from '../components/PatchField.astro';
+import { getBreadcrumbJsonLd } from '../lib/seo.js';
+
+const EMAIL = 'carlton@carlton.dev';
+
+const jsonLd = getBreadcrumbJsonLd([
+  { name: 'Home', url: '/' },
+  { name: 'Privacy' },
+]);
+
+const links: [string, string][] = [
+  ['pvIntro', 'pvWhat'],
+  ['pvIntro', 'pvNo'],
+  ['pvKept', 'pvNo'],
+  ['pvNo', 'pvChange'],
+];
+
+// Flex layout: the page is a column of rows. Words: flexLayout in src/lib/patch-field.js.
+// 'area:w' is a card w twelfths wide. inset is side padding in columns. gap and mt are grid units (26px).
+const layout = {
+  mode: 'flex',
+  padTop: 48,
+  gap: 2,
+  rows: [
+    { row: ['intro:5', 'what:5'], justify: 'between', inset: [0, 1] },
+    { row: ['kept:3', 'no:4', 'change:4'], justify: 'between', inset: [0, 1] },
+  ],
+};
+---
+
+<Base
+  title="Privacy — Carlton Lindsay"
+  description="What carlton.dev collects about a visit, where it is kept and for how long, and how to change your answer about recording."
+  jsonLd={jsonLd}
+>
+  <PatchField id="privacyNet" links={links} height="760px" layout={layout} label="Privacy network — press P for reading mode">
+    <Operator id="pvIntro" name="input · privacy_txt" type="txt" area="intro" ports="out">
+      <h1 class="pv-h">Privacy</h1>
+      <p class="pv-lede">This site counts visits with PostHog. It asks once before it records a visit.</p>
+      <p class="pv-p">I use the numbers to see which case studies people read, which demos they try, and where the site breaks or runs slow. Then I change the site.</p>
+    </Operator>
+
+    <Operator id="pvWhat" name="collected_data" type="data" area="what" ports="in">
+      <ul class="pv-list">
+        <li>The pages you open, and the site you came from</li>
+        <li>What you click, also on parts of a page that don't respond</li>
+        <li>Your device, browser and screen size</li>
+        <li>The tag on a link I shared, which says where it was posted</li>
+        <li>Errors the site runs into, and how fast its pages load</li>
+        <li>After a yes: a recording of the visit. Anything you type stays hidden.</li>
+      </ul>
+    </Operator>
+
+    <Operator id="pvKept" name="kept_data" type="data" area="kept" ports="out">
+      <table class="pv-table">
+        <tr><td>Where</td><td>PostHog, in the EU (Frankfurt)</td></tr>
+        <tr><td>Visits and clicks</td><td>1 year</td></tr>
+        <tr><td>Recordings</td><td>30 days</td></tr>
+      </table>
+    </Operator>
+
+    <Operator id="pvNo" name="no_thanks_txt" type="txt" area="no">
+      <h2 class="pv-h2">Before you answer, and after a no</h2>
+      <p class="pv-p">The visit is still counted, without cookies and without anything stored in your browser. PostHog uses your IP address to tell one visit from another for that day, then drops it. Nothing is recorded, and the question doesn't come back.</p>
+    </Operator>
+
+    <Operator id="pvChange" name="change_txt" type="txt" area="change" ports="in">
+      <h2 class="pv-h2">Changing your answer</h2>
+      <p class="pv-p">The REC chip at the top of every page shows your answer. Click it to change it.</p>
+      <p class="pv-p">To have a recording deleted, email <a class="pv-a" href={`mailto:${EMAIL}`}>{EMAIL}</a> with when you visited and on what device. Recordings delete themselves after 30 days.</p>
+    </Operator>
+  </PatchField>
+</Base>
+
+<style>
+  .pv-h {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(22px, 2.6vw, 34px);
+    line-height: 0.98;
+    margin-bottom: 8px;
+  }
+  .pv-h2 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .pv-lede {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--signal);
+    margin-bottom: 14px;
+  }
+  .pv-p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .pv-p:last-child { margin-bottom: 0; }
+  .pv-a { color: var(--signal); text-decoration: none; }
+  .pv-a:hover { text-decoration: underline; }
+
+  .pv-list { list-style: none; font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+  .pv-list li { padding: 7px 0 7px 14px; border-bottom: 1px solid var(--border-color); position: relative; }
+  .pv-list li:last-child { border-bottom: none; }
+  .pv-list li::before { content: '▸'; position: absolute; left: 0; color: var(--text-dim); font-size: 10px; top: 9px; }
+
+  .pv-table { border-collapse: collapse; font-size: 12px; width: 100%; }
+  .pv-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+  .pv-table tr:last-child td { border-bottom: none; }
+  .pv-table td:first-child { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
+</style>

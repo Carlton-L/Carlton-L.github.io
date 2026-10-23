@@ -105,14 +105,14 @@ const layout = {
       </form>
       <div class="ct-done" id="ctDone" hidden>
         <p class="ct-done-h" id="ctDoneH">sent ✓</p>
-        <p class="ct-done-p" id="ctDoneP">Thanks. It's in my inbox and a receipt is on its way to yours.</p>
+        <p class="ct-done-p ph-no-capture" id="ctDoneP">Thanks. It's in my inbox and a receipt is on its way to yours.</p>
         <button class="chip chipbtn" type="button" id="ctAgain">▶ send another</button>
       </div>
       </div>
     </Operator>
 
     <Operator id="ctRelay" name="sys · resend_relay" type="sys" area="relay" ports="in">
-      <pre class="ct-log" id="ctLog" aria-live="polite">state    idle
+      <pre class="ct-log ph-no-capture" id="ctLog" aria-live="polite">state    idle
 via      resend api · eu-west-1
 receipt  reports on send
 </pre>
@@ -173,7 +173,7 @@ receipt  reports on send
           Vocabulary: "accepted" = their server took it (SMTP 250), never "in inbox". ---- */
   let pollGen = 0, sentRows = null;
   const receiptLine = (v) => { if (!sentRows) return; sentRows[2] = ['receipt', v]; show(sentRows); };
-  const track = (id, email) => {
+  const watchReceipt = (id, email) => {
     const gen = ++pollGen;
     const t0 = Date.now();
     const tick = async () => {
@@ -223,9 +223,10 @@ receipt  reports on send
         show([['state', 'error ' + res.status], ['msg', j.error || 'send failed'], ['reply_to', short(p.email)]]);
       } else {
         glow();
+        if (window.track) window.track('message_sent'); // never the form's contents
         sentRows = [['state', 'sent ✓'], ['id', (j.id || '').slice(0, 8) + '…'], ['receipt', j.ack ? 'queued → ' + short(p.email) : 'off'], ['next', 'I read everything.']];
         show(sentRows);
-        if (j.ack) track(j.ack, p.email);
+        if (j.ack) watchReceipt(j.ack, p.email);
         /* overlay the sent panel; the form keeps its size underneath so the op (and the dither gutter behind it) never reflows */
         form.classList.add('sent');
         form.setAttribute('inert', '');

@@ -305,7 +305,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     </Operator>
 
     <!-- VIEW: featured quote + evidence map + coded excerpts -->
-    <Operator id="caViewer" name="campus_ai_view · coded_transcripts" type="view" area="view" maxw={900}>
+    <Operator id="caViewer" demo="caViewer" name="campus_ai_view · coded_transcripts" type="view" area="view" maxw={900}>
       <div class="ca-viewwrap" id="caVwrap">
         <div class="ca-strip">
           <span class="ca-vtheme" id="caVTheme">STAR QUOTES · ALL THEMES</span>
@@ -323,7 +323,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
           <div class="ca-mapcol">
             <p class="ca-maplab">
               <span>EVIDENCE MAP <span class="dim">· EDGE = TAGGED MOMENTS</span></span>
-              <button class="ca-back" id="caReset" hidden>◂ BACK TO STARS</button>
+              <button class="ca-back" id="caReset" data-demo-reset hidden>◂ BACK TO STARS</button>
             </p>
             <svg id="caMap" viewBox="0 0 420 460" aria-label="Bipartite map of seven coded themes and eight participants; edge thickness is the number of tagged moments; click a node to filter"></svg>
           </div>

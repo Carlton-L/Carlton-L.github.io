@@ -5,13 +5,16 @@
  *   BROWSER=firefox node tests/measure.mjs      chromium (default), firefox or webkit
  *   DELAY=150 node tests/measure.mjs            ms added to every request (default 80)
  *   CPU=4 node tests/measure.mjs                slow the CPU (chromium only)
+ *   HOST=carlton.dev node tests/measure.mjs     serve it as https://carlton.dev/, so PostHog loads
+ *                                               (chromium only; tests/lib/carlton-host.mjs)
  *
  * It serves dist/ the way GitHub Pages does: a URL with no trailing slash answers 301, and every
  * response is cached for max-age seconds. Each line is the median of a few runs, in ms after the
  * click: `fetch` is the new page in hand, `go` is the page change starting, `done` is it finished
  * (`done` runs long in a headless browser, which draws the background in software). After the bar
  * is what the server was asked for after the click. An empty list means everything was already
- * in the browser's cache.
+ * in the browser's cache. With HOST, the list leaves out PostHog's own requests, which never reach
+ * the project.
  */
 import http from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -19,11 +22,15 @@ import { createHash } from 'node:crypto';
 import { join, extname } from 'node:path';
 import * as pw from 'playwright';
 import { fileURLToPath } from 'node:url';
+import { carltonHost, chromeContext } from './lib/carlton-host.mjs';
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const NAME = process.env.BROWSER || 'chromium';
+const HOST = process.env.HOST;
+if (HOST && HOST !== 'carlton.dev') { console.error('HOST can only be carlton.dev.'); process.exit(1); }
+if (HOST && NAME !== 'chromium') { console.error('HOST=carlton.dev needs chromium.'); process.exit(1); }
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.webp': 'image/webp', '.json': 'application/json', '.ico': 'image/x-icon' };
 const cfg = { delay: Number(process.env.DELAY || 80), maxAge: 600, log: [] };
-const server = http.createServer((req, res) => {
+const site = (req, res) => {
   const url = new URL(req.url, 'http://x');
   let p = decodeURIComponent(url.pathname);
   setTimeout(() => {
@@ -41,10 +48,20 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': TYPES[extname(f)] || 'application/octet-stream', etag, 'cache-control': cc });
     res.end(body);
   }, cfg.delay);
-});
-await new Promise((r) => server.listen(0, r));
-const base = 'http://localhost:' + server.address().port;
-const browser = await pw[NAME].launch();
+};
+let base, browser, close;
+if (HOST) {
+  const host = await carltonHost(site);
+  base = host.origin;
+  browser = await pw.chromium.launch({ args: host.args });
+  close = host.close;
+} else {
+  const server = http.createServer(site);
+  await new Promise((r) => server.listen(0, r));
+  base = 'http://localhost:' + server.address().port;
+  browser = await pw[NAME].launch();
+  close = () => server.close();
+}
 const init = () => {
   const L = (window.__t = { marks: {} });
   document.addEventListener('click', () => { L.click = performance.now(); L.marks = {}; }, true);
@@ -52,7 +69,8 @@ const init = () => {
     document.addEventListener(ev, () => { if (L.click != null && !(ev in L.marks)) L.marks[ev] = Math.round(performance.now() - L.click); });
 };
 async function run({ target, hover = 120, wait = 1500, cpu = 1 }) {
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const options = { viewport: { width: 1440, height: 900 } };
+  const ctx = HOST ? await chromeContext(browser, options) : await browser.newContext(options);
   const page = await ctx.newPage();
   if (cpu > 1 && NAME === 'chromium') { const c = await ctx.newCDPSession(page); await c.send('Emulation.setCPUThrottlingRate', { rate: cpu }); }
   await page.addInitScript(init);
@@ -75,9 +93,9 @@ async function many(label, o, n = 5) {
   console.log(label.padEnd(58), 'fetch', String(med(rs.map((r) => r.fetch))).padStart(4), ' go', String(med(rs.map((r) => r.go))).padStart(4), ' done', String(med(rs.map((r) => r.done))).padStart(5), ' |', rs[0].net);
 }
 const cpu = Number(process.env.CPU || 1);
-console.log(`${NAME}, ${cfg.delay}ms added to every request\n`);
+console.log(`${NAME}, ${cfg.delay}ms added to every request${HOST ? ', served as https://' + HOST + '/' : ''}\n`);
 for (const t of ['/about/', '/projects/', '/lab/', '/contact/']) { cfg.maxAge = 600; await many('nav ' + t + ' (1.5s after load)', { target: t, cpu }); }
 for (const t of ['/projects/futurescaper/', '/projects/fast/', '/projects/grid-lamp/']) { cfg.maxAge = 600; await many('row ' + t + ' (hover 120ms)', { target: t, cpu }); }
 for (const t of ['/projects/futurescaper/', '/projects/fast/']) await many('row ' + t + ' (hover 600ms)', { target: t, hover: 600, cpu }, 3);
 await many('nav /about/, clicked 100ms after load', { target: '/about/', wait: 100, hover: 30, cpu }, 3);
-await browser.close(); server.close();
+await browser.close(); await close();

@@ -79,6 +79,13 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     <button id="opsBtn" class="opsbtn xl:hidden" aria-label="Open operator search">▸ OPS</button>
     <span class="vdiv hidden xl:block" aria-hidden="true"></span>
     <span class="kbdhint hidden xl:inline-flex" aria-hidden="true"><kbd>TAB</kbd> ops</span>
+    <!-- REC: the answer to the recording question, and how to change it (src/lib/analytics.js).
+         <html data-rec> picks the label before the first paint. -->
+    <button id="recChip" type="button" class="recchip chipbtn" aria-label="Recording: not answered yet">
+      <span class="rc rc-ask"><span class="rcw">REC </span>?</span>
+      <span class="rc rc-yes"><i class="rdot"></i><span class="rcw">REC</span></span>
+      <span class="rc rc-no"><i class="rdot off"></i><span class="rcw">REC<span class="rcoff"> OFF</span></span></span>
+    </button>
     <button
       id="modeToggle"
       class="modetog hidden xl:flex"
@@ -115,6 +122,25 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     </div>
   </div>
 </header>
+
+<!-- The recording question (docs/prototypes/consent-operator.html, changed 2026-10-22: under the
+     REC chip in PATCH, at the bottom in READ, no cable; src/lib/analytics.js). Outside the header:
+     its backdrop-filter would make the header the box this fixed operator sits in.
+     Persisted like the header, so a question that's up stays up across page changes. -->
+<section id="recOp" class="rec-op" aria-label="Recording" transition:persist="rec-op">
+  <div class="rec-head">
+    <span>sys · recorder</span>
+    <span><span class="rec-st"><span class="rs-ask">waiting</span><span class="rs-yes">● rec</span><span class="rs-no">○ off</span></span> <span class="rec-typ">SYS</span></span>
+  </div>
+  <div class="rec-body">
+    <p class="rec-copy">Mind if I record your visit? It helps me make the site better. Anything you type stays hidden.</p>
+    <div class="rec-row">
+      <button type="button" class="rec-btn chipbtn" data-rec-a="yes">▶ ok</button>
+      <button type="button" class="rec-btn chipbtn" data-rec-a="no">■ no thanks</button>
+      <a href="/privacy/">privacy →</a>
+    </div>
+  </div>
+</section>
 
 <style>
   /* --- PatchBar clusters --- */
@@ -179,10 +205,10 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     box-shadow: 0 0 7px rgba(61, 255, 136, 0.8);
   }
 
-  /* phones: all four routes fit beside OPS without a sideways scroll (down to about 350px) */
-  @media (max-width: 420px) {
-    nav { gap: 8px; padding-left: 14px; padding-right: 14px; }
-    .navlink { padding: 3px 5px; }
+  /* phones: all four routes fit beside OPS and the REC chip without a sideways scroll (down to about 360px) */
+  @media (max-width: 500px) {
+    nav { gap: 6px; padding-left: 14px; padding-right: 14px; }
+    .navlink { padding: 3px 4px; }
     .navlink .ndot { display: none; }
   }
 
@@ -259,6 +285,135 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
   .cook.busy i { background: transparent; border: 1px solid var(--signal); box-shadow: none; animation: none; }
   @media (prefers-reduced-motion: reduce) {
     .cook i { animation: none; }
+  }
+
+  /* --- the recording question: REC chip and operator (src/lib/analytics.js) --- */
+  /* <html data-rec> (ask | yes | no) is set in the head before the first paint. Without it (no JS)
+     neither shows: nothing would record anyway. */
+  .recchip {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: transparent;
+    white-space: nowrap;
+  }
+  :global(html[data-rec]) .recchip { display: inline-grid; }
+  /* the three labels share one cell, so the chip is as wide as the longest and nothing beside it moves */
+  .recchip .rc { grid-area: 1 / 1; justify-self: center; visibility: hidden; }
+  :global(html[data-rec='ask']) .recchip .rc-ask,
+  :global(html[data-rec='yes']) .recchip .rc-yes,
+  :global(html[data-rec='no']) .recchip .rc-no { visibility: visible; }
+  .rdot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background: var(--signal);
+    box-shadow: 0 0 8px var(--signal);
+  }
+  .rdot.off { background: transparent; border: 1.5px solid var(--text-dim); box-shadow: none; }
+  /* beside ▸ OPS (below 1280): the same size as it, so "OFF" goes and ○ says it */
+  @media (max-width: 1279px) {
+    .recchip { padding: 4px 9px; border-radius: 5px; }
+    .recchip .rcoff { display: none; }
+  }
+  /* phones: the chip keeps only its mark, ? until an answer, then ● or ○ (its aria-label says the rest) */
+  @media (max-width: 500px) {
+    .recchip { padding: 4px 6px; }
+    .recchip .rcw { display: none; }
+    .recchip .rdot { margin-right: 0; }
+  }
+  :global(html[data-rec='ask']) .recchip { animation: rec-breathe 2.4s ease-in-out infinite; }
+  @keyframes rec-breathe { 50% { box-shadow: 0 0 0 1px var(--signal); } }
+
+  /* The operator floats: fixed, so no card moves and the page height stays. It is up while there's
+     no answer, and again when the chip reopens it (.open). After an answer it leaves (.leave), then
+     display:none. On the DUO dock's layer (.pfdock).
+     PATCH: under the REC chip, right edges lined up. analytics.js measures --ar; 252px is what it
+     measures at every PATCH width, so there's no jump before it runs. */
+  .rec-op {
+    display: none;
+    position: fixed;
+    top: calc(var(--nav-height) + 12px);
+    right: var(--ar, 252px);
+    width: 300px;
+    z-index: 80;
+    background: var(--bg-elevated);
+    border: 1px solid #2a2a2e;
+    border-radius: var(--radius-md);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+    transition: box-shadow 0.3s;
+    text-align: left;
+  }
+  :global(html[data-rec='ask']) .rec-op,
+  .rec-op.open,
+  .rec-op.leave { display: block; }
+  .rec-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .rec-st { color: var(--text-dim); }
+  .rec-st > span { display: none; }
+  :global(html[data-rec='ask']) .rec-st .rs-ask,
+  :global(html[data-rec='yes']) .rec-st .rs-yes,
+  :global(html[data-rec='no']) .rec-st .rs-no { display: inline; }
+  .rec-typ { font-size: 9px; padding: 1px 6px; border-radius: 3px; font-weight: 700; background: var(--op-sys-bg); color: var(--op-sys-fg); }
+  /* the accent follows the visitor's palette; the text stays near-black on it */
+  .rec-body { padding: 12px 14px; background: var(--signal); color: #0a0a0b; border-radius: 0 0 var(--radius-md) var(--radius-md); }
+  .rec-copy { margin: 0 0 10px; font-size: 13px; line-height: 1.55; font-weight: 500; }
+  .rec-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .rec-btn {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    padding: 4px 9px;
+    border-radius: 4px;
+    background: var(--bg) !important;
+  }
+  .rec-btn:hover { background: color-mix(in srgb, var(--signal) 12%, var(--bg)) !important; box-shadow: none; }
+  .rec-btn:focus-visible { outline: 2px solid #0a0a0b; outline-offset: 2px; }
+  /* reopened: the current answer is ticked */
+  :global(html[data-rec='yes']) .rec-op.anchored [data-rec-a='yes']::after,
+  :global(html[data-rec='no']) .rec-op.anchored [data-rec-a='no']::after { content: ' ✓'; }
+  .rec-row a { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: rgba(10, 10, 11, 0.7); text-decoration: none; margin-left: auto; }
+  .rec-row a:hover { color: #0a0a0b; text-decoration: underline; }
+
+  /* Enter (first load): fades in toward its place, down from the top in PATCH, up from the bottom in
+     READ. Hidden until analytics.js brings it in (.in), so it never shows before its buttons work.
+     Leave: drop and fade. Arrive (reopened): drop in from the chip. Only translate and opacity move. */
+  :global(html[data-rec='ask']) .rec-op:not(.in) { visibility: hidden; }
+  .rec-op.enter { animation: rec-enter-down 220ms cubic-bezier(0, 0, 0.2, 1) both; }
+  :global(body.perform) .rec-op.enter { animation-name: rec-enter-up; }
+  @keyframes rec-enter-down { from { translate: 0 -16px; opacity: 0; } }
+  @keyframes rec-enter-up { from { translate: 0 16px; opacity: 0; } }
+  .rec-op.leave { animation: rec-leave 220ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+  .rec-op.arrive { animation: rec-arrive 200ms cubic-bezier(0, 0, 0.2, 1) forwards; }
+  .rec-op.enter, .rec-op.leave, .rec-op.arrive { pointer-events: none; will-change: translate, opacity; }
+  @keyframes rec-leave { to { translate: 0 16px; opacity: 0; } }
+  @keyframes rec-arrive { from { translate: 0 -8px; opacity: 0; } }
+  .rec-op.nudge { box-shadow: 0 0 0 2px var(--signal), 0 18px 50px rgba(0, 0, 0, 0.6); }
+
+  /* READ: at the bottom, in the reading column. Reopened from the chip (.anchored), under the chip. */
+  :global(body.perform) .rec-op { top: auto; bottom: calc(var(--playbar-height) + 16px); left: 0; right: 0; margin-inline: auto; width: min(600px, calc(100% - 32px)); }
+  :global(body.perform) .rec-op.anchored { top: calc(var(--nav-height) + 12px); bottom: auto; left: auto; right: var(--ar, 16px); width: 300px; margin: 0; }
+
+  /* phones: the width of the screen, at the bottom, or under the nav when reopened */
+  @media (max-width: 639px) {
+    :global(body.perform) .rec-op,
+    :global(body.perform) .rec-op.anchored { left: 12px; right: 12px; width: auto; margin: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rec-op.enter, .rec-op.leave, .rec-op.arrive { animation-duration: 1ms; }
+    :global(html[data-rec='ask']) .recchip { animation: none; }
   }
 
   .opsearch {
@@ -365,6 +520,7 @@ const netPath = currentPath === '/' ? '/network/home' : `/network${currentPath.r
     const toggle = () => {
       const next = document.body.classList.contains('perform') ? 'network' : 'perform';
       apply(next, true);
+      if (window.track) window.track('mode_changed', { to: next === 'perform' ? 'READ' : 'PATCH' });
     };
     btn && btn.addEventListener('click', toggle);
     window.addEventListener('keydown', (e) => {

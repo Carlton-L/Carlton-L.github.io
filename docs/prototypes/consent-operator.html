@@ -1,4 +1,4 @@
-<!-- Status: accepted · 2026-10-22 · consent operator and REC nav chip. Decided: docked SYS operator, accent body, solid black buttons, copy below, drop-and-fade exit, reopens under the chip -->
+<!-- Status: accepted · 2026-10-22 · consent operator and REC nav chip. Decided: docked SYS operator, accent body, solid black buttons, copy below, drop-and-fade exit, reopens under the chip. Spec list updated 2026-10-23 to match the build (docs/rfc/analytics.md, "2026-10-23: as built"); the drawings above it show the accepted design -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -142,8 +142,10 @@
 
   <h2>Spec</h2>
   <ul class="spec">
-    <li><b>Operator, first time:</b> <code>sys · recorder</code>, a SYS operator fixed at the bottom left, with a cable stub. It floats over the page and never pushes it, so no card moves. Bottom left keeps it clear of the phone dock (bottom right). In READ it sits in the reading column. It is there when the page loads, with no entrance animation.</li>
-    <li><b>Operator, reopened from the chip:</b> hangs just under the REC chip, top right, its right edge lined up with the chip's, with a short cable from the chip down to it. On phones it spans the width under the nav. It drops in from the chip (200 ms, 8 px, fading in).</li>
+    <li><b>Changed in the build, 2026-10-23:</b> the drawings above show the accepted design. This list is what was built: no cable, the PATCH position under the chip, the entrance, and the chip sizes changed after review.</li>
+    <li><b>Operator, first time:</b> <code>sys · recorder</code>, a fixed SYS operator. In PATCH it hangs under the REC chip, top right, its right edge lined up with the chip's. In READ it sits at the bottom of the reading column; on phones it spans the width. It floats over the page and never pushes it, so no card moves. No cable.</li>
+    <li><b>Entrance:</b> half a second after the first page of a visit, it fades in over 220 ms, moving 16 px: down from the top in PATCH, up from the bottom in READ. It stays up across page changes without coming in again.</li>
+    <li><b>Operator, reopened from the chip:</b> under the REC chip, top right, in PATCH and READ. On phones it spans the width under the nav. It drops in from the chip (200 ms, 8 px, fading in).</li>
     <li><b>Header:</b> the normal operator header. The status reads <code>waiting</code>, then <code>● rec</code> or <code>○ off</code> after an answer.</li>
     <li><b>Body:</b> the accent colour (it follows the visitor's palette) with near-black text.</li>
     <li><b>Copy:</b> "Mind if I record your visit? It helps me make the site better. Anything you type stays hidden."</li>
@@ -152,8 +154,8 @@
     <li><b>After an answer:</b> the operator leaves at once: it drops 16 px and fades out in 220 ms. The nav chip changes in the same instant, which is the confirmation. It doesn't come back on its own.</li>
     <li><b>Closing without answering again:</b> when reopened, clicking the chip again or pressing Escape closes it the same way and keeps the current answer.</li>
     <li><b>Exit, decided 2026-10-22:</b> drop and fade. Considered: slide down, slide left, shrink into the chip, wipe down. All but the wipe are compositor-only; drop and fade moves the least and reads as the quietest.</li>
-    <li><b>Performance:</b> only <code>translate</code> and <code>opacity</code> animate, so there's no layout and no repaint per frame. <code>will-change</code> is set only while it moves. When the exit ends (<code>animationend</code>, with a timeout as a fallback) the element leaves the DOM. Placing the reopened operator needs one measurement of the chip.</li>
-    <li><b>REC chip:</b> beside PATCH / READ on every page.
+    <li><b>Performance:</b> only <code>translate</code> and <code>opacity</code> animate, so there's no layout and no repaint per frame. <code>will-change</code> is set only while it moves. When the exit ends (<code>animationend</code>, with a timeout as a fallback) the element is hidden with <code>display: none</code>; it stays in the DOM because it persists across page changes. Placing the reopened operator needs one measurement of the chip.</li>
+    <li><b>REC chip:</b> beside PATCH / READ on every page. Below 1280 px it is the size of the OPS chip and drops <code>OFF</code>; at 500 px and under it shows only its glyph. Its states are named with <code>aria-label</code>.
       <ul>
         <li>No answer: <code>REC ?</code>, breathing. Clicking it flashes the operator.</li>
         <li>Yes: <code>● REC</code>. No: <code>○ REC OFF</code>.</li>
