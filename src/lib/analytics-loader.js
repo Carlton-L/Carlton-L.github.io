@@ -3,7 +3,7 @@
  *
  * It puts the visitor's answer to the recording question on <html> as data-rec (ask | yes | no)
  * before the first paint, so the operator and the REC chip (Navigation.astro) never flash. Then it
- * loads /js/analytics.js, which runs them and, where PostHog may start, waits for the page to settle
+ * loads /js/rec.js, which runs them and, where PostHog may start, waits for the page to settle
  * and starts it. The design and its reasons are in docs/rfc/analytics.md.
  *
  *   ?notrack=1   keeps this browser out of the numbers (Carlton's own visits). Works on every host.
@@ -13,7 +13,7 @@
  * The question is asked on every host. The ClientRouter runs a head script once per visit;
  * window.__rec makes sure of it. window.__posthog_initialized says whether PostHog starts.
  */
-var SRC = '/js/analytics.js'; // @src
+var SRC = '/js/rec.js'; // @src
 
 export function installAnalyticsLoader({ win = window, doc = document, src = SRC } = {}) {
   var off = false, rec = null;

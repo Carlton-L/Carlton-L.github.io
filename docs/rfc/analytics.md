@@ -120,7 +120,7 @@ Cookieless visits get no location data and no bot filtering: PostHog hashes the 
 
 ### 2026-10-23: as built
 
-- Setup. The head holds a small inline loader (`src/lib/analytics-loader.js`): it reads the `?notrack` flag, puts the recording answer on `<html data-rec>` before the first paint, and loads `/js/analytics.js`, a cached file built in `src/lib/bundles.js`. That file holds the question, the REC chip, `track()` and the events. PostHog's library comes from its CDN once the page change has finished and the browser is idle, on `carlton.dev` only.
+- Setup. The head holds a small inline loader (`src/lib/analytics-loader.js`): it reads the `?notrack` flag, puts the recording answer on `<html data-rec>` before the first paint, and loads `/js/rec.js`, a cached file built in `src/lib/bundles.js`. That file holds the question, the REC chip, `track()` and the events. It's named for the recording question because ad blockers often block files named `analytics.js`, and the question has to work for those visitors too. PostHog's own hosts can still be blocked. PostHog's library comes from its CDN once the page change has finished and the browser is idle, on `carlton.dev` only.
 - Storage. The answer is kept in localStorage as `rec-consent` (`yes` or `no`). `?notrack=1` sets `notrack` to `1`, and `?notrack=0` clears it.
 - Correction to Setup. `?nopatch=1` has nothing to do with PostHog: under it PostHog loads as usual. `track()` does nothing when PostHog isn't there: an ad blocker, a host other than `carlton.dev`, or `notrack`. The background controls and dragging still work under `?nopatch=1`, so `patch_used` still fires there.
 - Events, as built:

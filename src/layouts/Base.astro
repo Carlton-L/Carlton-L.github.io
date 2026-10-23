@@ -72,7 +72,7 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <script is:inline set:html={clockJs}></script>
 
     <!-- Analytics loader (src/lib/analytics-loader.js): the ?notrack flag, the recording answer on
-         <html data-rec>, then /js/analytics.js. PostHog starts on carlton.dev only, once the page
+         <html data-rec>, then /js/rec.js. PostHog starts on carlton.dev only, once the page
          has settled. docs/rfc/analytics.md -->
     <script is:inline set:html={loaderJs}></script>
 

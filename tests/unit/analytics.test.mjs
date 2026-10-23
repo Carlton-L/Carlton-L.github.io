@@ -29,7 +29,7 @@ function rig({ host = 'carlton.dev', search = '', stored = {}, blocked = false }
     documentElement: { setAttribute: (k, v) => { attrs[k] = v; } },
     addEventListener: (type, fn) => { (listeners[type] ||= []).push(fn); },
   };
-  const load = () => installAnalyticsLoader({ win, doc, src: '/js/analytics.js?v=test' });
+  const load = () => installAnalyticsLoader({ win, doc, src: '/js/rec.js?v=test' });
   /** What the ClientRouter does to <html> on a page change: new attributes, then astro:after-swap. */
   const swap = () => { for (const k in attrs) delete attrs[k]; for (const fn of listeners['astro:after-swap'] || []) fn(); };
   return { win, store, added, attrs, load, swap };
@@ -46,7 +46,7 @@ test('PostHog starts on carlton.dev only, and the file loads on every host', () 
   assert.equal(r.load(), true);
   assert.equal(r.added.length, 1);
   assert.equal(r.added[0].tag, 'script');
-  assert.equal(r.added[0].src, '/js/analytics.js?v=test');
+  assert.equal(r.added[0].src, '/js/rec.js?v=test');
   assert.equal(r.added[0].async, true);
   assert.equal(r.win.__posthog_initialized, true);
 });
@@ -135,7 +135,7 @@ test('the project token is in the source', () => {
 
 test('the loader is inlined in the head and points at the built file', () => {
   assert.match(read('src/layouts/Base.astro'), /<script is:inline set:html=\{loaderJs\}><\/script>/);
-  const line = "var SRC = '/js/analytics.js'; // @src";
+  const line = "var SRC = '/js/rec.js'; // @src";
   assert.ok(read('src/lib/analytics-loader.js').includes(line), 'bundles.js replaces this line');
   assert.ok(read('src/lib/bundles.js').includes(`loader.replace("${line}"`));
 });
