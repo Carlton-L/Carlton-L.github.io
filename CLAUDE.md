@@ -33,6 +33,7 @@ The site is a live dataflow network (TouchDesigner-derived grammar). **Read `des
 - SEO: every page uses the JSON-LD helpers in `src/lib/seo.js`, with a unique title and description.
 - Astro quirks: variables used by `getStaticPaths` must be defined inside it; a `<p>` whose text starts with `//` is dropped, so write `{'// …'}`.
 - Performance: the homepage ships about zero framework JS (the grid-lamp 3D preview is the one selection-gated exception); demo islands ≤300 KB gz; never scroll-jack; respect reduced motion.
+- Analytics: PostHog, design in `docs/rfc/analytics.md`, code in `src/lib/analytics.js`. Custom events go through `track(name, props)` only, and never carry what a visitor typed. Keep `defaults` pinned at `2026-05-30` (a newer one records network bodies). A new interactive demo gets `demo="<its id>"` on its Operator. Check with `node tests/analytics.mjs`.
 
 ## Case studies
 
