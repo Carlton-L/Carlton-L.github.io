@@ -183,92 +183,264 @@
     }
     return o + '</g>';
   }
-
-  /* ---------- viewer: futurity_engine — a full run compressed to one cycle ---------- */
-  var ENG_ENT = ['#20C6DB', '#20C6DB', '#20C6DB', '#C3DE6D', '#C3DE6D', '#E07B91', '#E69500', '#46ACC8'];
-  var ENG_L = 7.15, ENG_PH = [['INTENT', 0], ['DB_PULL', 1.0], ['SIGNALS', 3.05], ['AGENTS', 3.8], ['SYNTH', 5.85]];
-  function engInit() {
-    var r = srnd(4242);
-    var nodes = [];
-    var SP = [[96, 66], [212, 48], [330, 72], [118, 172], [238, 190], [342, 162]];
-    for (var i = 0; i < 6; i++) nodes.push({ x: SP[i][0], y: SP[i][1], t: 'sub', b: 0.1 + i * 0.13, r: 7.5, p: -1 });
-    var bt = 1.0;
-    for (var b2 = 0; b2 < 8; b2++) {
-      var n = 4 + Math.floor(r() * 3);
-      for (var j = 0; j < n; j++) {
-        var pi = Math.floor(r() * 6), pn = nodes[pi];
-        var a = r() * Math.PI * 2, d = 17 + r() * 30;
-        nodes.push({
-          x: Math.min(W - 10, Math.max(10, pn.x + Math.cos(a) * d * 1.5)),
-          y: Math.min(H - 30, Math.max(14, pn.y + Math.sin(a) * d)),
-          t: 'ent', c: ENG_ENT[Math.floor(r() * ENG_ENT.length)], b: bt + r() * 0.2, r: 2.1 + r() * 1.5, p: pi,
-        });
-      }
-      bt += 0.24;
-    }
-    for (var s2 = 0; s2 < 4; s2++) {
-      var pi2 = Math.floor(r() * 6), pn2 = nodes[pi2], a2 = r() * Math.PI * 2;
-      nodes.push({ x: pn2.x + Math.cos(a2) * 26, y: Math.min(H - 30, Math.max(14, pn2.y + Math.sin(a2) * 24)), t: 'sig', b: 3.05 + s2 * 0.14, r: 3.6, p: pi2 });
-    }
-    var AP = [[34, 42], [388, 50], [34, 200], [388, 196]];
-    var agi = [];
-    for (var a3 = 0; a3 < 4; a3++) { nodes.push({ x: AP[a3][0], y: AP[a3][1], t: 'ag', b: 3.8 + a3 * 0.16, r: 4.6, p: Math.floor(r() * 6) }); agi.push(nodes.length - 1); }
-    for (var w2 = 0; w2 < 10; w2++) {
-      var pi3 = agi[Math.floor(r() * 4)], pn3 = nodes[pi3], a4 = r() * Math.PI * 2;
-      nodes.push({ x: Math.min(W - 8, Math.max(8, pn3.x + Math.cos(a4) * 22)), y: Math.min(H - 30, Math.max(12, pn3.y + Math.sin(a4) * 20)), t: 'web', b: 4.2 + r() * 1.3, r: 1.7, p: pi3 });
-    }
-    nodes.push({ x: W / 2, y: H / 2 + 4, t: 'rep', b: 5.85, r: 6.5, p: -1 });
-    var ri = nodes.length - 1;
-    agi.forEach(function (i2) { nodes.push({ lk: 1, a: i2, b2: ri, b: 5.9 }); });
-    return nodes;
+  /* ---------- viewer: futurity_engine — the case study hero's tour, drawn ----------
+     Three beats in one 7.2s cycle, one per trust-triangle corner, with the hero's
+     own captions: the crash (OBSERVE), Retry (STEER), the $4.1B and its source
+     (TRACE). A RECREATION of a RECREATION: no product code, a made-up run. */
+  var ET_L = 7.2;
+  var ET_CAP = [[0, 'o', 'Every step says where it is'], [2.4, 's', 'Retry it, or go on without it'], [4.6, 't', 'Numbers come from data']];
+  var ET_CN = { o: 'OBSERVE', t: 'TRACE', s: 'STEER' };
+  function etInit() { return {}; }
+  function etE(a, b, t) { return Math.max(0, Math.min(1, (t - a) / (b - a))); }
+  function etEase(p) { return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+  function etT(x, y, s, size, fill, o) {
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" fill="' + fill + '"' +
+      (o.mono ? ' font-family="Sometype Mono, monospace" letter-spacing="' + (size * 0.12).toFixed(2) + '"' : ' font-family="Red Hat Display, Inter, sans-serif"') +
+      (o.w ? ' font-weight="' + o.w + '"' : '') + (o.a ? ' text-anchor="' + o.a + '"' : '') + (o.op != null ? ' opacity="' + o.op + '"' : '') + '>' + esc(s) + '</text>';
   }
+  function etPal(inv) {
+    return inv
+      ? { bg: '#F4F1EA', card: '#FBFAF7', line: '#CFCABC', fg: '#15140F', f2: '#5C5849', f3: '#8A8676', wire: '#B9B4A5', red: '#C2410C', redBg: '#F6E1D6', green: '#0F8A4A', greenBg: '#DDEFE3', blue: '#1D5FD1', tip: '#15140F', tipFg: '#F4F1EA', sig: '#0F8A4A', capBg: 'rgba(251,250,247,.95)' }
+      : { bg: '#15140F', card: '#1D1C18', line: '#333333', fg: '#F2F2F2', f2: '#A3A3A3', f3: '#6B6B6B', wire: '#4A4A4A', red: '#F05252', redBg: '#2A1414', green: '#22C55E', greenBg: '#10241A', blue: '#5EA2FF', tip: '#EDEDEA', tipFg: '#151515', sig: '#3dff88', capBg: 'rgba(12,12,12,.92)' };
+  }
+  function etRing(x, y, r, col, t, spin) {
+    if (!spin) return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="1.2"/>';
+    var a = t * 6;
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="1.2" stroke-dasharray="' + (r * 3.6).toFixed(1) + ' ' + (r * 2.7).toFixed(1) + '" transform="rotate(' + (a * 57.3 % 360).toFixed(0) + ' ' + x + ' ' + y + ')"/>';
+  }
+  function etCheck(x, y, r, col, bg) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + col + '"/><path d="M' + (x - r * 0.45) + ' ' + y + ' l' + (r * 0.32) + ' ' + (r * 0.34) + ' l' + (r * 0.6) + ' ' + (-r * 0.7) + '" fill="none" stroke="' + bg + '" stroke-width="' + (r * 0.32).toFixed(2) + '"/>';
+  }
+  function etPtr(x, y, press, c) {
+    var o = '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(.62)"><path d="M0 0v12l3.4-3 2.3 5 2-1-2.2-5H10z" fill="#fff" stroke="#111" stroke-width="1"/></g>';
+    if (press > 0 && press < 1) o += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (3 + press * 9).toFixed(1) + '" fill="none" stroke="' + c.sig + '" stroke-width="1.4" opacity="' + (1 - press).toFixed(2) + '"/>';
+    return o;
+  }
+  function etBoard(t, c) {
+    var fail = t >= 1.4 && t < 3.2, retry = t >= 3.2 && t < 3.8, ok = t >= 3.8, o = '';
+    /* status slot: running → failed banner → filed banner */
+    var sx = 10, sy = 22, sw = 400, sh = 24;
+    if (fail) {
+      o += '<rect x="' + sx + '" y="' + sy + '" width="' + sw + '" height="' + sh + '" rx="2" fill="' + c.redBg + '" stroke="' + c.red + '" stroke-opacity=".6"/>';
+      o += etT(sx + 8, sy + 10, 'Question research failed', 6.4, c.fg, { w: 600 }) + etT(sx + 8, sy + 18.5, 'The research job crashed while reading a PDF.', 4.8, c.f2);
+      var hot = t >= 3.0;
+      o += '<rect x="282" y="' + (sy + 6) + '" width="56" height="12" rx="2" fill="' + (hot ? c.fg : c.card) + '" stroke="' + c.line + '"/>' + etT(310, sy + 14, 'Retry research', 5, hot ? c.bg : c.fg, { a: 'middle', w: 600 });
+      o += '<rect x="342" y="' + (sy + 6) + '" width="62" height="12" rx="2" fill="' + c.card + '" stroke="' + c.line + '"/>' + etT(373, sy + 14, 'Go on without it', 5, c.fg, { a: 'middle' });
+    } else if (ok) {
+      o += '<rect x="' + sx + '" y="' + sy + '" width="' + sw + '" height="' + sh + '" rx="2" fill="' + c.greenBg + '" stroke="' + c.green + '" stroke-opacity=".5"/>';
+      o += etCheck(sx + 13, sy + 12, 5, c.green, c.greenBg);
+      o += etT(sx + 24, sy + 10, 'Question research filed', 6.4, c.fg, { w: 600 }) + etT(sx + 24, sy + 18.5, '5 waiting steps resumed', 4.8, c.f2);
+    } else {
+      o += '<rect x="' + sx + '" y="' + sy + '" width="' + sw + '" height="' + sh + '" rx="2" fill="none" stroke="' + c.line + '"/>';
+      o += etT(sx + 8, sy + 10, (retry ? '1 step running' : '7 steps running'), 6.4, c.fg, { w: 600 }) + etT(sx + 8, sy + 18.5, retry ? 'Deep research: the question' : 'Deep research: the question, Patent report, and 5 more', 4.8, c.f2);
+    }
+    /* the board */
+    o += '<rect x="10" y="52" width="400" height="184" rx="2" fill="none" stroke="' + c.fg + '" stroke-opacity=".75"/>';
+    o += etT(18, 62, 'WORKSTREAM · GROUNDWORK', 4.2, c.f2, { mono: 1 }) + etT(18, 73, 'Groundwork', 8.5, c.fg, { w: 700 });
+    /* wire block → file node, with a pulse while running */
+    var run = !fail && !ok;
+    o += '<path d="M150 112 C 195 112, 205 126, 238 126" fill="none" stroke="' + (fail ? c.red : (ok ? c.green : c.green)) + '" stroke-opacity="' + (fail ? 0.7 : 0.85) + '" stroke-width="1"' + (fail ? ' stroke-dasharray="3 2"' : '') + '/>';
+    if (run) { var pp = (t * 0.9) % 1; o += '<circle cx="' + (150 + pp * 88).toFixed(1) + '" cy="' + (112 + etEase(pp) * 14).toFixed(1) + '" r="1.6" fill="' + c.sig + '"/>'; }
+    o += '<path d="M128 166 C 170 166, 190 150, 238 132" fill="none" stroke="' + c.wire + '"/>';
+    o += '<path d="M252 126 C 300 126, 300 92, 332 92 M252 126 C 300 126, 300 168, 332 168" fill="none" stroke="' + c.wire + '"' + (ok ? '' : ' stroke-dasharray="2 2"') + '/>';
+    /* block card: Question research */
+    var bc = fail ? c.red : (ok ? c.green : c.blue);
+    o += '<rect x="40" y="88" width="110" height="52" rx="2" fill="' + c.card + '" stroke="' + bc + '" stroke-opacity=".9"/>';
+    o += etT(46, 97, 'BLOCK · 3 STEPS', 3.8, c.f2, { mono: 1 }) + etT(46, 106, 'Question research', 6, c.fg, { w: 600 });
+    o += '<rect x="46" y="111" width="80" height="2" fill="' + c.line + '"/><rect x="46" y="115.5" width="64" height="2" fill="' + c.line + '"/>';
+    o += etT(46, 133, fail ? '2 of 3 done · 1 failed' : (ok ? '3 of 3 done' : '2 of 3 done · 1 running'), 4.4, fail ? c.red : c.f2);
+    if (ok) o += etCheck(150, 88, 4, c.green, c.card);
+    else o += '<circle cx="150" cy="88" r="4" fill="' + c.card + '"/>' + etRing(150, 88, 3.4, fail ? c.red : c.blue, t, run || retry);
+    /* calc card: Lab prep, done */
+    o += '<rect x="40" y="152" width="88" height="30" rx="2" fill="' + c.card + '" stroke="' + c.line + '"/>';
+    o += etT(46, 161, 'CALCULATION', 3.8, c.f2, { mono: 1 }) + etT(46, 170, 'Lab prep', 6, c.fg, { w: 600 }) + etT(46, 178, 'Done', 4.2, c.f2);
+    o += etCheck(128, 152, 4, c.green, c.card);
+    /* file node */
+    o += '<circle cx="245" cy="128" r="11" fill="' + (ok ? c.green : c.card) + '" stroke="' + (fail ? c.red : c.line) + '"/>';
+    if (ok) o += '<path d="M240 128 l3.4 3.6 l6.4 -7.2" fill="none" stroke="' + c.card + '" stroke-width="1.8"/>';
+    else if (fail) o += '<path d="M241 124 l8 8 M249 124 l-8 8" stroke="' + c.red + '" stroke-width="1.4"/>';
+    else o += etRing(245, 128, 5, c.f2, t, true);
+    o += etT(245, 149, 'Question research', 5, c.fg, { a: 'middle' }) + etT(245, 156, fail ? 'Failed' : (ok ? 'Filed' : 'Not filed'), 4.4, fail ? c.red : (ok ? c.green : c.f3), { a: 'middle' });
+    /* waiting steps downstream: dashed until resumed */
+    [['Patent report', 82], ['Deep research: technology', 158]].forEach(function (w, i) {
+      var y = w[1], live = ok && t > 3.9 + i * 0.15;
+      o += '<rect x="332" y="' + y + '" width="70" height="20" rx="2" fill="' + c.card + '" stroke="' + (live ? c.blue : c.line) + '"' + (live ? '' : ' stroke-dasharray="2 2"') + '/>';
+      o += etT(337, y + 8.5, w[0], 4.6, live ? c.fg : c.f3, { w: 600 }) + etT(337, y + 15.5, live ? 'Running' : 'Waiting for the research', 3.8, c.f3);
+      if (live) o += etRing(400, y, 3, c.blue, t, true);
+    });
+    /* pointer: comes in for Retry */
+    if (t >= 2.4 && t < 3.6) {
+      var mp = etEase(etE(2.5, 3.0, t)), px = 360 + (300 - 360) * mp, py = 200 + (36 - 200) * mp;
+      o += etPtr(px, py, etE(3.0, 3.45, t), c);
+    }
+    return o;
+  }
+  function etReport(t, c) {
+    var o = '';
+    o += etT(14, 34, '8', 6, c.f3, { mono: 1 }) + etT(24, 35, 'Business Analysis', 9, c.fg, { w: 700 });
+    o += '<rect x="14" y="42" width="392" height="0.6" fill="' + c.line + '"/>';
+    var rows = [
+      ['Business: Figures from Published Sources', '49 s', 'Signed agreements price SMR power at $95 to $120 per megawatt-hour.'],
+      ['Competitive Analysis', '2.0 min', null],
+      ['Executive Recommendations', '1.5 min', 'Sign early, with exits. Agreements tied to permits keep the option.'],
+    ];
+    var y = 56;
+    rows.forEach(function (r, i) {
+      var p = etE(4.9 + i * 0.22, 5.3 + i * 0.22, t);
+      o += '<g opacity="' + Math.min(1, p * 1.4).toFixed(2) + '">';
+      o += etT(14, y, r[0], 6.6, c.fg, { w: 600 }) + etT(406, y, 'Business', 4.6, c.f3, { a: 'end' });
+      o += '<circle cx="16.5" cy="' + (y + 7) + '" r="1.6" fill="' + c.green + '"/>' + etT(21, y + 8.6, 'Written · ' + r[1], 4.6, c.f2);
+      if (r[2]) {
+        o += '<clipPath id="etc' + i + '"><rect x="14" y="' + (y + 11) + '" width="' + (392 * p).toFixed(1) + '" height="12"/></clipPath>';
+        o += '<g clip-path="url(#etc' + i + ')">' + etT(14, y + 20, r[2], 5.6, c.f2) + '</g>';
+      } else {
+        o += '<clipPath id="etc' + i + '"><rect x="14" y="' + (y + 11) + '" width="' + (392 * p).toFixed(1) + '" height="12"/></clipPath>';
+        o += '<g clip-path="url(#etc' + i + ')"><text x="14" y="' + (y + 20) + '" font-size="5.6" font-family="Red Hat Display, Inter, sans-serif" fill="' + c.f2 + '">27 deals put <tspan fill="' + c.blue + '" font-weight="700" text-decoration="underline">$4.1B</tspan> into the field. Brannock Nuclear builds and runs the plants.</text></g>';
+      }
+      o += '<rect x="14" y="' + (y + 28) + '" width="392" height="0.5" fill="' + c.line + '" stroke-dasharray="2 2"/>';
+      o += '</g>';
+      y += 38;
+    });
+    /* pointer to $4.1B, then the tooltip with its source */
+    var tx = 52, ty = 109;
+    if (t >= 5.4) {
+      var mp = etEase(etE(5.4, 5.9, t)), px = 300 + (tx - 300) * mp, py = 214 + (ty - 214) * mp;
+      o += etPtr(px, py, etE(5.9, 6.3, t), c);
+    }
+    var tp = etE(6.0, 6.2, t);
+    if (tp > 0) {
+      o += '<g opacity="' + tp.toFixed(2) + '" transform="translate(0 ' + ((1 - tp) * 3).toFixed(1) + ')">';
+      o += '<rect x="34" y="58" width="138" height="40" rx="2" fill="' + c.tip + '"/>';
+      o += etT(40, 68, '$4.1B · Total disclosed investment', 5.8, c.tipFg, { w: 700 });
+      o += etT(40, 77, 'Minted by Business facts, from the investment report', 4.4, c.tipFg, { op: 0.7 });
+      o += etT(40, 89, 'biz.total_investment', 4.4, c.tipFg, { mono: 1, op: 0.6 });
+      o += '</g>';
+    }
+    return o;
+  }
+  /* ---- narrow: phones, where the viewer is about 333 px wide (0.79 px per unit).
+     Fewer, larger elements; every word that carries a beat is 9 units or more
+     (7 px rendered). Chosen per frame from the viewport, as the viewer's width
+     follows it in READ mode. ---- */
+  var ET_MQ = null;
+  function etNarrow() {
+    if (!ET_MQ && window.matchMedia) ET_MQ = window.matchMedia('(max-width: 560px)');
+    return !!(ET_MQ && ET_MQ.matches);
+  }
+  function etBoardN(t, c) {
+    var fail = t >= 1.4 && t < 3.2, retry = t >= 3.2 && t < 3.8, ok = t >= 3.8, run = !fail && !ok, o = '';
+    /* status slot */
+    if (fail) {
+      var hot = t >= 3.0;
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="' + c.redBg + '" stroke="' + c.red + '" stroke-opacity=".6"/>';
+      o += etT(18, 40, 'Question research failed', 11, c.fg, { w: 600 });
+      o += '<rect x="234" y="27" width="78" height="18" rx="2" fill="' + (hot ? c.fg : c.card) + '" stroke="' + c.line + '"/>' + etT(273, 39.5, 'Retry research', 9, hot ? c.bg : c.fg, { a: 'middle', w: 600 });
+      o += '<rect x="317" y="27" width="87" height="18" rx="2" fill="' + c.card + '" stroke="' + c.line + '"/>' + etT(360.5, 39.5, 'Go on without it', 9, c.fg, { a: 'middle' });
+    } else if (ok) {
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="' + c.greenBg + '" stroke="' + c.green + '" stroke-opacity=".5"/>';
+      o += etCheck(25, 36, 6, c.green, c.greenBg) + etT(37, 40, 'Question research filed', 11, c.fg, { w: 600 }) + etT(402, 40, '5 steps resumed', 9.5, c.f2, { a: 'end' });
+    } else {
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="none" stroke="' + c.line + '"/>';
+      o += etT(18, 40, retry ? '1 step running' : '7 steps running', 11, c.fg, { w: 600 });
+    }
+    /* the board */
+    o += '<rect x="10" y="56" width="400" height="180" rx="2" fill="none" stroke="' + c.fg + '" stroke-opacity=".75"/>';
+    o += etT(18, 74, 'Groundwork', 11, c.fg, { w: 700 });
+    o += '<path d="M178 109 L 225 109" fill="none" stroke="' + (fail ? c.red : c.green) + '" stroke-width="1.2"' + (fail ? ' stroke-dasharray="3 2"' : '') + '/>';
+    if (run) { var pp = (t * 0.9) % 1; o += '<circle cx="' + (178 + pp * 47).toFixed(1) + '" cy="109" r="2" fill="' + c.sig + '"/>'; }
+    o += '<path d="M251 109 L 290 109" fill="none" stroke="' + c.wire + '" stroke-width="1.2"' + (ok ? '' : ' stroke-dasharray="3 3"') + '/>';
+    /* block: Question research */
+    var bc = fail ? c.red : (ok ? c.green : c.blue);
+    o += '<rect x="22" y="84" width="156" height="50" rx="2" fill="' + c.card + '" stroke="' + bc + '" stroke-opacity=".9"/>';
+    o += etT(30, 103, 'Question research', 11, c.fg, { w: 600 });
+    o += etT(30, 123, fail ? '1 step failed' : (ok ? '3 of 3 done' : (retry ? 'Retrying' : '1 step running')), 9.5, fail ? c.red : c.f2);
+    if (ok) o += etCheck(178, 84, 5.5, c.green, c.card);
+    else o += '<circle cx="178" cy="84" r="5.5" fill="' + c.card + '"/>' + etRing(178, 84, 4.6, fail ? c.red : c.blue, t, run || retry);
+    /* file node */
+    o += '<circle cx="238" cy="109" r="13" fill="' + (ok ? c.green : c.card) + '" stroke="' + (fail ? c.red : c.line) + '"/>';
+    if (ok) o += '<path d="M232 109 l4 4.2 l7.5 -8.4" fill="none" stroke="' + c.card + '" stroke-width="2.2"/>';
+    else if (fail) o += '<path d="M233 104 l10 10 M243 104 l-10 10" stroke="' + c.red + '" stroke-width="1.8"/>';
+    else o += etRing(238, 109, 6, c.f2, t, true);
+    o += etT(238, 138, fail ? 'Failed' : (ok ? 'Filed' : 'Not filed'), 9.5, fail ? c.red : (ok ? c.green : c.f3), { a: 'middle' });
+    /* one waiting step stands for the five */
+    var live = ok && t > 3.9;
+    o += '<rect x="290" y="88" width="116" height="42" rx="2" fill="' + c.card + '" stroke="' + (live ? c.blue : c.line) + '"' + (live ? '' : ' stroke-dasharray="3 3"') + '/>';
+    o += etT(298, 105, 'Patent report', 10.5, live ? c.fg : c.f3, { w: 600 }) + etT(298, 122, live ? 'Running' : 'Waiting', 9.5, live ? c.f2 : c.f3);
+    if (live) o += etRing(406, 88, 4.4, c.blue, t, true);
+    /* pointer: comes in for Retry */
+    if (t >= 2.4 && t < 3.6) {
+      var mp = etEase(etE(2.5, 3.0, t));
+      o += etPtr(360 + (268 - 360) * mp, 200 + (35 - 200) * mp, etE(3.0, 3.45, t), c);
+    }
+    return o;
+  }
+  function etReportN(t, c) {
+    var o = etT(16, 40, 'Business Analysis', 12, c.fg, { w: 700 });
+    o += '<rect x="16" y="48" width="388" height="0.8" fill="' + c.line + '"/>';
+    var p = etE(4.9, 5.4, t);
+    o += '<g opacity="' + Math.min(1, p * 1.6).toFixed(2) + '">' + etT(16, 66, 'Competitive Analysis', 11, c.fg, { w: 600 });
+    o += '<clipPath id="etcn"><rect x="16" y="70" width="' + (388 * p).toFixed(1) + '" height="18"/></clipPath>';
+    o += '<g clip-path="url(#etcn)"><text x="16" y="84" font-size="10.5" font-family="Red Hat Display, Inter, sans-serif" fill="' + c.f2 + '">27 deals put <tspan fill="' + c.blue + '" font-weight="700" text-decoration="underline">$4.1B</tspan> into the field.</text></g></g>';
+    if (t >= 5.4) {
+      var mp = etEase(etE(5.4, 5.9, t));
+      o += etPtr(300 + (92 - 300) * mp, 214 + (80 - 214) * mp, etE(5.9, 6.3, t), c);
+    }
+    var tp = etE(6.0, 6.2, t);
+    if (tp > 0) {
+      o += '<g opacity="' + tp.toFixed(2) + '" transform="translate(0 ' + ((1 - tp) * 3).toFixed(1) + ')">';
+      o += '<rect x="16" y="94" width="300" height="62" rx="2" fill="' + c.tip + '"/>';
+      o += etT(25, 111, '$4.1B · Total disclosed investment', 11, c.tipFg, { w: 700 });
+      o += etT(25, 127, 'Minted by Business facts, from the investment report', 9.5, c.tipFg, { op: 0.75 });
+      o += etT(25, 146, 'biz.total_investment', 9.5, c.tipFg, { mono: 1, op: 0.7 });
+      o += '</g>';
+    }
+    return o;
+  }
+  function etCaption(t, c, nar) {
+    var k = 0;
+    for (var i = 0; i < ET_CAP.length; i++) if (t >= ET_CAP[i][0]) k = i;
+    var cap = ET_CAP[k], p = REDUCED ? 1 : etEase(etE(cap[0] + 0.05, cap[0] + 0.45, t));
+    /* sizes: [card y, card h, tag scale, caption size, chars to width] */
+    var z = nar ? [170, 60, 2, 12.5, 6.3] : [186, 44, 1, 10.5, 5.25];
+    var w = Math.max(100, cap[2].length * z[4] + 20), s = z[2];
+    var o = '<g opacity="' + p.toFixed(2) + '" transform="translate(0 ' + ((1 - p) * 8).toFixed(1) + ')">';
+    o += '<rect x="10" y="' + z[0] + '" width="' + w.toFixed(0) + '" height="' + z[1] + '" rx="2.5" fill="' + c.capBg + '" stroke="' + c.line + '"/>';
+    /* the corner tag, drawn at 1x then scaled */
+    o += '<g transform="translate(17 ' + (z[0] + 7) + ') scale(' + s + ')">';
+    o += '<rect x="0" y="0" width="' + (ET_CN[cap[1]].length * 4.6 + 20).toFixed(0) + '" height="11" rx="2" fill="none" stroke="' + c.sig + '" stroke-opacity=".45"/>';
+    var corners = { o: [7, 2.5], t: [3.5, 8.5], s: [10.5, 8.5] };
+    o += '<path d="M7 2.5 L3.5 8.5 L10.5 8.5 Z" fill="none" stroke="' + c.f3 + '" stroke-width=".7"/>';
+    ['o', 't', 's'].forEach(function (q) { o += '<circle cx="' + corners[q][0] + '" cy="' + corners[q][1] + '" r="1.25" fill="' + (q === cap[1] ? c.sig : c.f3) + '"/>'; });
+    o += etT(14, 8, ET_CN[cap[1]], 4.6, c.sig, { mono: 1 }) + '</g>';
+    o += etT(17, z[0] + z[1] - 7, cap[2], z[3], c.fg, { w: 600 });
+    return o + '</g>';
+  }
+  function etTabs(t, c, nar) {
+    /* tab strip: badge appears on Report once the research files */
+    var onRep = t >= 4.75, z = nar ? { s: 9.5, x: [14, 70, 134], u: [[12, 46], [68, 36]], b: [112, 8, 5.5, 7.5], y: 13, l: 18 } : { s: 5.6, x: [14, 56, 108], u: [[12, 32], [54, 32]], b: [82, 10, 3.6, 4.6], y: 12, l: 16 };
+    var o = etT(z.x[0], z.y, 'Workflow', z.s, onRep ? c.f2 : c.fg, { w: 600 }) + etT(z.x[1], z.y, 'Report', z.s, onRep ? c.fg : c.f2, { w: 600 }) + etT(z.x[2], z.y, 'Knowledgebase', z.s, c.f2, { w: 600 });
+    var u = z.u[onRep ? 1 : 0];
+    o += '<rect x="' + u[0] + '" y="' + (z.l - 1) + '" width="' + u[1] + '" height="1" fill="' + c.fg + '"/><rect x="0" y="' + z.l + '" width="420" height="0.5" fill="' + c.line + '"/>';
+    if (t >= 3.8) o += '<circle cx="' + z.b[0] + '" cy="' + z.b[1] + '" r="' + z.b[2] + '" fill="' + c.green + '"/>' + etT(z.b[0], z.b[1] + z.b[3] * 0.38, '3', z.b[3], c.bg, { a: 'middle', w: 700 });
+    return o;
+  }
+  function etDraw(st, ft, inv) {
+    var t = REDUCED ? 6.5 : ft % ET_L, c = etPal(inv), nar = etNarrow();
+    var fade = (!REDUCED && t > 6.8) ? Math.max(0, 1 - (t - 6.8) / 0.4) : Math.min(1, REDUCED ? 1 : t / 0.25);
+    var o = '<g opacity="' + fade.toFixed(3) + '">' + etTabs(t, c, nar);
+    /* the cut: board → report, a quick crossfade like the hero's camera move */
+    var x = etE(4.6, 4.85, t);
+    if (x < 1) o += '<g opacity="' + (1 - x).toFixed(2) + '">' + (nar ? etBoardN : etBoard)(t, c) + '</g>';
+    if (x > 0) o += '<g opacity="' + x.toFixed(2) + '">' + (nar ? etReportN : etReport)(t, c) + '</g>';
+    o += etCaption(t, c, nar);
+    return o + '</g>';
+  }
+  /* hexagon outline points, used by the carlton_dev mini */
   function engHex(x, y, rr) {
     var pts = '';
     for (var i = 0; i < 6; i++) { var a = Math.PI / 3 * i - Math.PI / 6; pts += (x + rr * Math.cos(a)).toFixed(1) + ',' + (y + rr * Math.sin(a)).toFixed(1) + ' '; }
     return pts;
-  }
-  function engDraw(st, ft, inv) {
-    var t = REDUCED ? 6.5 : ft % ENG_L;
-    var fade = (!REDUCED && t > 6.75) ? Math.max(0, 1 - (t - 6.75) / 0.4) : 1;
-    var ECOL = { sub: '#4252BD', sig: '#F0E442', ag: '#818cf8', web: '#64748b', rep: '#f97316' };
-    var edge = inv ? 'rgba(21,20,15,.22)' : 'rgba(230,230,226,.15)';
-    var tickDim = inv ? 'rgba(21,20,15,.42)' : 'rgba(230,230,226,.35)';
-    var tickOff = inv ? 'rgba(21,20,15,.22)' : 'rgba(230,230,226,.16)';
-    var o = '<g opacity="' + fade.toFixed(3) + '">';
-    for (var i = 0; i < st.length; i++) {
-      var n = st[i];
-      if (n.lk) { if (t >= n.b) { var A = st[n.a], B2 = st[n.b2]; o += '<line x1="' + A.x + '" y1="' + A.y + '" x2="' + B2.x + '" y2="' + B2.y + '" stroke="' + edge + '"/>'; } continue; }
-      if (n.p >= 0 && t >= n.b) { var m = st[n.p]; o += '<line x1="' + m.x + '" y1="' + m.y + '" x2="' + n.x + '" y2="' + n.y + '" stroke="' + edge + '"/>'; }
-    }
-    var newest = null;
-    for (var j = 0; j < st.length; j++) {
-      var n2 = st[j];
-      if (n2.lk || t < n2.b) continue;
-      var g = REDUCED ? 1 : Math.min(1, (t - n2.b) / 0.25), rr = n2.r * (0.4 + 0.6 * g);
-      if (!REDUCED && t - n2.b < 0.5 && (!newest || n2.b > newest.b)) newest = n2;
-      if (n2.t === 'sub') o += '<polygon points="' + engHex(n2.x, n2.y, rr) + '" fill="' + ECOL.sub + '" stroke="rgba(130,140,220,.8)" stroke-width="1"/>';
-      else if (n2.t === 'sig') o += '<rect x="' + (n2.x - rr * 0.8).toFixed(1) + '" y="' + (n2.y - rr * 0.8).toFixed(1) + '" width="' + (rr * 1.6).toFixed(1) + '" height="' + (rr * 1.6).toFixed(1) + '" fill="' + ECOL.sig + '" transform="rotate(45 ' + n2.x + ' ' + n2.y + ')"/>';
-      else o += '<circle cx="' + n2.x + '" cy="' + n2.y + '" r="' + rr.toFixed(1) + '" fill="' + (n2.t === 'ent' ? n2.c : ECOL[n2.t]) + '" fill-opacity=".92"/>';
-    }
-    if (newest) {
-      var ag2 = t - newest.b;
-      o += '<circle cx="' + newest.x + '" cy="' + newest.y + '" r="' + (newest.r + 3 + ag2 * 10).toFixed(1) + '" fill="none" stroke="#3dff88" stroke-opacity="' + ((1 - ag2 / 0.5) * 0.7).toFixed(2) + '"/>';
-    }
-    for (var k = 0; k < st.length; k++) {
-      var n3 = st[k];
-      if (n3.t === 'rep' && t >= n3.b && t - n3.b < 0.9) {
-        o += '<circle cx="' + n3.x + '" cy="' + n3.y + '" r="' + (9 + (t - n3.b) * 26).toFixed(1) + '" fill="none" stroke="#f97316" stroke-opacity="' + ((1 - (t - n3.b) / 0.9) * 0.5).toFixed(2) + '"/>';
-      }
-    }
-    var cur = 0;
-    for (var p1 = 0; p1 < ENG_PH.length; p1++) if (t >= ENG_PH[p1][1]) cur = p1;
-    for (var p2 = 0; p2 < ENG_PH.length; p2++) {
-      var x = 14 + p2 * 82;
-      var col = p2 === cur ? '#3dff88' : (p2 < cur ? tickDim : tickOff);
-      o += '<text x="' + x + '" y="' + (H - 7) + '" font-family="monospace" font-size="6.5" letter-spacing="1.2" fill="' + col + '">' + ENG_PH[p2][0] + '</text>';
-      if (p2 === cur) o += '<rect x="' + x + '" y="' + (H - 4) + '" width="30" height="1.5" fill="#3dff88"/>';
-    }
-    return o + '</g>';
   }
 
   /* ---------- viewer: fast — the subject page: graph layer + identity card + index cards ----------
@@ -1105,7 +1277,7 @@
     'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · 3D STUDIO · WAVE · AUTO-ORBIT', aria: 'GRID kinetic lamp, the case study 3D studio view with the wave pattern running and a slow orbit, live preview', paper: false, gl: true, init: glampInit, draw: glampDraw },
     'domainclaim': { name: 'domainclaim_view · VERIFY.scn', foot: 'CLAIM → RECORD → FIVE STEPS → VERIFIED', aria: 'DomainClaim claiming acme.dev: the record is added, the five steps of the check land one by one, and the name verifies. Recreated preview of the product demo', paper: false, init: dcInit, draw: dcDraw },
     'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
-    'futurity-engine': { name: 'futurity_engine_view · BATTERIES.scn', foot: 'SSE REPLAY · LIVE GRAPH · 5 PHASES', aria: 'Futurity Engine growing knowledge graph, live synthetic demo', paper: false, init: engInit, draw: engDraw },
+    'futurity-engine': { name: 'futurity_engine_view · TOUR.scn', foot: 'RECREATION · OBSERVE · TRACE · STEER', aria: 'Futurity Engine, a recreated tour: a research step fails and is retried, then a number in the report shows where it came from. Recreated preview of the case study demo', paper: false, init: etInit, draw: etDraw },
     'fast': { name: 'fast_view · INTERSTELLAR.scn', foot: 'SUBJECT PAGE → PATENT SNAPSHOT · TRAVERSAL', aria: 'FAST subject page traversing to a patent source snapshot and back, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
     'campus-ai': { name: 'campus_ai_view · FUNNEL.scn', foot: '42 → 8 → 1,117 → 7 → 4 · THE PIPELINE COOKS', aria: 'Campus AI research pipeline: 42 screened become 8 interviews, 1,117 coded moments, 7 themes and 4 recommendations, animated with the real study numbers', paper: false, init: funInit, draw: funDraw },
     'carlton-dev': { name: 'carlton_dev_view · THE_PATCH', foot: 'SELF-PORTRAIT · OPERATORS · LIVE CABLES', aria: 'carlton.dev patch network drawing itself, live preview', paper: false, init: cdInit, draw: cdDraw },

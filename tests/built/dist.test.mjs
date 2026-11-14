@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { gzipSync } from 'node:zlib';
 
 const DIST = fileURLToPath(new URL('../../dist/', import.meta.url));
 assert.ok(existsSync(DIST), 'dist/ not found. Run `npm run build` first.');
@@ -36,6 +37,13 @@ for (const name of ['patch', 'previs', 'rec']) {
     assert.ok(users > 0, 'no page loads it');
   });
 }
+
+// Home previews are drawings (docs/PATCH_SYSTEM.md, "Shared previews"): the whole viewer costs
+// previs.js, so it has a budget.
+test('/js/previs.js stays within its 24 KB gzip budget', () => {
+  const kb = gzipSync(readFileSync(join(DIST, 'js/previs.js')), { level: 9 }).length / 1024;
+  assert.ok(kb <= 24, `previs.js is ${kb.toFixed(1)} KB gzipped`);
+});
 
 test('/js/patch.js carries no dev-only code', () => {
   const js = read('js/patch.js');
