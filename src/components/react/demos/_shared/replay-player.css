@@ -1,0 +1,62 @@
+/* ReplayPlayer.jsx: the portfolio's player above a recorded demo. Site chrome, so it uses the site's
+   own controls: .chipbtn (clickable chip) and input.prange (slider). One fixed height at every width
+   and in every state, so the page never moves. */
+.rplayer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 12px;
+  border-bottom: 1px solid #2a2a2a;
+  background: #111111;
+  font-family: var(--font-mono);
+}
+.rplayer .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 3px;
+  background: transparent;
+  font: 10px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+}
+.rplayer .rp-play { width: 84px; justify-content: center; }
+.rplayer .chip svg { width: 9px; height: 10px; fill: currentColor; }
+/* Disabled is the same shape, dashed grey (site affordance rule). */
+.rplayer .chipbtn:disabled {
+  border-style: dashed !important;
+  border-color: #3a3a3a !important;
+  color: #5a5a5a !important;
+  cursor: default;
+  background: transparent !important;
+  box-shadow: none;
+}
+.rp-scrub { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+.rp-scrub input.prange { width: 100%; }
+.rp-mk {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 12px;
+  margin: -6px 0 0 -1px;
+  border-radius: 1px;
+  pointer-events: none;
+}
+.rp-mk.bad { background: #ff6b6b; }
+.rp-mk.info { background: #46acc8; }
+.rp-mk.good { background: var(--signal); }
+.rp-status {
+  flex: none;
+  font-size: 10.5px;
+  color: #ff6b6b;
+  white-space: nowrap;
+}
+/* Phones: the status takes the scrubber's place while it shows, so the row keeps its height. */
+@media (max-width: 560px) {
+  .rplayer .rp-play { width: 72px; }
+  .rplayer:has(.rp-status) .rp-scrub { display: none; }
+  .rp-status { flex: 1; white-space: normal; line-height: 1.3; }
+}

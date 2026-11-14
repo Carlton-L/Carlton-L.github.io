@@ -8,6 +8,8 @@
  *   </DecisionCard>
  */
 import Operator from '../Operator.astro';
+import TriMark from './TriMark.astro';
+import { CORNERS } from '../../lib/trust-triangle.js';
 
 interface Props {
   id: string;
@@ -23,12 +25,6 @@ interface Props {
 }
 const { id, area, num, slug, title, nudge, maxw, corner } = Astro.props;
 const n = String(num).padStart(2, '0');
-// Triangle points: observability top, traceability bottom left, steerability bottom right.
-const dots = [
-  ['observability', 6.5, 1.5],
-  ['traceability', 1.5, 10.5],
-  ['steerability', 11.5, 10.5],
-] as const;
 ---
 
 <Operator id={id} name={`decision_${n} · ${slug}`} type="txt" area={area} nudge={nudge} maxw={maxw}>
@@ -36,11 +32,8 @@ const dots = [
     <span class="cs-dnum" aria-hidden="true">{n}</span>
     {corner && (
       <span class="cs-tri">
-        <svg viewBox="0 0 13 12" aria-hidden="true">
-          <path d="M6.5 1.5 L1.5 10.5 L11.5 10.5 Z" />
-          {dots.map(([k, cx, cy]) => <circle cx={cx} cy={cy} r="1.6" class={k === corner ? 'on' : undefined} />)}
-        </svg>
-        {corner.toUpperCase()}
+        <TriMark corner={corner} />
+        {CORNERS[corner].label}
       </span>
     )}
     <h3 class="cs-dh">{title}</h3>

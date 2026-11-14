@@ -18,52 +18,20 @@
  * A RECREATION on a made-up run (the Engine is recreation-only).
  */
 import { useEffect, useRef, useState } from 'react';
+import TourCaption from '../_shared/TourCaption.jsx';
 import './hero.css';
 
 const NW = 1100, NH = 780, PHONE_BELOW = 720, PHONE_H = 960;
-const CORNER = { o: 'OBSERVE', t: 'TRACE', s: 'STEER' };
 const MOMENTS = [
-  ['o', 'Every step says where it is'],
-  ['s', 'Retry it, or go on without it'],
-  ['o', 'Watch the report fill'],
-  ['t', 'Numbers come from data'],
-  ['t', 'One layer at a time'],
-  ['s', 'Rerun one block'],
-  ['t', 'Every prompt, part by part'],
+  ['observability', 'Every step says where it is'],
+  ['steerability', 'Retry it, or go on without it'],
+  ['observability', 'Watch the report fill'],
+  ['traceability', 'Numbers come from data'],
+  ['traceability', 'One layer at a time'],
+  ['steerability', 'Rerun one block'],
+  ['traceability', 'Every prompt, part by part'],
 ];
 const STOP = Symbol('stop');
-
-function Tag({ k }) {
-  return (
-    <span className="eht-tag">
-      <svg viewBox="0 0 13 12" aria-hidden="true">
-        <path d="M6.5 1.5 L1.5 10.5 L11.5 10.5 Z" />
-        <circle cx="6.5" cy="1.5" r="1.6" className={k === 'o' ? 'on' : undefined} />
-        <circle cx="1.5" cy="10.5" r="1.6" className={k === 't' ? 'on' : undefined} />
-        <circle cx="11.5" cy="10.5" r="1.6" className={k === 's' ? 'on' : undefined} />
-      </svg>
-      {CORNER[k]}
-    </span>
-  );
-}
-
-function Caption({ i }) {
-  // the new caption slides in; the last one fades out over it
-  const [shown, setShown] = useState({ cur: i, prev: null });
-  useEffect(() => {
-    if (i === shown.cur) return undefined;
-    setShown({ cur: i, prev: shown.cur });
-    const t = setTimeout(() => setShown((s) => ({ ...s, prev: null })), 260);
-    return () => clearTimeout(t);
-  }, [i]);
-  const card = (n, cls) => (n == null || !MOMENTS[n] ? null : (
-    <div key={cls + n} className={'eht-cap ' + cls} aria-hidden={cls === 'out' ? 'true' : undefined}>
-      <Tag k={MOMENTS[n][0]} />
-      <b>{MOMENTS[n][1]}</b>
-    </div>
-  ));
-  return (<div className="eht-caps" role="status">{card(shown.prev, 'out')}{card(shown.cur, 'in')}</div>);
-}
 
 export default function EngineHeroTour() {
   const camRef = useRef(null), frRef = useRef(null), ptrRef = useRef(null), rootRef = useRef(null);
@@ -220,7 +188,7 @@ export default function EngineHeroTour() {
         <div className="eht-ptr" ref={ptrRef} aria-hidden="true">
           <svg viewBox="0 0 18 18"><path d="M3 2v12l3.4-3 2.3 5 2-1-2.2-5H13z" /></svg><i />
         </div>
-        <Caption i={moment} />
+        <TourCaption caption={moment == null ? null : { corner: MOMENTS[moment][0], text: MOMENTS[moment][1] }} />
         <div className={'eht-fade' + (faded ? ' on' : '')} aria-hidden="true" />
       </div>
     </div>

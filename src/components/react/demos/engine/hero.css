@@ -30,36 +30,11 @@
 .eht-ptr.press i { animation: eht-press 0.45s ease-out; }
 @keyframes eht-press { 0% { opacity: 1; transform: scale(0.4); } 100% { opacity: 0; transform: scale(1.8); } }
 
-/* captions: over the UI, lower left; a new one fades and slides in from the bottom */
-.eht-caps { position: absolute; left: 14px; bottom: 14px; z-index: 4; max-width: 62%; pointer-events: none; }
-.eht-cap {
-  display: flex; flex-direction: column; gap: 6px;
-  background: rgba(12, 12, 12, 0.92); border: 1px solid #2a2a2a; border-radius: 4px; padding: 10px 12px;
-}
-.eht-cap b { font: 600 15px/1.25 var(--font-display, var(--font-sans)); color: #fff; }
-.eht-cap.in { animation: eht-cap-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-.eht-cap.out { position: absolute; left: 0; bottom: 0; animation: eht-cap-out 0.25s ease both; }
-@keyframes eht-cap-in { from { opacity: 0; transform: translateY(16px); } }
-@keyframes eht-cap-out { to { opacity: 0; transform: translateY(-6px); } }
-.eht-tag {
-  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
-  font: 9px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--signal);
-  border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px 3px 5px; background: #0e0e0e;
-}
-.eht-tag svg { width: 13px; height: 12px; }
-.eht-tag svg path { fill: none; stroke: #4c6b58; stroke-width: 1.2; }
-.eht-tag svg circle { fill: #4c6b58; }
-.eht-tag svg circle.on { fill: var(--signal); }
+/* captions: TourCaption.jsx (demos/_shared), over the UI, lower left */
 
 .eht-fade { position: absolute; inset: 0; z-index: 5; background: #111111; opacity: 0; pointer-events: none; transition: opacity 0.6s; }
 .eht-fade.on { opacity: 1; }
 
-@media (max-width: 760px) {
-  .eht-caps { left: 10px; bottom: 10px; max-width: 80%; }
-  .eht-cap b { font-size: 13.5px; }
-}
 @media (prefers-reduced-motion: reduce) {
   .eht-cam iframe, .eht-ptr { transition: none; }
-  .eht-cap.in, .eht-cap.out { animation: none; }
-  .eht-cap.out { display: none; }
 }
