@@ -17,6 +17,8 @@ import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
+import FactList from '../../components/case/FactList.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FastHero from '../../components/react/demos/fast/FastHero.jsx';
@@ -105,11 +107,15 @@ const layout = {
 >
   <PatchField id="fastNet" links={links} height="6200px" layout={layout} label="FAST case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="fastTitle" name="input · the_problem" type="txt" area="title" ports="out">
-      <p class="fs-meta">{project.meta}</p>
-      <h1 class="fs-h">A knowledge network you can <span class="amb">walk through</span></h1>
-      <p class="fs-sub">{"// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH, AND AN AI THAT HELPS YOU FIND YOUR WAY THROUGH IT."}</p>
-    </Operator>
+    <CaseTitle
+      id="fastTitle"
+      area="title"
+      meta={project.meta}
+      width={16}
+      sub={"// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH, AND AN AI THAT HELPS YOU FIND YOUR WAY THROUGH IT."}
+    >
+      A knowledge network you can <span class="sig">walk through</span>
+    </CaseTitle>
 
     <!-- OWNERSHIP (honest; only verified numbers get bars) -->
     <OwnershipMeter
@@ -132,12 +138,7 @@ const layout = {
     </Operator>
 
     <Operator id="fastFacts" name="facts_data" type="data" area="facts">
-      <dl class="fs-facts">
-        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
-        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
-        <div><dt>STACK</dt><dd>{project.facts.stack}</dd></div>
-        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
-      </dl>
+      <FactList items={[['ROLE', project.facts.role], ['YEAR', project.facts.year], ['STACK', project.facts.stack], ['CONTEXT', project.facts.company]]} />
     </Operator>
 
     <!-- SECTION BREAK 01 -->
@@ -145,7 +146,7 @@ const layout = {
 
     <Operator id="fastSubjSect" name="process · the_hero_surface" type="txt" area="ssect">
       <p class="fs-meta">PROCESS · THE SUBJECT PAGE</p>
-      <h2 class="fs-h2">The subject page is a <span class="amb">portal</span></h2>
+      <h2 class="fs-h2">The subject page is a <span class="sig">portal</span></h2>
       <p class="fs-sub">The live graph underneath, identity above, analytics below.</p>
     </Operator>
 
@@ -179,7 +180,7 @@ const layout = {
 
     <Operator id="fastLbSect" name="process · lab_builder" type="txt" area="lsect">
       <p class="fs-meta">PROCESS · FROM A CLAUDE SKILL TO AN INTERFACE</p>
-      <h2 class="fs-h2">Describe the work, get the <span class="amb">workspace</span></h2>
+      <h2 class="fs-h2">Describe the work, get the <span class="sig">workspace</span></h2>
       <p class="fs-sub">Answer a few questions. Lab Builder drafts the goals, finds the subjects and sorts them. Then you change anything you want, in your own words.</p>
     </Operator>
 
@@ -250,15 +251,6 @@ const layout = {
     color: var(--text-dim);
     margin-bottom: 8px;
   }
-  .fs-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    max-width: 16ch;
-  }
-  .fs-h .amb { color: var(--signal); }
   .fs-sub {
     font-family: var(--font-mono);
     font-size: 10.5px;
@@ -276,12 +268,7 @@ const layout = {
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .fs-h2 .amb { color: var(--signal); }
 
-  .fs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
-  .fs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
-  .fs-facts dd { font-size: 12.5px; color: var(--text); }
-  @media (max-width: 560px) { .fs-facts { grid-template-columns: 1fr; } }
 
   /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */
   .fs-viewerwrap { margin: -12px -14px; }

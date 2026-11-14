@@ -18,6 +18,10 @@ import ViewSlot from '../../components/ViewSlot.astro';
 import LinkedViews from '../../components/LinkedViews.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
+import FactList from '../../components/case/FactList.astro';
+import PhotoSlot from '../../components/case/PhotoSlot.astro';
+import TagList from '../../components/case/TagList.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -80,25 +84,23 @@ const layout = {
 >
   <PatchField id="glNet" links={links} height="3200px" layout={layout} label="GRID case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="glTitle" name="input · the_brief" type="txt" area="title" ports="out">
-      <p class="gl-meta">{project.meta} · SIM FOR A HARDWARE BUILD IN PROGRESS</p>
-      <h1 class="gl-h1">GRID — a lamp you <span class="sig">sculpt</span></h1>
-      <p class="gl-desc">{project.description}</p>
-      <div class="gl-tags">
-        {project.tags.map((tag) => <span class="gl-chip">{tag}</span>)}
-      </div>
-    </Operator>
+    <CaseTitle
+      id="glTitle"
+      area="title"
+      name="input · the_brief"
+      meta={`${project.meta} · SIM FOR A HARDWARE BUILD IN PROGRESS`}
+      size="lg"
+      desc={project.description}
+    >
+      GRID — a lamp you <span class="sig">sculpt</span>
+      <TagList slot="after" tags={project.tags} />
+    </CaseTitle>
 
     <!-- OWNERSHIP: second in the source, so it is second in READ mode and on phones -->
     <OwnershipMeter id="glOwn" rows={[['CONCEPT', 100], ['DESIGN', 100], ['SIMULATION', 100], ['HARDWARE PLAN', 100]]} note="SOLO. THE SIM IS BUILT. THE HARDWARE BUILD IS IN PROGRESS." />
 
     <Operator id="glFacts" name="facts_data" type="data" area="facts" maxw={300} ports="in">
-      <dl class="gl-facts">
-        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
-        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
-        <div><dt>STACK</dt><dd>{project.facts.stack}</dd></div>
-        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
-      </dl>
+      <FactList cols={1} items={[['ROLE', project.facts.role], ['YEAR', project.facts.year], ['STACK', project.facts.stack], ['CONTEXT', project.facts.company]]} />
     </Operator>
 
     <Operator id="glWhat" name="txt · what_it_is" type="txt" area="what">
@@ -112,14 +114,13 @@ const layout = {
 
     <!-- build-photo slot: AI placeholder render until real hardware photos land -->
     <Operator id="gridPhoto" name="grid_photo · build_log" type="view" area="photo" maxw={360} ports="in">
-      <figure class="gl-photoslot has-img">
+      <PhotoSlot caption="AI RENDER · PLACEHOLDER · REAL BUILD PHOTOS TO COME">
         <img
           src="/images/grid/build-photo-01.webp"
           alt="A hand holding one thermoformed UHMW PE lamp column in a dark workshop, warm LEDs glowing through the frosted wall, wires trailing from the open bottom"
           loading="lazy"
         />
-        <figcaption class="gl-photosub">AI RENDER · PLACEHOLDER · REAL BUILD PHOTOS TO COME</figcaption>
-      </figure>
+      </PhotoSlot>
     </Operator>
 
     <!-- how-to nodes sit on the cable feeding each surface -->
@@ -245,8 +246,6 @@ const layout = {
     </LinkedViews>
 
 
-
-
     <!-- SYS: live readout tapped off the shared state (hidden on small screens) -->
     <Operator id="gridTelemetry" name="sys · telemetry" type="sys" area="tel" maxw={260} ports="in">
       <div class="gl-tel">
@@ -319,40 +318,8 @@ const layout = {
 </Base>
 
 <style>
-  .gl-h1 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(26px, 3.4vw, 42px);
-    line-height: 0.98;
-    margin-bottom: 12px;
-  }
-  .gl-h1 .sig { color: var(--signal); }
-  .gl-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
-  .gl-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .gl-chip {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  .gl-facts { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .gl-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
-  .gl-facts dd { font-size: 12.5px; color: var(--text); }
 
 
-  .gl-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-    line-height: 1.6;
-  }
   .gl-spec {
     font-family: var(--font-mono);
     font-size: 9.5px;
@@ -364,28 +331,6 @@ const layout = {
 
   /* build-photo slot — currently an honestly-labeled AI placeholder render;
      swap the src (and drop the AI label) when real hardware photos land */
-  .gl-photoslot {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    text-align: center;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-  }
-  .gl-photoslot .gl-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
-  .gl-photoslot.has-img {
-    aspect-ratio: auto;
-    display: block;
-    margin: 0;
-    border: 1px solid var(--border-color);
-  }
-  .gl-photoslot.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
-  .gl-photoslot.has-img .gl-photosub { display: block; padding: 6px 8px; text-align: left; }
 
   .gl-help {
     list-style: none;
@@ -418,6 +363,8 @@ const layout = {
   }
   .gl-tel b { color: var(--signal); font-weight: 400; text-align: right; }
 
+  /* the title's meta line keeps grid-lamp's own case and spacing (CaseTitle) */
+  :global(.op[id="glTitle"] .cst-meta) { text-transform: none; line-height: 1.6; }
   .gl-outnext {
     font-family: var(--font-mono);
     font-size: 9.5px;

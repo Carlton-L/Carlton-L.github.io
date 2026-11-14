@@ -26,6 +26,9 @@ import Operator from '../../components/Operator.astro';
 import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
+import LinkChip from '../../components/case/LinkChip.astro';
+import PhotoSlot from '../../components/case/PhotoSlot.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import FuturescaperDemo from '../../components/react/demos/futurescaper/FuturescaperDemo.jsx';
@@ -92,12 +95,15 @@ const layout = {
 >
   <PatchField id="fsNet" links={links} height="3800px" layout={layout} label="Futurescaper case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="fsTitle" name="input · the_problem" type="txt" area="title" ports="out">
-      <p class="fs-meta">{project.meta}</p>
-      <h1 class="fs-h">A metro map for <span class="amb">possible futures</span></h1>
-      <p class="fs-sub">{"// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS. FORCE LAYOUTS COLLAPSE INTO HAIRBALLS EXACTLY WHEN THE PICTURE MATTERS. THIS ONE DOESN'T."}</p>
-      <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · futurescape.futurity.science ↗</a>
-    </Operator>
+    <CaseTitle
+      id="fsTitle"
+      area="title"
+      meta={project.meta}
+      sub={"// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS. FORCE LAYOUTS COLLAPSE INTO HAIRBALLS EXACTLY WHEN THE PICTURE MATTERS. THIS ONE DOESN'T."}
+      links={[{ href: project.liveUrl, label: 'LIVE · futurescape.futurity.science' }]}
+    >
+      A metro map for <span class="sig">possible futures</span>
+    </CaseTitle>
 
     <!-- OWNERSHIP (honest numbers, verified) — sits with the title up top -->
     <OwnershipMeter id="fsOwn" rows={[['CONCEPT', 35], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO REBUILD FROM A COLLEAGUE'S POC: UI, LAYOUT SYSTEM, AND A REAL BACKEND, FROM ZERO." />
@@ -113,13 +119,13 @@ const layout = {
 
     <Operator id="fsSect" name="process · the_build" type="txt" area="sect">
       <p class="fs-meta">PROCESS · WHAT IT IS / MY ROLE / THREE DECISIONS</p>
-      <h2 class="fs-h2">From <span class="amb">hairball</span> to metro map</h2>
+      <h2 class="fs-h2">From <span class="sig">hairball</span> to metro map</h2>
       <p class="fs-sub">What it is, where I fit, and the three decisions that shaped the build. Then the product itself, running live below.</p>
     </Operator>
 
     <!-- reserved slot: screenshot of the original POC, once it's dug up -->
     <Operator id="fsBefore" name="before · original_poc" type="view" area="bfr" maxw={360} ports="in">
-      <figure class="fs-photoslot has-img">
+      <PhotoSlot split>
         <!-- a lens follows the mouse, and a click or tap expands the picture to fill the window -->
         <button type="button" class="fs-shot" id="fsShot" data-noverb data-full="/images/projects/futurescaper/before-poc.webp" aria-label="Expand the screenshot">
           <img
@@ -130,8 +136,8 @@ const layout = {
           />
           <span class="fs-lens" aria-hidden="true"></span>
         </button>
-        <figcaption class="fs-photosub"><span>THE ORIGINAL PROOF OF CONCEPT</span><i class="cap-fine">HOVER · CLICK</i><i class="cap-coarse">TAP TO EXPAND</i></figcaption>
-      </figure>
+        <Fragment slot="caption"><span>THE ORIGINAL PROOF OF CONCEPT</span><i class="cap-fine">HOVER · CLICK</i><i class="cap-coarse">TAP TO EXPAND</i></Fragment>
+      </PhotoSlot>
       <script is:inline data-astro-rerun>
         (function () {
           var btn = document.getElementById('fsShot');
@@ -236,7 +242,7 @@ const layout = {
     <!-- OUT -->
     <Operator id="fsOutcome" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
-      <a class="fs-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · futurescape.futurity.science ↗</a>
+      <LinkChip href={project.liveUrl} label="VISIT LIVE · futurescape.futurity.science" spaced />
     </Operator>
 
     <NextCase id="fsOut" from="futurescaper" tagline="THE LAYOUT IS THE ARGUMENT." />
@@ -252,15 +258,6 @@ const layout = {
     color: var(--text-dim);
     margin-bottom: 8px;
   }
-  .fs-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    max-width: 14ch;
-  }
-  .fs-h .amb { color: var(--signal); }
   .fs-sub {
     font-family: var(--font-mono);
     font-size: 10.5px;
@@ -278,47 +275,12 @@ const layout = {
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .fs-h2 .amb { color: var(--signal); }
 
 
-
-  .fs-live {
-    display: inline-block;
-    margin-top: 14px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: var(--signal);
-    text-decoration: none;
-    border: 1px solid var(--border-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: border-color var(--duration-normal), background var(--duration-normal);
-  }
-  .fs-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
-
-
-  .fs-photoslot {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    text-align: center;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    padding: 10px;
-  }
-  .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
-  .fs-photoslot.has-img { aspect-ratio: auto; display: block; margin: 0; padding: 0; border: 1px solid var(--border-color); }
-  .fs-photoslot.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
-  .fs-photoslot.has-img .fs-photosub { display: flex; justify-content: space-between; gap: 10px; padding: 6px 8px; text-align: left; opacity: 1; }
-  .fs-photosub i { font-style: normal; color: var(--signal); white-space: nowrap; }
-  .fs-photosub .cap-coarse { display: none; }
-  @media (hover: none) and (pointer: coarse) { .fs-photosub .cap-fine { display: none; } .fs-photosub .cap-coarse { display: inline; } }
+  /* the photo's caption (PhotoSlot): the hint changes with the input */
+  :global(.cs-photosub) i { font-style: normal; color: var(--signal); white-space: nowrap; }
+  :global(.cs-photosub) .cap-coarse { display: none; }
+  @media (hover: none) and (pointer: coarse) { :global(.cs-photosub) .cap-fine { display: none; } :global(.cs-photosub) .cap-coarse { display: inline; } }
   .fs-shot { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
   .fs-shot:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
   @media (hover: hover) and (pointer: fine) { .fs-shot { cursor: none; } }

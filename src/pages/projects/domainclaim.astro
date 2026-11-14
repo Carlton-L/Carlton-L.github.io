@@ -23,6 +23,8 @@ import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
+import LinkChip from '../../components/case/LinkChip.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
 import GithubButton from '../../components/GithubButton.astro';
@@ -153,15 +155,18 @@ const unionExcerpt = `export type FailureReason =
 >
   <PatchField id="dcNet" links={links} layout={layout} label="DomainClaim case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="dcTitle" name="input · the_problem" type="txt" area="title" ports="out">
-      <p class="dc-meta">{project.meta}</p>
-      <h1 class="dc-h">Proof you can <span class="grn">watch</span></h1>
-      {cs['What it is'].map((p) => <p class="cs-p dc-lede">{p}</p>)}
-      <div class="dc-links">
-        <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ LIVE · domainclaim-pi.vercel.app ↗</a>
-        <a class="dc-live" href="https://github.com/Carlton-L/domainclaim" target="_blank" rel="noopener">▸ REPO · Carlton-L/domainclaim ↗</a>
-      </div>
-    </Operator>
+    <CaseTitle
+      id="dcTitle"
+      area="title"
+      meta={project.meta}
+      links={[
+        { href: project.liveUrl, label: 'LIVE · domainclaim-pi.vercel.app' },
+        { href: 'https://github.com/Carlton-L/domainclaim', label: 'REPO · Carlton-L/domainclaim' },
+      ]}
+    >
+      Proof you can <span class="sig">watch</span>
+      <Fragment slot="after">{cs['What it is'].map((p) => <p class="cs-p dc-lede">{p}</p>)}</Fragment>
+    </CaseTitle>
 
     <OwnershipMeter id="dcOwn" rows={[['RESEARCH', 100], ['DESIGN', 100], ['FRONTEND', 100], ['BACKEND', 100]]} note="SOLO. SEPTEMBER 2026." />
 
@@ -176,7 +181,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- the problem, and what it decided -->
     <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
-      <h2 class="dc-h2">What goes <span class="grn">wrong</span></h2>
+      <h2 class="dc-h2">What goes <span class="sig">wrong</span></h2>
       {cs['What goes wrong'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -208,7 +213,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 01 THE LIVE DEMO: how to use it, then one view with its state card underneath -->
     <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
-      <h2 class="dc-h2">Try <span class="grn">it</span></h2>
+      <h2 class="dc-h2">Try <span class="sig">it</span></h2>
       {cs['Try it'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -222,7 +227,7 @@ const unionExcerpt = `export type FailureReason =
 
 
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
-      <h2 class="dc-h2">Only <span class="grn">real</span> states</h2>
+      <h2 class="dc-h2">Only <span class="sig">real</span> states</h2>
       {cs['Only real states'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -236,7 +241,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 02 THE CODE -->
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
-      <h2 class="dc-h2">For the <span class="grn">code</span> reader</h2>
+      <h2 class="dc-h2">For the <span class="sig">code</span> reader</h2>
       {cs['For the code reader'].map((p) => <p class="cs-p">{p}</p>)}
       <CodeExcerpt code={unionExcerpt} file="src/lib/claims/state.ts" note="every failure the check can report" />
     </Operator>
@@ -254,7 +259,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 03 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
-      <h2 class="dc-h2">Two <span class="grn">passes</span></h2>
+      <h2 class="dc-h2">Two <span class="sig">passes</span></h2>
       {cs['Two passes'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -304,7 +309,7 @@ const unionExcerpt = `export type FailureReason =
     <!-- OUT -->
     <Operator id="dcOutc" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
-      <a class="dc-live" href={project.liveUrl} target="_blank" rel="noopener">▸ VISIT LIVE · domainclaim-pi.vercel.app ↗</a>
+      <LinkChip href={project.liveUrl} label="VISIT LIVE · domainclaim-pi.vercel.app" />
     </Operator>
 
     <NextCase id="dcOut" from="domainclaim" tagline="EVERY FAILURE HAS AN ANSWER." />
@@ -328,23 +333,6 @@ const unionExcerpt = `export type FailureReason =
 </script>
 
 <style>
-  .dc-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .dc-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    max-width: 14ch;
-  }
-  .grn { color: var(--signal); }
   .dc-lede { margin-top: 12px; max-width: 52ch; }
 
   .dc-h2 {
@@ -357,22 +345,7 @@ const unionExcerpt = `export type FailureReason =
   }
   .dc-h2:first-child { margin-top: 0; }
 
-  .dc-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .dc-live {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: var(--signal);
-    text-decoration: none;
-    border: 1px solid var(--border-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: border-color var(--duration-normal), background var(--duration-normal);
-  }
-  a.dc-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
   .dc-list + :global(.dc-gh) { margin-top: 14px; }
-  #dcOutc .dc-live { margin-top: 14px; }
 
 
   .dc-viewerwrap { margin: -12px -14px; }
@@ -385,7 +358,6 @@ const unionExcerpt = `export type FailureReason =
   .dc-rules li::before { content: '▸'; color: var(--signal-dim); }
   .dc-rules span { color: var(--text); }
   .dc-files b { color: var(--text); overflow-wrap: anywhere; }
-
 
 
   .dc-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }

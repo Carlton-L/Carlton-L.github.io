@@ -1,0 +1,23 @@
+---
+/**
+ * FactList: labelled facts (role, year, stack, context) as a definition list. Two columns by
+ * default, one on phones (below 560px); `cols={1}` for a single column throughout; `collapse={false}`
+ * keeps two columns on phones.
+ *
+ *   <FactList items={[['ROLE', project.facts.role], ['YEAR', project.facts.year]]} />
+ *
+ * Styles: src/styles/case-study.css ("FactList").
+ */
+interface Props {
+  items: [string, string][];
+  cols?: 1 | 2;
+  collapse?: boolean;
+  /** An extra class, for a page's own adjustments. */
+  class?: string;
+}
+const { items, cols = 2, collapse = true, class: extra } = Astro.props;
+---
+
+<dl class:list={['cs-facts', cols === 1 && 'one', cols === 2 && collapse && 'collapse', extra]}>
+  {items.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+</dl>

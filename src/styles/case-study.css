@@ -50,3 +50,46 @@ body.perform .cs-break-num { font-size: 30px; }
   font-size: 17px; line-height: 1.15; letter-spacing: 0.02em; color: var(--text);
 }
 .cs-out .lbtn-icon svg { fill: none; }
+
+/* CaseTitle: meta line, heading, `// …` line, description */
+.cst-meta { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+.cst-meta.lg { font-size: 10.5px; margin-bottom: 10px; }
+.cst-h { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 2.8vw, 38px); line-height: 0.98; max-width: var(--cst-w, 14ch); }
+.cst-h.lg { font-size: clamp(26px, 3.4vw, 42px); margin-bottom: 12px; max-width: none; }
+.cst-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); margin-top: 10px; line-height: 1.7; max-width: var(--cst-sw, 42ch); }
+.cst-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
+
+/* LinkChip, and a row of them */
+.cs-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.cs-link {
+  display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em;
+  color: var(--signal); text-decoration: none; border: 1px solid var(--border-color); padding: 5px 10px;
+  border-radius: 4px; transition: border-color var(--duration-normal), background var(--duration-normal);
+}
+.cs-link.spaced { margin-top: 14px; }
+.cs-link:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
+
+/* TagList: static grey pills */
+.cs-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.cs-tag { font-family: var(--font-mono); font-size: 10px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--border-color); color: var(--text-muted); white-space: nowrap; }
+.cs-tags.sm { gap: 5px; margin-top: 10px; }
+.cs-tags.sm .cs-tag { font-size: 8.5px; letter-spacing: 0.08em; padding: 2px 7px; color: var(--text-dim); }
+
+/* FactList */
+.cs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+.cs-facts.one { grid-template-columns: 1fr; gap: 12px; }
+.cs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
+.cs-facts dd { font-size: 12.5px; color: var(--text); }
+@media (max-width: 560px) { .cs-facts.collapse { grid-template-columns: 1fr; } }
+
+/* PhotoSlot: a picture with a caption bar, or its reserved dashed place */
+.cs-photo {
+  aspect-ratio: 4 / 3; display: grid; place-content: center; gap: 6px; text-align: center;
+  border: 1px dashed var(--border-color); border-radius: 4px; font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.12em; color: var(--text-dim); padding: 10px;
+}
+.cs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
+.cs-photo.has-img { aspect-ratio: auto; display: block; margin: 0; padding: 0; border: 1px solid var(--border-color); }
+.cs-photo.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
+.cs-photo.has-img .cs-photosub { display: block; padding: 6px 8px; text-align: left; }
+.cs-photo.has-img .cs-photosub.split { display: flex; justify-content: space-between; gap: 10px; opacity: 1; }

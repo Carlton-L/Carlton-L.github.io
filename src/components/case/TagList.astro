@@ -1,0 +1,19 @@
+---
+/**
+ * TagList: a row of grey pill tags (static; they aren't clickable, so they never get the signal
+ * outline). `small` is the compact size used under the Campus AI findings.
+ *
+ *   <TagList tags={project.tags} />
+ *
+ * Styles: src/styles/case-study.css ("TagList").
+ */
+interface Props {
+  tags: string[];
+  small?: boolean;
+}
+const { tags, small = false } = Astro.props;
+---
+
+<div class:list={['cs-tags', small && 'sm']}>
+  {tags.map((t) => <span class="cs-tag">{t}</span>)}
+</div>

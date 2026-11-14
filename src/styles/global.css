@@ -114,8 +114,14 @@ input.prange::-moz-range-thumb {
 }
 input.prange:focus-visible { outline: 1px solid var(--signal); outline-offset: 2px; }
 
+/* The highlighted word in a heading: <h1>A map for <span class="sig">possible futures</span></h1> */
+.sig { color: var(--signal); }
+
 /* Interactive chip (buttons inside operator chains) vs static .chip:
-   clickable = signal border/text + pointer; static chips stay gray. */
+   clickable = signal border/text + pointer; static chips stay gray.
+   Portfolio chrome only: product demos keep their own styles (an Engine port is also called .chip,
+   but it lives in its own document). */
+.chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
 .chipbtn {
   border: 1px solid rgba(61, 255, 136, 0.45) !important;
   color: var(--signal) !important;
