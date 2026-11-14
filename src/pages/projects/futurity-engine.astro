@@ -5,7 +5,7 @@
  * triangle as two cards per docs/prototypes/trust-triangle-layout.html C).
  *
  * INPUT (title + ownership) → VIEW (hero: the workflow demo playing a tour
- * by itself) → what it is → triangle + three corners →
+ * by itself) → what it is → my take → triangle + three corners →
  * 01 OBSERVABILITY (how it works, decisions 01-03) →
  * 02 TRACEABILITY (the first workflow view against the redesign, as a slider; decisions 04-06,
  * the workflow demo) →
@@ -59,7 +59,8 @@ const links: [string, string][] = [
   ['engTitle', 'engOwn'],
   ['engTitle', 'engHero'],
   ['engHero', 'engWhat'],
-  ['engWhat', 'engTri'],
+  ['engWhat', 'engTake'],
+  ['engTake', 'engTri'],
   ['engTri', 'engCorners'],
   ['engHow', 'engD1'],
   ['engD1', 'engD2'],
@@ -89,6 +90,7 @@ const layout = {
     { row: ['title:5', 'own:3'], justify: 'between' },
     { row: ['hero:10'], justify: 'center' },
     { row: ['what:5'], justify: 'center' },
+    { row: ['take:5'], justify: 'center' },
     { row: ['tri:4', 'corners:5'], justify: 'center', gap: 4, align: 'center' },
     { row: ['br1:8'], justify: 'center', mt: 1 },
     { row: ['how:6'], justify: 'center', mt: 1 },
@@ -140,6 +142,12 @@ const layout = {
     </Operator>
     <Operator id="engWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+    <!-- My take: the trust triangle is Carlton's own frame, and the page says so before the picture
+         (docs/prototypes/engine-triangle-intro.html, B with copy 1, accepted 2026-11-15). -->
+    <Operator id="engTake" name="txt · my_take" type="txt" area="take">
+      <SectionHead meta="MY TAKE">What I ask of an <span class="sig">AI system</span></SectionHead>
+      {cs['My take'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
     <!-- The trust triangle: one card for the shape, one for the three corners (layout C). -->
     <Operator id="engTri" name="txt · trust_triangle" type="txt" area="tri">
