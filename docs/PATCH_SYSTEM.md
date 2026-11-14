@@ -60,7 +60,7 @@ const layout = {
 
 - **First load:** the viewer's whole cost is `previs.js`. Budget: at most 24 KB gzipped (a test in `tests/built/dist.test.mjs` enforces it), and about 3 KB gzipped for each entry.
 - **On selection:** nothing loads. Real product code lives on the case-study page.
-- **Echo the hero:** a preview borrows the hero's moments, captions and palette, compressed to one 7.2 s cycle (the home cycle), and its foot starts with RECREATION when the hero is a demo. Type must stay readable at 343 px wide.
+- **Echo the hero:** a preview borrows the hero's moments, captions and palette, compressed to one 7.2 s cycle (the home cycle), and its foot starts with RECREATION when the hero is a demo. Type must stay readable at 333 px wide (the viewer on a 375 phone): every word that carries a beat at least 9 units of the 420-unit viewBox, about 7 px rendered. When one layout can't do both, draw a narrow variant chosen at draw time (the Engine uses `max-width: 560px`) with fewer, larger elements, and keep the desktop look.
 - **grid_lamp's 3D** stays the one exception. A new exception needs Carlton's call, loads only on a deliberate selection (never the cycle clock), stays under 250 KB gzipped, and keeps a drawing underneath.
 
 Measured on 2026-11-14 for the Engine: drawing +2.0 KB on first load and nothing on selection; three recorded stills 53 KB on selection; the real demo 189 KB on selection, unreadable at viewer size. The Engine preview (`etDraw`) plays the hero's crash (OBSERVE), Retry (STEER) and the $4.1B with its source (TRACE).

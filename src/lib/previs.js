@@ -223,7 +223,7 @@
     var sx = 10, sy = 22, sw = 400, sh = 24;
     if (fail) {
       o += '<rect x="' + sx + '" y="' + sy + '" width="' + sw + '" height="' + sh + '" rx="2" fill="' + c.redBg + '" stroke="' + c.red + '" stroke-opacity=".6"/>';
-      o += etT(sx + 8, sy + 10, 'Question research failed', 6.4, c.fg, { w: 600 }) + etT(sx + 8, sy + 18.5, 'Retrying in 10 s, as in the recorded run', 4.8, c.f2);
+      o += etT(sx + 8, sy + 10, 'Question research failed', 6.4, c.fg, { w: 600 }) + etT(sx + 8, sy + 18.5, 'The research job crashed while reading a PDF.', 4.8, c.f2);
       var hot = t >= 3.0;
       o += '<rect x="282" y="' + (sy + 6) + '" width="56" height="12" rx="2" fill="' + (hot ? c.fg : c.card) + '" stroke="' + c.line + '"/>' + etT(310, sy + 14, 'Retry research', 5, hot ? c.bg : c.fg, { a: 'middle', w: 600 });
       o += '<rect x="342" y="' + (sy + 6) + '" width="62" height="12" rx="2" fill="' + c.card + '" stroke="' + c.line + '"/>' + etT(373, sy + 14, 'Go on without it', 5, c.fg, { a: 'middle' });
@@ -319,35 +319,121 @@
     }
     return o;
   }
-  function etCaption(t, c) {
+  /* ---- narrow: phones, where the viewer is about 333 px wide (0.79 px per unit).
+     Fewer, larger elements; every word that carries a beat is 9 units or more
+     (7 px rendered). Chosen per frame from the viewport, as the viewer's width
+     follows it in READ mode. ---- */
+  var ET_MQ = null;
+  function etNarrow() {
+    if (!ET_MQ && window.matchMedia) ET_MQ = window.matchMedia('(max-width: 560px)');
+    return !!(ET_MQ && ET_MQ.matches);
+  }
+  function etBoardN(t, c) {
+    var fail = t >= 1.4 && t < 3.2, retry = t >= 3.2 && t < 3.8, ok = t >= 3.8, run = !fail && !ok, o = '';
+    /* status slot */
+    if (fail) {
+      var hot = t >= 3.0;
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="' + c.redBg + '" stroke="' + c.red + '" stroke-opacity=".6"/>';
+      o += etT(18, 40, 'Question research failed', 11, c.fg, { w: 600 });
+      o += '<rect x="234" y="27" width="78" height="18" rx="2" fill="' + (hot ? c.fg : c.card) + '" stroke="' + c.line + '"/>' + etT(273, 39.5, 'Retry research', 9, hot ? c.bg : c.fg, { a: 'middle', w: 600 });
+      o += '<rect x="317" y="27" width="87" height="18" rx="2" fill="' + c.card + '" stroke="' + c.line + '"/>' + etT(360.5, 39.5, 'Go on without it', 9, c.fg, { a: 'middle' });
+    } else if (ok) {
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="' + c.greenBg + '" stroke="' + c.green + '" stroke-opacity=".5"/>';
+      o += etCheck(25, 36, 6, c.green, c.greenBg) + etT(37, 40, 'Question research filed', 11, c.fg, { w: 600 }) + etT(402, 40, '5 steps resumed', 9.5, c.f2, { a: 'end' });
+    } else {
+      o += '<rect x="10" y="22" width="400" height="28" rx="2" fill="none" stroke="' + c.line + '"/>';
+      o += etT(18, 40, retry ? '1 step running' : '7 steps running', 11, c.fg, { w: 600 });
+    }
+    /* the board */
+    o += '<rect x="10" y="56" width="400" height="180" rx="2" fill="none" stroke="' + c.fg + '" stroke-opacity=".75"/>';
+    o += etT(18, 74, 'Groundwork', 11, c.fg, { w: 700 });
+    o += '<path d="M178 109 L 225 109" fill="none" stroke="' + (fail ? c.red : c.green) + '" stroke-width="1.2"' + (fail ? ' stroke-dasharray="3 2"' : '') + '/>';
+    if (run) { var pp = (t * 0.9) % 1; o += '<circle cx="' + (178 + pp * 47).toFixed(1) + '" cy="109" r="2" fill="' + c.sig + '"/>'; }
+    o += '<path d="M251 109 L 290 109" fill="none" stroke="' + c.wire + '" stroke-width="1.2"' + (ok ? '' : ' stroke-dasharray="3 3"') + '/>';
+    /* block: Question research */
+    var bc = fail ? c.red : (ok ? c.green : c.blue);
+    o += '<rect x="22" y="84" width="156" height="50" rx="2" fill="' + c.card + '" stroke="' + bc + '" stroke-opacity=".9"/>';
+    o += etT(30, 103, 'Question research', 11, c.fg, { w: 600 });
+    o += etT(30, 123, fail ? '1 step failed' : (ok ? '3 of 3 done' : (retry ? 'Retrying' : '1 step running')), 9.5, fail ? c.red : c.f2);
+    if (ok) o += etCheck(178, 84, 5.5, c.green, c.card);
+    else o += '<circle cx="178" cy="84" r="5.5" fill="' + c.card + '"/>' + etRing(178, 84, 4.6, fail ? c.red : c.blue, t, run || retry);
+    /* file node */
+    o += '<circle cx="238" cy="109" r="13" fill="' + (ok ? c.green : c.card) + '" stroke="' + (fail ? c.red : c.line) + '"/>';
+    if (ok) o += '<path d="M232 109 l4 4.2 l7.5 -8.4" fill="none" stroke="' + c.card + '" stroke-width="2.2"/>';
+    else if (fail) o += '<path d="M233 104 l10 10 M243 104 l-10 10" stroke="' + c.red + '" stroke-width="1.8"/>';
+    else o += etRing(238, 109, 6, c.f2, t, true);
+    o += etT(238, 138, fail ? 'Failed' : (ok ? 'Filed' : 'Not filed'), 9.5, fail ? c.red : (ok ? c.green : c.f3), { a: 'middle' });
+    /* one waiting step stands for the five */
+    var live = ok && t > 3.9;
+    o += '<rect x="290" y="88" width="116" height="42" rx="2" fill="' + c.card + '" stroke="' + (live ? c.blue : c.line) + '"' + (live ? '' : ' stroke-dasharray="3 3"') + '/>';
+    o += etT(298, 105, 'Patent report', 10.5, live ? c.fg : c.f3, { w: 600 }) + etT(298, 122, live ? 'Running' : 'Waiting', 9.5, live ? c.f2 : c.f3);
+    if (live) o += etRing(406, 88, 4.4, c.blue, t, true);
+    /* pointer: comes in for Retry */
+    if (t >= 2.4 && t < 3.6) {
+      var mp = etEase(etE(2.5, 3.0, t));
+      o += etPtr(360 + (268 - 360) * mp, 200 + (35 - 200) * mp, etE(3.0, 3.45, t), c);
+    }
+    return o;
+  }
+  function etReportN(t, c) {
+    var o = etT(16, 40, 'Business Analysis', 12, c.fg, { w: 700 });
+    o += '<rect x="16" y="48" width="388" height="0.8" fill="' + c.line + '"/>';
+    var p = etE(4.9, 5.4, t);
+    o += '<g opacity="' + Math.min(1, p * 1.6).toFixed(2) + '">' + etT(16, 66, 'Competitive Analysis', 11, c.fg, { w: 600 });
+    o += '<clipPath id="etcn"><rect x="16" y="70" width="' + (388 * p).toFixed(1) + '" height="18"/></clipPath>';
+    o += '<g clip-path="url(#etcn)"><text x="16" y="84" font-size="10.5" font-family="Red Hat Display, Inter, sans-serif" fill="' + c.f2 + '">27 deals put <tspan fill="' + c.blue + '" font-weight="700" text-decoration="underline">$4.1B</tspan> into the field.</text></g></g>';
+    if (t >= 5.4) {
+      var mp = etEase(etE(5.4, 5.9, t));
+      o += etPtr(300 + (92 - 300) * mp, 214 + (80 - 214) * mp, etE(5.9, 6.3, t), c);
+    }
+    var tp = etE(6.0, 6.2, t);
+    if (tp > 0) {
+      o += '<g opacity="' + tp.toFixed(2) + '" transform="translate(0 ' + ((1 - tp) * 3).toFixed(1) + ')">';
+      o += '<rect x="16" y="94" width="300" height="62" rx="2" fill="' + c.tip + '"/>';
+      o += etT(25, 111, '$4.1B · Total disclosed investment', 11, c.tipFg, { w: 700 });
+      o += etT(25, 127, 'Minted by Business facts, from the investment report', 9.5, c.tipFg, { op: 0.75 });
+      o += etT(25, 146, 'biz.total_investment', 9.5, c.tipFg, { mono: 1, op: 0.7 });
+      o += '</g>';
+    }
+    return o;
+  }
+  function etCaption(t, c, nar) {
     var k = 0;
     for (var i = 0; i < ET_CAP.length; i++) if (t >= ET_CAP[i][0]) k = i;
     var cap = ET_CAP[k], p = REDUCED ? 1 : etEase(etE(cap[0] + 0.05, cap[0] + 0.45, t));
-    var w = Math.max(100, cap[2].length * 5.25 + 20);
+    /* sizes: [card y, card h, tag scale, caption size, chars to width] */
+    var z = nar ? [170, 60, 2, 12.5, 6.3] : [186, 44, 1, 10.5, 5.25];
+    var w = Math.max(100, cap[2].length * z[4] + 20), s = z[2];
     var o = '<g opacity="' + p.toFixed(2) + '" transform="translate(0 ' + ((1 - p) * 8).toFixed(1) + ')">';
-    o += '<rect x="10" y="186" width="' + w.toFixed(0) + '" height="44" rx="2.5" fill="' + c.capBg + '" stroke="' + c.line + '"/>';
-    o += '<rect x="17" y="193" width="' + (ET_CN[cap[1]].length * 4.6 + 20).toFixed(0) + '" height="11" rx="2" fill="none" stroke="' + c.sig + '" stroke-opacity=".45"/>';
-    var corners = { o: [24, 195.5], t: [20.5, 201.5], s: [27.5, 201.5] };
-    o += '<path d="M24 195.5 L20.5 201.5 L27.5 201.5 Z" fill="none" stroke="' + c.f3 + '" stroke-width=".7"/>';
+    o += '<rect x="10" y="' + z[0] + '" width="' + w.toFixed(0) + '" height="' + z[1] + '" rx="2.5" fill="' + c.capBg + '" stroke="' + c.line + '"/>';
+    /* the corner tag, drawn at 1x then scaled */
+    o += '<g transform="translate(17 ' + (z[0] + 7) + ') scale(' + s + ')">';
+    o += '<rect x="0" y="0" width="' + (ET_CN[cap[1]].length * 4.6 + 20).toFixed(0) + '" height="11" rx="2" fill="none" stroke="' + c.sig + '" stroke-opacity=".45"/>';
+    var corners = { o: [7, 2.5], t: [3.5, 8.5], s: [10.5, 8.5] };
+    o += '<path d="M7 2.5 L3.5 8.5 L10.5 8.5 Z" fill="none" stroke="' + c.f3 + '" stroke-width=".7"/>';
     ['o', 't', 's'].forEach(function (q) { o += '<circle cx="' + corners[q][0] + '" cy="' + corners[q][1] + '" r="1.25" fill="' + (q === cap[1] ? c.sig : c.f3) + '"/>'; });
-    o += etT(31, 201, ET_CN[cap[1]], 4.6, c.sig, { mono: 1 });
-    o += etT(17, 223, cap[2], 10.5, c.fg, { w: 600 });
+    o += etT(14, 8, ET_CN[cap[1]], 4.6, c.sig, { mono: 1 }) + '</g>';
+    o += etT(17, z[0] + z[1] - 7, cap[2], z[3], c.fg, { w: 600 });
     return o + '</g>';
   }
-  function etDraw(st, ft, inv) {
-    var t = REDUCED ? 6.5 : ft % ET_L, c = etPal(inv);
-    var fade = (!REDUCED && t > 6.8) ? Math.max(0, 1 - (t - 6.8) / 0.4) : Math.min(1, REDUCED ? 1 : t / 0.25);
-    var o = '<g opacity="' + fade.toFixed(3) + '">';
+  function etTabs(t, c, nar) {
     /* tab strip: badge appears on Report once the research files */
-    var onRep = t >= 4.75;
-    o += etT(14, 12, 'Workflow', 5.6, onRep ? c.f2 : c.fg, { w: 600 }) + etT(56, 12, 'Report', 5.6, onRep ? c.fg : c.f2, { w: 600 }) + etT(108, 12, 'Knowledgebase', 5.6, c.f2, { w: 600 });
-    o += '<rect x="' + (onRep ? 54 : 12) + '" y="15" width="' + (onRep ? 32 : 32) + '" height="1" fill="' + c.fg + '"/><rect x="0" y="16" width="420" height="0.5" fill="' + c.line + '"/>';
-    if (t >= 3.8) o += '<circle cx="82" cy="10" r="3.6" fill="' + c.green + '"/>' + etT(82, 11.8, '3', 4.6, c.bg, { a: 'middle', w: 700 });
+    var onRep = t >= 4.75, z = nar ? { s: 9.5, x: [14, 70, 134], u: [[12, 46], [68, 36]], b: [112, 8, 5.5, 7.5], y: 13, l: 18 } : { s: 5.6, x: [14, 56, 108], u: [[12, 32], [54, 32]], b: [82, 10, 3.6, 4.6], y: 12, l: 16 };
+    var o = etT(z.x[0], z.y, 'Workflow', z.s, onRep ? c.f2 : c.fg, { w: 600 }) + etT(z.x[1], z.y, 'Report', z.s, onRep ? c.fg : c.f2, { w: 600 }) + etT(z.x[2], z.y, 'Knowledgebase', z.s, c.f2, { w: 600 });
+    var u = z.u[onRep ? 1 : 0];
+    o += '<rect x="' + u[0] + '" y="' + (z.l - 1) + '" width="' + u[1] + '" height="1" fill="' + c.fg + '"/><rect x="0" y="' + z.l + '" width="420" height="0.5" fill="' + c.line + '"/>';
+    if (t >= 3.8) o += '<circle cx="' + z.b[0] + '" cy="' + z.b[1] + '" r="' + z.b[2] + '" fill="' + c.green + '"/>' + etT(z.b[0], z.b[1] + z.b[3] * 0.38, '3', z.b[3], c.bg, { a: 'middle', w: 700 });
+    return o;
+  }
+  function etDraw(st, ft, inv) {
+    var t = REDUCED ? 6.5 : ft % ET_L, c = etPal(inv), nar = etNarrow();
+    var fade = (!REDUCED && t > 6.8) ? Math.max(0, 1 - (t - 6.8) / 0.4) : Math.min(1, REDUCED ? 1 : t / 0.25);
+    var o = '<g opacity="' + fade.toFixed(3) + '">' + etTabs(t, c, nar);
     /* the cut: board → report, a quick crossfade like the hero's camera move */
     var x = etE(4.6, 4.85, t);
-    if (x < 1) o += '<g opacity="' + (1 - x).toFixed(2) + '">' + etBoard(t, c) + '</g>';
-    if (x > 0) o += '<g opacity="' + x.toFixed(2) + '">' + etReport(t, c) + '</g>';
-    o += etCaption(t, c);
+    if (x < 1) o += '<g opacity="' + (1 - x).toFixed(2) + '">' + (nar ? etBoardN : etBoard)(t, c) + '</g>';
+    if (x > 0) o += '<g opacity="' + x.toFixed(2) + '">' + (nar ? etReportN : etReport)(t, c) + '</g>';
+    o += etCaption(t, c, nar);
     return o + '</g>';
   }
   /* hexagon outline points, used by the carlton_dev mini */
