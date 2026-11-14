@@ -54,9 +54,9 @@ body.perform .cs-break-num { font-size: 30px; }
 /* CaseTitle: meta line, heading, `// …` line, description */
 .cst-meta { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
 .cst-meta.lg { font-size: 10.5px; margin-bottom: 10px; }
-.cst-h { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 2.8vw, 38px); line-height: 0.98; max-width: var(--cst-w, 14ch); }
+.cst-h { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 2.8vw, 38px); line-height: 0.98; max-width: 14ch; }
 .cst-h.lg { font-size: clamp(26px, 3.4vw, 42px); margin-bottom: 12px; max-width: none; }
-.cst-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); margin-top: 10px; line-height: 1.7; max-width: var(--cst-sw, 42ch); }
+.cst-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); margin-top: 10px; line-height: 1.7; max-width: 42ch; }
 .cst-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 14px; }
 
 /* LinkChip, and a row of them */
