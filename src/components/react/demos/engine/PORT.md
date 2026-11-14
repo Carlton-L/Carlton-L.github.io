@@ -13,7 +13,7 @@ A RECREATION. The Engine is recreation-only, so this is not the product's code: 
 | `embed.css` | Seams for the embed only (below). |
 | `FrameEntry.jsx` | Root of the demo document. Runs the demo in outside mode, takes commands from the case study and reports the replay back by postMessage, stops playback off screen. |
 | `EngineWorkflowView.jsx` | The case study's island: DemoFrame (RECREATION), the portfolio's replay player, then ProductFrame, 1100 × 780, phone below 720 at 960 tall. |
-| `player.css` | The replay player, in the site's own controls (`.chipbtn`, `input.prange`). |
+| (shared) | The replay player is `ReplayPlayer.jsx` and the hero's captions are `TourCaption.jsx`, both in `demos/_shared/`; the corner tags draw `TriMark.jsx` from `src/lib/trust-triangle.js`. |
 | `EngineHeroTour.jsx`, `hero.css` | The case study's hero: the same demo document playing a scripted tour (prototype `docs/prototypes/engine-hero-tour.html`). |
 | `../../../../pages/demos/engine.astro` | The demo document, `/demos/engine/` (noindex, out of the sitemap). |
 

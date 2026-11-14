@@ -1,0 +1,33 @@
+/* TourCaption.jsx: a caption over a demo playing by itself. Portfolio chrome over the demo, not part
+   of it. Its box is absolute: the caller's container needs position: relative. */
+.tcap-box { position: absolute; left: 14px; bottom: 14px; z-index: 4; max-width: 62%; pointer-events: none; }
+.tcap {
+  display: flex; flex-direction: column; gap: 6px;
+  background: rgba(12, 12, 12, 0.92); border: 1px solid #2a2a2a; border-radius: 4px; padding: 10px 12px;
+}
+.tcap b { font: 600 15px/1.25 var(--font-display, var(--font-sans)); color: #fff; }
+.tcap.in { animation: tcap-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.tcap.out { position: absolute; left: 0; bottom: 0; animation: tcap-out 0.25s ease both; }
+@keyframes tcap-in { from { opacity: 0; transform: translateY(16px); } }
+@keyframes tcap-out { to { opacity: 0; transform: translateY(-6px); } }
+.tcap-tag {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  font: 9px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--signal); text-decoration: none;
+  border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px 3px 5px; background: #0e0e0e;
+}
+.tcap-tag svg { width: 13px; height: 12px; }
+.tcap-tag svg path { fill: none; stroke: #4c6b58; stroke-width: 1.2; }
+.tcap-tag svg circle { fill: #4c6b58; }
+.tcap-tag svg circle.on { fill: var(--signal); }
+/* With `link`, only the tag takes the pointer, so the demo underneath stays clickable around it. */
+a.tcap-tag { pointer-events: auto; transition: border-color var(--duration-fast, 0.15s); }
+a.tcap-tag:hover, a.tcap-tag:focus-visible { border-color: var(--signal); outline: none; }
+
+@media (max-width: 760px) {
+  .tcap-box { left: 10px; bottom: 10px; max-width: 80%; }
+  .tcap b { font-size: 13.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tcap.in, .tcap.out { animation: none; }
+  .tcap.out { display: none; }
+}

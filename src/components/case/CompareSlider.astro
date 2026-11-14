@@ -1,0 +1,87 @@
+---
+/**
+ * CompareSlider: two layers of the same size, "before" over "after", with a line to drag between
+ * them. Any content works in the slots (an image, an SVG, a canvas, markup); the "after" layer sets
+ * the size, the "before" layer is clipped to the left of the line.
+ *
+ *   <CompareSlider label="Before and after on the same run: drag the line, or use the arrow keys">
+ *     <img slot="before" src="/images/old.webp" alt="…" />
+ *     <img slot="after" src="/images/new.webp" alt="…" />
+ *   </CompareSlider>
+ *
+ * Drag, arrow keys (5%), Home and End; role="slider" with its value read out. The drag stays here:
+ * it never moves the operator (PATCH mode) and never scrolls the page sideways (touch-action: pan-y).
+ * Moving the line only changes a clip, so nothing redraws. First used for the Engine's first workflow
+ * view (docs/prototypes/engine-before.html, C).
+ */
+interface Props {
+  /** The slider's accessible name: say what the two sides are and how to move the line. */
+  label: string;
+  /** Where the line starts, 0 to 100. */
+  start?: number;
+  /** Words for the read-out: "<n>% before, <m>% after". */
+  sides?: [string, string];
+}
+const { label, start = 50, sides = ['before', 'after'] } = Astro.props;
+---
+
+<div
+  class="cmp"
+  data-cmp
+  data-sides={sides.join('|')}
+  tabindex="0"
+  role="slider"
+  aria-label={label}
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow={start}
+  aria-valuetext={`${start}% ${sides[0]}, ${100 - start}% ${sides[1]}`}
+  style={`--split: ${start}%`}
+>
+  <div class="cmp-after"><slot name="after" /></div>
+  <div class="cmp-before"><slot name="before" /></div>
+  <div class="cmp-handle" aria-hidden="true">
+    <svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" /><path d="M5 6 L2 9 L5 12 M13 6 L16 9 L13 12" /></svg>
+  </div>
+</div>
+
+<script is:inline data-astro-rerun>
+(() => {
+  document.querySelectorAll('[data-cmp]').forEach((el) => {
+    if (el.dataset.booted) return;
+    el.dataset.booted = '1';
+    const [a, b] = (el.dataset.sides || 'before|after').split('|');
+    let split = parseFloat(el.getAttribute('aria-valuenow')) / 100 || 0.5;
+    const set = (v) => {
+      split = Math.max(0.03, Math.min(0.97, v));
+      const n = Math.round(split * 100);
+      el.style.setProperty('--split', split * 100 + '%');
+      el.setAttribute('aria-valuenow', String(n));
+      el.setAttribute('aria-valuetext', `${n}% ${a}, ${100 - n}% ${b}`);
+    };
+    const at = (e) => { const r = el.getBoundingClientRect(); return (e.clientX - r.left) / r.width; };
+    let drag = false;
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); drag = true; el.setPointerCapture(e.pointerId); set(at(e)); });
+    el.addEventListener('pointermove', (e) => { if (!drag) return; e.stopPropagation(); set(at(e)); });
+    el.addEventListener('pointerup', () => { drag = false; });
+    el.addEventListener('pointercancel', () => { drag = false; });
+    el.addEventListener('keydown', (e) => {
+      const step = { ArrowLeft: -0.05, ArrowRight: 0.05, Home: -1, End: 1 }[e.key];
+      if (step == null) return;
+      e.preventDefault(); e.stopPropagation();
+      set(e.key === 'Home' ? 0 : e.key === 'End' ? 1 : split + step);
+    });
+  });
+})();
+</script>
+
+<style>
+  .cmp { position: relative; cursor: ew-resize; touch-action: pan-y; user-select: none; }
+  .cmp:focus-visible { outline: 1px solid var(--signal); outline-offset: -1px; }
+  .cmp-after > :global(*), .cmp-before > :global(*) { display: block; width: 100%; height: auto; }
+  .cmp-before { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--split)) 0 0); }
+  .cmp-handle { position: absolute; top: 0; bottom: 0; left: var(--split); width: 2px; margin-left: -1px; background: var(--signal); pointer-events: none; }
+  .cmp-handle svg { position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); }
+  .cmp-handle circle { fill: var(--signal); }
+  .cmp-handle path { fill: none; stroke: #111111; stroke-width: 1.6; }
+</style>

@@ -185,11 +185,11 @@
   }
   /* ---------- viewer: futurity_engine — the case study hero's tour, drawn ----------
      Three beats in one 7.2s cycle, one per trust-triangle corner, with the hero's
-     own captions: the crash (OBSERVE), Retry (STEER), the $4.1B and its source
-     (TRACE). A RECREATION of a RECREATION: no product code, a made-up run. */
+     own captions: the crash (OBSERVABILITY), Retry (STEERABILITY), the $4.1B and its
+     source (TRACEABILITY). A RECREATION of a RECREATION: no product code, a made-up run. */
   var ET_L = 7.2;
   var ET_CAP = [[0, 'o', 'Every step says where it is'], [2.4, 's', 'Retry it, or go on without it'], [4.6, 't', 'Numbers come from data']];
-  var ET_CN = { o: 'OBSERVE', t: 'TRACE', s: 'STEER' };
+  var ET_CN = { o: 'OBSERVABILITY', t: 'TRACEABILITY', s: 'STEERABILITY' }; /* as src/lib/trust-triangle.js */
   function etInit() { return {}; }
   function etE(a, b, t) { return Math.max(0, Math.min(1, (t - a) / (b - a))); }
   function etEase(p) { return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
@@ -408,7 +408,8 @@
     o += '<rect x="10" y="' + z[0] + '" width="' + w.toFixed(0) + '" height="' + z[1] + '" rx="2.5" fill="' + c.capBg + '" stroke="' + c.line + '"/>';
     /* the corner tag, drawn at 1x then scaled */
     o += '<g transform="translate(17 ' + (z[0] + 7) + ') scale(' + s + ')">';
-    o += '<rect x="0" y="0" width="' + (ET_CN[cap[1]].length * 4.6 + 20).toFixed(0) + '" height="11" rx="2" fill="none" stroke="' + c.sig + '" stroke-opacity=".45"/>';
+    /* the label starts at 14; a mono 4.6 character advances about 3.35 with its letter spacing */
+    o += '<rect x="0" y="0" width="' + (ET_CN[cap[1]].length * 3.35 + 19).toFixed(0) + '" height="11" rx="2" fill="none" stroke="' + c.sig + '" stroke-opacity=".45"/>';
     var corners = { o: [7, 2.5], t: [3.5, 8.5], s: [10.5, 8.5] };
     o += '<path d="M7 2.5 L3.5 8.5 L10.5 8.5 Z" fill="none" stroke="' + c.f3 + '" stroke-width=".7"/>';
     ['o', 't', 's'].forEach(function (q) { o += '<circle cx="' + corners[q][0] + '" cy="' + corners[q][1] + '" r="1.25" fill="' + (q === cap[1] ? c.sig : c.f3) + '"/>'; });
@@ -1277,7 +1278,7 @@
     'grid-lamp': { name: 'grid_lamp_view · KINETIC_4x4', foot: 'LIVE SIM · 3D STUDIO · WAVE · AUTO-ORBIT', aria: 'GRID kinetic lamp, the case study 3D studio view with the wave pattern running and a slow orbit, live preview', paper: false, gl: true, init: glampInit, draw: glampDraw },
     'domainclaim': { name: 'domainclaim_view · VERIFY.scn', foot: 'CLAIM → RECORD → FIVE STEPS → VERIFIED', aria: 'DomainClaim claiming acme.dev: the record is added, the five steps of the check land one by one, and the name verifies. Recreated preview of the product demo', paper: false, init: dcInit, draw: dcDraw },
     'futurescaper': { name: 'futurescaper_view · live_map', foot: 'SELF-GENERATING · STEEPLE · METRO EDGES', aria: 'Futurescaper self-generating consequence map, live synthetic demo', paper: true, init: scapeInit, draw: scapeDraw },
-    'futurity-engine': { name: 'futurity_engine_view · TOUR.scn', foot: 'RECREATION · OBSERVE · TRACE · STEER', aria: 'Futurity Engine, a recreated tour: a research step fails and is retried, then a number in the report shows where it came from. Recreated preview of the case study demo', paper: false, init: etInit, draw: etDraw },
+    'futurity-engine': { name: 'futurity_engine_view · TOUR.scn', foot: 'RECREATION · OBSERVABILITY · TRACEABILITY · STEERABILITY', aria: 'Futurity Engine, a recreated tour: a research step fails and is retried, then a number in the report shows where it came from. Recreated preview of the case study demo', paper: false, init: etInit, draw: etDraw },
     'fast': { name: 'fast_view · INTERSTELLAR.scn', foot: 'SUBJECT PAGE → PATENT SNAPSHOT · TRAVERSAL', aria: 'FAST subject page traversing to a patent source snapshot and back, live synthetic demo', paper: false, init: fastInit, draw: fastDraw },
     'campus-ai': { name: 'campus_ai_view · FUNNEL.scn', foot: '42 → 8 → 1,117 → 7 → 4 · THE PIPELINE COOKS', aria: 'Campus AI research pipeline: 42 screened become 8 interviews, 1,117 coded moments, 7 themes and 4 recommendations, animated with the real study numbers', paper: false, init: funInit, draw: funDraw },
     'carlton-dev': { name: 'carlton_dev_view · THE_PATCH', foot: 'SELF-PORTRAIT · OPERATORS · LIVE CABLES', aria: 'carlton.dev patch network drawing itself, live preview', paper: false, init: cdInit, draw: cdDraw },

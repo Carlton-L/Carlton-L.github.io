@@ -1,0 +1,18 @@
+---
+/**
+ * TriMark: the trust triangle's small mark, with one corner lit. The labelled tag around it is the
+ * caller's (DecisionCard's .cs-tri). Geometry and names: src/lib/trust-triangle.js; the React twin
+ * for islands is src/components/react/demos/_shared/TriMark.jsx.
+ */
+import { CORNERS, TRI_PATH, TRI_VIEWBOX } from '../../lib/trust-triangle.js';
+
+interface Props {
+  corner: keyof typeof CORNERS;
+}
+const { corner } = Astro.props;
+---
+
+<svg viewBox={TRI_VIEWBOX} aria-hidden="true">
+  <path d={TRI_PATH} />
+  {Object.entries(CORNERS).map(([k, c]) => <circle cx={c.x} cy={c.y} r="1.6" class={k === corner ? 'on' : undefined} />)}
+</svg>
