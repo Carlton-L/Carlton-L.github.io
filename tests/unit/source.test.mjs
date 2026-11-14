@@ -35,10 +35,10 @@ test('no demo hydrates during a page change', () => {
   assert.deepEqual(bad, [], 'use client:settled');
 });
 
-test('client:only is used on the standalone demo page and nowhere else', () => {
+test('client:only is used on the standalone demo pages and nowhere else', () => {
   const used = walk('src').filter((f) => f.endsWith('.astro'))
     .filter((f) => /<[A-Z][\w.]*[^>]*\sclient:only\b/.test(read(f)));
-  assert.deepEqual(used, ['src/pages/demos/domainclaim.astro']);
+  assert.deepEqual(used, ['src/pages/demos/domainclaim.astro', 'src/pages/demos/engine.astro']);
 });
 
 test('the shared scripts are loaded as files and run again on every page', () => {

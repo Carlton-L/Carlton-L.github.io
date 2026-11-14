@@ -1,0 +1,414 @@
+<!-- Status: draft · 2026-11-14 · Trust triangle v2. Question: does a big triangle that overdoes each corner (1a handle per corner, 1b one tradeoff point) or a big triangle with a card per corner that you can switch off (2a separate cabled operators, 2b panels in one card) carry the idea best? -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trust triangle v2 · prototype</title>
+<style>
+  :root { --bg: #0a0a0a; --card: #121212; --line: #2a2a2a; --text: #e9e9e9; --muted: #9a9a9a; --dim: #666; --signal: #3dff88; --sigdim: #1f5a37; --amber: #ffb547; --red: #ff6b6b;
+    --mono: "Sometype Mono", ui-monospace, "SF Mono", Menlo, monospace; --display: "Red Hat Display", system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 118px 20px 80px; }
+  @media (max-width: 760px) { body { padding-top: 20px; } }
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 50; background: #f4f1ea; color: #1a1a1a; border-bottom: 1px solid #cfc8b8; padding: 10px 18px; font: 12px/1.4 system-ui, sans-serif; }
+  @media (max-width: 760px) { .bar { position: static; margin: -20px -20px 20px; } }
+  .bar .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .bar b { font-weight: 650; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .bar .grp > span { color: #6b6457; margin-right: 4px; }
+  .bar button { font: inherit; padding: 4px 9px; border: 1px solid #b9b09c; background: #fff; border-radius: 4px; cursor: pointer; color: #1a1a1a; }
+  .bar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .bar p { color: #4d473c; margin-top: 6px; max-width: 130ch; }
+
+  .host { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .about { width: 100%; max-width: 1140px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .about b { color: var(--text); font-weight: 600; }
+  .view { display: none; }
+  body[data-dir="1a"] .view[data-v="1"], body[data-dir="1b"] .view[data-v="1"], body[data-dir="2a"] .view[data-v="2a"], body[data-dir="2b"] .view[data-v="2b"] { display: block; }
+
+  .op { background: var(--card); border: 1px solid var(--line); border-radius: 4px; }
+  .op .hd { display: flex; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--line); font: 9.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .op .hd .ty { color: var(--signal); }
+  .meta { font: 9.5px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .cn { font: 10px/1 var(--mono); letter-spacing: .16em; color: var(--signal); }
+  .copy { font-size: 13.5px; line-height: 1.6; }
+
+  /* ── the big triangle ── */
+  .tri { position: relative; user-select: none; touch-action: none; }
+  .tri svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .tri .edge { fill: #3dff8805; stroke: #333; stroke-width: 1.2; }
+  .tri .edge-off { stroke-dasharray: 4 4; }
+  .tri .spoke { stroke: #2a2a2a; stroke-width: 1; }
+  .tri .band { stroke: var(--sigdim); stroke-width: 6; stroke-linecap: round; }
+  .tri .inner { fill: #3dff8812; stroke: var(--signal); stroke-width: 1.2; }
+  .tri .corner { fill: var(--signal); }
+  .tri .corner.off { fill: var(--bg); stroke: #555; stroke-width: 1.5; }
+  .tri .corner.btn { cursor: pointer; }
+  .tri .clab { fill: var(--muted); font: 10px var(--mono); letter-spacing: .14em; }
+  .tri .clab.btn { cursor: pointer; }
+  .tri .state { font: 9px var(--mono); letter-spacing: .08em; }
+  .tri .handle { fill: var(--bg); stroke: var(--signal); stroke-width: 2; cursor: grab; filter: drop-shadow(0 0 6px #3dff8866); }
+  .tri .handle:focus { outline: none; stroke-width: 3.2; }
+  .tri .zone { fill: var(--dim); font: 8.5px var(--mono); letter-spacing: .08em; }
+  .s-none { fill: var(--red); color: var(--red); } .s-right { fill: var(--signal); color: var(--signal); } .s-much { fill: var(--amber); color: var(--amber); }
+
+  /* ── the report-section interface (what the corners act on) ── */
+  .rs { border: 1px solid var(--line); border-radius: 3px; background: #0e0e0e; overflow: hidden; display: flex; flex-direction: column; }
+  .rs .rh { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .rs .rh b { font: 700 13px var(--display); text-transform: uppercase; letter-spacing: .02em; }
+  .rs .rh .sm { margin-left: auto; font: 9.5px var(--mono); color: var(--dim); letter-spacing: .06em; }
+  .zone-o, .zone-t, .zone-s { padding: 9px 12px; border-bottom: 1px solid #1d1d1d; position: relative; }
+  .zone-o { flex: none; } .zone-t { flex: 1 1 auto; min-height: 0; overflow: hidden; } .zone-s { flex: none; border-bottom: 0; }
+  .zl { position: absolute; right: 8px; top: 6px; font: 8.5px var(--mono); letter-spacing: .1em; }
+  .spin { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1.6px solid #333; border-top-color: var(--muted); animation: spin .9s linear infinite; vertical-align: -2px; }
+  .spin.g { border-top-color: var(--signal); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sline { font: 10.5px/1.5 var(--mono); color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .sline .live { color: var(--signal); }
+  .reading { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .firehose { font: 9.5px/1.35 var(--mono); color: #7a7a7a; overflow: hidden; margin-top: 4px; white-space: nowrap; }
+  .firehose span { display: block; overflow: hidden; text-overflow: ellipsis; }
+  .firehose span.w { color: var(--amber); }
+  .para { font-size: 13px; line-height: 1.65; }
+  .para .num { border-bottom: 1px dashed var(--signal); cursor: pointer; }
+  .para .num.plain { border: 0; cursor: default; }
+  .para .num.changed { background: #3dff8822; border-radius: 2px; }
+  .para sup { font: 8px var(--mono); color: var(--amber); margin-left: 1px; }
+  .para.ghost { color: #444; }
+  .nosrc { font-size: 11.5px; color: var(--dim); font-style: italic; margin-top: 6px; }
+  .layers { display: grid; gap: 4px; margin-top: 7px; }
+  .layer { display: flex; gap: 8px; font-size: 11.5px; color: var(--muted); padding-left: calc(var(--i) * 14px); animation: rise .3s ease both; }
+  .layer b { font: 8.5px var(--mono); letter-spacing: .1em; color: var(--signal); flex: none; padding-top: 2px; }
+  .layer q { color: var(--text); }
+  .deeper { font: 9px var(--mono); letter-spacing: .08em; color: var(--signal); background: none; border: 0; cursor: pointer; padding: 0; margin-top: 5px; }
+  .srcwall { margin-top: 7px; display: grid; gap: 2px; font: 9.5px/1.35 var(--mono); color: #8a8a8a; }
+  .srcwall i { font-style: normal; color: var(--amber); }
+  @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+  .ctrls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .chipbtn { font: 9.5px/1 var(--mono); letter-spacing: .1em; color: var(--signal); background: none; border: 1px solid var(--signal); border-radius: 3px; padding: 6px 8px; cursor: pointer; text-transform: uppercase; }
+  .chipbtn:hover { background: #3dff8812; }
+  .chipbtn.dull { color: var(--muted); border-color: #444; }
+  .res { font-size: 11.5px; color: var(--muted); }
+  .knobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 5px 10px; margin-top: 6px; }
+  .knob { font: 9px var(--mono); color: #8a8a8a; letter-spacing: .04em; }
+  .knob i { display: block; height: 3px; background: #2a2a2a; border-radius: 2px; margin-top: 3px; position: relative; }
+  .knob i::after { content: ""; position: absolute; top: -3px; left: var(--p); width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+  .asks { margin-top: 6px; border: 1px solid #5a4520; background: #1a150c; border-radius: 3px; padding: 7px 9px; font-size: 11.5px; color: #d9c49a; }
+  .asks b { color: var(--amber); font: 9px var(--mono); letter-spacing: .1em; display: block; margin-bottom: 3px; }
+
+  /* ── direction 1: one card ── */
+  .v1 { width: 1000px; max-width: 100%; }
+  .v1 .bd { height: 560px; display: grid; grid-template-columns: 400px 1fr; gap: 24px; padding: 16px 18px; overflow: hidden; }
+  body[data-w="phone"] .v1 { width: 360px; }
+  body[data-w="phone"] .v1 .bd { height: 1020px; grid-template-columns: 1fr; grid-template-rows: 340px 1fr; gap: 12px; padding: 14px; }
+  .v1 .side { display: grid; grid-template-rows: auto auto 1fr; gap: 12px; min-height: 0; }
+  .states { display: grid; gap: 4px; }
+  .states div { display: flex; gap: 10px; align-items: baseline; font: 10px var(--mono); letter-spacing: .1em; color: var(--muted); }
+  .states div b { font-weight: 400; min-width: 112px; }
+  .states div.on b { color: var(--text); }
+  .states div em { font-style: normal; }
+  .lead .cn { margin-bottom: 4px; }
+  .lead .line { font-size: 12.5px; margin-top: 6px; }
+
+  /* ── direction 2a: separate operators, cabled ── */
+  .stage { position: relative; width: 1140px; max-width: 100%; height: 700px; }
+  .stage > .op { position: absolute; }
+  .stage svg.cables { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 3; }
+  .cable { fill: none; stroke: var(--signal); stroke-width: 1.4; } .cable.off { stroke: #333; stroke-dasharray: 4 4; }
+  .port { fill: var(--card); stroke: var(--signal); stroke-width: 1.4; } .port.off { stroke: #444; }
+  body[data-w="phone"] .stage { width: 360px; height: auto; display: grid; gap: 14px; }
+  body[data-w="phone"] .stage > .op { position: static; width: auto !important; }
+  body[data-w="phone"] .stage svg.cables { display: none; }
+  .ccard .bd { padding: 12px 14px; display: grid; gap: 8px; height: 300px; overflow: hidden; align-content: start; }
+  .ccard .copy { font-size: 12.5px; }
+  .ccard .tog { display: flex; align-items: center; gap: 8px; }
+  .ccard .tog .chipbtn[aria-pressed="false"] { color: var(--dim); border-color: #3a3a3a; border-style: dashed; }
+  .ccard.off { border-style: dashed; }
+  .ccard.off .hd .ty { color: #8a4a4a; }
+  .ccard .note { font-size: 11.5px; color: var(--muted); }
+  .ccard .note b { color: var(--text); font-weight: 600; }
+
+  /* ── direction 2b: one card ── */
+  .v2b { width: 1000px; max-width: 100%; }
+  .v2b .bd { height: 600px; display: grid; grid-template-columns: 420px 1fr; gap: 20px; padding: 16px 18px; overflow: hidden; }
+  body[data-w="phone"] .v2b { width: 360px; }
+  body[data-w="phone"] .v2b .bd { height: 1200px; grid-template-columns: 1fr; grid-template-rows: 320px 1fr; padding: 14px; }
+  .panels { display: grid; grid-template-rows: repeat(3, 1fr); gap: 10px; min-height: 0; }
+  .panel { border: 1px solid var(--line); border-radius: 3px; padding: 9px 11px; overflow: hidden; display: grid; gap: 6px; align-content: start; }
+  .panel.off { border-style: dashed; }
+  .panel .ph { display: flex; gap: 8px; align-items: center; }
+  .panel .copy { font-size: 12px; line-height: 1.5; }
+</style>
+</head>
+<body data-dir="1a" data-w="desk">
+
+<div class="bar" role="region" aria-label="Prototype controls">
+  <div class="row">
+    <b>Trust triangle v2</b>
+    <div class="grp" role="group" aria-label="Direction"><span>Direction</span>
+      <button data-set-dir="1a">1a Overdo · handle per corner</button>
+      <button data-set-dir="1b">1b Overdo · one tradeoff point</button>
+      <button data-set-dir="2a">2a Switch off · cabled operators</button>
+      <button data-set-dir="2b">2b Switch off · panels in one card</button>
+    </div>
+    <div class="grp" role="group" aria-label="Width"><span>Width</span>
+      <button data-set-w="desk">Desktop</button><button data-set-w="phone">Phone (READ)</button>
+    </div>
+  </div>
+  <p>Your copy, unchanged. The interface is one report section being written, with made-up figures. ← → switch directions.</p>
+</div>
+
+<div class="host">
+  <div class="about" id="about"></div>
+
+  <!-- 1a / 1b -->
+  <div class="view" data-v="1"><div class="op v1"><div class="hd"><span class="ty">TXT</span>txt · trust_triangle</div>
+    <div class="bd">
+      <div class="tri" id="tri1"></div>
+      <div class="side">
+        <div><span class="meta">How I judge an AI interface</span><div class="states" id="states1" style="margin-top:8px"></div></div>
+        <div class="lead" id="lead1"></div>
+        <div class="rs" id="rs1"></div>
+      </div>
+    </div></div></div>
+
+  <!-- 2a -->
+  <div class="view" data-v="2a"><div class="stage" id="stage2a">
+    <svg class="cables" id="cab2a" aria-hidden="true"></svg>
+    <div class="op" id="tri2aop" style="left:300px;top:150px;width:420px"><div class="hd"><span class="ty">TXT</span>txt · trust_triangle</div><div class="bd" style="height:400px;padding:12px"><span class="meta">How I judge an AI interface · click a corner to switch it off</span><div class="tri" id="tri2a" style="height:350px"></div></div></div>
+    <div class="op ccard" data-c="o" style="left:780px;top:0;width:360px"></div>
+    <div class="op ccard" data-c="t" style="left:0;top:370px;width:270px"></div>
+    <div class="op ccard" data-c="s" style="left:780px;top:370px;width:360px"></div>
+  </div></div>
+
+  <!-- 2b -->
+  <div class="view" data-v="2b"><div class="op v2b"><div class="hd"><span class="ty">TXT</span>txt · trust_triangle</div>
+    <div class="bd"><div><span class="meta">How I judge an AI interface · click a corner to switch it off</span><div class="tri" id="tri2b" style="height:520px"></div></div><div class="panels" id="panels2b"></div></div></div></div>
+</div>
+
+<script>
+/* ═════════ your copy + the three states per corner ═════════ */
+const K = ['o', 't', 's'];
+const C = {
+  o: { name: 'OBSERVABILITY', short: 'OBSERVE', copy: 'You can see what it is doing right now: which step is running, what it is reading, and how long it has been quiet.',
+       none: 'Too little: a spinner. Is it working, stuck or done?', right: 'Right: which step is running, what it is reading, how long it has been quiet.', much: 'Too much: every log line streams past, and the one that matters is lost in it.' },
+  t: { name: 'TRACEABILITY', short: 'TRACE', copy: 'You can ask where any part came from and what was done with it. Dumping every detail on screen buries the answer, so it comes one layer at a time, as deep as you ask.',
+       none: 'Too little: just an answer. There is no way to check the number.', right: 'Right: ask where the number came from, and get it one layer at a time.', much: 'Too much: citations on every word. The answer is buried under its receipts.' },
+  s: { name: 'STEERABILITY', short: 'STEER', copy: 'You can change exactly the part you meant. Ask an image model to make the dog blue and it used to redraw the whole picture, sometimes with a blue giraffe in it. Steering means the dog turns blue and nothing else moves.',
+       none: 'Too little: the only control is Regenerate, and it rewrites everything.', right: 'Right: change the one number you meant. The rest stays.', much: 'Too much: it makes you decide everything, even what it is better at deciding.' },
+};
+const LV = (v) => v < .2 ? 'none' : v <= .66 ? 'right' : 'much';
+const STW = { none: 'too little', right: 'right', much: 'too much' };
+
+/* ═════════ the report section, driven by three values 0..1 ═════════ */
+let tick = 0, depth = 0, steerState = 'base', logBuf = [];
+const LOGS = ['GET /kb/search?q=storage+cost 200 41ms', 'tok "storage" p=0.81', 'chunk 4412/9031 embedded', 'retry backoff 1.2s (429)', 'tok "costs" p=0.77', 'fact.mint cost_per_kwh_2026 ok', 'agent.critic round 2 start', 'GET survey.pdf p4 200 212ms', 'heartbeat ok', 'tok "about" p=0.92', 'cache miss kb:9f3a', 'writer.wait prev=section_1', 'tok "€142" p=0.64', 'gate.citation pass 3/3', 'GET /facts 200 18ms', 'tok "per" p=0.99', 'rerank 48 → 12', 'tok "kWh" p=0.97'];
+function obsZone(v, compact) {
+  const l = LV(v);
+  if (l === 'none') return `<div class="sline"><span><i class="spin"></i>&nbsp; Working…</span></div>`;
+  const status = `<div class="sline"><span class="live"><i class="spin g"></i>&nbsp;Writing</span><span>2 of 5 sections</span><span>quiet ${tick % 5}s</span></div>${compact ? '' : `<div class="reading">Reading: Grid storage cost survey, page 4</div>`}`;
+  if (l === 'right') return status;
+  const k = (v - .66) / .34, n = Math.round(3 + k * (compact ? 6 : 14));
+  return `<div class="sline" style="opacity:${1 - k * .55}"><span class="live"><i class="spin g"></i>&nbsp;Writing</span><span>2 of 5</span></div><div class="firehose">${logBuf.slice(-n).map((x) => `<span class="${/retry|429|miss/.test(x) ? 'w' : ''}">${x}</span>`).join('')}</div>`;
+}
+const P_BASE = ['Installed storage costs about', 'NUM', 'a third less than diesel backup over ten years. Prices fell 18% since 2024, led by sodium-ion and flow batteries.'];
+const P_REGEN = 'Battery systems for rural sites now run roughly €150 a kilowatt-hour. Over a decade they undercut generators by a wide margin, mostly thanks to cheaper chemistries.';
+function paraZone(vt, vs, key) {
+  const lt = LV(vt), ls = LV(vs), num = steerState === 'blue' ? '€131 per kWh,' : '€142 per kWh,';
+  if (ls === 'much') return `<p class="para ghost">Not written yet. It is waiting for your answers below.</p>`;
+  if (steerState === 'regen') return `<p class="para">${P_REGEN}</p>${lt === 'none' ? '<p class="nosrc">No sources.</p>' : ''}`;
+  if (lt === 'none') return `<p class="para">${P_BASE[0]} <span class="num plain">${num}</span> ${P_BASE[2]}</p><p class="nosrc">No sources. Take it or leave it.</p>`;
+  if (lt === 'right') {
+    const L = [['FACT', 'Storage cost, 2026: <q>€142 per kWh</q>'], ['SOURCE', '<q>Grid storage cost survey</q>, page 4'], ['LINE', '“Installed cost averaged €142/kWh across the 31 sites.”']];
+    return `<p class="para">${P_BASE[0]} <span class="num ${steerState === 'blue' ? 'changed' : ''}" data-act="trace" role="button" tabindex="0">${num}</span> ${P_BASE[2]}</p>
+      <div class="layers">${L.slice(0, depth).map(([a, b], i) => `<div class="layer" style="--i:${i}"><b>${a}</b><span>${b}</span></div>`).join('')}</div>
+      <button class="deeper" data-act="${depth < 3 ? 'trace' : 'fold'}">${depth === 0 ? '↳ CLICK THE NUMBER' : depth < 3 ? '↳ ONE LAYER DEEPER' : '↺ FOLD IT BACK'}</button>`;
+  }
+  const k = (vt - .66) / .34, per = 1 + Math.round(k * 3);
+  let n = 0; const sup = () => Array.from({ length: per }, () => `[${(n++ % 23) + 1}]`).join('');
+  const words = `${P_BASE[0]} ${num} ${P_BASE[2]}`.split(' ').map((w) => `${w}<sup>${sup()}</sup>`).join(' ');
+  const chain = ['survey.pdf → p.4 → table 3 → row 12 → cell B7 → footnote 4 → appendix C', 'cost_per_kwh_2026 → fact.mint → agent.engineering → prompt part 3 → kb:9f3a', 'Lazard LCOS 2025 → p.11 → fig. 6 → note b', 'press:energy-storage-news → para 7 → quote → interview'];
+  return `<p class="para">${words}</p><div class="srcwall">${Array.from({ length: 3 + Math.round(k * 6) }, (_, i) => `<span><i>[${i + 1}]</i> ${chain[i % chain.length]}</span>`).join('')}</div>`;
+}
+function steerZone(vs, key) {
+  const l = LV(vs);
+  if (l === 'none') return `<div class="ctrls"><button class="chipbtn dull" data-act="regen">↻ Regenerate</button><span class="res">${steerState === 'regen' ? 'It rewrote the whole section.' : ''}</span></div>`;
+  if (l === 'right') return `<div class="ctrls">${steerState === 'blue' ? `<button class="chipbtn" data-act="reset">↺ Undo</button><span class="res">Only the number changed.</span>` : `<button class="chipbtn" data-act="blue">Use 2025 data for the cost</button><span class="res">Changes one number. The rest stays.</span>`}</div>`;
+  const k = (vs - .66) / .34, n = 4 + Math.round(k * 10), q = 2 + Math.round(k * 6);
+  const KN = ['Tone', 'Length', 'Confidence', 'Citations per claim', 'Temperature', 'Currency', 'Rounding', 'Date range', 'Hedging', 'Reading level', 'Source mix', 'Units', 'Paragraphs', 'Chart style'];
+  const QS = ['Approve source 1 of 31?', 'Euros or dollars?', 'Round to the nearest €1 or €10?', 'Which year counts as “now”?', 'Include flow batteries?', 'Mention diesel at all?', 'Use “about” or an exact figure?', 'Approve source 2 of 31?'];
+  return `<div class="asks"><b>WAITING FOR YOU · ${q} DECISIONS BEFORE IT WRITES</b>${QS.slice(0, q).join(' · ')}</div><div class="knobs">${KN.slice(0, n).map((x, i) => `<span class="knob">${x}<i style="--p:${(i * 37) % 90}%"></i></span>`).join('')}</div>`;
+}
+function rsHTML(v) {
+  const z = (k) => `<span class="zl s-${LV(v[k])}">${C[k].short} · ${STW[LV(v[k])].toUpperCase()}</span>`;
+  return `<div class="rh"><b>Storage costs</b><span class="sm">REPORT · SECTION 2 OF 5</span></div>
+    <div class="zone-o">${z('o')}${obsZone(v.o)}</div><div class="zone-t">${z('t')}${paraZone(v.t, v.s)}</div><div class="zone-s">${z('s')}${steerZone(v.s)}</div>`;
+}
+
+/* ═════════ geometry ═════════ */
+const geo = (W, H, pad) => { const top = [W / 2, pad], bl = [pad, H - pad], br = [W - pad, H - pad]; return { o: top, t: bl, s: br, c: [(top[0] + bl[0] + br[0]) / 3, (top[1] + bl[1] + br[1]) / 3] }; };
+const lerp = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+
+/* ═════════ direction 1 (1a and 1b) ═════════ */
+let dir = '1a', width = 'desk';
+let vA = { o: .45, t: .45, s: .45 };          /* 1a: one value per corner */
+let wB = { o: 1 / 3, t: 1 / 3, s: 1 / 3 };     /* 1b: barycentric weights */
+let lead = 'o';
+const vB = () => ({ o: Math.min(1, wB.o * 1.5), t: Math.min(1, wB.t * 1.5), s: Math.min(1, wB.s * 1.5) });
+const vals1 = () => dir === '1a' ? vA : vB();
+function G1() { const ph = width === 'phone'; return { W: ph ? 330 : 400, H: ph ? 330 : 520, g: geo(ph ? 330 : 400, ph ? 310 : 470, 34) }; }
+function drawTri1() {
+  const { W, H, g } = G1(), v = vals1(), el = document.getElementById('tri1');
+  el.style.height = H + 'px';
+  const lab = (k, dx, dy, a) => `<text class="clab" x="${g[k][0] + dx}" y="${g[k][1] + dy}" text-anchor="${a}">${C[k].short}</text><text class="state s-${LV(v[k])}" x="${g[k][0] + dx}" y="${g[k][1] + dy + 13}" text-anchor="${a}">${STW[LV(v[k])].toUpperCase()}</text>`;
+  let body = `<path class="edge" d="M${g.o} L${g.t} L${g.s} Z"/>`;
+  if (dir === '1a') {
+    const p = K.map((k) => lerp(g.c, g[k], v[k]));
+    body += K.map((k) => `<line class="spoke" x1="${g.c[0]}" y1="${g.c[1]}" x2="${g[k][0]}" y2="${g[k][1]}"/>`).join('');
+    body += K.map((k) => { const a = lerp(g.c, g[k], .2), b = lerp(g.c, g[k], .66); return `<line class="band" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`; }).join('');
+    body += `<path class="inner" d="M${p[0]} L${p[1]} L${p[2]} Z"/>`;
+    body += K.map((k) => `<circle class="corner" cx="${g[k][0]}" cy="${g[k][1]}" r="4"/>`).join('');
+    body += K.map((k, i) => `<circle class="handle" data-h="${k}" cx="${p[i][0]}" cy="${p[i][1]}" r="9" tabindex="0" role="slider" aria-label="${C[k].name}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v[k] * 100)}" aria-valuetext="${STW[LV(v[k])]}"/>`).join('');
+    const z = lerp(g.c, g.o, .43); body += `<text class="zone" x="${z[0] + 10}" y="${z[1]}">RIGHT</text>`;
+    const z2 = lerp(g.c, g.o, .88); body += `<text class="zone" x="${z2[0] + 10}" y="${z2[1]}">TOO MUCH</text>`;
+    body += `<text class="zone" x="${g.c[0] + 10}" y="${g.c[1] + 4}">TOO LITTLE</text>`;
+  } else {
+    const h = [wB.o * g.o[0] + wB.t * g.t[0] + wB.s * g.s[0], wB.o * g.o[1] + wB.t * g.t[1] + wB.s * g.s[1]];
+    body += K.map((k) => `<line class="spoke" x1="${h[0]}" y1="${h[1]}" x2="${g[k][0]}" y2="${g[k][1]}" style="stroke:${LV(v[k]) === 'much' ? 'var(--amber)' : LV(v[k]) === 'right' ? 'var(--sigdim)' : '#3a1f1f'}"/>`).join('');
+    body += `<circle cx="${g.c[0]}" cy="${g.c[1]}" r="38" fill="none" stroke="var(--sigdim)" stroke-dasharray="3 4"/><text class="zone" x="${g.c[0]}" y="${g.c[1] + 52}" text-anchor="middle">BALANCED</text>`;
+    body += K.map((k) => `<circle class="corner" cx="${g[k][0]}" cy="${g[k][1]}" r="${3 + v[k] * 4}"/>`).join('');
+    body += `<circle class="handle" data-h="pt" cx="${h[0]}" cy="${h[1]}" r="10" tabindex="0" role="slider" aria-label="Balance" aria-valuetext="${K.map((k) => C[k].short + ' ' + STW[LV(v[k])]).join(', ')}"/>`;
+  }
+  body += lab('o', 0, -14, 'middle') + lab('t', -4, 26, 'start') + lab('s', 4, 26, 'end');
+  el.innerHTML = `<svg viewBox="0 -20 ${W} ${H}" aria-label="Trust triangle">${body}</svg>`;
+}
+function renderSide1() {
+  const v = vals1();
+  document.getElementById('states1').innerHTML = K.map((k) => `<div class="${k === lead ? 'on' : ''}"><b>${C[k].name}</b><em class="s-${LV(v[k])}">${STW[LV(v[k])]}</em></div>`).join('');
+  document.getElementById('lead1').innerHTML = `<div class="cn">${C[lead].name}</div><p class="copy">${C[lead].copy}</p><p class="line s-${LV(v[lead])}">${C[lead][LV(v[lead])]}</p>`;
+  document.getElementById('rs1').innerHTML = rsHTML(v);
+}
+function render1() { drawTri1(); renderSide1(); }
+/* dragging */
+let drag = null;
+const tri1 = document.getElementById('tri1');
+const local = (e) => { const svg = tri1.querySelector('svg'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+function bary(p, g) { const [x1, y1] = g.o, [x2, y2] = g.t, [x3, y3] = g.s, d = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  let a = ((y2 - y3) * (p.x - x3) + (x3 - x2) * (p.y - y3)) / d, b = ((y3 - y1) * (p.x - x3) + (x1 - x3) * (p.y - y3)) / d, c = 1 - a - b;
+  a = Math.max(0, a); b = Math.max(0, b); c = Math.max(0, c); const s = a + b + c; return { o: a / s, t: b / s, s: c / s }; }
+function moveTo(p) {
+  const { g } = G1();
+  if (drag === 'pt') { const prev = vB(); wB = bary(p, g); const now = vB(); lead = K.reduce((m, k) => (Math.abs(now[k] - prev[k]) > Math.abs(now[m] - prev[m]) ? k : m), lead); }
+  else { const k = drag, d = [g[k][0] - g.c[0], g[k][1] - g.c[1]]; const t = ((p.x - g.c[0]) * d[0] + (p.y - g.c[1]) * d[1]) / (d[0] * d[0] + d[1] * d[1]); vA[k] = Math.max(0, Math.min(1, t)); lead = k; }
+  steerState = steerState === 'blue' && LV(vals1().s) !== 'right' ? 'base' : steerState; if (LV(vals1().t) !== 'right') depth = 0;
+  render1();
+}
+tri1.addEventListener('pointerdown', (e) => {
+  const h = e.target.closest('[data-h]');
+  if (dir === '1b') { drag = 'pt'; tri1.setPointerCapture(e.pointerId); moveTo(local(e)); return; }
+  if (h) { drag = h.dataset.h; tri1.setPointerCapture(e.pointerId); }
+});
+tri1.addEventListener('pointermove', (e) => { if (drag) moveTo(local(e)); });
+tri1.addEventListener('pointerup', () => { drag = null; });
+tri1.addEventListener('keydown', (e) => {
+  const h = e.target.closest('[data-h]'); if (!h) return;
+  const step = { ArrowUp: .05, ArrowRight: .05, ArrowDown: -.05, ArrowLeft: -.05 }[e.key]; if (step === undefined) return;
+  e.preventDefault();
+  if (dir === '1a') { const k = h.dataset.h; vA[k] = Math.max(0, Math.min(1, vA[k] + step)); lead = k; }
+  else { const k = { ArrowUp: 'o', ArrowLeft: 't', ArrowRight: 's', ArrowDown: null }[e.key]; if (k) { wB[k] = Math.min(1, wB[k] + .06); } else { wB = { o: wB.o * .9 + .0333, t: wB.t * .9 + .0333, s: wB.s * .9 + .0333 }; } const s = wB.o + wB.t + wB.s; K.forEach((x) => wB[x] /= s); if (k) lead = k; }
+  render1(); const f = tri1.querySelector(`[data-h="${h.dataset.h}"]`); f && f.focus();
+});
+
+/* ═════════ direction 2 (2a and 2b): switch a corner off ═════════ */
+const on2 = { o: true, t: true, s: true };
+const FAIL = { o: '<b>Off:</b> a spinner. Is it working, stuck or done?', t: '<b>Off:</b> just an answer, with no way to check the number.', s: '<b>Off:</b> the only control is Regenerate, and it rewrites everything.' };
+function triSwitch(el, H) {
+  const W = H === 350 ? 396 : 384, g = geo(W, H - 20, 34);
+  const off = (a, b) => !on2[a] || !on2[b];
+  const edge = (a, b) => `<line class="edge ${off(a, b) ? 'edge-off' : ''}" x1="${g[a][0]}" y1="${g[a][1]}" x2="${g[b][0]}" y2="${g[b][1]}" style="stroke:${off(a, b) ? '#444' : 'var(--signal)'}"/>`;
+  const lab = (k, dx, dy, a) => `<text class="clab btn" data-tog="${k}" x="${g[k][0] + dx}" y="${g[k][1] + dy}" text-anchor="${a}">${C[k].short}</text><text class="state ${on2[k] ? 's-right' : 's-none'}" x="${g[k][0] + dx}" y="${g[k][1] + dy + 13}" text-anchor="${a}">${on2[k] ? 'ON' : 'OFF'}</text>`;
+  el.innerHTML = `<svg viewBox="0 -20 ${W} ${H}" aria-label="Trust triangle, corners switch on and off">
+    <path d="M${g.o} L${g.t} L${g.s} Z" fill="${K.every((k) => on2[k]) ? '#3dff880c' : '#ffffff03'}"/>${edge('o', 't')}${edge('t', 's')}${edge('s', 'o')}
+    ${K.map((k) => `<circle class="corner btn ${on2[k] ? '' : 'off'}" data-tog="${k}" cx="${g[k][0]}" cy="${g[k][1]}" r="11" tabindex="0" role="switch" aria-checked="${on2[k]}" aria-label="${C[k].name}"/>`).join('')}
+    ${lab('o', 0, -18, 'middle')}${lab('t', -4, 30, 'start')}${lab('s', 4, 30, 'end')}
+    <text class="zone" x="${g.c[0]}" y="${g.c[1] + 6}" text-anchor="middle">${K.filter((k) => on2[k]).length === 3 ? 'WATCH IT · CHECK IT · CHANGE IT' : K.filter((k) => !on2[k]).map((k) => C[k].short).join(' + ') + ' OFF'}</text></svg>`;
+  return g;
+}
+function cornerExample(k) {
+  const v = { o: on2.o ? .45 : 0, t: on2.t ? .45 : 0, s: on2.s ? .45 : 0 };
+  if (k === 'o') return `<div class="rs" style="border-style:${on2.o ? 'solid' : 'dashed'}"><div class="zone-o">${obsZone(v.o, true)}</div></div>`;
+  if (k === 't') { const keep = steerState; steerState = 'base'; const h = `<div class="rs" style="border-style:${on2.t ? 'solid' : 'dashed'}"><div class="zone-t">${paraZone(v.t, .45)}</div></div>`; steerState = keep; return h; }
+  return `<div class="rs" style="border-style:${on2.s ? 'solid' : 'dashed'}"><div class="zone-t" style="padding-bottom:4px">${paraZone(.45, v.s)}</div><div class="zone-s">${steerZone(v.s)}</div></div>`;
+}
+function cardBody(k) {
+  return `<div class="tog"><span class="cn">${C[k].name}</span><button class="chipbtn" data-tog="${k}" aria-pressed="${on2[k]}" style="margin-left:auto">${on2[k] ? 'ON' : 'OFF'}</button></div>
+    <p class="copy">${C[k].copy}</p>${on2[k] ? '' : `<p class="note">${FAIL[k]}</p>`}${cornerExample(k)}`;
+}
+function render2a() {
+  const stage = document.getElementById('stage2a'), ph = width === 'phone';
+  if (ph) { stage.prepend(document.getElementById('tri2aop')); }
+  const g = triSwitch(document.getElementById('tri2a'), 350);
+  stage.querySelectorAll('.ccard').forEach((c) => { const k = c.dataset.c; c.classList.toggle('off', !on2[k]); c.innerHTML = `<div class="hd"><span class="ty">SYS</span>corner · ${C[k].short.toLowerCase()}</div><div class="bd">${cardBody(k)}</div>`; });
+  if (ph) return;
+  /* cables: from each triangle corner to its card's nearest edge */
+  const sb = stage.getBoundingClientRect(), svg = document.querySelector('#tri2a svg'), m = svg.getScreenCTM();
+  const at = (k) => { const p = svg.createSVGPoint(); p.x = g[k][0]; p.y = g[k][1]; const q = p.matrixTransform(m); return [q.x - sb.left, q.y - sb.top]; };
+  const cardPort = (k) => { const r = stage.querySelector(`.ccard[data-c="${k}"]`).getBoundingClientRect(); return k === 't' ? [r.right - sb.left, r.top - sb.top + 40] : [r.left - sb.left, r.top - sb.top + 40]; };
+  document.getElementById('cab2a').innerHTML = K.map((k) => { const a = at(k), b = cardPort(k), mx = (a[0] + b[0]) / 2;
+    return `<path class="cable ${on2[k] ? '' : 'off'}" d="M${a[0]},${a[1]} C${mx},${a[1]} ${mx},${b[1]} ${b[0]},${b[1]}"/><circle class="port ${on2[k] ? '' : 'off'}" cx="${b[0]}" cy="${b[1]}" r="4"/>`; }).join('');
+}
+function render2b() {
+  const t2 = document.getElementById('tri2b'); t2.style.height = (width === 'phone' ? 280 : 520) + 'px';
+  triSwitch(t2, width === 'phone' ? 300 : 500);
+  document.getElementById('panels2b').innerHTML = K.map((k) => `<div class="panel ${on2[k] ? '' : 'off'}">${cardBody(k)}</div>`).join('');
+}
+
+/* ═════════ shared clicks ═════════ */
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-tog]');
+  if (t && dir.startsWith('2')) { const k = t.dataset.tog; on2[k] = !on2[k]; steerState = 'base'; depth = 0; render(); return; }
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  const act = a.dataset.act;
+  if (act === 'trace') depth = Math.min(3, depth + 1); else if (act === 'fold') depth = 0;
+  else if (act === 'blue') steerState = 'blue'; else if (act === 'regen') steerState = steerState === 'regen' ? 'base' : 'regen'; else if (act === 'reset') steerState = 'base';
+  render();
+});
+document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-tog],[data-act]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); } });
+
+/* firehose + status tick */
+setInterval(() => {
+  tick++; logBuf.push(`[12:04:${String(10 + (tick % 50)).padStart(2, '0')}.${String((tick * 137) % 1000).padStart(3, '0')}] ${LOGS[tick % LOGS.length]}`); if (logBuf.length > 60) logBuf.shift();
+  if (dir.startsWith('1')) { const v = vals1(); if (LV(v.o) !== 'none') { const z = document.querySelector('#rs1 .zone-o'); if (z) z.innerHTML = `<span class="zl s-${LV(v.o)}">OBSERVE · ${STW[LV(v.o)].toUpperCase()}</span>${obsZone(v.o)}`; } }
+  else if (on2.o) { document.querySelectorAll(dir === '2a' ? '.ccard[data-c="o"] .zone-o' : '#panels2b .panel:first-child .zone-o').forEach((z) => z.innerHTML = obsZone(.45, true)); }
+}, 160);
+
+/* ═════════ chrome ═════════ */
+const ABOUT = {
+  '1a': '<b>1a · Overdo, a handle per corner.</b> Each corner has its own handle on a spoke: the centre is too little, the green band is right, the corner is too much. The inner triangle is your interface. All three can be right at once. Drag a handle (or focus it and use the arrow keys) and watch the report section: too much observability floods it with logs, too much traceability buries the sentence in citations, too much steerability stops it writing until you’ve made every decision.',
+  '1b': '<b>1b · Overdo, one tradeoff point.</b> One handle. The dashed circle in the middle is balanced: all three right. Push toward a corner and that corner is overdone while the other two starve. Says “balance them”, which is a different claim from 1a.',
+  '2a': '<b>2a · Switch off, cabled operators.</b> The triangle is its own operator; each corner is cabled to an operator that holds your copy and its piece of the report section. Click a corner (or its ON button) to switch it off: the cable goes dashed, the edge breaks, and the example shows what you lose. On a phone the operators stack.',
+  '2b': '<b>2b · Switch off, panels in one card.</b> The same, inside one card: the triangle on the left, three panels on the right. No cables; simpler to lay out.',
+};
+function render() { if (dir.startsWith('1')) render1(); else if (dir === '2a') render2a(); else render2b(); }
+function setDir(d) {
+  dir = d; document.body.dataset.dir = d; document.getElementById('about').innerHTML = ABOUT[d];
+  document.querySelectorAll('[data-set-dir]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setDir === d));
+  steerState = 'base'; depth = 0; try { history.replaceState(null, '', `#dir=${d}&w=${width}`); } catch (e) {}
+  render();
+}
+document.querySelectorAll('[data-set-dir]').forEach((b) => b.onclick = () => setDir(b.dataset.setDir));
+document.querySelectorAll('[data-set-w]').forEach((b) => b.onclick = () => { width = b.dataset.setW; document.body.dataset.w = width; document.querySelectorAll('[data-set-w]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.setW === width)); setDir(dir); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea,[role="slider"],[role="switch"]')) return;
+  const o = ['1a', '1b', '2a', '2b'], i = o.indexOf(dir);
+  if (e.key === 'ArrowRight') setDir(o[(i + 1) % 4]); if (e.key === 'ArrowLeft') setDir(o[(i + 3) % 4]);
+});
+window.addEventListener('resize', () => { if (dir === '2a') render2a(); });
+const h = new URLSearchParams(location.hash.slice(1));
+if (['desk', 'phone'].includes(h.get('w'))) { width = h.get('w'); document.body.dataset.w = width; }
+document.querySelectorAll('[data-set-w]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.setW === width));
+setDir(['1a', '1b', '2a', '2b'].includes(h.get('dir')) ? h.get('dir') : '1a');
+</script>
+</body>
+</html>

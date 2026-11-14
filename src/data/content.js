@@ -168,33 +168,41 @@ export const projects = [
       {
         heading: 'What it is',
         body: [
-          'The Futurity Engine answers one research question with a small army. You ask something like "how close are solid-state batteries to displacing lithium-ion", and a five-phase pipeline pulls papers, patents, organizations and press out of Futurity’s knowledge network, computes signals over the evidence, and sets ten domain agents loose on the question. Every step streams to the browser over Server-Sent Events and lands in a live knowledge graph with more than 25 node types. You watch the system think while it thinks.',
+          'The Futurity Engine turns a lab and a question into a research report. A run is a pipeline of about 160 steps: research jobs that read the web and file what they find, analysts that work from data and facts, a red team that argues with them, and writers that build the report one section at a time, citing every number.',
+          'The Engine was our CEO’s idea. I gave it its first interface, built its visual system, and designed how a long run shows itself to the person waiting on it.',
         ],
       },
       {
         heading: 'How it works',
         body: [
-          'A run starts from a question, or from a lab: a curated taxonomy of subjects built in FAST. The Engine pulls everything connected to those subjects from the knowledge network, then computes a layer of signals over the pool. Research velocity, patent concentration, citation momentum, whitespace. Each signal keeps pointers to the exact papers behind it, so no claim floats free of its evidence. Then the agents run. Each one researches, turns around and attacks its own findings in a critique round, and a synthesis pass folds all ten analyses into a report with scenarios, confidence scores and receipts.',
-          'Runs are long. Minutes at best, hours on a big lab. So the system is honest about time: every phase checkpoints, an interrupted run resumes without re-running finished agents, and the interface knows the difference between working quietly and being stuck.',
+          'The work splits into workstreams. Groundwork gets the lab and researches the question. Engineering, Science and Business each analyze their own data. Synthesis works across them. A step starts as soon as its own inputs are ready, so many run at once.',
+          'Runs take minutes to hours, and an interrupted run resumes without redoing finished steps. For that long, the person waiting needs to see what is happening.',
         ],
       },
       {
-        heading: 'My role',
+        heading: 'The first workflow view',
         body: [
-          'The Engine was our CEO’s idea. I gave it its first form: a working prototype of the UI concept, a collapsed version of what is now a massive node graph. That prototype settled the core interaction bet early: agent reasoning should be a graph you can navigate, not a wall of logs you scroll.',
-          'From there I built the frontend alongside the team. The visual system is mine: the theme architecture, the shape and color grammar that makes node types readable at a glance, and most of the report, publishing and chat surfaces. So are the streaming designs the team built against, incremental graph ingest with no rebuilds, and the heartbeat liveness contract I wrote for the backend before the backend emitted it.',
+          'The Engine’s own workflow screen draws every step and every wire of a run at once: about 160 steps in one picture. It was good to watch while it built and hard to read after. Finding why one section of the report said what it said meant following wires by eye.',
         ],
       },
       {
-        heading: 'The hard interaction problem',
+        heading: 'The redesign',
         body: [
-          'Streaming an unbounded agent process into a graph without drowning the user is a real interaction problem. Nodes arrive continuously for minutes, the layout wants to shift under your cursor, and you still need to know where you are. The fixes were concrete: ingest incrementally so the map never rebuilds, encode node types by shape and color so the picture reads at a glance, and keep the noisy machinery in the graph but hidden until someone asks for it.',
+          'The redesign shows the run in three layers. Five workstreams first, each saying what it gives the report. Open one and you see its blocks; open a block and you see the engine’s own steps. Select anything for its contract, what is inside it, and what happened in this run.',
+          'It is being built into the product now. The demo below is a recreation of the design on a made-up run.',
+        ],
+      },
+      {
+        heading: 'What you can change',
+        body: [
+          'Before a run you edit the pipeline: add, remove or rewire a step, or change its settings. During a run you decide what happens when research fails. After a run you can rerun one block with new parameters or an added instruction, or rewrite one section of the report. Everything you didn’t touch stays as it was.',
         ],
       },
       {
         heading: 'Outcome',
         body: [
-          'The Engine runs today as a Dockerized multi-service stack with resumable checkpoints, and the frontend stays responsive through runs that take the better part of an hour. It is where the thesis behind all my work gets its hardest test: an AI system earns trust when its process is legible, and an hour of process is a lot of trust to earn.',
+          'The Engine runs as a multi-service stack with resumable checkpoints, and the interface stays responsive through runs that take most of an hour. It is where I test the three things I ask of every AI interface: that you can watch it, trace it, and steer it.',
+          'The Engine is client software, so everything on this page is a recreation on made-up data.',
         ],
       },
     ],

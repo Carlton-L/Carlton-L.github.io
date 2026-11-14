@@ -36,5 +36,6 @@ Replay logs: `<project>-<topic>.replay.jsonl` (one `{t, event, data}` per line,
 
 | File | Demo | Kind |
 |---|---|---|
+| `engine/smr-run.js` | `demos/engine/` (Engine workflow demo) | Hand-authored synthetic run, generated from `engine/smr-run.source.mjs` by `scripts/engine-run/build-engine-run.mjs` (see `engine/README.md`) |
 | `fast-lab-builder.js` | `demos/fast/FastLabBuilderDemo.jsx` | Hand-authored synthetic Lab Builder run: answers, draft, subject searches, board, three revision requests |
 | `futurescaper-ocean-plastics.json` | `demos/futurescaper/FuturescaperDemo.jsx` | Hand-authored synthetic futurescape (46 nodes incl. 3 actions, 5 orders, 1 DAG node) |
