@@ -173,6 +173,12 @@ export const projects = [
         ],
       },
       {
+        heading: 'My take',
+        body: [
+          'This is my own frame for judging an AI system, this one included. A run like this takes minutes to hours, and you act on what it writes. I think you can trust it only if you can do three things: see what it is doing, ask where any part came from, and change exactly what you need to change. I call this the trust triangle.',
+        ],
+      },
+      {
         heading: 'How it works',
         body: [
           'The work splits into workstreams. Groundwork gets the lab and researches the question. Engineering, Science and Business each analyze their own data. Synthesis works across them. A step starts as soon as its own inputs are ready, so many run at once.',
