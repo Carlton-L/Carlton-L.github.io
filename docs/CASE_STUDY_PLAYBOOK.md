@@ -60,7 +60,9 @@ A demo with a separate controller and viewer (GRID's app and 3D studio) uses `Li
 
 ## Parts
 
-Case-study cards that repeat are components in `src/components/case/`, styled once in `src/styles/case-study.css`: `SectionBreak`, `DecisionCard`, `OwnershipMeter`, `NextCase`. Use them; don't copy their markup. Page-specific cards stay on the page.
+Case-study cards that repeat are components in `src/components/case/`, styled once in `src/styles/case-study.css`: `CaseTitle`, `SectionBreak`, `DecisionCard`, `OwnershipMeter`, `NextCase`, and the smaller parts inside cards: `LinkChip` (the small `▸ LIVE · … ↗` link), `TagList` (grey pill tags), `FactList` (role, year, stack, context) and `PhotoSlot` (a picture with a caption bar, or its dashed place before it exists). Use them; don't copy their markup. Page-specific cards stay on the page.
+
+The word a heading highlights is `<span class="sig">` (global; the signal colour). When a page needs its own spacing on a shared part, override it with `:global(.op[id="…"] .cst-meta)` and the like, never with `#id`: an id outranks READ mode's own sizes for paragraphs and headings.
 
 **Reading order.** `caseOrder` in `src/data/content.js` is the order of every case study: the homepage's seven (`homeOrder`), then the rest in the /projects page's order, then back to the start. `NextCase` reads it, so each case study's last card is a button to the next one, with that project's `teaser` under its name. A new case study goes into `caseOrder` and gets a `teaser`.
 

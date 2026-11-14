@@ -7,8 +7,8 @@
  * INPUT (title + ownership) → VIEW (hero: the workflow demo playing a tour
  * by itself) → what it is → triangle + three corners →
  * 01 OBSERVABILITY (how it works, decisions 01-03) →
- * 02 TRACEABILITY (the first workflow view, placeholder; the redesign,
- * decisions 04-06, the workflow demo) →
+ * 02 TRACEABILITY (the first workflow view against the redesign, as a slider; decisions 04-06,
+ * the workflow demo) →
  * 03 STEERABILITY (what you can change, decisions 07-08) → OUT.
  *
  * Every demo is a RECREATION on made-up data: the Engine is recreation-only,
@@ -19,6 +19,7 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -120,11 +121,14 @@ const layout = {
 >
   <PatchField id="engNet" links={links} height="6000px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="engTitle" name="input · the_problem" type="txt" area="title" ports="out">
-      <p class="eng-meta">{project.meta}</p>
-      <h1 class="eng-h">Watch the machine <span class="sig">think</span></h1>
-      <p class="eng-sub">{"// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. THIS INTERFACE SHOWS WHAT IT IS DOING, WHERE EACH ANSWER CAME FROM, AND WHAT YOU CAN CHANGE."}</p>
-    </Operator>
+    <CaseTitle
+      id="engTitle"
+      area="title"
+      meta={project.meta}
+      sub={"// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. THIS INTERFACE SHOWS WHAT IT IS DOING, WHERE EACH ANSWER CAME FROM, AND WHAT YOU CAN CHANGE."}
+    >
+      Watch the machine <span class="sig">think</span>
+    </CaseTitle>
     <!-- OWNERSHIP -->
     <OwnershipMeter
       id="engOwn"
@@ -316,15 +320,6 @@ const layout = {
     color: var(--text-dim);
     margin-bottom: 8px;
   }
-  .eng-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    max-width: 14ch;
-  }
-  .eng-h .sig, .eng-h2 .sig { color: var(--signal); }
   .eng-sub {
     font-family: var(--font-mono);
     font-size: 10.5px;
@@ -342,14 +337,6 @@ const layout = {
     margin-bottom: 8px;
   }
 
-  /* placeholders: a later piece, dashed grey at its final size so nothing moves when it lands */
-  .eng-slot {
-    display: grid; place-content: center; text-align: center; gap: 6px;
-    border: 1px dashed var(--border-color); border-radius: 3px;
-    font-family: var(--font-mono); font-size: 10px; line-height: 1.6; letter-spacing: 0.1em;
-    color: var(--text-dim);
-  }
-  .eng-slot b { color: var(--text-muted); font-weight: 400; }
 
   /* the trust triangle (layout C): the shape in one card, the three corners in the next */
   .eng-tri { display: block; width: 100%; height: auto; max-width: 300px; margin: 0 auto; }

@@ -1,0 +1,21 @@
+---
+/**
+ * LinkChip: the small outbound link, `▸ LIVE · example.com ↗`. An outlined mono chip in the signal
+ * colour; the border lights on hover. External links open in a new tab and show ↗; internal ones
+ * show →. For the large link with an icon and a second line, use LinkButton.
+ *
+ *   <LinkChip href={project.liveUrl} label="VISIT LIVE · futurescape.futurity.science" spaced />
+ *
+ * `spaced` adds the 14px gap above it, for a chip that stands on its own under a paragraph.
+ * Styles: src/styles/case-study.css ("LinkChip").
+ */
+interface Props {
+  href: string;
+  label: string;
+  spaced?: boolean;
+}
+const { href, label, spaced = false } = Astro.props;
+const external = /^https?:/.test(href);
+---
+
+<a class:list={['cs-link', spaced && 'spaced']} href={href} {...(external ? { target: '_blank', rel: 'noopener' } : {})}>▸ {label} {external ? '↗' : '→'}</a>

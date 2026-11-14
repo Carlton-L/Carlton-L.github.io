@@ -14,6 +14,7 @@
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import LinkButton from '../../components/LinkButton.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
 import SourceButton from '../../components/SourceButton.astro';
 import CodeExcerpt from '../../components/case/CodeExcerpt.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -82,11 +83,16 @@ const layout = {
   jsonLd={jsonLd}
 >
   <PatchField id="cdNet" links={links} height="1900px" layout={layout} label="carlton.dev case-study network — press P for reading mode">
-    <Operator id="cdTitle" name="input · the_claim" type="txt" area="title" ports="out">
-      <p class="cd-meta">{project.meta}</p>
-      <h1 class="cd-h">The portfolio is the <span class="grn">product</span></h1>
-      <p class="cd-sub">{"// \"I BUILD WHAT I DESIGN\" IS A CLAIM. A CLAIM NEEDS A SHIPPED ARTIFACT. THIS SITE IS IT."}</p>
-    </Operator>
+    <CaseTitle
+      id="cdTitle"
+      area="title"
+      name="input · the_claim"
+      meta={project.meta}
+      subWidth={44}
+      sub={"// \"I BUILD WHAT I DESIGN\" IS A CLAIM. A CLAIM NEEDS A SHIPPED ARTIFACT. THIS SITE IS IT."}
+    >
+      The portfolio is the <span class="sig">product</span>
+    </CaseTitle>
 
     <Operator id="cdStack" name="stack_data" type="data" area="stack">
       <div class="cd-meter">
@@ -390,31 +396,6 @@ const layout = {
 </Base>
 
 <style>
-  .cd-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .cd-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    max-width: 14ch;
-  }
-  .cd-h .grn { color: var(--signal); }
-  .cd-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--text-muted);
-    margin-top: 10px;
-    line-height: 1.7;
-    max-width: 44ch;
-  }
   .cd-h3 {
     font-family: var(--font-display);
     font-weight: 900;
@@ -510,7 +491,6 @@ const layout = {
   .cd-facts span { font-size: 9px; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; }
 
   /* bg_generator controls — same grammar as the homepage chain */
-  .chip { border: 1px solid #2c2c30; padding: 3px 7px; border-radius: 4px; background: var(--bg-surface); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.04em; }
   .prow { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-family: var(--font-mono); min-width: 0; }
   .plab { font-size: 8.5px; color: var(--text-dim); width: 34px; flex: none; }
   .prow input { flex: 1; min-width: 0; width: 100%; }

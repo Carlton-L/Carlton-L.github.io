@@ -7,6 +7,7 @@
 import Base from '../layouts/Base.astro';
 import Operator from '../components/Operator.astro';
 import PatchField from '../components/PatchField.astro';
+import TagList from '../components/case/TagList.astro';
 import { aboutContent } from '../data/content.js';
 import { getPersonJsonLd, getBreadcrumbJsonLd } from '../lib/seo.js';
 
@@ -84,9 +85,7 @@ const layout = {
     </Operator>
 
     <Operator id="abSkills" name="skills_data" type="data" area="skills" ports="in">
-      <div class="ab-skills">
-        {aboutContent.skills.map((skill) => <span class="ab-chip">{skill}</span>)}
-      </div>
+      <TagList tags={aboutContent.skills} />
     </Operator>
   </PatchField>
 </Base>
@@ -134,14 +133,4 @@ const layout = {
   .ab-dates { font-family: var(--font-mono); font-size: 10.5px; white-space: nowrap; text-align: right; }
   .dim { color: var(--text-dim); font-size: 11.5px; }
 
-  .ab-skills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ab-chip {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
 </style>

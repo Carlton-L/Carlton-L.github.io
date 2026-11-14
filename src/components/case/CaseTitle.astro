@@ -1,0 +1,65 @@
+---
+/**
+ * CaseTitle: the title operator every case study opens with. A mono meta line, the heading (mark
+ * the one word that matters with <span class="sig">), then an optional `// …` line, an optional
+ * description, the page's own extras (a lede, paragraphs, tags) and the outbound links.
+ *
+ *   <CaseTitle id="fsTitle" area="title" meta={project.meta}
+ *     sub={"// FORESIGHT DATA DEFEATS GENERIC GRAPH TOOLS…"}
+ *     links={[{ href: project.liveUrl, label: 'LIVE · futurescape.futurity.science' }]}>
+ *     A metro map for <span class="sig">possible futures</span>
+ *   </CaseTitle>
+ *
+ * Extras go in the `after` slot, between the sub line and the links. A page that needs its own
+ * spacing targets `.op[id="<id>"] .cst-meta` (and so on) with :global() in its style block: not
+ * `#<id>`, which would outrank READ mode's sizes (body.perform .obody p, h1). The ownership card comes
+ * right after this one in the page source (CASE_STUDY_PLAYBOOK.md).
+ * Styles: src/styles/case-study.css ("CaseTitle").
+ */
+import Operator from '../Operator.astro';
+import LinkChip from './LinkChip.astro';
+
+interface Props {
+  id: string;
+  area?: string;
+  /** Operator name, e.g. "input · the_problem". */
+  name?: string;
+  ports?: 'in' | 'out' | 'both' | 'none';
+  meta: string;
+  /** The `// …` line under the heading. */
+  sub?: string;
+  /** A plain description paragraph under the heading (the larger, brief-style title). */
+  desc?: string;
+  /** 'lg' is the larger heading of the brief-style pages (grid-lamp, the shorter case studies). */
+  size?: 'md' | 'lg';
+  /** The meta line's larger size (10.5px). */
+  metaSize?: 'md' | 'lg';
+  /** The heading's wrap width in ch; `null` for none. Default 14. */
+  width?: number | null;
+  /** The sub line's wrap width in ch. Default 42. */
+  subWidth?: number;
+  links?: { href: string; label: string }[];
+}
+const {
+  id, area, name = 'input · the_problem', ports = 'out', meta, sub, desc, size = 'md', metaSize = 'md',
+  width = 14, subWidth = 42, links = [],
+} = Astro.props;
+const lg = size === 'lg';
+// Widths go in as custom properties, not as max-width itself, so READ mode's own sizes still win.
+const hStyle = !lg && width !== 14 ? `--cst-w: ${width == null ? 'none' : width + 'ch'}` : undefined;
+const subStyle = subWidth !== 42 ? `--cst-sw: ${subWidth}ch` : undefined;
+---
+
+<Operator id={id} name={name} type="txt" area={area} ports={ports}>
+  <p class:list={['cst-meta', metaSize === 'lg' && 'lg']}>{meta}</p>
+  <h1 class:list={['cst-h', lg && 'lg']} style={hStyle}><slot /></h1>
+  {sub && <p class="cst-sub" style={subStyle}>{sub}</p>}
+  {desc && <p class="cst-desc">{desc}</p>}
+  <slot name="after" />
+  {links.length === 1 && <LinkChip href={links[0].href} label={links[0].label} spaced />}
+  {links.length > 1 && (
+    <div class="cs-links">
+      {links.map((l) => <LinkChip href={l.href} label={l.label} />)}
+    </div>
+  )}
+</Operator>

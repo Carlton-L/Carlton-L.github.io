@@ -24,6 +24,9 @@ import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import Operator from '../../components/Operator.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
+import CaseTitle from '../../components/case/CaseTitle.astro';
+import FactList from '../../components/case/FactList.astro';
+import TagList from '../../components/case/TagList.astro';
 import PatchField from '../../components/PatchField.astro';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
@@ -188,12 +191,18 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 >
   <PatchField id="caNet" links={links} height="7900px" layout={layout} label="Campus AI case-study network — press P for reading mode">
     <!-- INPUT -->
-    <Operator id="caTitle" name="input · the_brief" type="txt" area="title" ports="out">
-      <p class="ca-meta">{project.meta}</p>
-      <h1 class="ca-h">Claims with <span class="sig">receipts</span></h1>
-      <p class="ca-sub">{"// 42 SURVEYED · 8 INTERVIEWED · 1,117 CODED MOMENTS. PICK ANY CLAIM AND WALK TO THE EVIDENCE IT STANDS ON."}</p>
-      {cs['The question'].map((p) => <p class="cs-p">{p}</p>)}
-    </Operator>
+    <CaseTitle
+      id="caTitle"
+      area="title"
+      name="input · the_brief"
+      meta={project.meta}
+      metaSize="lg"
+      width={null}
+      sub={"// 42 SURVEYED · 8 INTERVIEWED · 1,117 CODED MOMENTS. PICK ANY CLAIM AND WALK TO THE EVIDENCE IT STANDS ON."}
+    >
+      Claims with <span class="sig">receipts</span>
+      <Fragment slot="after">{cs['The question'].map((p) => <p class="cs-p">{p}</p>)}</Fragment>
+    </CaseTitle>
 
     <OwnershipMeter id="caOwn" rows={[['CARLTON LINDSAY', 100], ['MARIO CÁCERES', 100], ['RED RIVERA', 100], ['TOMI AKINADE', 100]]} note="TEAM OF 4. EVERYONE WORKED ON EVERY PART." />
 
@@ -226,12 +235,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 
     <!-- CHAPTER 01 · THE STUDY -->
     <Operator id="caFacts" name="facts_data" type="data" area="facts" maxw={420}>
-      <dl class="ca-facts">
-        <div><dt>ROLE</dt><dd>{project.facts.role}</dd></div>
-        <div><dt>YEAR</dt><dd>{project.facts.year}</dd></div>
-        <div><dt>METHOD</dt><dd>{project.facts.stack}</dd></div>
-        <div><dt>CONTEXT</dt><dd>{project.facts.company}</dd></div>
-      </dl>
+      <FactList class="ca-facts" collapse={false} items={[['ROLE', project.facts.role], ['YEAR', project.facts.year], ['METHOD', project.facts.stack], ['CONTEXT', project.facts.company]]} />
     </Operator>
 
     <SectionBreak id="caBreak1" area="br1" num={1} label="THE STUDY" />
@@ -348,9 +352,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
           <h3 class="ca-ih">{ins.heading}</h3>
           <div class="ca-vig" set:html={VIGS[ins.vig]} />
           {cs[ins.heading].map((p) => <p class="cs-p">{p}</p>)}
-          <div class="ca-chips">
-            {ins.chips.map((c) => <span class="ca-chip">{c}</span>)}
-          </div>
+          <TagList tags={ins.chips} small />
           <button class="chipbtn ca-evbtn" data-theme={ins.theme} data-node={ins.id}>▸ READ THE EVIDENCE</button>
         </div>
       </Operator>
@@ -660,31 +662,6 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 </script>
 
 <style>
-  .sig { color: var(--signal); }
-  .ca-meta {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-  }
-  .ca-h {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(24px, 2.8vw, 38px);
-    line-height: 0.98;
-    margin-bottom: 12px;
-  }
-  .ca-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 12px;
-  }
   .ca-h2 {
     font-family: var(--font-mono);
     font-size: 12px;
@@ -694,9 +671,6 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     margin-bottom: 10px;
   }
 
-  .ca-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
-  .ca-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
-  .ca-facts dd { font-size: 12px; color: var(--text); }
 
   /* ── chapter 01: research questions ── */
   .ca-rqs { display: grid; gap: 12px; }
@@ -743,6 +717,11 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     color: var(--text-muted);
     white-space: nowrap;
   }
+  /* the title and facts: Campus AI's own spacing (CaseTitle, FactList) */
+  :global(.op[id="caTitle"] .cst-h) { margin-bottom: 12px; }
+  :global(.op[id="caTitle"] .cst-sub) { letter-spacing: 0.06em; margin-top: 0; margin-bottom: 12px; max-width: none; }
+  :global(.cs-facts.ca-facts) { gap: 10px 20px; }
+  :global(.cs-facts.ca-facts dd) { font-size: 12px; }
   .ca-pchip.sig { border-color: var(--signal); color: var(--signal); }
 
 
@@ -764,17 +743,6 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
   .ca-vig { margin: 0 0 10px; color: var(--text-muted); }
   .ca-vig :global(svg) { display: block; width: 100%; max-width: 240px; height: auto; }
   .ca-vig :global(text) { font-family: var(--font-mono); letter-spacing: 0.06em; }
-  .ca-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-  .ca-chip {
-    font-family: var(--font-mono);
-    font-size: 8.5px;
-    letter-spacing: 0.08em;
-    padding: 2px 7px;
-    border-radius: 99px;
-    border: 1px solid var(--border-color);
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
   .ca-evbtn { margin-top: 10px; font-size: 9.5px; }
   .ca-ev { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
 

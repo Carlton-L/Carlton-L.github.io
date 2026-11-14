@@ -1,0 +1,40 @@
+---
+/**
+ * PhotoSlot: a picture with a caption bar, or, before the picture exists, its reserved place: a
+ * dashed grey 4:3 box with a label, the same footprint so nothing moves when the picture lands.
+ *
+ *   <PhotoSlot caption="AI RENDER · PLACEHOLDER · REAL BUILD PHOTOS TO COME">
+ *     <img src="/images/grid/build-photo-01.webp" alt="…" loading="lazy" />
+ *   </PhotoSlot>
+ *
+ *   <PhotoSlot later label="BUILD PHOTO" caption="ONCE THE HARDWARE IS BUILT" />
+ *
+ * The caption is a prop, or the `caption` slot for richer content (several parts). `split` lays
+ * the caption's parts out at either end, at full strength.
+ * Styles: src/styles/case-study.css ("PhotoSlot").
+ */
+interface Props {
+  /** No picture yet: draw the reserved dashed box. */
+  later?: boolean;
+  /** The label in the reserved box. */
+  label?: string;
+  caption?: string;
+  split?: boolean;
+}
+const { later = false, label, caption, split = false } = Astro.props;
+const hasCaption = caption || Astro.slots.has('caption');
+---
+
+{later ? (
+  <figure class="cs-photo">
+    {label && <span>{label}</span>}
+    {caption && <figcaption class="cs-photosub">{caption}</figcaption>}
+  </figure>
+) : (
+  <figure class="cs-photo has-img">
+    <slot />
+    {hasCaption && (
+      <figcaption class:list={['cs-photosub', split && 'split']}>{caption}<slot name="caption" /></figcaption>
+    )}
+  </figure>
+)}
