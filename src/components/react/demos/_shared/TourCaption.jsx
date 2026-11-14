@@ -18,7 +18,7 @@ import './tour-caption.css';
 function Tag({ corner, link }) {
   const inner = (<><TriMark corner={corner} />{CORNERS[corner].label}</>);
   return link
-    ? <a className="tcap-tag" href={TRI_HREF} title="What the trust triangle is">{inner}</a>
+    ? <a className="tcap-tag" href={TRI_HREF} aria-label={`${CORNERS[corner].label}: what the trust triangle is`}>{inner}</a>
     : <span className="tcap-tag">{inner}</span>;
 }
 
