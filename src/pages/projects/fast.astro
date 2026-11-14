@@ -1,16 +1,15 @@
 ---
 /**
- * FAST — case-study network (v2, 2026-07-06).
+ * FAST: case-study network (rev 2, 2026-11-14).
  *
- * INPUT (problem) → PROCESS (subject page + traversal decisions) →
- * PROCESS (lab flow) → VIEW slots (demos pending per live-demos/00_MASTER_PLAN §4.2,
- * FAST is recreated-only) → OUT.
+ * Title + ownership → self-playing subject page → what it is →
+ * 01 THE NETWORK (subject page, traversal demo, three decisions) →
+ * 02 SETTING UP A WORKSPACE WITH AI (Lab Builder: decisions tagged by trust-triangle corner,
+ *    the Lab Builder demo, then the by-hand path and the gather board) →
+ * outcome → next case.
  *
- * The v1 access gate is REMOVED per Carlton (2026-07-06); it may return later
- * on individual nodes (v1 code lives in git history).
- * Prose comes from src/data/content.js — fact-checked against the FAST repos
- * (see Carlton Portfolio/fast-case-study/ANALYSIS_2026-07-06.md). Do not embellish.
- * Two VIEW ops are reserved poster slots until the demo session ships.
+ * Accepted prototype: docs/prototypes/fast-case-study-restructure.html (#hl=b&hd=a).
+ * Prose comes from src/data/content.js. FAST is recreation-only. Do not embellish.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
@@ -23,11 +22,15 @@ import PatchField from '../../components/PatchField.astro';
 import FastHero from '../../components/react/demos/fast/FastHero.jsx';
 import FastGraphDemo from '../../components/react/demos/fast/FastGraphDemo.jsx';
 import FastGatherDemo from '../../components/react/demos/fast/FastGatherDemo.jsx';
+import FastLabBuilderDemo from '../../components/react/demos/fast/FastLabBuilderDemo.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const project = projects.find((p) => p.slug === 'fast');
 const cs = Object.fromEntries(project.caseStudy.map((s) => [s.heading, s.body]));
+// Decision titles that are also content.js headings, used in both places.
+const D1 = 'Move through the network';
+const D4 = 'Name every wait';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -45,28 +48,26 @@ const links: [string, string][] = [
   ['fastTitle', 'fastHero'],
   ['fastTitle', 'fastOwn'],
   ['fastHero', 'fastWhat'],
-  ['fastWhat', 'fastRole'],
-  ['fastRole', 'fastFacts'],
-  ['fastRole', 'fastBreak1'],
+  ['fastWhat', 'fastFacts'],
+  ['fastWhat', 'fastBreak1'],
   ['fastBreak1', 'fastSubjSect'],
   ['fastSubjSect', 'fastSubjTxt'],
   ['fastSubjTxt', 'fastSubjView'],
   ['fastSubjView', 'fastD1'],
   ['fastD1', 'fastD2'],
   ['fastD2', 'fastD3'],
-  ['fastD3', 'fastSources'],
-  ['fastSources', 'fastBreak2'],
-  ['fastBreak2', 'fastLabSect'],
-  ['fastLabSect', 'fastTabsView'],
-  ['fastTabsView', 'fastLabFlow'],
-  ['fastLabFlow', 'fastL1'],
-  ['fastL1', 'fastL2'],
-  ['fastL2', 'fastLabView'],
-  ['fastLabView', 'fastBreak3'],
-  ['fastBreak3', 'fastSystem'],
-  ['fastSystem', 'fastCapture'],
-  ['fastCapture', 'fastDemo'],
-  ['fastDemo', 'fastOutcome'],
+  ['fastD3', 'fastBreak2'],
+  ['fastBreak2', 'fastLbSect'],
+  ['fastLbSect', 'fastLbTxt'],
+  ['fastLbTxt', 'fastLbAsk'],
+  ['fastLbAsk', 'fastD4'],
+  ['fastD4', 'fastD5'],
+  ['fastD5', 'fastD6'],
+  ['fastD6', 'fastLbTry'],
+  ['fastLbTry', 'fastLabBuilder'],
+  ['fastLabBuilder', 'fastHand'],
+  ['fastHand', 'fastLabView'],
+  ['fastLabView', 'fastOutcome'],
   ['fastOutcome', 'fastOut'],
 ];
 
@@ -79,21 +80,19 @@ const layout = {
   rows: [
     { row: ['title:5', 'own:3'], justify: 'between' },
     { row: ['hero:10'], justify: 'center' },
-    { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
-    { row: ['facts:4'], justify: 'center' },
+    { row: ['what:6', 'facts:3'], justify: 'center' },
     { row: ['br1:8'], justify: 'center', mt: 1 },
     { row: ['ssect:4', 'subj:4'], justify: 'center', gap: 8, mt: 1 },
     { row: ['sview:10'], justify: 'center' },
     { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
-    { row: ['src:6'], justify: 'center' },
     { row: ['br2:8'], justify: 'center', mt: 1 },
-    { row: ['lsect:4', 'ltabs:4'], justify: 'center', gap: 8, mt: 1 },
-    { row: ['lflow:4', 'l1:3'], justify: 'center', gap: 8 },
-    { row: ['l2:3'], justify: 'center' },
+    { row: ['lsect:4', 'ltxt:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['lask:4'], justify: 'center' },
+    { row: ['d4:3', { op: 'd5', w: 3, mt: 1.5 }, { op: 'd6', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['ltry:4'], justify: 'center' },
+    { row: ['lbview:10'], justify: 'center' },
+    { row: ['hand:5'], justify: 'center' },
     { row: ['lview:10'], justify: 'center' },
-    { row: ['br3:8'], justify: 'center', mt: 1 },
-    { row: ['sys:4', 'cap:4'], justify: 'center', gap: 8, mt: 1 },
-    { row: ['demo:6'], justify: 'center' },
     { row: ['outc:5', 'out:4'], justify: 'between' },
   ],
 };
@@ -109,11 +108,15 @@ const layout = {
     <Operator id="fastTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="fs-meta">{project.meta}</p>
       <h1 class="fs-h">A knowledge network you can <span class="amb">walk through</span></h1>
-      <p class="fs-sub">{"// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH. EVERY PAGE IS A CAMERA POSITION IN IT."}</p>
+      <p class="fs-sub">{"// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH, AND AN AI THAT HELPS YOU FIND YOUR WAY THROUGH IT."}</p>
     </Operator>
 
     <!-- OWNERSHIP (honest; only verified numbers get bars) -->
-    <OwnershipMeter id="fastOwn" rows={[['UX/UI DESIGN', 100], ['FRONTEND', 100]]} note="EVERY SCREEN DESIGNED AND BUILT BY ME. BACKEND CONTRIBUTIONS WHERE THE INTERFACE NEEDED CONTRACTS THAT DID NOT EXIST YET." />
+    <OwnershipMeter
+      id="fastOwn"
+      rows={[['UX/UI DESIGN', 100], ['FRONTEND', 100], ['AI FEATURES', 100]]}
+      note="EVERY SCREEN DESIGNED AND BUILT BY ME. LAB BUILDER BUILT BY ME FROM A CLAUDE SKILL, ON AN ON-PREM MODEL A TEAMMATE SET UP."
+    />
 
     <!-- VIEW (opener): the subject page, composed and self-playing -->
     <Operator id="fastHero" name="subject_view · live_hero" type="view" area="hero" maxw={900}>
@@ -124,13 +127,8 @@ const layout = {
       </div>
     </Operator>
 
-
     <Operator id="fastWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
-    </Operator>
-
-    <Operator id="fastRole" name="txt · my_role" type="txt" area="role">
-      {cs['My role'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
     <Operator id="fastFacts" name="facts_data" type="data" area="facts">
@@ -143,20 +141,19 @@ const layout = {
     </Operator>
 
     <!-- SECTION BREAK 01 -->
-    <SectionBreak id="fastBreak1" area="br1" num={1} label="THE SUBJECT PAGE" />
+    <SectionBreak id="fastBreak1" area="br1" num={1} label="THE NETWORK" />
 
-    <!-- PROCESS: the hero surface -->
     <Operator id="fastSubjSect" name="process · the_hero_surface" type="txt" area="ssect">
-      <p class="fs-meta">PROCESS · THE HERO SURFACE</p>
+      <p class="fs-meta">PROCESS · THE SUBJECT PAGE</p>
       <h2 class="fs-h2">The subject page is a <span class="amb">portal</span></h2>
-      <p class="fs-sub">One page pattern carries the product: the live graph underneath, glass identity above, analytics below. Three decisions made it work.</p>
+      <p class="fs-sub">The live graph underneath, identity above, analytics below.</p>
     </Operator>
 
     <Operator id="fastSubjTxt" name="txt · the_page_in_layers" type="txt" area="subj">
       {cs['The subject page'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <!-- VIEW: the interactive graph — click a node, traverse to its subject -->
+    <!-- VIEW: the interactive graph: click a node, traverse to its subject -->
     <Operator id="fastSubjView" demo="fastSubjView" name="subject_view · knowledge_graph" type="view" area="sview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · SUBJECT PAGE · CLICK TO TRAVERSE…" bg="#111111">
@@ -165,133 +162,74 @@ const layout = {
       </div>
     </Operator>
 
-    <DecisionCard id="fastD1" area="d1" num={1} slug="traversal" title="Traversal, not search">
-      <p class="cs-p">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph. Moving between pages is moving through the network.</p>
+    <DecisionCard id="fastD1" area="d1" num={1} slug="traversal" title={D1}>
+      {cs[D1].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <DecisionCard id="fastD2" area="d2" num={2} slug="honest_waiting" title="Honest waiting">
-      <p class="cs-p">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10. Every section loads alone; nothing holds the page hostage.</p>
+      {cs['Honest waiting'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
 
     <DecisionCard id="fastD3" area="d3" num={3} slug="one_click_deep" title="Overview to detail in one click">
-      <p class="cs-p">Stat cards are also navigation. Click Patents and the page scrolls to the forecast chart with the patent series already selected.</p>
+      {cs['Overview to detail in one click'].map((p) => <p class="cs-p">{p}</p>)}
     </DecisionCard>
-
-    <Operator id="fastSources" name="txt · source_pages" type="txt" area="src" maxw={600}>
-      <h2 class="fs-h2">One pattern, <span class="amb">five more citizens</span></h2>
-      {cs['Source pages'].map((p) => <p class="cs-p">{p}</p>)}
-    </Operator>
 
     <!-- SECTION BREAK 02 -->
-    <SectionBreak id="fastBreak2" area="br2" num={2} label="THE LAB FLOW" />
+    <SectionBreak id="fastBreak2" area="br2" num={2} label="SETTING UP A WORKSPACE WITH AI" />
 
-    <!-- PROCESS: the lab flow -->
-    <Operator id="fastLabSect" name="process · the_lab_flow" type="txt" area="lsect">
-      <p class="fs-meta">PROCESS · THE LAB FLOW</p>
-      <h2 class="fs-h2">Tabs that read like a <span class="amb">sentence</span></h2>
-      <p class="fs-sub">Plan, gather, analyze, forecast, invent. The first two shipped deep; the rest land on the same foundation.</p>
+    <Operator id="fastLbSect" name="process · lab_builder" type="txt" area="lsect">
+      <p class="fs-meta">PROCESS · FROM A CLAUDE SKILL TO AN INTERFACE</p>
+      <h2 class="fs-h2">Describe the work, get the <span class="amb">workspace</span></h2>
+      <p class="fs-sub">Answer a few questions. Lab Builder drafts the goals, finds the subjects and sorts them. Then you change anything you want, in your own words.</p>
     </Operator>
 
-    <!-- VIEW: the lab's process tabs — what each step is for -->
-    <Operator id="fastTabsView" demo="fastTabsView" name="lab_view · process_tabs" type="view" area="ltabs">
-      <div class="fs-labtabs" id="fastLabTabsWidget">
-        <div class="fs-lt-strip" role="tablist" aria-label="Lab process tabs">
-          <button type="button" class="fs-lt-tab" role="tab" data-tab="plan" aria-selected="true">PLAN</button>
-          <button type="button" class="fs-lt-tab" role="tab" data-tab="gather" aria-selected="false">GATHER</button>
-          <button type="button" class="fs-lt-tab" role="tab" data-tab="analyze" aria-selected="false">ANALYZE</button>
-          <button type="button" class="fs-lt-tab" role="tab" data-tab="forecast" aria-selected="false">FORECAST</button>
-          <button type="button" class="fs-lt-tab" role="tab" data-tab="invent" aria-selected="false">INVENT</button>
-        </div>
-        <div class="fs-lt-body">
-          <div class="fs-lt-pane" data-pane="plan">
-            <span class="fs-lt-chip">SHIPPED DEEP</span>
-            <p>Strategy becomes structured goals. A stepped wizard asks who is affected, how many people, in which regions, what problems, and what impact by which horizon year.</p>
-          </div>
-          <div class="fs-lt-pane" data-pane="gather" hidden>
-            <span class="fs-lt-chip">SHIPPED DEEP</span>
-            <p>A board where subjects found through web and curated-source searches get dragged into categories. Every action optimistic, undoable, and silently synced.</p>
-          </div>
-          <div class="fs-lt-pane" data-pane="analyze" hidden>
-            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
-            <p>Analysis tools that read the gathered corpus, horizon charts and cross-subject comparison among them.</p>
-          </div>
-          <div class="fs-lt-pane" data-pane="forecast" hidden>
-            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
-            <p>Per-source-type projections of network activity, showing where each signal in the corpus is heading.</p>
-          </div>
-          <div class="fs-lt-pane" data-pane="invent" hidden>
-            <span class="fs-lt-chip dim">SAME FOUNDATION</span>
-            <p>LLM-driven invention tools that generate and structure new concepts from everything the lab gathered.</p>
-          </div>
-        </div>
-        <p class="fs-lt-note">THE PRODUCT'S REAL TAB ORDER — IT READS LIKE A SENTENCE.</p>
+    <Operator id="fastLbTxt" name="txt · skill_to_interface" type="txt" area="ltxt">
+      {cs['Skill to interface'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+
+    <Operator id="fastLbAsk" name="txt · one_question" type="txt" area="lask">
+      <h3 class="cs-dh">One question at a time</h3>
+      {cs['One question at a time'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+
+    <DecisionCard id="fastD4" area="d4" num={4} slug="name_every_wait" title={D4} corner="observability">
+      {cs[D4].map((p) => <p class="cs-p">{p}</p>)}
+    </DecisionCard>
+
+    <DecisionCard id="fastD5" area="d5" num={5} slug="show_where" title="Show where it came from" corner="traceability">
+      {cs['Show where it came from'].map((p) => <p class="cs-p">{p}</p>)}
+    </DecisionCard>
+
+    <DecisionCard id="fastD6" area="d6" num={6} slug="revise" title="Change it in your own words" corner="steerability">
+      {cs['Change it in your own words'].map((p) => <p class="cs-p">{p}</p>)}
+    </DecisionCard>
+
+    <Operator id="fastLbTry" name="txt · try_it" type="txt" area="ltry">
+      <h3 class="cs-dh">Try it</h3>
+      {cs['Try it'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+
+    <!-- VIEW: Lab Builder, self-playing until you take over. --lbd-h is its fixed height per width. -->
+    <Operator id="fastLabBuilder" demo="fastLabBuilder" name="lab_view · lab_builder" type="view" area="lbview" maxw={900}>
+      <div class="fs-viewerwrap fs-lbhost">
+        <ViewSlot poster="COOKING VIEWER · LAB BUILDER…" bg="#151514">
+          <FastLabBuilderDemo client:settled={{ rootMargin: '600px' }} />
+        </ViewSlot>
       </div>
-      <script is:inline data-astro-rerun>
-        (function () {
-          var w = document.getElementById('fastLabTabsWidget');
-          if (!w) return;
-          var tabs = w.querySelectorAll('.fs-lt-tab');
-          var panes = w.querySelectorAll('.fs-lt-pane');
-          tabs.forEach(function (tab) {
-            tab.addEventListener('click', function () {
-              tabs.forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
-              panes.forEach(function (p) { p.hidden = p.getAttribute('data-pane') !== tab.getAttribute('data-tab'); });
-            });
-          });
-        })();
-      </script>
     </Operator>
 
-    <Operator id="fastLabFlow" name="txt · plan_gather_analyze" type="txt" area="lflow">
-      {cs['The lab flow'].map((p) => <p class="cs-p">{p}</p>)}
+    <Operator id="fastHand" name="txt · by_hand" type="txt" area="hand">
+      <h3 class="cs-dh">By hand still feels good</h3>
+      {cs['By hand still feels good'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
-    <DecisionCard id="fastL1" area="l1" num={4} slug="optimistic_undo" title="Optimistic, with an undo">
-      <p class="cs-p">Board actions apply instantly, sync silently in the background, and every destructive act gets an eight second undo. Fast and forgiving, not fast and fragile.</p>
-    </DecisionCard>
-
-    <DecisionCard id="fastL2" area="l2" num={5} slug="wizards" title="Wizards for hard questions">
-      <p class="cs-p">A goal is demographics, regions, problems, impact and horizon year. A stepped builder asks one thing at a time and previews everything before commit.</p>
-    </DecisionCard>
-
-    <!-- VIEW: the gather board — drag subjects, remove for an undo toast -->
+    <!-- VIEW: the gather board: drag subjects, remove for an undo toast -->
     <Operator id="fastLabView" demo="fastLabView" name="lab_view · gather_board" type="view" area="lview" maxw={900}>
       <div class="fs-viewerwrap">
         <ViewSlot poster="COOKING VIEWER · GATHER BOARD · DRAG TO ORGANIZE…" bg="#111111">
           <FastGatherDemo client:settled={{ rootMargin: '600px' }} />
         </ViewSlot>
       </div>
-    </Operator>
-
-    <!-- SECTION BREAK 03 -->
-    <SectionBreak id="fastBreak3" area="br3" num={3} label="THE SYSTEM AROUND IT" />
-
-    <Operator id="fastSystem" name="txt · design_system" type="txt" area="sys">
-      <h2 class="fs-h2">One token system <span class="amb">under everything</span></h2>
-      {cs['Design system'].map((p) => <p class="cs-p">{p}</p>)}
-    </Operator>
-
-    <Operator id="fastCapture" name="capture_ext · browser_extension" type="sys" area="cap">
-      <h2 class="fs-h2">Companion tooling: browser extension</h2>
-      <p class="cs-p">
-        Research happens in the browser, but research platforms live in another tab.
-        I designed and built a companion extension that closes the gap: it extracts
-        structured content from the page a researcher is reading and files it into
-        the FAST knowledgebase in one action. Clean extraction, sensible defaults,
-        no context switch. Small surface, used constantly. The kind of tooling that
-        compounds.
-      </p>
-    </Operator>
-
-    <Operator id="fastDemo" name="txt · deck_to_demo" type="txt" area="demo" maxw={600}>
-      <h2 class="fs-h2">The product that <span class="amb">demos itself</span></h2>
-      <p class="cs-p">
-        FAST also had to sell itself. I built a public demo explorer and the pitch
-        deck that hands off to it: the deck captures a visitor's industry, passes it
-        along in the URL, and the demo quietly floats matching content to the top.
-        No login, no form, no visible personalization. The pitch and the product are
-        one system.
-      </p>
     </Operator>
 
     <!-- OUT -->
@@ -340,83 +278,17 @@ const layout = {
   }
   .fs-h2 .amb { color: var(--signal); }
 
-
-
   .fs-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
   .fs-facts dt { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 2px; }
   .fs-facts dd { font-size: 12.5px; color: var(--text); }
   @media (max-width: 560px) { .fs-facts { grid-template-columns: 1fr; } }
 
-
-  .fs-photoslot {
-    aspect-ratio: 4 / 3;
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    text-align: center;
-    border: 1px dashed var(--border-color);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    padding: 10px;
-  }
-  .fs-photoslot.tall { aspect-ratio: 16 / 9; }
-  .fs-photoslot .fs-photosub { font-size: 8.5px; color: var(--text-dim); opacity: 0.7; }
-
   /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */
   .fs-viewerwrap { margin: -12px -14px; }
 
-
-  /* ── lab process tabs (VIEW) — the product's real tab order ── */
-  .fs-labtabs { font-size: 13px; }
-  .fs-lt-strip {
-    display: flex;
-    gap: 2px;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .fs-lt-tab {
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 7px 10px 8px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .fs-lt-tab:hover { color: var(--text); }
-  .fs-lt-tab[aria-selected='true'] {
-    color: var(--signal);
-    border-bottom-color: var(--signal);
-  }
-  .fs-lt-body { padding: 12px 2px 0; min-height: 108px; }
-  .fs-lt-pane p { font-size: 12.5px; color: var(--text); line-height: 1.65; margin-top: 8px; }
-  .fs-lt-chip {
-    font-family: var(--font-mono);
-    font-size: 8.5px;
-    letter-spacing: 0.14em;
-    color: var(--signal);
-    border: 1px solid var(--signal-dim);
-    border-radius: 3px;
-    padding: 2px 7px;
-  }
-  .fs-lt-chip.dim {
-    color: var(--text-dim);
-    border-color: var(--border-color);
-  }
-  .fs-lt-note {
-    font-family: var(--font-mono);
-    font-size: 8.5px;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    margin-top: 10px;
-  }
-  @media (max-width: 560px) {
-    .fs-lt-tab { padding: 7px 6px 8px; font-size: 9px; }
-  }
-
+  /* Lab Builder: one fixed height per width, so no state of the demo moves the page.
+     The demo stacks its columns when the card is under 600px wide (a container query inside it),
+     which happens below about 640 wide. Stacked needs more room, so 680px starts at 700 to cover it. */
+  .fs-lbhost { --lbd-h: 600px; }
+  @media (max-width: 700px) { .fs-lbhost { --lbd-h: 680px; } }
 </style>

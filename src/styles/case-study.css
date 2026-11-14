@@ -25,6 +25,18 @@ body.perform .cs-break-num { font-size: 30px; }
   font-size: 15px; letter-spacing: 0.02em; margin-bottom: 8px; padding-right: 52px;
 }
 
+/* DecisionCard corner tag: which part of the trust triangle the decision serves. A static chip, so grey;
+   only the lit corner is signal green. */
+.cs-tri {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;
+  padding: 3px 7px 3px 5px; border: 1px solid var(--border-color); border-radius: 3px;
+  font-family: var(--font-mono); font-size: 9px; line-height: 1; letter-spacing: 0.12em; color: var(--text-muted);
+}
+.cs-tri svg { width: 13px; height: 12px; }
+.cs-tri path { fill: none; stroke: var(--text-dim); stroke-width: 1.2; }
+.cs-tri circle { fill: var(--text-dim); }
+.cs-tri circle.on { fill: var(--signal); }
+
 /* OwnershipMeter */
 .cs-meter { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-muted); }
 .cs-meter .bar { height: 6px; background: var(--bg-surface); border: 1px solid #26262a; margin: 4px 0 8px; position: relative; }

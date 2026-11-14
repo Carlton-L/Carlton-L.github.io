@@ -108,44 +108,37 @@ export const projects = [
       {
         heading: 'What it is',
         body: [
-          'FAST is Futurity Analysis & Synthesis Tools, the research and foresight platform at the center of everything Futurity Systems ships. Underneath sits a knowledge network: subjects connected to the organizations, press, patents, papers and books that mention them. On top sit labs, collaborative workspaces where innovation teams plan goals, gather subjects, and run analysis and invention tools against the data. I owned the frontend end to end, around 350 TypeScript components, and led the UX and UI of the whole product.',
-        ],
-      },
-      {
-        heading: 'My role',
-        body: [
-          'Lead Frontend Engineer and Lead UX/UI Designer. Every screen went through my hands twice, once as a design problem and once as a React build. That double pass is the method: interaction ideas survived only if they could ship, and engineering decisions were made with the design intent in the room. Where the interface needed contracts that did not exist yet, I reached into the FastAPI backend and contributed them.',
+          'FAST is Futurity Analysis & Synthesis Tools, a research and foresight platform. Underneath is a knowledge network: subjects linked to the organizations, press, patents, papers and books that mention them. On top are labs, where a team sets goals, gathers subjects and runs analysis tools against them.',
+          'Every screen went through my hands twice, once as a design and once as a React build. Where the interface needed something the API didn’t have yet, I added it.',
         ],
       },
       {
         heading: 'The subject page',
         body: [
-          'Every subject in the network has a page, and the page is built in layers. The ground layer is the network itself: a GPU-accelerated graph of everything connected to the subject, each entity type in its own color. Glass cards float above it carrying the subject’s identity and its three strategic indices. Below come the analytics: activity trends across decades, forecasts per source type, related subjects and related analyses. Each section loads independently, so a slow chart never holds the page hostage.',
-          'The move that makes it a portal is traversal. Click any node and the camera glides to it and an info card identifies it. If the node is another subject, a button appears: go to that subject. One tap and you are standing on its page, inside its own graph. Navigation is not a menu, it is walking the network one camera position at a time.',
+          'Every subject has a page, built in layers. The ground is the network: a GPU graph of everything connected to the subject, one color per entity type. Glass cards on top carry its identity and three indices. Below sit trends, forecasts and related subjects, each section loading on its own.',
+          'Organizations, patents, press, papers and books get the same page, configured per type. Learn to read one and you can read them all.',
         ],
       },
+      { heading: 'Move through the network', body: ['Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph.'] },
+      { heading: 'Honest waiting', body: ['Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10.'] },
+      { heading: 'Overview to detail in one click', body: ['Click Patents on a stat card and the page scrolls to the forecast chart with the patent series already selected.'] },
       {
-        heading: 'Source pages',
+        heading: 'Skill to interface',
         body: [
-          'Subjects are not the only citizens with pages. Organizations, patents, press, papers and books each get one too, built from a single shared snapshot pattern: the same layered grammar and the same color system, configured per entity type. Learn to read one page and you can read the entire network. That sameness was a design decision, not a shortcut.',
+          'In FAST a workspace is called a lab: a name, goals, and subjects sorted into categories. By hand that means a lot of searching before any research starts.',
+          'A Claude skill already built labs from a brief, outside FAST. I turned it into Lab Builder, an interface inside FAST. It shows up in two places: as a choice when you create a lab, and as the first tool on a lab’s Plan tab, where it reviews the goals and categories and suggests changes.',
         ],
       },
-      {
-        heading: 'The lab flow',
-        body: [
-          'Labs are where teams act on the network, and the tabs read like a sentence: plan, gather, analyze, forecast, invent. Plan turns strategy into structured goals through a stepped wizard that asks who is affected, how many people, in which regions, what problems, and what impact by which horizon year. Gather is a board where subjects found through web and curated-source searches get dragged into categories, with every action optimistic, undoable, and silently synced so teammates never collide. The later tabs land on the same foundation, each tool drawing on the corpus the team gathered.',
-        ],
-      },
-      {
-        heading: 'Design system',
-        body: [
-          'All of it stands on one Chakra-based token system. Semantic tokens for the three indices, one source-type palette shared by the graph, the stat cards and every chart, dark and light modes throughout, and a consistent feedback grammar: toasts with undo, per-section skeletons, and status copy that admits when a computation is slow instead of spinning forever.',
-        ],
-      },
+      { heading: 'One question at a time', body: ['Five short questions, one per screen, answered in your own words. The problem questions take “I’m not sure yet”: Lab Builder drafts those fields anyway and marks them for you to check. Then up to two follow-ups, only when the answer would change the draft, each with suggested answers as buttons.'] },
+      { heading: 'Name every wait', body: ['Every wait names the work and how long it usually takes: “Searching the database for each goal, then judging what fits. One to two minutes.” The demo below checks off each step as it finishes.'] },
+      { heading: 'Show where it came from', body: ['The model picks subjects from the database search results and nothing else, so a pick that wasn’t there is dropped before it reaches the board. Every subject on the board has a page you can open.'] },
+      { heading: 'Change it in your own words', body: ['“Drop the hydrogen category and find five more on storage.” Ask as often as you like. Each revision says what changed, quotes what you asked, and can be undone. Your own edits survive the next revision.'] },
+      { heading: 'Try it', body: ['A recreation of Lab Builder with a scripted model, so it answers the same way every time. Everything in it is clickable. Ask for a change at the end and watch the board move.'] },
+      { heading: 'By hand still feels good', body: ['Some people want to explore before they commit, so the manual path had to stand on its own. Walking the knowledge graph from subject to subject is one of the main ways people find related subjects to add. Both paths end on the same board, where every action applies at once, syncs in the background, and a removal comes with an eight second undo.'] },
       {
         heading: 'Outcome',
         body: [
-          'FAST is in production with client innovation teams. For my own practice it is the project where the patterns I now use everywhere hardened: progressive disclosure for dense data, semantic visual encoding, optimistic interfaces that can apologize, and navigation treated as a spatial experience rather than a sitemap.',
+          'FAST is where the patterns I use everywhere now got their first real test: progressive disclosure for dense data, interfaces that act at once and can take it back, and AI that shows what it is doing, where its answer came from, and how to change it. The Engine case study goes further into that last one.',
         ],
       },
     ],
