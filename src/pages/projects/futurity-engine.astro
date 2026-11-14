@@ -1,25 +1,29 @@
 ---
 /**
- * Futurity Engine — case-study network (first run).
+ * Futurity Engine: case-study network built on the trust triangle
+ * (docs/prototypes/engine-case-study-restructure.html rev 3, shape A; the
+ * triangle as two cards per docs/prototypes/trust-triangle-layout.html C).
  *
- * INPUT (problem) → VIEW (hero: THE RUN — a compressed Engine run growing a
- * typed knowledge graph, vanilla canvas, deterministic ~45s loop) →
- * PROCESS (what / how / role / three decisions) → VIEW (agent_card — a
- * faithful miniature of the product's live agent transcript card, replayed
- * from a scripted synthetic run) → OUT (outcome + next).
+ * INPUT (title + ownership) → VIEW (hero, placeholder: the workflow building
+ * over time) → what it is → triangle + three corners →
+ * 01 OBSERVABILITY (how it works, decisions 01-03) →
+ * 02 TRACEABILITY (the first workflow view, placeholder; the redesign,
+ * decisions 04-06, the workflow demo) →
+ * 03 STEERABILITY (what you can change, decisions 07-08) → OUT.
  *
- * Both demos are RECREATIONS: real behavior, portfolio-owned code, synthetic
- * "solid-state batteries" data. Engine ruling is RECREATED-ONLY — no product
- * source ships here. No live link by design: the CTA is contact-for-demo.
- * Prose comes from src/data/content.js — fact-checked, don't embellish.
- * Fidelity refs: Carlton Portfolio/engine-case-study/07-GROUND_TRUTH.md.
+ * Every demo is a RECREATION on made-up data: the Engine is recreation-only,
+ * so no product source ships here. Prose comes from src/data/content.js;
+ * fact-checked, don't embellish.
  */
 import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
+import SectionBreak from '../../components/case/SectionBreak.astro';
 import PatchField from '../../components/PatchField.astro';
+import ViewSlot from '../../components/ViewSlot.astro';
+import EngineWorkflowView from '../../components/react/demos/engine/EngineWorkflowView.jsx';
 import { projects } from '../../data/content.js';
 import { getCreativeWorkJsonLd, getBreadcrumbJsonLd } from '../../lib/seo.js';
 
@@ -38,18 +42,41 @@ const jsonLd = {
   ],
 };
 
+// The three corners, shared by the notes card. Copy verbatim from the accepted prototype.
+const corners = [
+  ['OBSERVABILITY', 'You can see what it is doing right now: which step is running, what it is reading, and how long it has been quiet.', '→ SECTION 01: LIVE RUN, LIVENESS'],
+  ['TRACEABILITY', 'You can ask where any part came from and what was done with it. Dumping every detail on screen buries the answer, so it comes one layer at a time, as deep as you ask.', '→ SECTION 02: THE WORKFLOW REDESIGN'],
+  ['STEERABILITY', 'You can change exactly the part you meant. Ask an image model to make the dog blue and it used to redraw the whole picture, sometimes with a blue giraffe in it. Steering means the dog turns blue and nothing else moves.', '→ SECTION 03: WHAT YOU CAN CHANGE'],
+];
+
 const links: [string, string][] = [
+  ['engTitle', 'engOwn'],
   ['engTitle', 'engHero'],
-  ['engHero', 'engSect'],
-  ['engSect', 'engWhat'],
-  ['engSect', 'engRole'],
-  ['engWhat', 'engHow'],
-  ['engHow', 'engHard'],
-  ['engHard', 'engD1'],
+  ['engHero', 'engWhat'],
+  ['engWhat', 'engTri'],
+  ['engTri', 'engCorners'],
+  ['engCorners', 'engBreak1'],
+  ['engBreak1', 'engHow'],
+  ['engHow', 'engD1'],
   ['engD1', 'engD2'],
   ['engD2', 'engD3'],
-  ['engD3', 'engView'],
-  ['engView', 'engOutcome'],
+  ['engD3', 'engBreak2'],
+  ['engBreak2', 'engTrSect'],
+  ['engTrSect', 'engBeforeTxt'],
+  ['engBeforeTxt', 'engBefore'],
+  ['engBefore', 'engRedesign'],
+  ['engRedesign', 'engD4'],
+  ['engD4', 'engD5'],
+  ['engD5', 'engD6'],
+  ['engD6', 'engTry'],
+  ['engTry', 'engWorkflow'],
+  ['engWorkflow', 'engBreak3'],
+  ['engBreak3', 'engStSect'],
+  ['engStSect', 'engStTxt'],
+  ['engStTxt', 'engD7'],
+  ['engD7', 'engD8'],
+  ['engD8', 'engTrySteer'],
+  ['engTrySteer', 'engOutcome'],
   ['engOutcome', 'engOut'],
 ];
 
@@ -62,12 +89,22 @@ const layout = {
   rows: [
     { row: ['title:5', 'own:3'], justify: 'between' },
     { row: ['hero:10'], justify: 'center' },
-    { row: ['sect:6'], justify: 'center' },
-    { row: ['what:4', 'role:4'], justify: 'center', gap: 8 },
-    { row: ['how:6'], justify: 'center' },
-    { row: ['hard:7'], justify: 'center' },
+    { row: ['what:5'], justify: 'center' },
+    { row: ['tri:4', 'corners:5'], justify: 'center', gap: 4, align: 'center' },
+    { row: ['br1:8'], justify: 'center', mt: 1 },
+    { row: ['how:6'], justify: 'center', mt: 1 },
     { row: ['d1:3', { op: 'd2', w: 3, mt: 1.5 }, { op: 'd3', w: 3, mt: 3 }], justify: 'between', inset: 1 },
-    { row: ['view:10'], justify: 'center' },
+    { row: ['br2:8'], justify: 'center', mt: 1 },
+    { row: ['trsect:4', 'beforetxt:4'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['before:6'], justify: 'center' },
+    { row: ['redesign:5'], justify: 'center' },
+    { row: ['d4:3', { op: 'd5', w: 3, mt: 1.5 }, { op: 'd6', w: 3, mt: 3 }], justify: 'between', inset: 1 },
+    { row: ['try:4'], justify: 'center' },
+    { row: ['wf:10'], justify: 'center' },
+    { row: ['br3:8'], justify: 'center', mt: 1 },
+    { row: ['stsect:4', 'sttxt:5'], justify: 'center', gap: 8, mt: 1 },
+    { row: ['d7:3', 'd8:3'], justify: 'center', gap: 8 },
+    { row: ['trysteer:5'], justify: 'center' },
     { row: ['outc:5', 'out:4'], justify: 'between' },
   ],
 };
@@ -78,317 +115,133 @@ const layout = {
   description={project.description}
   jsonLd={jsonLd}
 >
-  <PatchField id="engNet" links={links} height="4200px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
+  <PatchField id="engNet" links={links} height="6000px" layout={layout} label="Futurity Engine case-study network — press P for reading mode">
     <!-- INPUT -->
     <Operator id="engTitle" name="input · the_problem" type="txt" area="title" ports="out">
       <p class="eng-meta">{project.meta}</p>
       <h1 class="eng-h">Watch the machine <span class="sig">think</span></h1>
-      <p class="eng-sub">{"// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. MOST UIS SHOW A SPINNER. THIS ONE SHOWS THE REASONING."}</p>
-      <a class="eng-live" href="/contact/">▸ CONTACT FOR MORE INFORMATION</a>
+      <p class="eng-sub">{"// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. THIS INTERFACE SHOWS WHAT IT IS DOING, WHERE EACH ANSWER CAME FROM, AND WHAT YOU CAN CHANGE."}</p>
     </Operator>
-
-    <!-- OWNERSHIP (git-verified; see engine-case-study/06-ROLE_EVIDENCE.md) -->
-    <OwnershipMeter id="engOwn" rows={[['UI CONCEPT', 100], ['VISUAL SYSTEM', 85], ['INTERACTION DESIGN', 90], ['PIPELINE / BACKEND', 15]]} note="TEAM BUILD. CONCEPT PROTOTYPE, FRONTEND VISUAL SYSTEM, AND THE STREAMING + LIVENESS DESIGNS ARE MINE. THE PIPELINE IS NOT." />
-
-    <!-- VIEW: hero — THE RUN, compressed -->
-    <Operator id="engHero" name="futurity_engine_view · THE_RUN" type="view" area="hero" maxw={900}>
-      <div class="eng-viewerwrap">
-        <div class="eng-strip">
-          <span><span class="eng-dot" id="engHeroDot"></span><span id="engHeroPhase">EXTRACTING INTENT…</span></span>
-          <span class="eng-lbl">RECREATION · REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span>
-        </div>
-        <canvas id="engHeroCv" width="880" height="440" aria-label="A compressed Futurity Engine run: subjects arrive as hexagons, evidence clusters around them, agents reach out to the web, a report crystallizes"></canvas>
-        <div class="eng-ticker" id="engHeroTicker">
-          <span data-p="0">INTENT</span><span data-p="1">DB_PULL</span><span data-p="2">SIGNALS</span><span data-p="3">AGENTS</span><span data-p="4">SYNTHESIS</span>
-        </div>
+    <!-- OWNERSHIP -->
+    <OwnershipMeter
+      id="engOwn"
+      rows={[['UI CONCEPT', 100], ['VISUAL SYSTEM', 85], ['WORKFLOW REDESIGN', 100], ['PIPELINE / BACKEND', 15]]}
+      note="TEAM BUILD. CONCEPT PROTOTYPE, VISUAL SYSTEM, STREAMING AND LIVENESS DESIGNS, AND THE WORKFLOW REDESIGN ARE MINE. THE PIPELINE IS NOT."
+    />
+    <!-- VIEW: hero. Placeholder until the workflow-building-over-time animation (second pass). -->
+    <Operator id="engHero" name="futurity_engine_view · the_workflow" type="view" area="hero" maxw={900}>
+      <div class="eng-slot" style="height:280px">
+        <b>WORKFLOW, BUILDING OVER TIME</b>
+        <span>PLACEHOLDER</span>
       </div>
     </Operator>
-
-    <Operator id="engSect" name="process · the_build" type="txt" area="sect">
-      <p class="eng-meta">PROCESS · WHAT IT IS / HOW IT WORKS / THREE DECISIONS</p>
-      <h2 class="eng-h2">Reasoning you can <span class="sig">navigate</span></h2>
-      <p class="eng-sub">What the Engine does, where I fit, and the three interaction decisions that make a long-running AI legible. Then one of its agents, thinking, below.</p>
-    </Operator>
-
     <Operator id="engWhat" name="txt · what_it_is" type="txt" area="what">
       {cs['What it is'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
-
-    <Operator id="engRole" name="txt · my_role" type="txt" area="role">
-      {cs['My role'].map((p) => <p class="cs-p">{p}</p>)}
+    <!-- The trust triangle: one card for the shape, one for the three corners (layout C). -->
+    <Operator id="engTri" name="txt · trust_triangle" type="txt" area="tri">
+      <svg class="eng-tri" viewBox="0 0 170 150" role="img" aria-label="Observe, trace, steer">
+        <path class="e" d="M85 22 L18 128 L152 128 Z" />
+        <path class="sec" d="M85,92.7 L51.5,75 M85,92.7 L118.5,75 M85,92.7 L85,128" />
+        <g class="ico" transform="translate(85 64) scale(1.05)"><path d="M-11,0 Q0,-9 11,0 Q0,9 -11,0 Z" /><circle cx="0" cy="0" r="3.4" /><circle class="solid" cx="0" cy="0" r="1.3" /></g>
+        <g class="ico" transform="translate(60 106) scale(1.05)"><circle cx="-2" cy="-2" r="6.5" /><path d="M2.8,2.8 L8.5,8.5" /><path d="M-5,-2 L1,-2 M-5,1 L-1,1" /></g>
+        <g class="ico" transform="translate(110 106) scale(1.05)"><rect x="-9" y="4" width="18" height="5" rx="1.6" /><path d="M0,4 L0,-4" /><circle cx="0" cy="-7" r="3.4" /><path d="M-5,4 L-5,2.5" /></g>
+        <circle class="c" cx="85" cy="22" r="5" /><circle class="c" cx="18" cy="128" r="5" /><circle class="c" cx="152" cy="128" r="5" />
+        <text x="85" y="10" text-anchor="middle">OBSERVE</text><text x="18" y="146" text-anchor="middle">TRACE</text><text x="152" y="146" text-anchor="middle">STEER</text>
+      </svg>
+    </Operator>
+    <Operator id="engCorners" name="txt · three_corners" type="txt" area="corners">
+      <dl class="eng-corners">
+        {corners.map(([dt, dd, pt]) => (
+          <div><dt>{dt}</dt><dd>{dd}<span class="pt">{pt}</span></dd></div>
+        ))}
+      </dl>
     </Operator>
 
+    <!-- 01 OBSERVABILITY -->
+    <SectionBreak id="engBreak1" area="br1" num={1} label="OBSERVABILITY" />
     <Operator id="engHow" name="process · how_it_works" type="txt" area="how" maxw={600}>
       {cs['How it works'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
-
-    <Operator id="engHard" name="process · the_hard_problem" type="txt" area="hard" maxw={620}>
-      <h3 class="cs-dh">The hard interaction problem</h3>
-      {cs['The hard interaction problem'].map((p) => <p class="cs-p">{p}</p>)}
+    <DecisionCard id="engD1" area="d1" num={1} slug="every_step_says" title="Every step says where it is" corner="observability">
+      <p class="cs-p">Not started, running, paused, done, failed or skipped, on every step and rolled up on every workstream: "12 of 30 done · 2 running". A step that searches says what it is still waiting for.</p>
+    </DecisionCard>
+    <DecisionCard id="engD2" area="d2" num={2} slug="report_fills" title="Watch the report fill" corner="observability">
+      <p class="cs-p">The report shows in reading order from the start. Each section says whether it is waiting its turn, being written or done, and the knowledgebase has its own tab where you can watch it grow.</p>
+    </DecisionCard>
+    <DecisionCard id="engD3" area="d3" num={3} slug="honest_liveness" title="Honest liveness" corner="observability">
+      <p class="cs-p">Some steps run ten minutes without an event. The status says which of three states it is in: events flowing, quiet but alive, or stalled. I wrote the heartbeat contract before the backend emitted it.</p>
+    </DecisionCard>
+    <!-- 02 TRACEABILITY -->
+    <SectionBreak id="engBreak2" area="br2" num={2} label="TRACEABILITY" />
+    <Operator id="engTrSect" name="process · traceability" type="txt" area="trsect">
+      <p class="eng-meta">PROCESS · THE WORKFLOW, REDESIGNED</p>
+      <h2 class="eng-h2">Ask where anything <span class="sig">came from</span></h2>
+      <p class="eng-sub">The same run, folded into layers you open one at a time.</p>
+    </Operator>
+    <Operator id="engBeforeTxt" name="txt · first_view" type="txt" area="beforetxt">
+      <h3 class="cs-dh">The first workflow view</h3>
+      {cs['The first workflow view'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+    <!-- VIEW: the "before". Placeholder until it is recreated with made-up names. -->
+    <Operator id="engBefore" name="before · first_workflow_view" type="view" area="before" maxw={540}>
+      <div class="eng-slot" style="height:230px">
+        <b>BEFORE · THE FIRST WORKFLOW VIEW</b>
+        <span>PLACEHOLDER, RECREATED LATER WITH MADE-UP NAMES</span>
+      </div>
+    </Operator>
+    <Operator id="engRedesign" name="txt · the_redesign" type="txt" area="redesign">
+      {cs['The redesign'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+    <DecisionCard id="engD4" area="d4" num={4} slug="layers" title="One layer at a time" corner="traceability">
+      <p class="cs-p">Workstreams, then blocks, then steps. Each layer says where its inputs come from and what it hands on, so you can stop as soon as you have your answer.</p>
+    </DecisionCard>
+    <DecisionCard id="engD5" area="d5" num={5} slug="prompt_parts" title="Every prompt, part by part" corner="traceability">
+      <p class="cs-p">Select an AI step to read the prompt it sent, split by where each part came from: your settings, the wiring, or the engine's rules. Every answer the engine rejected is there too, with the check it failed.</p>
+    </DecisionCard>
+    <DecisionCard id="engD6" area="d6" num={6} slug="fact_tokens" title="Numbers come from data" corner="traceability">
+      <p class="cs-p">A writer can't type a number. It cites a fact token, and the assembly step puts in the recorded value. A sentence that can't be traced is removed before the report is published.</p>
+    </DecisionCard>
+    <Operator id="engTry" name="txt · try_it" type="txt" area="try">
+      <h3 class="cs-dh">Try it</h3>
+      <p class="cs-p">A recreation of the workflow view on a 70-step made-up run. Everything is clickable: open a workstream, select a step, read its prompt, or scrub the run and watch it fill.</p>
+    </Operator>
+    <!-- VIEW: the workflow demo, the ported Engine Blocks prototype in its own document (ProductFrame). -->
+    <Operator id="engWorkflow" demo="engWorkflow" name="futurity_engine_view · workflow" type="view" area="wf" maxw={900}>
+      <div class="eng-viewerwrap">
+        <ViewSlot poster="COOKING VIEWER · THE WORKFLOW VIEW · EVERYTHING IS CLICKABLE…" wait="event">
+          <EngineWorkflowView client:settled={{ rootMargin: '600px' }} />
+        </ViewSlot>
+      </div>
     </Operator>
 
-    <!-- PROCESS: the three design decisions -->
-    <DecisionCard id="engD1" area="d1" num={1} slug="graph_not_log" title="A graph, not a log">
-      <p class="cs-p">Every entity the pipeline touches becomes a typed node. Subjects are hexagons, signals are diamonds, and every claim keeps an edge back to its evidence. The noisy machinery arrives hidden, so the picture stays legible while staying complete.</p>
+    <!-- 03 STEERABILITY -->
+    <SectionBreak id="engBreak3" area="br3" num={3} label="STEERABILITY" />
+    <Operator id="engStSect" name="process · steerability" type="txt" area="stsect">
+      <p class="eng-meta">PROCESS · WHAT YOU CAN CHANGE</p>
+      <h2 class="eng-h2">Change exactly the <span class="sig">part you meant</span></h2>
+      <p class="eng-sub">Before, during and after a run.</p>
+    </Operator>
+    <Operator id="engStTxt" name="txt · steer" type="txt" area="sttxt">
+      {cs['What you can change'].map((p) => <p class="cs-p">{p}</p>)}
+    </Operator>
+    <DecisionCard id="engD7" area="d7" num={7} slug="pause_dependents" title="Pause only what needs it" corner="steerability">
+      <p class="cs-p">When a research job fails, only the steps that search for it wait. Everything else keeps going, and the run asks: retry it, or go on without it. Go on, and every section written without it is flagged in the report.</p>
     </DecisionCard>
-
-    <DecisionCard id="engD2" area="d2" num={2} slug="incremental" title="Incremental everything">
-      <p class="cs-p">Nodes stream into the graph without full rebuilds, so the layout never shifts under a cursor mid-exploration. On saved reports the heavy map is lazy-loaded on request, and the report stays responsive without it.</p>
+    <DecisionCard id="engD8" area="d8" num={8} slug="rerun_one" title="Rerun one block" corner="steerability">
+      <p class="cs-p">Change a block's settings, or add an instruction, and rerun just that block. What depends on it reruns with it. Everything else keeps the result it already had.</p>
     </DecisionCard>
-
-    <DecisionCard id="engD3" area="d3" num={3} slug="honest_liveness" title="Honest liveness">
-      <p class="cs-p">Some steps run ten minutes without an event. The status system tells the truth in three states: events flowing, quiet but alive, actually stalled. The heartbeat contract behind it is one I wrote for the backend before the backend emitted it.</p>
-    </DecisionCard>
-
-    <!-- VIEW: one agent, thinking — miniature of the live transcript card -->
-    <Operator id="engView" name="futurity_engine_view · agent_card" type="view" area="view" maxw={760}>
-      <div class="eng-viewerwrap eng-agentwrap">
-        <div class="eng-statusline">
-          <span class="eng-dot" id="engAgDot"></span>
-          <span class="eng-slmain"><b id="engAgPhase">Agents Researching</b> — <span id="engAgMsg">Running agent 1/10: scientific_rd</span></span>
-          <span class="eng-slright"><span id="engAgElapsed">0:00</span> elapsed · <span id="engAgQuiet">quiet 0s</span> · ♥ <span id="engAgHb">2s</span></span>
-        </div>
-        <div class="eng-agent" id="engAgCard">
-          <div class="eng-ahead">
-            <span class="eng-badge running" id="engAgBadge">RUNNING</span>
-            <span class="eng-aname">Scientific R&amp;D</span>
-            <span class="eng-ameta"><span id="engAgIter">iter 1/3 · research</span> · <span id="engAgTools">0 tools</span></span>
-          </div>
-          <div class="eng-abody" id="engAgBody"></div>
-        </div>
-        <div class="eng-lbl eng-lbl-under">RECREATION · REAL BEHAVIOR, PORTFOLIO-OWNED CODE · SYNTHETIC RUN: SOLID-STATE BATTERIES</div>
-      </div>
+    <Operator id="engTrySteer" name="txt · try_steer" type="txt" area="trysteer">
+      <p class="cs-p">Press play. Three minutes in, a research job fails and the demo waits for you: retry it, or go on without it. When the run finishes, open Science, then Emerging papers, to rerun one block.</p>
     </Operator>
 
     <!-- OUT -->
     <Operator id="engOutcome" name="out · outcome" type="txt" area="outc" ports="in">
       {cs['Outcome'].map((p) => <p class="cs-p">{p}</p>)}
-      <p class="cs-p">The Engine is client software, so there is no public build to poke at. Everything on this page is a recreation built for the portfolio, on synthetic data. If you want to know more about the work, get in touch.</p>
-      <a class="eng-live" href="/contact/">▸ CONTACT FOR MORE INFORMATION</a>
     </Operator>
-
     <NextCase id="engOut" from="futurity-engine" tagline="TRUST IS EARNED IN THE TRANSCRIPT." />
   </PatchField>
 </Base>
-
-<script is:inline data-astro-rerun>
-/* THE_RUN hero — deterministic compressed Engine run. Vanilla canvas, seeded,
-   ~45s loop, reduced-motion → settled poster. Recreation; no product code. */
-(() => {
-  const cv = document.getElementById('engHeroCv');
-  if (!cv || cv.dataset.booted) return;
-  cv.dataset.booted = '1';
-  const ctx = cv.getContext('2d');
-  const W = cv.width, H = cv.height;
-  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const C = { sub: '#4252BD', sig: '#F0E442', ag: '#818cf8', web: '#64748b', rep: '#f97316', pulse: '#3dff88' };
-  const ENT = ['#20C6DB', '#20C6DB', '#20C6DB', '#C3DE6D', '#C3DE6D', '#E07B91', '#E69500', '#46ACC8'];
-  const SEED = 1337;
-  let s = SEED;
-  const rnd = () => (s = (s + 0x6D2B79F5) | 0, ((Math.imul(s ^ (s >>> 15), 1 | s) + 0x6D2B79F5) >>> 0) / 4294967296);
-
-  const EV = [];
-  let t = 400;
-  for (let i = 0; i < 6; i++) { EV.push({ t, k: 'subject', i }); t += 550; }
-  const PULL_T0 = t;
-  for (let b = 0; b < 10; b++) {
-    const n = 4 + Math.floor(rnd() * 5);
-    for (let j = 0; j < n; j++) EV.push({ t: t + rnd() * 140, k: 'entity' });
-    t += 700;
-  }
-  const SIG_T0 = t;
-  for (let i = 0; i < 4; i++) { EV.push({ t, k: 'signal' }); t += 500; }
-  const AG_T0 = t;
-  for (let a = 0; a < 5; a++) EV.push({ t: t + a * 800, k: 'agent', a });
-  for (let w = 0; w < 26; w++) EV.push({ t: AG_T0 + 1200 + rnd() * 16000, k: 'web' });
-  t = AG_T0 + 18500;
-  const SYN_T0 = t;
-  EV.push({ t: t + 900, k: 'report' });
-  const LOOP = t + 4200;
-  EV.sort((a, b) => a.t - b.t);
-  const PHASES = [
-    [0, 'EXTRACTING INTENT…'], [PULL_T0, 'PULLING EVIDENCE — PAPERS · PATENTS · ORGS'],
-    [SIG_T0, 'COMPUTING SIGNALS'], [AG_T0, 'AGENTS RESEARCHING ↔ CRITIQUING'], [SYN_T0, 'SYNTHESIZING REPORT'],
-  ];
-
-  const SUBJ_POS = [[.22, .3], [.5, .22], [.78, .3], [.25, .7], [.55, .75], [.8, .68]];
-  const AGENT_POS = [[.12, .5], [.38, .12], [.65, .1], [.92, .5], [.5, .92]];
-  let nodes, edges, elapsed, subjNodes, agentNodes, reportNode;
-
-  function reset() {
-    s = SEED; nodes = []; edges = []; elapsed = 0;
-    subjNodes = []; agentNodes = []; reportNode = null;
-    for (const e of EV) e.done = false;
-  }
-  function addNode(type, px, py, r, anchor) {
-    const n = { type, x: px + (rnd() - .5) * 30, y: py + (rnd() - .5) * 30, vx: 0, vy: 0, r, anchor, born: elapsed };
-    if (type === 'entity') n.c = ENT[Math.floor(rnd() * ENT.length)];
-    nodes.push(n); return n;
-  }
-  function link(a, b) { edges.push({ a, b, born: elapsed }); }
-  function fire(e) {
-    if (e.k === 'subject') { const p = SUBJ_POS[e.i]; subjNodes[e.i] = addNode('subject', p[0] * W, p[1] * H, 9, true); }
-    else if (e.k === 'entity') { const sn = subjNodes[Math.floor(rnd() * subjNodes.length)]; if (!sn) return; const n = addNode('entity', sn.x, sn.y, 3.2); link(n, sn); }
-    else if (e.k === 'signal') { const sn = subjNodes[Math.floor(rnd() * subjNodes.length)]; if (!sn) return; const n = addNode('signal', sn.x, sn.y, 5); n.diamond = true; link(n, sn); }
-    else if (e.k === 'agent') { const p = AGENT_POS[e.a]; agentNodes[e.a] = addNode('agent', p[0] * W, p[1] * H, 7, true); subjNodes.forEach((sn) => { if (rnd() < .4) link(agentNodes[e.a], sn); }); }
-    else if (e.k === 'web') { const an = agentNodes[Math.floor(rnd() * agentNodes.length)]; if (!an) return; const n = addNode('web', an.x, an.y, 2.6); link(n, an); }
-    else if (e.k === 'report') { reportNode = addNode('report', W / 2, H / 2, 11, true); agentNodes.forEach((an) => an && link(an, reportNode)); subjNodes.forEach((sn) => { if (rnd() < .5) link(sn, reportNode); }); }
-  }
-  function step(dt) {
-    for (const e of edges) {
-      const a = e.a, b = e.b; let dx = b.x - a.x, dy = b.y - a.y; const d = Math.hypot(dx, dy) || 1;
-      const want = (a.anchor || b.anchor) ? 46 : 30, f = (d - want) * 0.004;
-      dx /= d; dy /= d;
-      if (!a.anchor) { a.vx += dx * f * d * dt; a.vy += dy * f * d * dt; }
-      if (!b.anchor) { b.vx -= dx * f * d * dt; b.vy -= dy * f * d * dt; }
-    }
-    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j]; let dx = b.x - a.x, dy = b.y - a.y; const d2 = dx * dx + dy * dy;
-      if (d2 > 2600 || d2 === 0) continue;
-      const d = Math.sqrt(d2), f = (2600 - d2) / 2600 * 0.9 * dt; dx /= d; dy /= d;
-      if (!a.anchor) { a.vx -= dx * f; a.vy -= dy * f; }
-      if (!b.anchor) { b.vx += dx * f; b.vy += dy * f; }
-    }
-    for (const n of nodes) {
-      if (n.anchor) continue;
-      n.vx *= .86; n.vy *= .86; n.x += n.vx; n.y += n.vy;
-      n.x = Math.max(8, Math.min(W - 8, n.x)); n.y = Math.max(8, Math.min(H - 8, n.y));
-    }
-  }
-  function hexPath(x, y, r) {
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 6; const px = x + r * Math.cos(a), py = y + r * Math.sin(a); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
-    ctx.closePath();
-  }
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    ctx.lineWidth = 1;
-    for (const e of edges) {
-      const age = elapsed - e.born, al = Math.min(1, age / 400) * .28;
-      ctx.strokeStyle = `rgba(120,130,150,${al})`;
-      ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
-    }
-    for (const n of nodes) {
-      const age = elapsed - n.born, g = Math.min(1, age / 300), r = n.r * (0.4 + 0.6 * g);
-      ctx.fillStyle = n.type === 'entity' ? n.c : (C[{ subject: 'sub', signal: 'sig', agent: 'ag', web: 'web', report: 'rep' }[n.type]] || '#888');
-      if (n.type === 'subject') { hexPath(n.x, n.y, r); ctx.fill(); }
-      else if (n.diamond) { ctx.save(); ctx.translate(n.x, n.y); ctx.rotate(Math.PI / 4); ctx.fillRect(-r * .8, -r * .8, r * 1.6, r * 1.6); ctx.restore(); }
-      else { ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 7); ctx.fill(); }
-      if (age < 500) { ctx.strokeStyle = `rgba(61,255,136,${(1 - age / 500) * .8})`; ctx.beginPath(); ctx.arc(n.x, n.y, r + 3 + age / 60, 0, 7); ctx.stroke(); }
-    }
-    if (reportNode) {
-      const age = elapsed - reportNode.born;
-      if (age < 2000) { ctx.strokeStyle = `rgba(249,115,22,${.5 * (1 - age / 2000)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(reportNode.x, reportNode.y, 12 + age / 40, 0, 7); ctx.stroke(); ctx.lineWidth = 1; }
-    }
-  }
-  const phEls = Array.prototype.slice.call(document.querySelectorAll('#engHeroTicker span'));
-  const msgEl = document.getElementById('engHeroPhase');
-  function tickUI() {
-    let cur = 0;
-    for (let i = 0; i < PHASES.length; i++) if (elapsed >= PHASES[i][0]) cur = i;
-    phEls.forEach((el, i) => { el.classList.toggle('on', i === cur); el.classList.toggle('done', i < cur); });
-    if (msgEl) msgEl.textContent = PHASES[cur][1];
-  }
-  reset();
-  if (REDUCED) {
-    elapsed = LOOP - 1;
-    for (const e of EV) { e.done = true; fire(e); }
-    for (let i = 0; i < 400; i++) step(0.5);
-    draw(); tickUI();
-    return;
-  }
-  let last = performance.now();
-  // Runs only on screen (Patch.onScreen, the site's one pause rule); resumes where it stopped.
-  let on = true;
-  if (window.Patch && Patch.onScreen) Patch.onScreen(cv, (v) => { on = v; if (v) last = performance.now(); });
-  (function frame(now) {
-    if (!cv.isConnected) return;
-    if (on) {
-      const dt = Math.min(.05, (now - last) / 1000);
-      elapsed += now - last; last = now;
-      for (const e of EV) if (!e.done && e.t <= elapsed) { e.done = true; fire(e); }
-      step(dt * 60); draw(); tickUI();
-      if (elapsed > LOOP) { reset(); last = performance.now(); }
-    }
-    requestAnimationFrame(frame);
-  })(last);
-})();
-</script>
-
-<script is:inline data-astro-rerun>
-/* agent_card — miniature of the Engine's live agent transcript card.
-   Scripted replay, ~19s loop; reduced-motion → full transcript, static. */
-(() => {
-  const body = document.getElementById('engAgBody');
-  if (!body || body.dataset.booted) return;
-  body.dataset.booted = '1';
-  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const $ = (id) => document.getElementById(id);
-  const badge = $('engAgBadge'), card = $('engAgCard'), iterlbl = $('engAgIter'),
-        toolct = $('engAgTools'), pmsg = $('engAgMsg');
-
-  const S = [
-    { t: 300, k: 'chip', text: 'ITER 1 · RESEARCH' },
-    { t: 900, k: 'call', tool: 'web_search', args: '{"query": "\\"solid-state battery\\" \\"TRL\\" EV mass market displacement lithium-ion"}' },
-    { t: 2600, k: 'result', tool: 'web_search', text: '"results": [{"title": "Solid-State Batteries: The Technology of the 2030s but the Research…"}, {"title": "The race to 500 Wh/kg"}, …] · 8 results' },
-    { t: 3400, k: 'call', tool: 'query_knowledgebase', args: '{"query": "solid electrolyte interface stability lithium metal anode"}' },
-    { t: 5200, k: 'result', tool: 'query_knowledgebase', text: '[{"type": "signal", "label": "research_velocity: anode", "content_preview": "accelerating (74 recent vs 22 prior 5yr)"}, {"type": "paper", …}] · 6 nodes' },
-    { t: 6000, k: 'call', tool: 'web_fetch', args: '{"url": "https://…/solid-state-roadmap"}' },
-    { t: 8200, k: 'result', tool: 'web_fetch', text: '# Solid-State Battery Roadmap — pilot lines 2026-27, automotive qualification 2028-30, cost parity contingent on sulfide electrolyte scale-up…' },
-    { t: 9200, k: 'iterdone', text: '✓ — Solid-state cells are approaching automotive qualification, but manufacturing scale-up — not cell chemistry — is the binding constraint through 2030.' },
-    { t: 10400, k: 'chip', crit: true, text: 'ITER 2 · CRITIQUE', iter: 'iter 2/3 · critique' },
-    { t: 11200, k: 'call', tool: 'web_search', args: '{"query": "solid-state battery hype counterevidence delays"}' },
-    { t: 13200, k: 'result', tool: 'web_search', text: '"results": [{"title": "Why solid-state timelines keep slipping"}, {"title": "Semi-solid interim chemistries win 2025 design-ins"}, …] · 7 results' },
-    { t: 14600, k: 'iterdone', text: '✓ critique — Vendor roadmap timelines are systematically optimistic; displacement window adjusted to 2030-2034, semi-solid interim chemistries flagged as the near-term winner.' },
-    { t: 16000, k: 'complete' },
-  ];
-  const LOOP = 19000;
-  let start = null, timers = [], tools = 0, pendingEl = null, hbT = 0;
-
-  function el(html, cls) {
-    const d = document.createElement('div');
-    d.className = cls || 'eng-msg';
-    d.innerHTML = html;
-    body.appendChild(d);
-    body.scrollTop = body.scrollHeight;
-    return d;
-  }
-  function fire(e) {
-    if (e.k === 'chip') { el(e.text, 'eng-iterchip' + (e.crit ? ' crit' : '')); if (e.iter) iterlbl.textContent = e.iter; }
-    else if (e.k === 'call') { tools++; toolct.textContent = tools + ' tools'; pendingEl = el('<div class="tl">→ ' + e.tool + '</div><pre>' + e.args + '</pre>'); pendingEl.classList.add('pending'); }
-    else if (e.k === 'result') { if (pendingEl) pendingEl.classList.remove('pending'); el('<div class="tl res">← ' + e.tool + '</div><pre>' + e.text + '</pre>'); }
-    else if (e.k === 'iterdone') { el('<b>ITERATION SUMMARY</b><br>' + e.text, 'eng-summary'); }
-    else if (e.k === 'complete') { badge.textContent = 'COMPLETE'; badge.className = 'eng-badge complete'; card.classList.add('done'); pmsg.textContent = 'Running agent 2/10: market_strategy'; }
-  }
-  function reset() {
-    body.innerHTML = ''; tools = 0; toolct.textContent = '0 tools';
-    iterlbl.textContent = 'iter 1/3 · research';
-    badge.textContent = 'RUNNING'; badge.className = 'eng-badge running';
-    card.classList.remove('done');
-    pmsg.textContent = 'Running agent 1/10: scientific_rd';
-    start = performance.now();
-    S.forEach((e) => timers.push(setTimeout(() => fire(e), e.t)));
-    timers.push(setTimeout(() => { timers.forEach(clearTimeout); timers = []; if (body.isConnected) reset(); }, LOOP));
-  }
-  const ticker = setInterval(() => {
-    if (!body.isConnected) { clearInterval(ticker); timers.forEach(clearTimeout); timers = []; return; }
-    if (!start) return;
-    const sNow = Math.floor((performance.now() - start) / 1000);
-    $('engAgElapsed').textContent = Math.floor(sNow / 60) + ':' + String(sNow % 60).padStart(2, '0');
-    const now = performance.now() - start;
-    let lastT = 0;
-    for (const e of S) if (e.t <= now) lastT = e.t;
-    const q = Math.max(0, Math.floor((now - lastT) / 1000));
-    const qel = $('engAgQuiet');
-    qel.textContent = 'quiet ' + q + 's';
-    qel.classList.toggle('warm', q >= 3);
-    hbT = (hbT + 1) % 9;
-    $('engAgHb').textContent = (hbT + 1) + 's';
-  }, 1000);
-  if (REDUCED) { start = performance.now(); S.forEach(fire); }
-  else reset();
-})();
-</script>
 
 <style>
   /* ---- shared case-study grammar (matches futurescaper.astro) ---- */
@@ -425,102 +278,29 @@ const layout = {
     line-height: 0.98;
     margin-bottom: 8px;
   }
-  .eng-live {
-    display: inline-block;
-    margin-top: 14px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: var(--signal);
-    text-decoration: none;
-    border: 1px solid var(--border-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: border-color var(--duration-normal), background var(--duration-normal);
-  }
-  .eng-live:hover { border-color: var(--signal); background: rgba(61, 255, 136, 0.06); }
 
+  /* placeholders: a later piece, dashed grey at its final size so nothing moves when it lands */
+  .eng-slot {
+    display: grid; place-content: center; text-align: center; gap: 6px;
+    border: 1px dashed var(--border-color); border-radius: 3px;
+    font-family: var(--font-mono); font-size: 10px; line-height: 1.6; letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+  .eng-slot b { color: var(--text-muted); font-weight: 400; }
+
+  /* the trust triangle (layout C): the shape in one card, the three corners in the next */
+  .eng-tri { display: block; width: 100%; height: auto; max-width: 300px; margin: 0 auto; }
+  .eng-tri .e { fill: none; stroke: #3a3a3a; stroke-width: 1.2; }
+  .eng-tri .sec { fill: none; stroke: #2c2c2c; stroke-width: 1; }
+  .eng-tri .c { fill: var(--signal); }
+  .eng-tri text { fill: var(--text-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; }
+  .eng-tri .ico * { fill: none; stroke: var(--signal); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .eng-tri .ico .solid { fill: var(--signal); stroke: none; }
+  .eng-corners { display: grid; gap: 12px; }
+  .eng-corners dt { font-family: var(--font-mono); font-size: 10px; line-height: 1; letter-spacing: 0.14em; color: var(--signal); margin-bottom: 4px; }
+  .eng-corners dd { font-size: 13px; line-height: 1.55; color: var(--text); }
+  .eng-corners .pt { display: block; font-family: var(--font-mono); font-size: 9.5px; line-height: 1.5; letter-spacing: 0.06em; color: var(--text-dim); margin-top: 3px; }
 
   /* ---- viewer interiors: the Engine's own visual language, scoped ---- */
   .eng-viewerwrap { margin: -12px -14px; background: #111111; }
-  .eng-strip {
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 6px 12px;
-    border-bottom: 1px solid #2a2a2a;
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em;
-    color: #9ca3ab;
-  }
-  .eng-lbl { font-size: 8.5px; color: #7d858c; letter-spacing: 0.08em; }
-  .eng-lbl-under { display: block; text-align: right; padding: 8px 12px 10px; }
-  .eng-dot {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: #3dff88; margin-right: 7px; vertical-align: 1px;
-    animation: engpulse 1.5s infinite;
-  }
-  #engHeroCv { display: block; width: 100%; height: auto; background: #111111; }
-  .eng-ticker {
-    display: flex; border-top: 1px solid #2a2a2a;
-    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
-  }
-  .eng-ticker span {
-    flex: 1; padding: 6px 8px; text-align: center; color: #9ca3ab;
-    border-right: 1px solid #2a2a2a; position: relative; transition: color 0.3s;
-  }
-  .eng-ticker span:last-child { border-right: none; }
-  .eng-ticker span.on { color: #3dff88; }
-  .eng-ticker span.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #3dff88; }
-  .eng-ticker span.done { color: #5a5a5a; }
-  @keyframes engpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-  /* agent card (product replica, scoped: sans prose / mono data) */
-  .eng-agentwrap { padding: 14px; }
-  .eng-statusline {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-mono); font-size: 10px; color: #9ca3ab;
-    border: 1px solid #2a2a2a; background: #161616; border-radius: 6px;
-    padding: 8px 12px; margin-bottom: 10px;
-  }
-  .eng-statusline b { color: #fff; font-weight: 500; }
-  .eng-slmain { min-width: 0; }
-  .eng-slright { margin-left: auto; white-space: nowrap; }
-  #engAgQuiet.warm { color: #f2cd5d; }
-  .eng-agent { border: 1px solid #46acc8; border-radius: 8px; background: #1a1a1a; overflow: hidden; transition: border-color 0.4s; }
-  .eng-agent.done { border-color: #333; }
-  .eng-ahead { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #2a2a2a; }
-  .eng-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 4px; }
-  .eng-badge.running { color: #46acc8; background: rgba(70, 172, 200, 0.12); animation: engpulse 1.5s infinite; }
-  .eng-badge.complete { color: #5eff8f; background: rgba(94, 255, 143, 0.1); }
-  .eng-aname { font-weight: 600; font-size: 14px; color: #fff; }
-  .eng-ameta { font-family: var(--font-mono); font-size: 10px; color: #7d858c; margin-left: auto; }
-  .eng-abody {
-    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
-    height: 300px; overflow-y: auto; scrollbar-width: thin;
-  }
-  .eng-abody :global(.eng-iterchip) {
-    align-self: flex-start; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
-    color: #46acc8; border: 1px solid #46acc8; border-radius: 4px; padding: 2px 8px;
-  }
-  .eng-abody :global(.eng-iterchip.crit) { color: #f2cd5d; border-color: #f2cd5d; }
-  .eng-abody :global(.eng-msg) {
-    font-family: var(--font-mono); font-size: 10px; line-height: 1.6;
-    border: 1px solid #2a2a2a; border-radius: 6px; padding: 8px 10px; background: #161616;
-    opacity: 0; transform: translateY(6px); animation: engin 0.3s forwards;
-  }
-  .eng-abody :global(.eng-msg .tl) { color: #8285ff; margin-bottom: 2px; }
-  .eng-abody :global(.eng-msg .tl.res) { color: #7d858c; }
-  .eng-abody :global(.eng-msg pre) { margin: 0; white-space: pre-wrap; word-break: break-word; color: #9ca3ab; font: inherit; }
-  .eng-abody :global(.eng-msg.pending .tl::after) { content: ' ⋯'; animation: engpulse 1s infinite; }
-  .eng-abody :global(.eng-summary) {
-    font-size: 11.5px; line-height: 1.55; color: #d0d4d8;
-    border: 1px solid rgba(94, 255, 143, 0.35); border-radius: 6px; padding: 9px 11px;
-    background: rgba(94, 255, 143, 0.05);
-    opacity: 0; animation: engin 0.4s forwards;
-  }
-  .eng-abody :global(.eng-summary b) { color: #5eff8f; font-family: var(--font-mono); font-size: 10px; }
-  @keyframes engin { to { opacity: 1; transform: none; } }
-
-  @media (prefers-reduced-motion: reduce) {
-    .eng-dot, .eng-badge.running { animation: none; }
-    .eng-abody :global(.eng-msg), .eng-abody :global(.eng-summary) { animation: none; opacity: 1; transform: none; }
-  }
 </style>

@@ -1,0 +1,57 @@
+/* Changes agreed after the port (2026-11-14): the board's title and up button, the board-edge
+   highlight, the fixed banner slot, and steering. engine.css stays the prototype's own stylesheet.
+   Prototypes: docs/prototypes/engine-board-nav.html, engine-steering-states.html. */
+
+/* ---------- board: title, up button, edge highlight ---------- */
+.bnav{position:absolute;inset:0;pointer-events:none;z-index:6}
+.bnav-title{position:absolute;top:14px;left:18px;max-width:36%;display:flex;flex-direction:column;gap:3px}
+.bnav-title h2{margin:0;font-size:20px;line-height:1.15;font-weight:600;letter-spacing:-.005em;color:var(--ink)}
+.bnav-up{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:center}
+.upbtn{pointer-events:auto;display:flex;align-items:center;gap:6px;border:1px solid var(--hair2);background:var(--card);color:var(--ink);border-radius:var(--r);padding:6px 12px 6px 9px;font-size:13px;font-weight:500;box-shadow:var(--sh-card)}
+.upbtn:hover{border-color:var(--ink)}
+.upbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* With nothing selected the board itself is what the inspector describes: it gets the selected outline. */
+.canvas::after{content:"";position:absolute;inset:3px;border:2px solid transparent;border-radius:var(--r);pointer-events:none;z-index:5;transition:border-color .15s}
+.canvas.focus::after{border-color:var(--ink)}
+
+/* ---------- the banner slot ---------- */
+.bslot{position:relative;height:88px;margin:10px 12px 0;flex:none}
+.bslot>*{position:absolute;inset:0;margin:0;overflow:hidden}
+.bslot .fbt>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bstatus{background:var(--paper);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:12px 14px;border:1px solid var(--hair);border-radius:4px;font-size:12.5px;color:var(--muted)}
+.bstatus b{font-size:14px;color:var(--ink);font-weight:600}
+.bstatus span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fbanner.b-green{background:color-mix(in srgb,var(--ok) 8%,var(--paper));border-color:color-mix(in srgb,var(--ok) 40%,var(--paper))}
+.fbanner.b-green .fbi{color:var(--ok)}
+.fbr-col{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.bslot .b-in{animation:bslot-in .25s ease both}
+.bslot .b-out{animation:bslot-out .12s ease both;pointer-events:none}
+@keyframes bslot-in{from{opacity:0}}
+@keyframes bslot-out{to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.bslot .b-in,.bslot .b-out{animation:none}.bslot .b-out{display:none}}
+/* Phone and narrow: no icon, the second body line goes, the buttons and countdown sit underneath. */
+@media (max-width:1000px){.bslot{height:176px}.bslot .fbanner{flex-wrap:wrap;align-items:flex-start;gap:8px 14px}.bslot .fbi{display:none}.bslot .fbt>span.mut{display:none}.bslot .fbr{width:100%;justify-content:flex-start}.fbr-col{align-items:flex-start}}
+
+/* ---------- steering ---------- */
+.steer{display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--hair)}
+.snote{border:1px solid var(--hair2);border-radius:var(--r);padding:8px 10px;font-size:12.5px;background:var(--card)}
+.snote.ok{border-color:color-mix(in srgb,var(--ok) 50%,var(--paper));background:color-mix(in srgb,var(--ok) 7%,var(--card))}
+.slist{margin:6px 0 0;padding-left:16px}.slist li{font-size:12px;line-height:1.6}
+.sset,.sfield{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.sval{display:flex;align-items:center;gap:6px}.sval s{color:var(--faint)}
+.sval input{width:58px;font:inherit;padding:3px 6px;border:1px solid var(--hair2);border-radius:var(--r);background:var(--card);color:var(--ink)}
+.small{font-size:12px;margin:0}
+.btn.ghost{border-style:dashed;color:var(--faint);background:transparent;cursor:default}
+.react-flow__node.st-pend .np,.react-flow__node.st-pend .nb{box-shadow:0 0 0 2px var(--s1)}
+.react-flow__node.st-new .np,.react-flow__node.st-hasnew .nb{box-shadow:0 0 0 2px color-mix(in srgb,var(--s3) 70%,transparent)}
+.stl{margin:4px 8px 6px;font-size:10.5px;font-weight:600}
+.stl.new{color:var(--s3)}.stl.pend{color:var(--s1)}
+.flag.new{color:var(--s3)}
+.rwbox{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.rwbox textarea{font:inherit;font-size:13px;padding:8px;border:1px solid var(--hair2);border-radius:var(--r);background:var(--card);color:var(--ink);resize:vertical}
+
+/* ---------- fact values in the report: the value, with its token on hover or focus ---------- */
+.tokv{position:relative;display:inline-block;border-bottom:1px dotted color-mix(in srgb,var(--s1) 70%,transparent);color:var(--ink);font-weight:600;cursor:help;outline:none}
+.tokv:hover,.tokv:focus-visible{color:var(--s1);border-bottom-color:var(--s1)}
+.tokv-k{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;font:500 11px var(--f-mono);background:var(--ink);color:var(--paper);border-radius:3px;padding:2px 6px;opacity:0;pointer-events:none;transition:opacity .12s;z-index:3}
+.tokv:hover .tokv-k,.tokv:focus-visible .tokv-k{opacity:1}

@@ -5,6 +5,8 @@
 @import './link-button.css';
 /* A ported product brings its own Tailwind theme and builds its own stylesheet. */
 @source not '../components/react/demos/domainclaim';
+/* The Engine demo brings the prototype's own stylesheet (engine.css), loaded only in its document. */
+@source not '../components/react/demos/engine';
 
 /* ============================================
    Display face: Red Hat Display, self-hosted (src/styles/fonts.css).

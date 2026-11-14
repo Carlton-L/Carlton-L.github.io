@@ -1,0 +1,414 @@
+<!-- Status: draft · 2026-11-14 · Interactive trust triangle for the Engine case study. Question: which interaction makes observability, traceability and steerability felt, not just read: the patch triangle, removing a corner, or dragging the point? -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trust triangle · prototype</title>
+<style>
+  :root { --bg: #0a0a0a; --card: #121212; --line: #2a2a2a; --text: #e9e9e9; --muted: #9a9a9a; --dim: #666; --signal: #3dff88; --sigdim: #1f5a37;
+    --mono: "Sometype Mono", ui-monospace, "SF Mono", Menlo, monospace; --display: "Red Hat Display", system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 118px 20px 80px; }
+  @media (max-width: 760px) { body { padding-top: 20px; } }
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 50; background: #f4f1ea; color: #1a1a1a; border-bottom: 1px solid #cfc8b8; padding: 10px 18px; font: 12px/1.4 system-ui, sans-serif; }
+  @media (max-width: 760px) { .bar { position: static; margin: -20px -20px 20px; } }
+  .bar .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .bar b { font-weight: 650; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .bar .grp > span { color: #6b6457; margin-right: 4px; }
+  .bar button { font: inherit; padding: 4px 9px; border: 1px solid #b9b09c; background: #fff; border-radius: 4px; cursor: pointer; color: #1a1a1a; }
+  .bar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .bar .rec { font-size: 10px; color: #8a5a00; margin-left: 3px; }
+  .bar button[aria-pressed="true"] .rec { color: #ffd27a; }
+  .bar p { color: #4d473c; margin-top: 6px; max-width: 130ch; }
+
+  .host { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .about { max-width: 820px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .about b { color: var(--text); font-weight: 600; }
+  .op { background: var(--card); border: 1px solid var(--line); border-radius: 4px; width: 820px; max-width: 100%; }
+  body[data-w="phone"] .op { width: 360px; }
+  .op .hd { display: flex; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--line); font: 9.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .op .hd .ty { color: var(--signal); }
+  .op .bd { position: relative; height: 500px; overflow: hidden; padding: 16px 18px; }
+  body[data-w="phone"] .op .bd { height: 820px; padding: 14px; }
+  .meta { font: 9.5px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .dir { display: none; height: 100%; }
+  body[data-dir="a"] .dir[data-d="a"], body[data-dir="b"] .dir[data-d="b"], body[data-dir="c"] .dir[data-d="c"] { display: grid; }
+
+  /* shared bits */
+  .cn { font: 10px/1 var(--mono); letter-spacing: .16em; color: var(--signal); }
+  .copy { font-size: 13.5px; line-height: 1.6; }
+  .chipbtn { font: 10px/1 var(--mono); letter-spacing: .1em; color: var(--signal); background: none; border: 1px solid var(--signal); border-radius: 3px; padding: 6px 9px; cursor: pointer; text-transform: uppercase; }
+  .chipbtn:hover { background: #3dff8812; }
+  .chipbtn[aria-pressed="false"] { color: var(--dim); border-color: #3a3a3a; border-style: dashed; }
+  .ex { border: 1px solid var(--line); border-radius: 3px; background: #0e0e0e; padding: 12px; }
+  .ex .lbl { font: 9px/1 var(--mono); letter-spacing: .12em; color: var(--dim); margin-bottom: 8px; display: block; }
+
+  /* observe example */
+  .steps { list-style: none; display: grid; gap: 6px; font-size: 12.5px; }
+  .steps li { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  .steps li.run { color: var(--text); }
+  .gl { width: 12px; height: 12px; border-radius: 50%; border: 1.3px dashed #444; flex: none; }
+  .run .gl { border: 1.3px solid #333; border-top-color: var(--signal); animation: spin .8s linear infinite; }
+  .done .gl { border: none; background: var(--signal); position: relative; }
+  .done .gl::after { content: ""; position: absolute; left: 4px; top: 2px; width: 3px; height: 6px; border: solid #0a0a0a; border-width: 0 1.3px 1.3px 0; transform: rotate(45deg); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .statusline { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font: 10px/1.4 var(--mono); letter-spacing: .04em; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .statusline .live { color: var(--signal); }
+  .spinner-only { display: grid; place-items: center; height: 104px; color: var(--dim); font-size: 12.5px; gap: 8px; }
+  .spinner-only i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #333; border-top-color: var(--muted); animation: spin .9s linear infinite; }
+
+  /* trace example */
+  .claim { font-size: 13px; line-height: 1.6; }
+  .claim mark { background: none; color: var(--text); border-bottom: 1px dashed var(--signal); cursor: pointer; }
+  .claim mark.off { border-bottom: none; cursor: default; }
+  .layers { display: grid; gap: 5px; margin-top: 8px; }
+  .layer { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--muted); padding-left: calc(var(--i) * 14px); animation: rise .3s ease both; }
+  .layer b { font: 9px var(--mono); letter-spacing: .1em; color: var(--signal); flex: none; }
+  .layer q { color: var(--text); }
+  .deeper { font: 9.5px var(--mono); letter-spacing: .08em; color: var(--signal); background: none; border: 0; cursor: pointer; padding: 0; margin-top: 4px; text-align: left; }
+  .nosrc { font-size: 12px; color: var(--dim); margin-top: 8px; font-style: italic; }
+  @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+
+  /* steer example: a tiny scene */
+  .scene { width: 100%; height: auto; aspect-ratio: 300 / 104; display: block; background: #12161a; border-radius: 3px; }
+  .scene .sky { fill: #12161a; } .scene .ground { fill: #18201a; }
+  .scene .tree { fill: #2c4a32; } .scene .trunk { fill: #4a3a2a; }
+  .scene .skin { fill: #c8a27c; } .scene .shirt { fill: #8a6bbf; } .scene .legs { fill: #3a3a4a; }
+  .scene .dog { fill: #b08a5a; transition: fill .5s; }
+  .scene.blue-dog .dog { fill: #3d7dff; }
+  .scene.regen .sky { fill: #0e1a33; } .scene.regen .ground { fill: #10234a; } .scene.regen .tree { fill: #1d3d8a; } .scene.regen .shirt { fill: #3d7dff; } .scene.regen .dog { fill: #2a5ad8; } .scene.regen .skin { fill: #8fb0ff; }
+  .scene .giraffe { opacity: 0; transition: opacity .5s; fill: #3d7dff; }
+  .scene.regen .giraffe { opacity: 1; }
+  .scene * { transition: fill .5s; }
+  .steer-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .steer-row .res { font-size: 12px; color: var(--muted); }
+
+  /* A: patch triangle */
+  .dir[data-d="a"] { grid-template-columns: 340px 1fr; gap: 22px; }
+  body[data-w="phone"] .dir[data-d="a"] { grid-template-columns: 1fr; grid-template-rows: 290px 1fr; gap: 10px; }
+  .patch { position: relative; height: 100%; }
+  .patch svg.cables { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .patch .cable { fill: none; stroke: var(--sigdim); stroke-width: 1.4; }
+  .patch .cable.hot { stroke: var(--signal); }
+  .patch .pt { fill: var(--card); stroke: var(--signal); stroke-width: 1.4; }
+  .patch svg.cables { z-index: 2; pointer-events: none; }
+  .patch .pulse { fill: var(--signal); filter: drop-shadow(0 0 4px var(--signal)); }
+  .pop { position: absolute; width: 132px; background: #161616; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; text-align: left; color: var(--text); transition: border-color .25s, box-shadow .25s; padding: 0; }
+  .pop .ph { display: flex; gap: 6px; padding: 4px 7px; border-bottom: 1px solid var(--line); font: 8.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); }
+  .pop .ph b { color: var(--signal); font-weight: 400; }
+  .pop .pb { padding: 7px; font: 700 13px/1.1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+  .pop .port { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--card); border: 1.4px solid var(--sigdim); }
+  .pop[aria-pressed="true"] { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal), 0 0 18px #3dff8822; }
+  .pop[aria-pressed="true"] .port { border-color: var(--signal); background: var(--signal); }
+  .pop:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .pane { display: grid; grid-template-rows: auto auto 1fr; gap: 10px; min-height: 0; }
+  .pane .copy { min-height: 88px; }
+  .idle { font: 9px var(--mono); letter-spacing: .1em; color: var(--dim); position: absolute; left: 0; bottom: 0; }
+
+  /* B: remove a corner */
+  .dir[data-d="b"] { grid-template-rows: auto 1fr; gap: 12px; }
+  .toggles { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toggles .tri-mini { width: 26px; height: 24px; margin-left: 6px; }
+  .tri-mini path { fill: none; stroke: #3a3a3a; } .tri-mini circle { fill: #333; } .tri-mini circle.on { fill: var(--signal); }
+  .ui { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; min-height: 0; align-items: start; }
+  body[data-w="phone"] .ui { grid-template-columns: 1fr; }
+  .ui .ex { position: relative; }
+  .ui .ex.off { border-style: dashed; }
+  .ui .ex.off .lbl { color: #8a4a4a; }
+  .ui .span2 { grid-column: auto; }
+  .bnote { font-size: 12.5px; color: var(--muted); line-height: 1.55; min-height: 40px; }
+  .bnote b { color: var(--text); font-weight: 600; }
+
+  /* C: drag the point */
+  .dir[data-d="c"] { grid-template-columns: 300px 1fr; gap: 22px; }
+  body[data-w="phone"] .dir[data-d="c"] { grid-template-columns: 1fr; grid-template-rows: 280px 1fr; gap: 10px; }
+  .dragtri { position: relative; user-select: none; touch-action: none; }
+  .dragtri svg { width: 100%; height: 100%; overflow: visible; }
+  .dragtri .edge { fill: #3dff8806; stroke: #3a3a3a; stroke-width: 1.2; }
+  .dragtri .spoke { stroke: var(--sigdim); stroke-width: 1; stroke-dasharray: 3 3; }
+  .dragtri .cdot { fill: var(--signal); }
+  .dragtri .clab { fill: var(--muted); font: 9.5px var(--mono); letter-spacing: .12em; cursor: pointer; }
+  .dragtri .handle { fill: var(--bg); stroke: var(--signal); stroke-width: 2; cursor: grab; filter: drop-shadow(0 0 6px #3dff8866); }
+  .dragtri .handle:focus { outline: none; stroke-width: 3; }
+  .dragtri .pct { fill: var(--signal); font: 9px var(--mono); }
+  .mock .scene { max-width: 240px; }
+  .mock { display: grid; gap: 8px; min-height: 0; align-content: start; }
+  .mock .part { transition: opacity .2s, filter .2s; }
+  .ctext { min-height: 66px; }
+</style>
+</head>
+<body data-dir="a" data-w="desk">
+
+<div class="bar" role="region" aria-label="Prototype controls">
+  <div class="row">
+    <b>Trust triangle</b>
+    <div class="grp" role="group" aria-label="Direction"><span>Direction</span>
+      <button data-set-dir="a">A Patch triangle<span class="rec">rec.</span></button>
+      <button data-set-dir="b">B Remove a corner</button>
+      <button data-set-dir="c">C Drag the point</button>
+    </div>
+    <div class="grp" role="group" aria-label="Width"><span>Width</span>
+      <button data-set-w="desk">820 (card on the page)</button>
+      <button data-set-w="phone">360 (phone)</button>
+    </div>
+  </div>
+  <p>Your copy, unchanged. Each direction sits in one operator with a fixed height. The examples are illustrations, not Engine data. ← → switch directions.</p>
+</div>
+
+<div class="host">
+  <div class="about" id="about"></div>
+  <div class="op">
+    <div class="hd"><span class="ty">TXT</span>txt · trust_triangle</div>
+    <div class="bd">
+
+      <!-- A: patch triangle -->
+      <div class="dir" data-d="a">
+        <div class="patch" id="patchA">
+          <svg class="cables" id="cablesA" aria-hidden="true"></svg>
+          <button type="button" class="pop" data-c="o" aria-pressed="false"><span class="ph"><b>SYS</b>corner · 01</span><span class="pb">Observe</span></button>
+          <button type="button" class="pop" data-c="t" aria-pressed="false"><span class="ph"><b>SYS</b>corner · 02</span><span class="pb">Trace</span></button>
+          <button type="button" class="pop" data-c="s" aria-pressed="false"><span class="ph"><b>SYS</b>corner · 03</span><span class="pb">Steer</span></button>
+          <span class="idle" id="idleA">CYCLING · CLICK A CORNER</span>
+        </div>
+        <div class="pane">
+          <span class="meta">How I judge an AI interface</span>
+          <div><div class="cn" id="cnA"></div><p class="copy" id="copyA" style="margin-top:6px"></p></div>
+          <div class="ex" id="exA"></div>
+        </div>
+      </div>
+
+      <!-- B: remove a corner -->
+      <div class="dir" data-d="b">
+        <div>
+          <span class="meta">How I judge an AI interface · switch a corner off</span>
+          <div class="toggles" style="margin-top:8px">
+            <button type="button" class="chipbtn" data-tog="o" aria-pressed="true">Observability</button>
+            <button type="button" class="chipbtn" data-tog="t" aria-pressed="true">Traceability</button>
+            <button type="button" class="chipbtn" data-tog="s" aria-pressed="true">Steerability</button>
+            <svg class="tri-mini" id="miniB" viewBox="0 0 26 24" aria-hidden="true"></svg>
+          </div>
+          <p class="bnote" id="noteB" style="margin-top:10px"></p>
+        </div>
+        <div class="ui">
+          <div class="ex" id="bO"></div>
+          <div class="ex" id="bT"></div>
+          <div class="ex span2" id="bS"></div>
+        </div>
+      </div>
+
+      <!-- C: drag the point -->
+      <div class="dir" data-d="c">
+        <div class="dragtri" id="dragC"></div>
+        <div class="mock">
+          <span class="meta">How I judge an AI interface · drag the point</span>
+          <div class="ctext"><div class="cn" id="cnC"></div><p class="copy" id="copyC" style="margin-top:6px"></p></div>
+          <div class="ex part" id="cO"></div>
+          <div class="ex part" id="cT"></div>
+          <div class="ex part" id="cS"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════════ your copy ═════════ */
+const CORNER = {
+  o: { name: 'OBSERVABILITY', short: 'Observe', copy: 'You can see what it is doing right now: which step is running, what it is reading, and how long it has been quiet.' },
+  t: { name: 'TRACEABILITY', short: 'Trace', copy: 'You can ask where any part came from and what was done with it. Dumping every detail on screen buries the answer, so it comes one layer at a time, as deep as you ask.' },
+  s: { name: 'STEERABILITY', short: 'Steer', copy: 'You can change exactly the part you meant. Ask an image model to make the dog blue and it used to redraw the whole picture, sometimes with a blue giraffe in it. Steering means the dog turns blue and nothing else moves.' },
+};
+const FAIL = {
+  o: '<b>Without observability</b> you get a spinner. Is it working, stuck, or done? You can’t tell, so you wait or you give up.',
+  t: '<b>Without traceability</b> the answer is just an answer. There is no way to check a number, so you trust all of it or none of it.',
+  s: '<b>Without steerability</b> every change is a redo. Ask for a blue dog and the whole picture comes back different, giraffe included.',
+};
+
+/* ═════════ the three small examples (shared) ═════════ */
+const STEPS = ['Reading sources', 'Checking the numbers', 'Writing the summary'];
+let tick = 0;
+function observeHTML(on = true) {
+  if (!on) return `<span class="lbl">OBSERVABILITY · OFF</span><div class="spinner-only"><i></i>Working…</div>`;
+  const read = Math.min(12, 3 + (tick % 14)), done = read >= 12;
+  const st = (i) => i === 0 ? (done ? 'done' : 'run') : i === 1 ? (done ? 'run' : '') : '';
+  return `<span class="lbl">OBSERVABILITY · WHAT IT IS DOING</span>
+    <ul class="steps">${STEPS.map((s, i) => `<li class="${st(i)}"><i class="gl"></i>${s}${i === 0 ? ` · ${read} of 12` : i === 1 && done ? ' · 2 of 5' : i === 2 ? ' · waits for the numbers' : ''}</li>`).join('')}</ul>
+    <div class="statusline"><span class="live">● running</span><span>0:${String(42 + tick % 18).padStart(2, '0')} elapsed</span><span>quiet ${tick % 5}s</span></div>`;
+}
+const TRACE_LAYERS = [
+  ['FACT', 'Storage cost, 2026: <q>€142 per kWh</q>'],
+  ['SOURCE', '<q>Grid storage cost survey</q>, page 4'],
+  ['LINE', '“Installed cost averaged €142/kWh across the 31 sites surveyed.”'],
+];
+let traceDepth = { a: 0, b: 0, c: 0 };
+function traceHTML(key, on = true) {
+  const d = traceDepth[key];
+  if (!on) return `<span class="lbl">TRACEABILITY · OFF</span><p class="claim">Storage at this site would cost <mark class="off">€142 per kWh</mark>, about a third less than diesel over ten years.</p><p class="nosrc">No sources. Take it or leave it.</p>`;
+  return `<span class="lbl">TRACEABILITY · WHERE IT CAME FROM</span>
+    <p class="claim">Storage at this site would cost <mark data-trace="${key}" tabindex="0" role="button">€142 per kWh</mark>, about a third less than diesel over ten years.</p>
+    <div class="layers">${TRACE_LAYERS.slice(0, d).map(([k, v], i) => `<div class="layer" style="--i:${i}"><b>${k}</b><span>${v}</span></div>`).join('')}</div>
+    ${d === 0 ? '<button class="deeper" data-trace="' + key + '">↳ CLICK THE NUMBER</button>' : d < 3 ? '<button class="deeper" data-trace="' + key + '">↳ ONE LAYER DEEPER</button>' : '<button class="deeper" data-trace-reset="' + key + '">↺ FOLD IT BACK</button>'}`;
+}
+let steer = { a: 'base', b: 'base', c: 'base' };
+const SCENE = `<svg class="scene" viewBox="0 0 300 104" preserveAspectRatio="xMidYMid meet" aria-label="A person holding a dog's lead next to a tree">
+  <rect class="sky" width="300" height="104"/><rect class="ground" y="80" width="300" height="24"/>
+  <rect class="trunk" x="246" y="52" width="8" height="30"/><circle class="tree" cx="250" cy="44" r="20"/>
+  <g class="giraffe"><rect x="40" y="58" width="26" height="14" rx="4"/><rect x="58" y="22" width="5" height="40"/><rect x="56" y="16" width="12" height="8" rx="3"/><rect x="42" y="70" width="3" height="12"/><rect x="61" y="70" width="3" height="12"/></g>
+  <rect class="legs" x="140" y="60" width="12" height="22"/><rect class="shirt" x="137" y="36" width="18" height="26" rx="3"/><circle class="skin" cx="146" cy="28" r="8"/>
+  <line x1="155" y1="48" x2="182" y2="64" stroke="#777" stroke-width="1"/>
+  <g class="dog"><rect x="176" y="62" width="26" height="11" rx="5"/><circle cx="204" cy="60" r="6"/><rect x="179" y="71" width="3" height="10"/><rect x="196" y="71" width="3" height="10"/><rect x="171" y="62" width="7" height="2.5" rx="1"/></g>
+</svg>`;
+function steerHTML(key, on = true) {
+  const st = steer[key];
+  const cls = st === 'blue' ? 'blue-dog' : st === 'regen' ? 'regen' : '';
+  const res = st === 'blue' ? 'Only the dog changed.' : st === 'regen' ? 'Redrawn from scratch: new colors everywhere, and a giraffe.' : '';
+  return `<span class="lbl">STEERABILITY · ${on ? 'CHANGE ONE PART' : 'OFF'}</span>${SCENE.replace('class="scene"', `class="scene ${cls}"`)}
+    <div class="steer-row">${st === 'base' ? `<button type="button" class="chipbtn" data-steer="${key}">Make the dog blue</button>` : `<button type="button" class="chipbtn" data-steer-reset="${key}">↺ Reset</button>`}<span class="res">${res}</span></div>`;
+}
+
+/* ═════════ A: patch triangle ═════════ */
+let selA = 'o', autoA = true;
+const POS = { desk: { o: [104, 10], t: [6, 300], s: [202, 300] }, phone: { o: [110, 6], t: [0, 222], s: [200, 222] } };
+function layoutA() {
+  const P = POS[document.body.dataset.w];
+  const box = document.getElementById('patchA'), pops = box.querySelectorAll('.pop');
+  pops.forEach((p) => { const [x, y] = P[p.dataset.c]; p.style.left = x + 'px'; p.style.top = y + 'px'; });
+  const port = (c, side) => { const [x, y] = P[c]; return side === 'b' ? [x + 66, y + 52] : side === 'l' ? [x, y + 26] : side === 'r' ? [x + 132, y + 26] : [x + 66, y]; };
+  const seg = { ot: [port('o', 'b'), port('t', 't')], os: [port('o', 'b'), port('s', 't')], ts: [port('t', 'r'), port('s', 'l')] };
+  const curve = ([a, b]) => `M${a[0]},${a[1]} C${a[0]},${a[1] + 60} ${b[0]},${b[1] - 60} ${b[0]},${b[1]}`;
+  const curveH = ([a, b]) => `M${a[0]},${a[1]} C${(a[0] + b[0]) / 2},${a[1]} ${(a[0] + b[0]) / 2},${b[1]} ${b[0]},${b[1]}`;
+  const svg = document.getElementById('cablesA');
+  svg.innerHTML = `<path id="cab-ot" class="cable" d="${curve(seg.ot)}"/><path id="cab-os" class="cable" d="${curve(seg.os)}"/><path id="cab-ts" class="cable" d="${curveH(seg.ts)}"/>${[...seg.ot, ...seg.os, ...seg.ts].map(([x, y]) => `<circle class="pt" cx="${x}" cy="${y}" r="3.5"/>`).join('')}<circle id="pulseA" class="pulse" r="3.5" cx="-20" cy="-20"/>`;
+
+}
+function pulse(from, to) {
+  const key = [from, to].sort().join(''), id = { ot: 'cab-ot', os: 'cab-os', st: 'cab-ts' }[key];
+  const path = document.getElementById(id), dot = document.getElementById('pulseA'); if (!path || !dot) return;
+  document.querySelectorAll('.cable').forEach((c) => c.classList.toggle('hot', c === path));
+  const L = path.getTotalLength(), rev = (key === 'ot' && from === 't') || (key === 'os' && from === 's') || (key === 'st' && from === 's');
+  const t0 = performance.now(), dur = 520;
+  const step = (now) => { const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const p = path.getPointAtLength((rev ? 1 - e : e) * L); dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+    if (k < 1) requestAnimationFrame(step); else setTimeout(() => dot.setAttribute('cx', -20), 200); };
+  requestAnimationFrame(step);
+}
+function selectA(c, user) {
+  if (user) { autoA = false; document.getElementById('idleA').textContent = 'YOU’RE PICKING · ' + CORNER[c].short.toUpperCase(); }
+  if (c !== selA) pulse(selA, c);
+  selA = c;
+  document.querySelectorAll('#patchA .pop').forEach((p) => p.setAttribute('aria-pressed', p.dataset.c === c));
+  document.getElementById('cnA').textContent = CORNER[c].name;
+  document.getElementById('copyA').textContent = CORNER[c].copy;
+  renderExA();
+}
+function renderExA() { const el = document.getElementById('exA'); el.innerHTML = selA === 'o' ? observeHTML() : selA === 't' ? traceHTML('a') : steerHTML('a'); }
+document.querySelectorAll('#patchA .pop').forEach((p) => p.onclick = () => selectA(p.dataset.c, true));
+
+/* ═════════ B: remove a corner ═════════ */
+const onB = { o: true, t: true, s: true }; let lastB = null;
+function miniTri(el, on) { el.innerHTML = `<path d="M13 3 L3 21 L23 21 Z"/><circle cx="13" cy="3" r="2.6" class="${on.o ? 'on' : ''}"/><circle cx="3" cy="21" r="2.6" class="${on.t ? 'on' : ''}"/><circle cx="23" cy="21" r="2.6" class="${on.s ? 'on' : ''}"/>`; }
+function renderB() {
+  document.querySelectorAll('[data-tog]').forEach((b) => b.setAttribute('aria-pressed', onB[b.dataset.tog]));
+  miniTri(document.getElementById('miniB'), onB);
+  const n = document.getElementById('noteB');
+  n.innerHTML = lastB && !onB[lastB] ? FAIL[lastB] : lastB ? `<b>${CORNER[lastB].name}.</b> ${CORNER[lastB].copy}` : 'All three on: you can watch it, check it and change it. Switch one off to see what goes missing.';
+  const bo = document.getElementById('bO'), bt = document.getElementById('bT'), bs = document.getElementById('bS');
+  bo.className = 'ex' + (onB.o ? '' : ' off'); bo.innerHTML = observeHTML(onB.o);
+  bt.className = 'ex' + (onB.t ? '' : ' off'); bt.innerHTML = traceHTML('b', onB.t);
+  bs.className = 'ex span2' + (onB.s ? '' : ' off'); bs.innerHTML = steerHTML('b', onB.s);
+}
+document.querySelectorAll('[data-tog]').forEach((b) => b.onclick = () => { const k = b.dataset.tog; onB[k] = !onB[k]; lastB = k; if (k === 's') steer.b = 'base'; if (k === 't') traceDepth.b = 0; renderB(); });
+
+/* ═════════ C: drag the point ═════════ */
+let wC = { o: 1 / 3, t: 1 / 3, s: 1 / 3 };
+const TRIC = { desk: { o: [150, 30], t: [20, 260], s: [280, 260] }, phone: { o: [170, 24], t: [20, 250], s: [320, 250] } };
+function drawC() {
+  const T = TRIC[document.body.dataset.w], el = document.getElementById('dragC');
+  const px = (w) => [w.o * T.o[0] + w.t * T.t[0] + w.s * T.s[0], w.o * T.o[1] + w.t * T.t[1] + w.s * T.s[1]];
+  const [hx, hy] = px(wC), pct = (k) => Math.round(wC[k] * 100);
+  const lab = (k, dx, dy, a) => `<text class="clab" x="${T[k][0] + dx}" y="${T[k][1] + dy}" text-anchor="${a}" data-snap="${k}">${CORNER[k].short.toUpperCase()} <tspan class="pct">${pct(k)}%</tspan></text>`;
+  el.innerHTML = `<svg viewBox="0 0 ${document.body.dataset.w === 'phone' ? 340 : 300} 290" aria-label="Triangle with a draggable point">
+    <path class="edge" d="M${T.o} L${T.t} L${T.s} Z"/>
+    ${['o', 't', 's'].map((k) => `<line class="spoke" x1="${hx}" y1="${hy}" x2="${T[k][0]}" y2="${T[k][1]}" style="opacity:${.2 + wC[k]}"/><circle class="cdot" cx="${T[k][0]}" cy="${T[k][1]}" r="${3 + wC[k] * 5}"/>`).join('')}
+    ${lab('o', 0, -10, 'middle')}${lab('t', 0, 22, 'start')}${lab('s', 0, 22, 'end')}
+    <circle class="handle" cx="${hx}" cy="${hy}" r="9" tabindex="0" role="slider" aria-label="Balance between observability, traceability and steerability" aria-valuetext="Observe ${pct('o')}%, trace ${pct('t')}%, steer ${pct('s')}%"/></svg>`;
+  const lead = ['o', 't', 's'].sort((a, b) => wC[b] - wC[a])[0];
+  document.getElementById('cnC').textContent = CORNER[lead].name;
+  document.getElementById('copyC').textContent = CORNER[lead].copy;
+  const part = (id, k, html) => { const p = document.getElementById(id); const w = wC[k]; p.style.opacity = .12 + .88 * Math.min(1, w * 2.2); p.style.filter = `grayscale(${1 - Math.min(1, w * 2.2)})`; if (html !== undefined) p.innerHTML = html; };
+  part('cO', 'o', observeHTML(wC.o > .18)); part('cT', 't', traceHTML('c', wC.t > .18)); part('cS', 's', steerHTML('c', wC.s > .18));
+
+}
+function bary(x, y) {
+  const T = TRIC[document.body.dataset.w], [x1, y1] = T.o, [x2, y2] = T.t, [x3, y3] = T.s;
+  const d = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  let a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / d, b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / d, c = 1 - a - b;
+  a = Math.max(0, a); b = Math.max(0, b); c = Math.max(0, c); const sum = a + b + c; return { o: a / sum, t: b / sum, s: c / sum };
+}
+let dragging = false;
+const dragEl = document.getElementById('dragC');
+const toLocal = (e) => { const svg = dragEl.querySelector('svg'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+dragEl.addEventListener('pointerdown', (e) => {
+  const s = e.target.closest('[data-snap]'); if (s) { const k = s.dataset.snap; wC = { o: .08, t: .08, s: .08 }; wC[k] = .84; drawC(); return; }
+  dragging = true; dragEl.setPointerCapture(e.pointerId); const p = toLocal(e); wC = bary(p.x, p.y); drawC(); });
+dragEl.addEventListener('pointermove', (e) => { if (!dragging) return; const p = toLocal(e); wC = bary(p.x, p.y); drawC(); });
+dragEl.addEventListener('pointerup', () => { dragging = false; });
+dragEl.addEventListener('keydown', (e) => {
+  if (!e.target.classList.contains('handle')) return;
+  const T = TRIC[document.body.dataset.w]; const cur = [wC.o * T.o[0] + wC.t * T.t[0] + wC.s * T.s[0], wC.o * T.o[1] + wC.t * T.t[1] + wC.s * T.s[1]];
+  const m = { ArrowLeft: [-12, 0], ArrowRight: [12, 0], ArrowUp: [0, -12], ArrowDown: [0, 12] }[e.key]; if (!m) return;
+  e.preventDefault(); wC = bary(cur[0] + m[0], cur[1] + m[1]); drawC(); dragEl.querySelector('.handle').focus();
+});
+
+/* ═════════ shared clicks (trace layers, steer) ═════════ */
+document.querySelector('.op').addEventListener('click', (e) => {
+  const tr = e.target.closest('[data-trace]'), trr = e.target.closest('[data-trace-reset]'), st = e.target.closest('[data-steer]'), sr = e.target.closest('[data-steer-reset]');
+  if (tr) { const k = tr.dataset.trace; traceDepth[k] = Math.min(3, traceDepth[k] + 1); }
+  else if (trr) traceDepth[trr.dataset.traceReset] = 0;
+  else if (st) { const k = st.dataset.steer; const on = k === 'b' ? onB.s : k === 'c' ? wC.s > .18 : true; steer[k] = on ? 'blue' : 'regen'; }
+  else if (sr) steer[sr.dataset.steerReset] = 'base';
+  else return;
+  if (dirNow === 'a') { autoA = false; renderExA(); } else if (dirNow === 'b') renderB(); else drawC();
+});
+
+/* ═════════ loop: ticking status line, A's idle cycle ═════════ */
+let dirNow = 'a', cyc = 0;
+setInterval(() => {
+  tick++;
+  if (dirNow === 'a') {
+    if (autoA && tick % 6 === 0) { const order = ['o', 't', 's']; selectA(order[(order.indexOf(selA) + 1) % 3]); }
+    else if (selA === 'o') renderExA();
+  }
+  if (dirNow === 'b' && onB.o) document.getElementById('bO').innerHTML = observeHTML(true);
+  if (dirNow === 'c' && wC.o > .18) document.getElementById('cO').innerHTML = observeHTML(true);
+}, 1000);
+
+/* ═════════ chrome ═════════ */
+const ABOUT = {
+  a: '<b>A · Patch triangle (recommended).</b> The corners are operators in the site’s own grammar, wired with its cables. Click one and a signal runs along the cable to it; its copy and a small live example open beside it. Idle, it cycles through the three. Closest to the site; the example does the arguing.',
+  b: '<b>B · Remove a corner.</b> One small interface with all three on. Switch a corner off and its part breaks: a bare spinner, a number with no source, a redo that brings back a giraffe. The note says what you just lost. Teaches by absence, and makes the copy land hardest.',
+  c: '<b>C · Drag the point.</b> Drag the handle (or press a label, or use the arrow keys) and the interface beside it gains the parts of the corner you move toward, while the others fade and break. The copy follows the leading corner. Most playful; least literal.',
+};
+let width = 'desk';
+function setDir(d) { dirNow = d; document.body.dataset.dir = d; document.getElementById('about').innerHTML = ABOUT[d];
+  document.querySelectorAll('[data-set-dir]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setDir === d));
+  try { history.replaceState(null, '', `#dir=${d}&w=${width}`); } catch (e) {}
+  if (d === 'a') { layoutA(); selectA(selA); } if (d === 'b') renderB(); if (d === 'c') drawC(); }
+document.querySelectorAll('[data-set-dir]').forEach((b) => b.onclick = () => setDir(b.dataset.setDir));
+document.querySelectorAll('[data-set-w]').forEach((b) => b.onclick = () => { width = b.dataset.setW; document.body.dataset.w = width;
+  document.querySelectorAll('[data-set-w]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.setW === width)); setDir(dirNow); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea,[contenteditable],[role="slider"]')) return;
+  const o = ['a', 'b', 'c'], i = o.indexOf(dirNow);
+  if (e.key === 'ArrowRight') setDir(o[(i + 1) % 3]); if (e.key === 'ArrowLeft') setDir(o[(i + 2) % 3]);
+});
+const h = new URLSearchParams(location.hash.slice(1));
+if (['desk', 'phone'].includes(h.get('w'))) { width = h.get('w'); document.body.dataset.w = width; }
+document.querySelectorAll('[data-set-w]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.setW === width));
+setDir(['a', 'b', 'c'].includes(h.get('dir')) ? h.get('dir') : 'a');
+</script>
+</body>
+</html>

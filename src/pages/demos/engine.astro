@@ -1,0 +1,23 @@
+---
+/**
+ * The Engine demo document. The case study embeds it in a scaled frame (ProductFrame); it is never
+ * a page to land on (noindex, left out of the sitemap).
+ *
+ * Its own document because the board sizes itself from the window (100vh) and has its own media
+ * query at 1000px. Everything inside is the ported Engine Blocks prototype, a RECREATION on a
+ * made-up run: see src/components/react/demos/engine/PORT.md.
+ */
+import FrameEntry from '../../components/react/demos/engine/FrameEntry.jsx';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Futurity Engine demo</title>
+  </head>
+  <body>
+    <div class="wrap"><FrameEntry client:only="react" /></div>
+  </body>
+</html>
