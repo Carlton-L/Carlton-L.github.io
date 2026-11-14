@@ -18,6 +18,7 @@ import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
 import CaseTitle from '../../components/case/CaseTitle.astro';
+import SectionHead from '../../components/case/SectionHead.astro';
 import FactList from '../../components/case/FactList.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -139,9 +140,9 @@ const layout = {
     <SectionBreak id="fastBreak1" area="br1" num={1} label="THE NETWORK" />
 
     <Operator id="fastSubjSect" name="process · the_hero_surface" type="txt" area="ssect">
-      <p class="fs-meta">PROCESS · THE SUBJECT PAGE</p>
-      <h2 class="fs-h2">The subject page is a <span class="sig">portal</span></h2>
-      <p class="fs-sub">The live graph underneath, identity above, analytics below.</p>
+      <SectionHead meta="PROCESS · THE SUBJECT PAGE" sub="The live graph underneath, identity above, analytics below.">
+        The subject page is a <span class="sig">portal</span>
+      </SectionHead>
     </Operator>
 
     <Operator id="fastSubjTxt" name="txt · the_page_in_layers" type="txt" area="subj">
@@ -173,9 +174,9 @@ const layout = {
     <SectionBreak id="fastBreak2" area="br2" num={2} label="SETTING UP A WORKSPACE WITH AI" />
 
     <Operator id="fastLbSect" name="process · lab_builder" type="txt" area="lsect">
-      <p class="fs-meta">PROCESS · FROM A CLAUDE SKILL TO AN INTERFACE</p>
-      <h2 class="fs-h2">Describe the work, get the <span class="sig">workspace</span></h2>
-      <p class="fs-sub">Answer a few questions. Lab Builder drafts the goals, finds the subjects and sorts them. Then you change anything you want, in your own words.</p>
+      <SectionHead meta="PROCESS · FROM A CLAUDE SKILL TO AN INTERFACE" sub="Answer a few questions. Lab Builder drafts the goals, finds the subjects and sorts them. Then you change anything you want, in your own words.">
+        Describe the work, get the <span class="sig">workspace</span>
+      </SectionHead>
     </Operator>
 
     <Operator id="fastLbTxt" name="txt · skill_to_interface" type="txt" area="ltxt">
@@ -237,31 +238,7 @@ const layout = {
 </Base>
 
 <style>
-  .fs-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .fs-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--text-muted);
-    margin-top: 10px;
-    line-height: 1.7;
-    max-width: 42ch;
-  }
 
-  .fs-h2 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(18px, 2vw, 26px);
-    line-height: 0.98;
-    margin-bottom: 8px;
-  }
 
 
   /* viewer islands sit flush to the operator edges (DemoFrame owns inner chrome) */

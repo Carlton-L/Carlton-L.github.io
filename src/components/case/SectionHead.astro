@@ -1,0 +1,22 @@
+---
+/**
+ * SectionHead: the heading at the top of a process card. An optional mono meta line, the heading
+ * (mark the word that matters with <span class="sig">), then an optional line under it. The meta
+ * and sub lines are the title card's (CaseTitle); the heading is a size down.
+ *
+ *   <SectionHead meta="PROCESS · THE SUBJECT PAGE" sub="The live graph underneath, identity above.">
+ *     The subject page is a <span class="sig">portal</span>
+ *   </SectionHead>
+ *
+ * Styles: src/styles/case-study.css ("SectionHead").
+ */
+interface Props {
+  meta?: string;
+  sub?: string;
+}
+const { meta, sub } = Astro.props;
+---
+
+{meta && <p class="cst-meta">{meta}</p>}
+<h2 class="csh"><slot /></h2>
+{sub && <p class="cst-sub">{sub}</p>}

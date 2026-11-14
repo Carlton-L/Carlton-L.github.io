@@ -24,6 +24,7 @@ import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
 import CaseTitle from '../../components/case/CaseTitle.astro';
+import SectionHead from '../../components/case/SectionHead.astro';
 import LinkChip from '../../components/case/LinkChip.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -174,7 +175,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- the problem, and what it decided -->
     <Operator id="dcWrong" name="txt · what_goes_wrong" type="txt" area="wrong">
-      <h2 class="dc-h2">What goes <span class="sig">wrong</span></h2>
+      <SectionHead>What goes <span class="sig">wrong</span></SectionHead>
       {cs['What goes wrong'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -206,7 +207,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 01 THE LIVE DEMO: how to use it, then one view with its state card underneath -->
     <Operator id="dcTry" name="txt · try_it" type="txt" area="try">
-      <h2 class="dc-h2">Try <span class="sig">it</span></h2>
+      <SectionHead>Try <span class="sig">it</span></SectionHead>
       {cs['Try it'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -220,7 +221,7 @@ const unionExcerpt = `export type FailureReason =
 
 
     <Operator id="dcReal" name="txt · only_real_states" type="txt" area="real">
-      <h2 class="dc-h2">Only <span class="sig">real</span> states</h2>
+      <SectionHead>Only <span class="sig">real</span> states</SectionHead>
       {cs['Only real states'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -234,7 +235,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 02 THE CODE -->
     <Operator id="dcCode" name="txt · for_the_code_reader" type="txt" area="code">
-      <h2 class="dc-h2">For the <span class="sig">code</span> reader</h2>
+      <SectionHead>For the <span class="sig">code</span> reader</SectionHead>
       {cs['For the code reader'].map((p) => <p class="cs-p">{p}</p>)}
       <CodeExcerpt code={unionExcerpt} file="src/lib/claims/state.ts" note="every failure the check can report" />
     </Operator>
@@ -252,7 +253,7 @@ const unionExcerpt = `export type FailureReason =
 
     <!-- 03 THE PROCESS -->
     <Operator id="dcTwice" name="txt · two_passes" type="txt" area="twice">
-      <h2 class="dc-h2">Two <span class="sig">passes</span></h2>
+      <SectionHead>Two <span class="sig">passes</span></SectionHead>
       {cs['Two passes'].map((p) => <p class="cs-p">{p}</p>)}
     </Operator>
 
@@ -328,15 +329,6 @@ const unionExcerpt = `export type FailureReason =
 <style>
   .dc-lede { margin-top: 12px; max-width: 52ch; }
 
-  .dc-h2 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(18px, 2vw, 26px);
-    line-height: 0.98;
-    margin: 14px 0 8px;
-  }
-  .dc-h2:first-child { margin-top: 0; }
 
   .dc-list + :global(.dc-gh) { margin-top: 14px; }
 

@@ -27,6 +27,7 @@ import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import CaseTitle from '../../components/case/CaseTitle.astro';
+import SectionHead from '../../components/case/SectionHead.astro';
 import LinkChip from '../../components/case/LinkChip.astro';
 import PhotoSlot from '../../components/case/PhotoSlot.astro';
 import ViewSlot from '../../components/ViewSlot.astro';
@@ -117,9 +118,9 @@ const layout = {
     </Operator>
 
     <Operator id="fsSect" name="process · the_build" type="txt" area="sect">
-      <p class="fs-meta">PROCESS · WHAT IT IS / MY ROLE / THREE DECISIONS</p>
-      <h2 class="fs-h2">From <span class="sig">hairball</span> to metro map</h2>
-      <p class="fs-sub">What it is, where I fit, and the three decisions that shaped the build. Then the product itself, running live below.</p>
+      <SectionHead meta="PROCESS · WHAT IT IS / MY ROLE / THREE DECISIONS" sub="What it is, where I fit, and the three decisions that shaped the build. Then the product itself, running live below.">
+        From <span class="sig">hairball</span> to metro map
+      </SectionHead>
     </Operator>
 
     <!-- reserved slot: screenshot of the original POC, once it's dug up -->
@@ -249,31 +250,7 @@ const layout = {
 </Base>
 
 <style>
-  .fs-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .fs-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--text-muted);
-    margin-top: 10px;
-    line-height: 1.7;
-    max-width: 42ch;
-  }
 
-  .fs-h2 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(18px, 2vw, 26px);
-    line-height: 0.98;
-    margin-bottom: 8px;
-  }
 
 
   /* the photo's caption (PhotoSlot): the hint changes with the input */

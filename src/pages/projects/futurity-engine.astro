@@ -20,6 +20,7 @@ import Operator from '../../components/Operator.astro';
 import DecisionCard from '../../components/case/DecisionCard.astro';
 import NextCase from '../../components/case/NextCase.astro';
 import CaseTitle from '../../components/case/CaseTitle.astro';
+import SectionHead from '../../components/case/SectionHead.astro';
 import OwnershipMeter from '../../components/case/OwnershipMeter.astro';
 import SectionBreak from '../../components/case/SectionBreak.astro';
 import PatchField from '../../components/PatchField.astro';
@@ -193,9 +194,9 @@ const layout = {
     <!-- 02 TRACEABILITY -->
     <SectionBreak id="engBreak2" area="br2" num={2} label="TRACEABILITY" />
     <Operator id="engTrSect" name="process · traceability" type="txt" area="trsect">
-      <p class="eng-meta">PROCESS · THE WORKFLOW, REDESIGNED</p>
-      <h2 class="eng-h2">Ask where anything <span class="sig">came from</span></h2>
-      <p class="eng-sub">The same run, folded into layers you open one at a time.</p>
+      <SectionHead meta="PROCESS · THE WORKFLOW, REDESIGNED" sub="The same run, folded into layers you open one at a time.">
+        Ask where anything <span class="sig">came from</span>
+      </SectionHead>
     </Operator>
     <Operator id="engBeforeTxt" name="txt · first_view" type="txt" area="beforetxt">
       <h3 class="cs-dh">The first workflow view</h3>
@@ -240,9 +241,9 @@ const layout = {
     <!-- 03 STEERABILITY -->
     <SectionBreak id="engBreak3" area="br3" num={3} label="STEERABILITY" />
     <Operator id="engStSect" name="process · steerability" type="txt" area="stsect">
-      <p class="eng-meta">PROCESS · WHAT YOU CAN CHANGE</p>
-      <h2 class="eng-h2">Change exactly the <span class="sig">part you meant</span></h2>
-      <p class="eng-sub">Before, during and after a run.</p>
+      <SectionHead meta="PROCESS · WHAT YOU CAN CHANGE" sub="Before, during and after a run.">
+        Change exactly the <span class="sig">part you meant</span>
+      </SectionHead>
     </Operator>
     <Operator id="engStTxt" name="txt · steer" type="txt" area="sttxt">
       {cs['What you can change'].map((p) => <p class="cs-p">{p}</p>)}
@@ -338,30 +339,6 @@ const layout = {
 
 <style>
   /* ---- shared case-study grammar (matches futurescaper.astro) ---- */
-  .eng-meta {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .eng-sub {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--text-muted);
-    margin-top: 10px;
-    line-height: 1.7;
-    max-width: 42ch;
-  }
-  .eng-h2 {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: clamp(18px, 2vw, 26px);
-    line-height: 0.98;
-    margin-bottom: 8px;
-  }
 
 
   /* the trust triangle (layout C): the shape in one card, the three corners in the next */
