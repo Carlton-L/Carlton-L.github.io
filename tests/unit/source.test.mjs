@@ -5,7 +5,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MS } from '../../src/lib/page-clock.js';
-import { projects, homeOrder, caseOrder } from '../../src/data/content.js';
+import { projects, homeOrder, caseOrder, projectsOrder } from '../../src/data/content.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
@@ -73,7 +73,11 @@ test('every slug in the home order is a project with a page', () => {
 });
 
 test('the home order is the agreed one', () => {
-  assert.deepEqual(homeOrder, ['futurescaper', 'domainclaim', 'grid-lamp', 'carlton-dev', 'fast', 'futurity-engine', 'campus-ai']);
+  assert.deepEqual(homeOrder, ['futurescaper', 'domainclaim', 'futurity-engine', 'grid-lamp', 'fast', 'carlton-dev', 'campus-ai']);
+});
+
+test('the /projects order names every project once', () => {
+  assert.deepEqual([...projectsOrder].sort(), projects.map((p) => p.slug).sort());
 });
 
 /** Every PatchField page: the areas its operators ask for and the tiers its layout draws. */

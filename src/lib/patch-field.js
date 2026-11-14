@@ -16,6 +16,15 @@
     const RAWLINKS = JSON.parse(host.dataset.links || '[]');
     // drawn ends = ports stripped; routing keeps the ported form
     const LINKS = RAWLINKS.map((l) => [String(l[0]).split(':')[0], String(l[1]).split(':')[0]]);
+    // A port with no cable isn't drawn (Carlton, 2026-11-14).
+    {
+      const outs = new Set(LINKS.map((l) => l[0])), ins = new Set(LINKS.map((l) => l[1]));
+      host.querySelectorAll('.op').forEach((op) => {
+        const o = op.querySelector(':scope > .port-out'), i = op.querySelector(':scope > .port-in');
+        if (o && !outs.has(op.id)) o.style.visibility = 'hidden';
+        if (i && !ins.has(op.id)) i.style.visibility = 'hidden';
+      });
+    }
     const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const COARSE = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     const isRead = () => document.body.classList.contains('perform');
@@ -169,6 +178,8 @@
 
       const guRaw = parseFloat(getComputedStyle(host).getPropertyValue('--grid-size'));
       const GU = isFinite(guRaw) && guRaw > 0 ? guRaw : 24;
+      // The widest the cards' area gets (Carlton, 2026-11-14): wider windows centre it.
+      const CAP = 1920;
       const snap = (v) => Math.round(v / GU) * GU;
       const jitterFor = (id) => {
         let h = 2166136261;
@@ -214,7 +225,7 @@
          gap, mt and h are in grid units. Nudges are ignored in this mode: use mt. */
       const JUST = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' };
       const ALIGN = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' };
-      function flexLayout(tier, areaEls, W, colW, top) {
+      function flexLayout(tier, areaEls, W, colW, top, X0) {
         const u = (n) => (typeof n === 'string' ? n : (n || 0) * GU + 'px');
         const cols = (n) => Math.max(GU, n * colW - GU / 2);
         const leaves = [];
@@ -256,7 +267,7 @@
           kids.forEach((k) => build(k, d, isRow));
         }
         const sk = box('position:absolute;visibility:hidden;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;');
-        sk.style.left = GU + 'px'; sk.style.top = top + 'px'; sk.style.width = W - 2 * GU + 'px';
+        sk.style.left = X0 + GU + 'px'; sk.style.top = top + 'px'; sk.style.width = W - 2 * GU + 'px';
         sk.style.gap = u(LAYOUT.gap != null ? LAYOUT.gap : 2);
         (tier.rows || []).forEach((r) => build(r, sk, false));
         host.appendChild(sk);
@@ -279,8 +290,10 @@
 
       function relayout() {
         if (isRead()) return;
-        const W = host.clientWidth;
-        if (W < 2) return;
+        // Cards sit in a centered area at most CAP wide; the background and the cables run full width.
+        const FW = host.clientWidth;
+        if (FW < 2) return;
+        const W = Math.min(FW, CAP), X0 = Math.round((FW - W) / 2);
         let tier = LAYOUT.tiers[0];
         for (const t of LAYOUT.tiers) if (W >= (t.min || 0)) tier = t;
         const { nrows, cells } = FLEX ? { nrows: 0, cells: {} } : parseAreas(tier.areas);
@@ -297,7 +310,7 @@
           areaEls[el.dataset.area] = el;
         });
 
-        if (FLEX) { flexLayout(tier, areaEls, W, colW, PAD + padTop); return; }
+        if (FLEX) { flexLayout(tier, areaEls, W, colW, PAD + padTop, X0); return; }
 
         // 1. widths first (content mode measures heights against final widths)
         Object.keys(areaEls).forEach((name) => {
@@ -333,7 +346,7 @@
           const el = areaEls[name];
           const nd = (el.dataset.nudge || '').trim().split(/\s+/).map(parseFloat);
           const jit = LAYOUT.jitter ? jitterFor(name) : [0, 0];
-          const x = PAD + a.c0 * colW + (el.__cx || 0) + (nd[0] || 0) + jit[0];
+          const x = X0 + PAD + a.c0 * colW + (el.__cx || 0) + (nd[0] || 0) + jit[0];
           const y = rowTops[a.r0] + (nd[1] || 0) + jit[1];
           el.style.left = snap(Math.max(0, x)) + 'px';
           el.style.top = snap(Math.max(0, y)) + 'px';
