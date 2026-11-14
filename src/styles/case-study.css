@@ -93,3 +93,6 @@ body.perform .cs-break-num { font-size: 30px; }
 .cs-photo.has-img img { display: block; width: 100%; height: auto; border-radius: 3px 3px 0 0; }
 .cs-photo.has-img .cs-photosub { display: block; padding: 6px 8px; text-align: left; }
 .cs-photo.has-img .cs-photosub.split { display: flex; justify-content: space-between; gap: 10px; opacity: 1; }
+
+/* SectionHead: a process card's heading (meta and sub lines are CaseTitle's) */
+.csh { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 2vw, 26px); line-height: 0.98; margin-bottom: 8px; }

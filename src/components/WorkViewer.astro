@@ -1,0 +1,35 @@
+---
+/**
+ * WorkViewer: the work index's preview screen (home and /projects): the svg the shared preview
+ * engine draws into (src/lib/previs.js), its dither dissolve canvas, and the foot with the scene's
+ * line and the link to the case study. It sits inside the page's VIEW operator; the page's script
+ * finds the parts by the ids it passes, and Previs.rack relabels them when a row is selected.
+ *
+ *   <WorkViewer ids={['viewerSvg', 'viewerDither', 'viewerFoot', 'viewerOpen']} slug="futurescaper"
+ *     foot="SELF-GENERATING · STEEPLE · METRO EDGES" aria="…" paper />
+ *
+ * `slug`, `foot`, `aria` and `paper` describe the first scene (the row the page marks selected), so
+ * the server-drawn screen matches what the engine boots into. Styles: src/styles/work-rack.css.
+ */
+interface Props {
+  /** [svg, dither canvas, foot line, open link] */
+  ids: [string, string, string, string];
+  slug: string;
+  foot: string;
+  aria: string;
+  /** The first scene draws on paper (light). */
+  paper?: boolean;
+}
+const { ids, slug, foot, aria, paper = false } = Astro.props;
+---
+
+<div class="viewer-wrap">
+  <div class="viewer-stage">
+    <svg class:list={['viewer', paper && 'paper']} id={ids[0]} viewBox="0 0 420 240" role="img" aria-label={aria}></svg>
+    <canvas class="viewer-dither" id={ids[1]} aria-hidden="true"></canvas>
+  </div>
+  <div class="vfoot">
+    <span id={ids[2]}>{foot}</span>
+    <a id={ids[3]} href={`/projects/${slug}/`}><b>OPEN NETWORK →</b></a>
+  </div>
+</div>

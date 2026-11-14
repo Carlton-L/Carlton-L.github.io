@@ -1,0 +1,60 @@
+/* The work rack: the viewer and the index rows, shared by home and /projects (each page imports
+ it). The rows' own extras (home's icons and "more" row, /projects' categories and tags) stay on
+ each page. Selection behaviour: Previs.rack in src/lib/previs.js; the viewer: WorkViewer.astro. */
+.viewer-wrap { margin: -12px -14px; }
+.viewer-stage { position: relative; font-size: 0; }
+/* the engine sets the scene's background once it boots; this is the first frame's */
+.viewer { display: block; background: #15140F; width: 100%; height: auto; transition: background 300ms var(--ease-out); }
+.viewer.paper { background: var(--paper); }
+.viewer-dither { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; image-rendering: pixelated; }
+.vfoot {
+  display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px;
+  border-top: 1px solid var(--border-color);
+  font-family: var(--font-mono); font-size: 9.5px; color: var(--text-dim);
+}
+.vfoot a { text-decoration: none; white-space: nowrap; }
+.vfoot b { color: var(--signal); font-weight: 400; }
+/* compact single-line rows (matches /projects — Carlton prefers this) */
+.idx { display: flex; flex-direction: column; gap: 2px; margin: -4px -6px; }
+.idxrow {
+  display: flex; align-items: center; gap: 9px;
+  padding: 4px 11px; border-radius: 6px;
+  border: 1px solid transparent;
+  text-decoration: none; color: var(--text);
+  font-family: var(--font-mono);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.idxnum { font-size: 9px; color: var(--text-dim); width: 15px; flex: none; letter-spacing: 0.04em; }
+.idxmain { display: flex; flex-direction: row; align-items: baseline; gap: 9px; min-width: 0; flex: 1; }
+.idxname { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; flex: none; }
+.idxname::before { content: '▸ '; color: var(--signal-dim); }
+.idxmeta { font-size: 8.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 560px) {
+  .idxmeta { display: none; }
+}
+.idxyear { font-size: 10px; color: var(--text-dim); flex: none; font-variant-numeric: tabular-nums; }
+.idxgo { font-size: 8px; letter-spacing: 0.09em; color: var(--signal); opacity: 0; flex: none; width: 40px; text-align: right; transition: opacity var(--duration-fast); }
+.idxrow:hover, .idxrow.sel { background: color-mix(in srgb, var(--signal) 7%, transparent); border-color: var(--border-color); }
+.idxrow:hover { border-color: var(--border-hover); }
+.idxrow:hover .idxname, .idxrow.sel .idxname { color: var(--signal); }
+.idxrow:hover .idxgo { opacity: 1; }
+/* the selected row always shows its OPEN affordance — on touch it's the
+   "tap again" cue, on hover devices it matches the hover reveal anyway */
+.idxrow.sel .idxgo { opacity: 1; }
+.idxrow.sel { box-shadow: inset 2px 0 0 var(--signal); }
+.idxrow:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+body.perform .patchfield .idx { font-size: 13px; }
+/* ---- the work rack ----
+   PATCH mode: the wrapper doesn't exist layout-wise — both ops float free. */
+.rack { display: contents; }
+/* READ narrow (default): player/playlist. The viewer sticks under the nav
+   as a chromed panel; the index scrolls beneath it, so a selection always
+   cooks a viewer that's on screen. */
+body.perform .patchfield .rack {
+  display: block;
+  max-width: 860px;
+  margin: 0 auto 40px;
+  text-align: left;
+}
+body.perform .patchfield .rack .op { margin: 0 0 18px; max-width: none; }
+body.perform .patchfield .rack .viewer-wrap { margin: 0; }

@@ -1462,5 +1462,66 @@
     };
   }
 
-  window.Previs = { engine: engine, reduced: REDUCED, W: W, H: H };
+  /* ---------- the work rack: index rows wired to the viewer (home and /projects) ----------
+     The selection grammar both pages share: mouse hover previews, a tap previews, focus previews,
+     and a second plain click on the current row follows its link. Rows stay real links (SEO,
+     middle-click, cmd-click); only a plain primary click on a row that isn't current is held.
+     The page owns its patch field: it passes N (node factory, inert stubs without a runtime) and
+     the two node ids, so the cable between them is the page's. Each delivery pulses that cable.
+       o: { eng, N, LIVE, viewId, indexId, op, rows, cur0, nameEl, footEl, openEl,
+            indexIns (more ins for the index node), direct (without a runtime, select directly) }
+     Returns { pick(slug), next(), current() }. */
+  function rack(o) {
+    var eng = o.eng, sel = o.cur0;
+    function relabel() {
+      var m = eng.meta(eng.current());
+      if (o.nameEl) o.nameEl.textContent = m.name;
+      if (o.footEl) o.footEl.textContent = m.foot;
+      if (o.openEl) o.openEl.href = '/projects/' + eng.current() + '/';
+    }
+    var view = o.N(o.viewId, {
+      ins: {
+        selection: function (m) {
+          if (!eng.select(m.slug, !!m.invert)) return;
+          relabel();
+          if (o.op) { o.op.classList.add('cooking'); view.timeout(450, function () { o.op.classList.remove('cooking'); }); }
+        },
+      },
+    });
+    var spec = { outs: { selection: 'object' } };
+    if (o.indexIns) spec.ins = o.indexIns;
+    var idx = o.N(o.indexId, spec);
+    function pick(slug) {
+      if (!slug || slug === sel) return;
+      sel = slug;
+      o.rows.forEach(function (row) { row.classList.toggle('sel', row.dataset.slug === slug); });
+      idx.emit('selection', { slug: slug });
+      if (!o.LIVE && o.direct) { eng.select(slug, false); relabel(); }
+    }
+    function onClick(row) {
+      return function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        if (row.dataset.slug !== sel) { e.preventDefault(); pick(row.dataset.slug); }
+      };
+    }
+    o.rows.forEach(function (row) {
+      idx.listen(row, 'pointerenter', function (e) { if (e.pointerType === 'mouse') pick(row.dataset.slug); });
+      idx.listen(row, 'focus', function () { pick(row.dataset.slug); });
+      idx.listen(row, 'click', onClick(row));
+    });
+    if (!o.LIVE && o.direct) {
+      o.rows.forEach(function (row) {
+        row.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') pick(row.dataset.slug); });
+        row.addEventListener('click', onClick(row));
+      });
+    }
+    var order = o.rows.map(function (r) { return r.dataset.slug; });
+    return {
+      pick: pick,
+      next: function () { pick(order[(order.indexOf(sel) + 1) % order.length]); },
+      current: function () { return sel; },
+    };
+  }
+
+  window.Previs = { engine: engine, rack: rack, reduced: REDUCED, W: W, H: H };
 })();
