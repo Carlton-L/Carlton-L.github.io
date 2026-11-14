@@ -187,12 +187,10 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
       area="title"
       name="input · the_brief"
       meta={project.meta}
-      metaSize="lg"
-      width={null}
       sub={"// 42 SURVEYED · 8 INTERVIEWED · 1,117 CODED MOMENTS. PICK ANY CLAIM AND WALK TO THE EVIDENCE IT STANDS ON."}
     >
       Claims with <span class="sig">receipts</span>
-      <Fragment slot="after">{cs['The question'].map((p) => <p class="cs-p">{p}</p>)}</Fragment>
+      <Fragment slot="after">{cs['The question'].map((p, i) => <p class:list={['cs-p', i === 0 && 'ca-lede']}>{p}</p>)}</Fragment>
     </CaseTitle>
 
     <OwnershipMeter id="caOwn" rows={[['CARLTON LINDSAY', 100], ['MARIO CÁCERES', 100], ['RED RIVERA', 100], ['TOMI AKINADE', 100]]} note="TEAM OF 4. EVERYONE WORKED ON EVERY PART." />
@@ -226,7 +224,7 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
 
     <!-- CHAPTER 01 · THE STUDY -->
     <Operator id="caFacts" name="facts_data" type="data" area="facts" maxw={420}>
-      <FactList class="ca-facts" collapse={false} items={[['ROLE', project.facts.role], ['YEAR', project.facts.year], ['METHOD', project.facts.stack], ['CONTEXT', project.facts.company]]} />
+      <FactList items={[['ROLE', project.facts.role], ['YEAR', project.facts.year], ['METHOD', project.facts.stack], ['CONTEXT', project.facts.company]]} />
     </Operator>
 
     <SectionBreak id="caBreak1" area="br1" num={1} label="THE STUDY" />
@@ -708,11 +706,8 @@ const AREA_REC = ['r1', 'r2', 'r3', 'r4'];
     color: var(--text-muted);
     white-space: nowrap;
   }
-  /* the title and facts: Campus AI's own spacing (CaseTitle, FactList) */
-  :global(.op[id="caTitle"] .cst-h) { margin-bottom: 12px; }
-  :global(.op[id="caTitle"] .cst-sub) { letter-spacing: 0.06em; margin-top: 0; margin-bottom: 12px; max-width: none; }
-  :global(.cs-facts.ca-facts) { gap: 10px 20px; }
-  :global(.cs-facts.ca-facts dd) { font-size: 12px; }
+  /* the title's lede sits under the // line, as on DomainClaim */
+  .ca-lede { margin-top: 12px; }
   .ca-pchip.sig { border-color: var(--signal); color: var(--signal); }
 
 

@@ -34,26 +34,19 @@ interface Props {
   size?: 'md' | 'lg';
   /** The meta line's larger size (10.5px). */
   metaSize?: 'md' | 'lg';
-  /** The heading's wrap width in ch; `null` for none. Default 14. */
-  width?: number | null;
-  /** The sub line's wrap width in ch. Default 42. */
-  subWidth?: number;
   links?: { href: string; label: string }[];
 }
 const {
   id, area, name = 'input · the_problem', ports = 'out', meta, sub, desc, size = 'md', metaSize = 'md',
-  width = 14, subWidth = 42, links = [],
+  links = [],
 } = Astro.props;
 const lg = size === 'lg';
-// Widths go in as custom properties, not as max-width itself, so READ mode's own sizes still win.
-const hStyle = !lg && width !== 14 ? `--cst-w: ${width == null ? 'none' : width + 'ch'}` : undefined;
-const subStyle = subWidth !== 42 ? `--cst-sw: ${subWidth}ch` : undefined;
 ---
 
 <Operator id={id} name={name} type="txt" area={area} ports={ports}>
   <p class:list={['cst-meta', metaSize === 'lg' && 'lg']}>{meta}</p>
-  <h1 class:list={['cst-h', lg && 'lg']} style={hStyle}><slot /></h1>
-  {sub && <p class="cst-sub" style={subStyle}>{sub}</p>}
+  <h1 class:list={['cst-h', lg && 'lg']}><slot /></h1>
+  {sub && <p class="cst-sub">{sub}</p>}
   {desc && <p class="cst-desc">{desc}</p>}
   <slot name="after" />
   {links.length === 1 && <LinkChip href={links[0].href} label={links[0].label} spaced />}
