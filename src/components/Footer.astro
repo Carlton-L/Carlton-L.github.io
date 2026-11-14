@@ -10,12 +10,12 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="relative z-10 border-t border-border mt-auto" style="background: var(--bg-elevated);">
-  <div class="flex items-center gap-4 px-5 md:px-8 lg:px-10 h-[var(--playbar-height)]">
+  <div class="flex items-center gap-4 w-full max-w-[1920px] mx-auto px-5 md:px-8 lg:px-10 h-[var(--playbar-height)]">
     <span class="font-mono text-[11px] text-[var(--signal)] select-none" aria-hidden="true">▶</span>
     <div class="playtrack flex-1" aria-hidden="true"><i></i></div>
     <span class="hidden md:inline font-mono text-[10px] text-text-dim whitespace-nowrap">00:{String(new Date().getMonth() + 1).padStart(2, '0')}:{String(new Date().getDate()).padStart(2, '0')} / ∞</span>
   </div>
-  <div class="flex flex-col md:flex-row justify-between items-center gap-2 px-5 md:px-8 lg:px-10 py-3 border-t border-border">
+  <div class="border-t border-border"><div class="flex flex-col md:flex-row justify-between items-center gap-2 w-full max-w-[1920px] mx-auto px-5 md:px-8 lg:px-10 py-3">
     <p class="font-mono text-[10.5px] text-text-dim">© {year} CARLTON LINDSAY · THIS SITE IS A PATCH — EVERYTHING YOU SEE IS WIRED</p>
     <ul class="flex gap-5 list-none">
       {contactLinks.map(({ label, href }) => (
@@ -34,7 +34,7 @@ const year = new Date().getFullYear();
         <a href="/privacy/" class="font-mono text-[10.5px] uppercase tracking-widest text-text-muted hover:text-[var(--signal)] transition-colors">Privacy</a>
       </li>
     </ul>
-  </div>
+  </div></div>
 </footer>
 
 <style>

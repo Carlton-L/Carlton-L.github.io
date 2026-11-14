@@ -4,6 +4,8 @@ Detailed notes on the site's runtime, layout and backgrounds. Moved out of `CLAU
 
 ## Runtime and cables
 
+- **Which cards are wired (2026-11-14, Carlton).** Section breaks are never wired, and the card before a case study's outcome doesn't wire into it (the outcome still wires on to the next-case card). A port with no cable isn't drawn: `patch-field.js` hides it.
+
 - **Patch runtime (P1, 2026-07-05)**: `src/lib/patch-runtime.js` (`window.Patch`) is the message bus behind the cables — PatchField inlines it and registers each field. Links may carry ports (`['opIndex:selection','opFx']`), which makes the cable a real subscription; every routed delivery pulses it. Page behaviors are node registrations (`net.node(id, {outs, ins, filter})`) whose timers/listeners/observers the runtime tears down on `astro:before-swap` (`Patch.stats()` = leak counter; `?nopatch=1` = kill switch). Homepage = cycle_clock ─tick→ work_index ─selection→ post_fx (filter adds INVERT) → futurescaper_view. ⚠️ Keep patch-runtime.js free of `//` and `/*` inside string/regex literals (PatchField strips comments + `//<dev` blocks at build); the bus is interaction-driven ONLY — nothing emits per-frame (dither/wires rAF loops stay off it). Plan/phases: portfolio folder `design/PATCH_RUNTIME_PLAN.md` (P2 containers + lab, P3 monitor + public spec).
 - Navigation between ideas = **cables** (bezier wires with signal pulses). **Selections re-cook the network** (Carlton's north star): homepage work_index rows swap the VIEW op's preview; interstitial SYS nodes (post_fx INVERT) transform downstream ops — extend this pattern.
 
@@ -11,6 +13,8 @@ Detailed notes on the site's runtime, layout and backgrounds. Moved out of `CLAU
 - **`Patch.link(field, fromId, { port, initial })`** (2026-09-29): a small shared state (`get`, `set`, `on`) that emits on the controller's port, at most once per 120ms, so the cables out of it pulse. Behind `LinkedViews.astro`.
 
 ## Layout resolver
+
+**Width cap (2026-11-14, Carlton).** The cards sit in a centred area at most 1920 px wide (`CAP` in `patch-field.js`); a wider window centres it, and layout tiers resolve as at 1920. The dither background and the cables run full width. The nav and the footer centre their contents at the same 1920 px.
 
 **Flex layouts (2026-10-05).** Every page except the home page now describes its layout as flexbox (`mode: 'flex'`), and the browser does the layout. The page is a column of rows; a row holds cards, or a column of cards where one card sits beside a stack. Why: the sketch placed cards on fixed cells, so spacing between cards of different heights was uneven, and pages leaned on nudges. With flex the gap between rows is the same everywhere (two grid units) and a row is centred, spread or indented by one word.
 

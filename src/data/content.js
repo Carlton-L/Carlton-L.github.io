@@ -736,8 +736,11 @@ export const pinnedItems = projects.filter((p) => p.featured);
  * next-case-study button on every case study walks the whole list, then comes back to the start.
  * The rest follow the /projects page's order.
  */
-export const homeOrder = ['futurescaper', 'domainclaim', 'grid-lamp', 'carlton-dev', 'fast', 'futurity-engine', 'campus-ai'];
+export const homeOrder = ['futurescaper', 'domainclaim', 'futurity-engine', 'grid-lamp', 'fast', 'carlton-dev', 'campus-ai'];
 export const caseOrder = [...homeOrder, 'lab-equipment-portal', 'futures-garden', 'immersive-experience-builder'];
+
+/** The order of rows inside each category on /projects (the categories keep their own order). */
+export const projectsOrder = ['futurity-engine', 'fast', 'carlton-dev', 'futurescaper', 'domainclaim', 'lab-equipment-portal', 'campus-ai', 'grid-lamp', 'futures-garden', 'immersive-experience-builder'];
 
 /** The case study after `slug` in reading order. */
 export const nextCase = (slug) => {

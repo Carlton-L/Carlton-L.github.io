@@ -103,8 +103,7 @@ const indexRows = ORDER_SLUGS
     year: (p.facts?.year ?? '').split('–').pop(),
   }));
 
-// the index shows the 7 featured networks (grid-lamp joined 2026-07-06 between fast and
-// campus-ai; domainclaim joined 2026-09-25 after futurescaper); the rest live at /projects
+// the index shows the 7 case studies in homeOrder (content.js); the rest live at /projects
 const moreCount = projects.length - indexRows.length;
 
 // tiny operator-glyphs per project (currentColor → inherits the row accent)

@@ -19,7 +19,7 @@ import Base from '../../layouts/Base.astro';
 import Operator from '../../components/Operator.astro';
 import PatchField from '../../components/PatchField.astro';
 import PrevisEngine from '../../components/PrevisEngine.astro';
-import { projects, categories } from '../../data/content.js';
+import { projects, categories, projectsOrder } from '../../data/content.js';
 import { getBreadcrumbJsonLd } from '../../lib/seo.js';
 
 const jsonLd = getBreadcrumbJsonLd([
@@ -29,7 +29,8 @@ const jsonLd = getBreadcrumbJsonLd([
 
 const groups = categories.map((cat) => ({
   ...cat,
-  items: projects.filter((p) => p.categorySlug === cat.slug),
+  items: projects.filter((p) => p.categorySlug === cat.slug)
+    .sort((a, b) => projectsOrder.indexOf(a.slug) - projectsOrder.indexOf(b.slug)),
 }));
 
 const yearOf = (p) => (p.facts?.year ?? p.meta.split(' ')[0] ?? '').split('–').pop();
@@ -37,7 +38,7 @@ const roleOf = (p) => (p.facts?.role ?? p.meta.replace(/^[0-9–\s]+—\s*/, '')
 
 const catIdx = { 'apps-systems': 0, 'experiences': 1, 'research': 2, 'product-systems': 3 };
 
-// initial selection = first row (server-rendered chrome must match: FAST)
+// initial selection = first row (server-rendered chrome must match it: the Engine, previs.js's V entry)
 const first = groups[0].items[0];
 
 const links: [string, string][] = [
@@ -81,14 +82,14 @@ const layout = {
     <!-- the work rack: viewer + index are one unit in READ mode (player/playlist);
          display:contents in PATCH mode so both ops float free on the canvas -->
     <div class="rack" data-rack="projects">
-      <Operator id="prView" name="fast_view · SYNBIO.scn" type="view" area="view" maxw={640}>
+      <Operator id="prView" name="futurity_engine_view · TOUR.scn" type="view" area="view" maxw={640}>
         <div class="viewer-wrap">
           <div class="viewer-stage">
-            <svg class="viewer" id="pvSvg" viewBox="0 0 420 240" role="img" aria-label="FAST clustered knowledge graph, live synthetic demo"></svg>
+            <svg class="viewer" id="pvSvg" viewBox="0 0 420 240" role="img" aria-label="Futurity Engine, a recreated tour: a research step fails and is retried, then a number in the report shows where it came from. Recreated preview of the case study demo"></svg>
             <canvas class="viewer-dither" id="pvDither" aria-hidden="true"></canvas>
           </div>
           <div class="vfoot">
-            <span id="pvFoot">KNOWLEDGE GRAPH · SEMANTIC TYPES</span>
+            <span id="pvFoot">RECREATION · OBSERVE · TRACE · STEER</span>
             <a id="pvOpen" href={`/projects/${first.slug}/`}><b>OPEN NETWORK →</b></a>
           </div>
         </div>
