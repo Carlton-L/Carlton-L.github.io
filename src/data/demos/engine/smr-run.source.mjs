@@ -134,7 +134,7 @@ export const STEPS = [
     out: 'Research report "## Small modular reactors for data centres by 2035…", 31 sources, and knowledgebase deposits (44 KB).' },
 
   // ---------- Engineering ----------
-  { id: '10', type: 'tool/futurity', title: 'Patent report', ws: 'c_eng', block: 'e_pat', dur: 38, params: 'lab_code, start_year, end_year',
+  { id: '10', type: 'tool/futurity', title: 'Patent report', ws: 'c_eng', block: 'e_pat', dur: 232, params: 'lab_code, start_year, end_year',
     settings: { Tool: 'reports.generate_modular', Arguments: '{ "report_type": "patent", "lab_code": "{{params.lab_code}}", "start_year": {{params.start_year}}, "end_year": {{params.end_year}} }' },
     inside: 'Calls FAST, which builds the patent report for the lab and the years given at launch.', out: '214 KB modular patent analysis.' },
   { id: '11', type: 'data/script', title: 'Patent aggregates', ws: 'c_eng', block: 'e_pat', dur: 0.2, in: { in: ['10.result', '4.out'] },
@@ -203,7 +203,7 @@ export const STEPS = [
       out: 'List: "1. Track the two light-water construction permits. They are the earliest point at which a 2035 date becomes credible…"' }),
 
   // ---------- Science ----------
-  { id: '31', type: 'tool/futurity', title: 'Paper landscape', ws: 'c_sci', block: 's_paper', dur: 52, params: 'lab_id, start_year, end_year, max_papers, brief',
+  { id: '31', type: 'tool/futurity', title: 'Paper landscape', ws: 'c_sci', block: 's_paper', dur: 247, params: 'lab_id, start_year, end_year, max_papers, brief',
     settings: { Tool: 'papers.landscape', Arguments: '{ "lab_id": "{{params.lab_id}}", "start_year": {{params.start_year}}, "end_year": {{params.end_year}}, "max_papers": {{params.max_papers}} }' },
     inside: 'Calls FAST, which retrieves up to 200 papers on the lab\'s subjects and the years given at launch.', out: '188 KB paper landscape: 520 papers matched, 200 kept for analysis.' },
   { id: '32', type: 'data/script', title: 'Paper aggregates', ws: 'c_sci', block: 's_paper', dur: 0.2, in: { in: ['31.result', '4.out', '11.out'] },
@@ -265,7 +265,7 @@ export const STEPS = [
       out: 'List: "1. Fund fuel qualification first. Every advanced design in the corpus waits on it…"' }),
 
   // ---------- Business ----------
-  { id: '75', type: 'tool/futurity', title: 'Investment report', ws: 'c_biz', block: 'z_data', dur: 47, params: 'lab_code, start_year, end_year',
+  { id: '75', type: 'tool/futurity', title: 'Investment report', ws: 'c_biz', block: 'z_data', dur: 239, params: 'lab_code, start_year, end_year',
     settings: { Tool: 'reports.generate_modular', Arguments: '{ "report_type": "investment", "lab_code": "{{params.lab_code}}", "start_year": {{params.start_year}}, "end_year": {{params.end_year}} }' },
     inside: 'Calls FAST, which builds the investment report for the lab and the years given at launch.', out: '126 KB modular investment analysis.' },
   { id: '76', type: 'data/script', title: 'Business aggregates', ws: 'c_biz', block: 'z_data', dur: 0.1, in: { in: ['75.result', '4.out'] },
@@ -298,7 +298,7 @@ export const STEPS = [
     out: 'Revised arena: "Signed capacity is not built capacity: every agreement names a date after the first construction permit, so the arena could reorder if one permit slips…"' },
   SECTION('84', 'Competitive Arena & SWOT', 'Who is building what and who is buying it, then a SWOT for the leading players.',
     { ws: 'c_biz', block: 'z_comp', dur: 121, in: { insights: ['83.insight'], facts: ['77.facts'] },
-      out: 'Paragraph and table: "Brannock Nuclear builds and runs plants on Orrin Reactor Works modules, and {{fact:biz.top_offtaker}} buys most of their output…"' }),
+      out: 'Paragraph and table: "{{fact:biz.deals}} deals put {{fact:biz.total_investment}} into the field. Brannock Nuclear builds and runs plants on Orrin Reactor Works modules, and {{fact:biz.top_offtaker}} buys most of their output…"' }),
   { id: '90', type: 'agent/conclude', title: 'Business recommendations', ws: 'c_biz', block: 'z_rec', dur: 35, in: { insights: ['83.insight'], facts: ['77.facts'] },
     role: 'You turn the business findings into recommendations. Each one names an action, who would take it and the finding it rests on.',
     goal: 'Conclude across the business insights with three to five recommendations.',

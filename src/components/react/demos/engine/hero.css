@@ -1,0 +1,65 @@
+/* The Engine case study's hero tour (EngineHeroTour.jsx). Site chrome around the demo's frame. The
+   camera box has a fixed size at every width, so the page never moves. */
+.eht { background: #111111; }
+.eht-strip {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 7px 12px; border-bottom: 1px solid #2a2a2a;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: #9ca3ab;
+}
+.eht-lbl { font-size: 8.5px; color: #7d858c; letter-spacing: 0.08em; }
+.eht-try {
+  color: var(--signal); text-decoration: none; border: 1px solid rgba(61, 255, 136, 0.45);
+  border-radius: 3px; padding: 3px 7px; font-size: 9.5px; white-space: nowrap;
+}
+.eht-try:hover, .eht-try:focus-visible { border-color: var(--signal); background: rgba(61, 255, 136, 0.09); outline: none; }
+
+.eht-cam { position: relative; overflow: hidden; aspect-ratio: 900 / 560; background: #111111; }
+@media (max-width: 760px) { .eht-cam { aspect-ratio: auto; height: 460px; } }
+.eht-cam iframe {
+  position: absolute; left: 0; top: 0; width: 1100px; height: 780px; border: 0;
+  transform-origin: 0 0; pointer-events: none; background: #111111;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.eht-cam.still iframe { transition: none; }
+
+/* the pointer */
+.eht-ptr { position: absolute; left: 0; top: 0; width: 18px; height: 18px; z-index: 3; pointer-events: none; opacity: 0; transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s; }
+.eht-ptr.on { opacity: 1; }
+.eht-ptr svg { width: 18px; height: 18px; fill: #fff; stroke: #111; stroke-width: 1; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+.eht-ptr i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--signal); opacity: 0; }
+.eht-ptr.press i { animation: eht-press 0.45s ease-out; }
+@keyframes eht-press { 0% { opacity: 1; transform: scale(0.4); } 100% { opacity: 0; transform: scale(1.8); } }
+
+/* captions: over the UI, lower left; a new one fades and slides in from the bottom */
+.eht-caps { position: absolute; left: 14px; bottom: 14px; z-index: 4; max-width: 62%; pointer-events: none; }
+.eht-cap {
+  display: flex; flex-direction: column; gap: 6px;
+  background: rgba(12, 12, 12, 0.92); border: 1px solid #2a2a2a; border-radius: 4px; padding: 10px 12px;
+}
+.eht-cap b { font: 600 15px/1.25 var(--font-display, var(--font-sans)); color: #fff; }
+.eht-cap.in { animation: eht-cap-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.eht-cap.out { position: absolute; left: 0; bottom: 0; animation: eht-cap-out 0.25s ease both; }
+@keyframes eht-cap-in { from { opacity: 0; transform: translateY(16px); } }
+@keyframes eht-cap-out { to { opacity: 0; transform: translateY(-6px); } }
+.eht-tag {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  font: 9px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--signal);
+  border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px 3px 5px; background: #0e0e0e;
+}
+.eht-tag svg { width: 13px; height: 12px; }
+.eht-tag svg path { fill: none; stroke: #4c6b58; stroke-width: 1.2; }
+.eht-tag svg circle { fill: #4c6b58; }
+.eht-tag svg circle.on { fill: var(--signal); }
+
+.eht-fade { position: absolute; inset: 0; z-index: 5; background: #111111; opacity: 0; pointer-events: none; transition: opacity 0.6s; }
+.eht-fade.on { opacity: 1; }
+
+@media (max-width: 760px) {
+  .eht-caps { left: 10px; bottom: 10px; max-width: 80%; }
+  .eht-cap b { font-size: 13.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eht-cam iframe, .eht-ptr { transition: none; }
+  .eht-cap.in, .eht-cap.out { animation: none; }
+  .eht-cap.out { display: none; }
+}

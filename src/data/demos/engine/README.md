@@ -9,6 +9,8 @@ The data for the Engine workflow demo (a RECREATION; the Engine is recreation-on
 | `smr-run.source.mjs` | The one file to edit: the run, the lab, facts, workstreams, blocks, 70 steps with their wiring, prompts, rejections and outputs, the write order, the report outline and the two steering cases. |
 | `smr-run.js` | Generated. ES module exporting the Engine Blocks prototype's structures (`CATP KIND ENGINE_RULES P D G LEVELS BLOCKS CHAPTERS REPORT_OUTLINE PARENT ORDER_CHAIN LINKS_ALL PARAMS PRODUCTS XW KBR TL`), plus `RUN` (names and counts the views quote), `STORY` (the failure and the default run setting), `STEER` (the steering cases), `FACTS` (each fact token's value and label, shown in the report) and `_meta`. |
 
+`before.json` is the layout for the case study's before/after slider (the old all-at-once screen and the redesign's top level), generated from `smr-run.js` by `scripts/engine-run/build-before.mjs`. Rebuild it after changing the run.
+
 The generator is `scripts/engine-run/build-engine-run.mjs`, with the prototype's port catalog, type names and engine rules in `engine-constants.mjs` beside it. It works out the schedule, prompt parts, levels with node positions, cross-workstream wires, products and filings, and checks every edge has its node and ports.
 
 Rebuild after editing the source:
@@ -36,4 +38,4 @@ The look and behavior the demo reproduces: `docs/prototypes/engine-blocks-smr.ht
 - Rerun "Emerging papers" with the gate threshold lowered from 0.62 to 0.45.
 - Rewrite "Patent Analysis Dimensions" with one added instruction.
 
-Each case lists the steps it leaves stale.
+Each case lists the steps that depend on it (they rerun with it). The rerun's result carries prompt parts for the analyst and section the first pass skipped, since the rerun sends those prompts.

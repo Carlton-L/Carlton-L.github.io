@@ -11,8 +11,10 @@ A RECREATION. The Engine is recreation-only, so this is not the product's code: 
 | `engine.css` | The prototype's own stylesheet, unchanged, after React Flow's (`@import` first, so the prototype's rules win, as they did there). |
 | `engine-changes.css` | Styles for the changes agreed after the port (below). |
 | `embed.css` | Seams for the embed only (below). |
-| `FrameEntry.jsx` | Root of the demo document. Reads the query, posts `{ eng: 'ready' }` to the case study, stops playback off screen. |
-| `EngineWorkflowView.jsx` | The case study's island: DemoFrame (RECREATION) around ProductFrame, 1100 × 780, phone below 720 at 960 tall. |
+| `FrameEntry.jsx` | Root of the demo document. Runs the demo in outside mode, takes commands from the case study and reports the replay back by postMessage, stops playback off screen. |
+| `EngineWorkflowView.jsx` | The case study's island: DemoFrame (RECREATION), the portfolio's replay player, then ProductFrame, 1100 × 780, phone below 720 at 960 tall. |
+| `player.css` | The replay player, in the site's own controls (`.chipbtn`, `input.prange`). |
+| `EngineHeroTour.jsx`, `hero.css` | The case study's hero: the same demo document playing a scripted tour (prototype `docs/prototypes/engine-hero-tour.html`). |
 | `../../../../pages/demos/engine.astro` | The demo document, `/demos/engine/` (noindex, out of the sitemap). |
 
 ## How it was ported
@@ -39,6 +41,26 @@ Decided in `docs/prototypes/engine-steering-states.html` and `engine-board-nav.h
 - **Fact values.** In the report a fact token shows the value Assemble put in, with the token on hover and focus (`FACTS`, exported by the generator). A step's own output keeps the raw token. A token that names no fact stays raw.
 - **Start.** The demo opens at 0:00 ("Ready to replay"), not on the finished run. End shows the finished run.
 - **Steering**, only once the run has finished. In Emerging papers' panel (block or its gate step): change the threshold, see the 12 steps that will rerun (its 3 and the 9 that use its result, outlined on the board), rerun; they show as running for 2.5 s, then done with their new results. The Engine reruns dependents on its own, so nothing is left stale. In the report, "Patent Analysis Dimensions" takes an added instruction and is rewritten. Both can be undone.
+
+## Replay outside the Engine UI (14 Nov 2026)
+
+The play bar replays a recorded run, which the Engine never does, so it moved out of the Engine's frame into the portfolio (prototype: `docs/prototypes/engine-replay-controls.html`).
+
+- **Outside mode** (`transport="outside"`, FrameEntry's default; `?bar=1` brings back the prototype's own bars): no play bar, no Engine header, no Run settings, no instrument box around the sheet, no toolbar (the workstreams view only). The status line speaks as the Engine ("Not started", "Finished · The report is published.").
+- **The player** sits above the frame: play / pause / replay, a scrubber with the crash, retry and filing marked, End. During the hold it shows "Recorded run: Retry at 3 min 20 s · plays in N s"; otherwise no clock or step count.
+- **Messages**: `{ eng: 'cmd', op: 'toggle' | 'play' | 'pause' | 'end' | 'retry' }`, `{ eng: 'cmd', op: 'seek', t }` in; `{ eng: 'run', run }` out (`runSnapshot`: time, end, playing, hold, progress, marks, the recorded retry).
+- **The crash** moves the board to Groundwork with the question research block and its filing in view. There is no Undo choice: going back before 3:01 forgets the choice, and playing through the crash asks again.
+- **Tab badges**: Report counts sections written since you last looked (green) and ones written without the research or declined (amber); Knowledgebase counts pages filed, red while a filing has failed; a pulse when a badge changes, and a one-time hint under the tab. "Show N flagged sections" appears once one exists and opens the report at the first.
+- **The run**: the three FAST data pulls that feed the first charts take about 4 minutes, so nothing reaches the report before the crash; the crash, retry, filing and the 38-minute total are unchanged.
+
+## The hero tour (14 Nov 2026)
+
+`EngineHeroTour.jsx` loads `/demos/engine/` in its own frame and drives it through the same messages as the player, plus `show` (put the board somewhere without clicks). It reads the frame's document (same origin) to aim the camera and the pointer, and clicks only the Engine's own controls.
+
+- Seven captions, each tagged with its corner, over the UI; a new one fades and slides in from the bottom. One pass through the app: Groundwork (steps running; the crash and Retry), the report (it fills; the $4.1B and its source), Science › Emerging papers (one layer at a time; rerun the block; the analyst's prompt, part by part).
+- The camera is the frame's transform: still for the opening (the board eases onto the question research; the crash frames the same nodes the same way, `FOCUS_FIT`) and the crash, then one smooth move per shot. Fades out in place and loops, loading the demo fresh each time.
+- Ignores clicks; "Try it yourself ↓" scrolls to the interactive demo. Stops off screen and starts again on return. Reduced motion: one still frame of the finished run, no tour.
+- Below 720px the frame draws at the container's width (the demo's phone layout) and the camera pans at full size, framing the part in use (the rerun panel, the banner, the prompt parts).
 
 ## Known, carried over from the prototype
 
