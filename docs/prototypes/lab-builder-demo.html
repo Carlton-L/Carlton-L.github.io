@@ -1,0 +1,634 @@
+<!-- Status: superseded by docs/prototypes/lab-builder-demo-v2.html · 2026-11-14 · Lab Builder demo v1 (treatments A to D), kept as the record. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab Builder demo · prototype</title>
+<style>
+  /* ── portfolio host (carlton.dev) ── */
+  :root { --site-bg: #0a0a0a; --site-card: #121212; --site-line: #2a2a2a; --signal: #3dff88; --mono: ui-monospace, "SF Mono", Menlo, monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--site-bg); color: #e9e9e9; font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 128px 20px 80px; }
+  @media (max-width: 760px) { body { padding-top: 20px; } }
+
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 50; background: #f4f1ea; color: #1a1a1a; border-bottom: 1px solid #cfc8b8; padding: 10px 18px; font: 12px/1.4 system-ui, sans-serif; }
+  @media (max-width: 760px) { .bar { position: static; margin: -20px -20px 20px; } }
+  .bar .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .bar b { font-weight: 650; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .bar .grp > span { color: #6b6457; margin-right: 4px; }
+  .bar button { font: inherit; padding: 4px 9px; border: 1px solid #b9b09c; background: #fff; border-radius: 4px; cursor: pointer; color: #1a1a1a; }
+  .bar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .bar .rec { font-size: 10px; color: #8a5a00; margin-left: 3px; }
+  .bar button[aria-pressed="true"] .rec { color: #ffd27a; }
+  .bar p { color: #4d473c; margin-top: 6px; max-width: 130ch; }
+
+  .host { margin: 0 auto; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+  .about { width: 100%; max-width: 900px; font-size: 12.5px; color: #9a9a9a; line-height: 1.6; }
+  .about b { color: #e9e9e9; font-weight: 600; }
+  .op { background: var(--site-card); border: 1px solid var(--site-line); border-radius: 4px; width: 900px; max-width: 100%; }
+  .op .hd { display: flex; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--site-line); font: 9.5px/1 var(--mono); letter-spacing: .08em; color: #9a9a9a; text-transform: uppercase; }
+  .op .hd .ty { color: var(--signal); }
+  body[data-w="phone"] .op { width: 360px; }
+
+  /* DemoFrame strip (portfolio chrome) */
+  .df { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-bottom: 1px solid var(--site-line); font: 9.5px/1.3 var(--mono); letter-spacing: .1em; color: #8a8a8a; text-transform: uppercase; }
+  .df .t { color: #e9e9e9; }
+  .df .lbl { margin-left: auto; text-align: right; }
+  .df button { font: inherit; letter-spacing: inherit; background: none; color: var(--signal); border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px; cursor: pointer; }
+  .df .live { color: var(--signal); }
+  body[data-w="phone"] .df .lbl .long { display: none; }
+
+  /* ── FAST interior (dark tokens from theme/tokens/colors.ts) ── */
+  .fast {
+    --paper: #151514; --panel: #1d1d1c; --panel2: #252523; --card: #212120; --well: #1b1b1a;
+    --ink: #f2f2f0; --muted: #a5a49e; --faint: #63625d; --hair: #2c2c2a; --hair2: #3a3a37; --ok: #51cf66; --bad: #ff6b6b; --subject: #0005E9;
+    --sans: "TT Norms Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --fmono: "TT Norms Pro Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 14px; position: relative; overflow: hidden;
+    height: 600px;
+  }
+  body[data-w="phone"] .fast { height: 640px; }
+  .fast button { font-family: var(--sans); }
+  .micro { font: 10px/1.2 var(--fmono); letter-spacing: .05em; color: var(--muted); text-transform: uppercase; }
+  .faint { color: var(--faint); }
+
+  .fhead { display: flex; align-items: center; gap: 14px; padding: 14px 20px 0; white-space: nowrap; }
+  .fhead .back { font-size: 12.5px; color: var(--faint); }
+  .fhead h1 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .fhead .team { font-size: 12.5px; color: var(--muted); }
+  .fhead .team b { color: var(--ink); font-weight: 600; }
+  .fhead .ns { margin-left: auto; }
+  body[data-w="phone"] .fhead .team, body[data-w="phone"] .fhead .ns, body[data-w="phone"] .fhead .back { display: none; }
+
+  .rail { display: flex; align-items: center; padding: 14px 20px 12px; border-bottom: 1px solid var(--hair); }
+  .rail .ln { width: 44px; height: 1px; background: var(--hair2); margin: 0 14px; flex: none; }
+  .rail button { display: flex; align-items: baseline; gap: 8px; background: none; border: 0; padding: 0; font-size: 13px; font-weight: 500; color: var(--muted); cursor: default; }
+  .rail button.done { cursor: pointer; }
+  .rail button[aria-current] { color: var(--ink); font-weight: 600; }
+  .rail .n { font: 10px var(--fmono); color: var(--faint); }
+  .rail button.done .n { color: var(--ok); }
+  .rail button[aria-current] .n { color: var(--ink); font-weight: 700; }
+  body[data-w="phone"] .rail .ln { width: 12px; margin: 0 6px; }
+  body[data-w="phone"] .rail button .tt { display: none; }
+  body[data-w="phone"] .rail button[aria-current] .tt { display: inline; }
+
+  .body { position: absolute; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 20px 20px 28px; scrollbar-width: thin; scrollbar-color: var(--hair2) transparent; }
+  .body.has-rail { top: 92px; }
+  body[data-w="phone"] .body { padding: 16px 14px 24px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; line-height: 1; padding: 7px 11px; border: 1px solid var(--hair2); border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--ink); }
+  .btn.pri { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.pri:hover { opacity: .86; }
+  .btn.ter { border-color: transparent; padding: 7px 2px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hair2); }
+  .btn.ter:hover { text-decoration-color: var(--ink); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.ghost { border-style: dashed; color: var(--muted); }
+  .key { font: 10px var(--fmono); letter-spacing: .04em; color: var(--faint); }
+
+  .field { width: 100%; background: var(--well); border: 1px solid var(--hair2); border-radius: 3px; color: var(--ink); font: 14px/1.5 var(--sans); padding: 8px 10px; resize: none; }
+  .field:focus { outline: none; border-color: var(--ink); }
+  .field::placeholder { color: var(--faint); }
+
+  .rows { display: grid; grid-template-columns: 120px 1fr auto; gap: 6px 14px; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--hair); font-size: 12.5px; }
+  .rows .k { color: var(--muted); }
+  .rows .v { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rows .v.sk { color: var(--faint); font-style: italic; }
+  .rows .e { font-size: 12px; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; background: none; border: 0; }
+  body[data-w="phone"] .rows { grid-template-columns: 76px 1fr; }
+  body[data-w="phone"] .rows .e { display: none; }
+
+  .qcard { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+  .qcard label.q { font-size: 20px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+  body[data-w="phone"] .qcard label.q { font-size: 17px; }
+  .qcard .hint { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 64ch; }
+  .qcard .acts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--hair2); border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .run { max-width: 560px; padding-top: 30px; }
+  .run h2 { font-size: 20px; font-weight: 600; margin: 8px 0 6px; }
+  .run p { font-size: 12.5px; color: var(--muted); }
+  .bar-ind { height: 2px; background: var(--hair); margin-top: 18px; position: relative; overflow: hidden; }
+  .bar-ind::after { content: ""; position: absolute; top: 0; bottom: 0; width: 30%; background: var(--ink); animation: ind 1.1s ease-in-out infinite; }
+  @keyframes ind { from { left: -30%; } to { left: 100%; } }
+  @media (prefers-reduced-motion: reduce) { .bar-ind::after { animation: none; left: 0; width: 100%; opacity: .4; } }
+
+  .sec { margin-bottom: 18px; }
+  .flabel { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .pchip { font: 10px var(--fmono); letter-spacing: .05em; color: var(--ink); border: 1px solid var(--hair2); border-radius: 3px; padding: 2px 6px; }
+  .goal { background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 12px 14px; margin-bottom: 10px; }
+  .goal h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .goal p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .goal dl { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 4px 22px; margin-top: 10px; }
+  .goal dt { font: 10px var(--fmono); letter-spacing: .05em; color: var(--faint); text-transform: uppercase; display: flex; gap: 6px; align-items: center; }
+  .goal dd { font-size: 12.5px; }
+  body[data-w="phone"] .goal dl { grid-template-columns: 1fr; }
+
+  .note { display: flex; gap: 10px; background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 12px 14px; margin-bottom: 16px; max-width: 760px; }
+  .note .i { color: var(--muted); flex: none; width: 15px; height: 15px; border: 1.4px solid var(--muted); border-radius: 50%; display: grid; place-items: center; font: 700 9px var(--sans); margin-top: 2px; }
+  .note .t { font-size: 13.5px; font-weight: 650; }
+  .note .d { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-top: 4px; }
+  .note .y { font-size: 12px; color: var(--faint); margin-top: 6px; }
+  .note .a { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+
+  .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .tools .sum { font-size: 12px; color: var(--faint); margin-left: 6px; }
+  .board { background: var(--panel); border-radius: 3px; padding: 10px; }
+  .unc { border: 1px dashed var(--hair2); border-radius: 3px; padding: 8px 10px; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .unc .h { font-size: 12.5px; font-weight: 600; }
+  .unc .p { font-size: 12px; color: var(--muted); }
+  .cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  body[data-w="phone"] .cats { grid-template-columns: 1fr; }
+  .cat { border-radius: 3px; padding: 6px; min-height: 60px; }
+  .cat.over { background: var(--panel2); }
+  .cat .ch { display: flex; align-items: baseline; gap: 6px; padding: 2px 4px 6px; }
+  .cat .ch b { font-size: 12.5px; font-weight: 600; }
+  .sub { display: flex; align-items: center; gap: 7px; background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 6px 8px; font-size: 12.5px; margin-bottom: 5px; cursor: grab; }
+  .sub .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--subject); box-shadow: 0 0 0 1px #4a4dff55; flex: none; }
+  .sub .x { margin-left: auto; background: none; border: 0; color: var(--faint); font-size: 12px; cursor: pointer; padding: 0 2px; }
+  .sub .x:hover { color: var(--ink); }
+  .unc .sub { margin: 0; }
+
+  .revise { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--hair); max-width: 760px; }
+  .revise .lab { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+  .revise .hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+  .revise .try { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 0; }
+  .revise .try .chip { font-size: 12px; text-align: left; }
+  .revise .acts { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+  .revise .demo-msg { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .demo-tag { font: 9px var(--fmono); letter-spacing: .08em; color: var(--faint); border: 1px dashed var(--hair2); border-radius: 3px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; }
+
+  .review .rrow { display: grid; grid-template-columns: 110px 1fr auto; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 13px; }
+  .review .rrow .k { color: var(--muted); }
+  body[data-w="phone"] .review .rrow { grid-template-columns: 80px 1fr; }
+  body[data-w="phone"] .review .rrow .e { display: none; }
+
+  .foot { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+
+  /* C: conversation beside the result */
+  .split { position: absolute; inset: 52px 0 0 0; display: grid; grid-template-columns: 340px 1fr; }
+  .split > div { position: relative; overflow-y: auto; padding: 16px 18px 24px; scrollbar-width: thin; scrollbar-color: var(--hair2) transparent; }
+  .split .conv { border-right: 1px solid var(--hair); background: var(--well); }
+  body[data-w="phone"] .split { grid-template-columns: 1fr; grid-template-rows: 46% 54%; }
+  body[data-w="phone"] .split .conv { border-right: 0; border-bottom: 1px solid var(--hair); }
+  .turn { margin-bottom: 12px; font-size: 12.5px; }
+  .turn .q { color: var(--muted); }
+  .turn .a { color: var(--ink); margin-top: 2px; }
+  .turn .a.sk { color: var(--faint); font-style: italic; }
+  .conv .qcard label.q { font-size: 16px; }
+  .empty { border: 1px dashed var(--hair2); border-radius: 3px; padding: 16px; color: var(--faint); font-size: 12.5px; line-height: 1.6; }
+  .split .res .cats { grid-template-columns: repeat(2, 1fr); }
+  body[data-w="phone"] .split .res .cats { grid-template-columns: 1fr; }
+
+  /* B: autoplay overlay hint */
+  .take { position: absolute; right: 12px; bottom: 12px; z-index: 5; font: 10px var(--fmono); letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink); border-radius: 3px; padding: 6px 9px; pointer-events: none; opacity: .92; }
+  .cursor { position: absolute; z-index: 6; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; background: #ffffff33; pointer-events: none; transition: left .5s ease, top .5s ease, opacity .2s; opacity: 0; }
+</style>
+</head>
+<body data-dir="d" data-w="desk">
+
+<div class="bar" role="region" aria-label="Prototype controls">
+  <div class="row">
+    <b>Lab Builder demo</b>
+    <div class="grp" role="group" aria-label="Direction">
+      <span>Treatment</span>
+      <button data-set-dir="a">A Clickable walkthrough</button>
+      <button data-set-dir="b">B Self-playing, take over</button>
+      <button data-set-dir="c">C Conversation beside the board</button>
+      <button data-set-dir="d">D C + self-playing<span class="rec">your pick</span></button>
+    </div>
+    <div class="grp" role="group" aria-label="Jump to state">
+      <span>Jump to</span>
+      <button data-jump="q1">Question</button>
+      <button data-jump="fu">Follow-up</button>
+      <button data-jump="draft">Draft</button>
+      <button data-jump="board">Board</button>
+      <button data-jump="revised">Revision note</button>
+      <button data-jump="review">Review</button>
+    </div>
+    <div class="grp" role="group" aria-label="Width">
+      <span>Width</span>
+      <button data-set-w="desk">900 (PATCH)</button>
+      <button data-set-w="phone">360 (phone)</button>
+    </div>
+  </div>
+  <p>A recreation in FAST's dark tokens and real copy, inside the portfolio's VIEW and DemoFrame chrome. Scripted answers, waits shortened to about 1.5 s. Experiment controls are this bar only. ← → switch treatments.</p>
+</div>
+
+<div class="host">
+  <div class="about" id="about"></div>
+  <div class="op">
+    <div class="hd"><span class="ty">VIEW</span>lab_view · lab_builder</div>
+    <div class="df">
+      <span class="t">LAB BUILDER</span>
+      <span id="dfState"></span>
+      <span class="lbl">RECREATION<span class="long"> · REAL BEHAVIOR, PORTFOLIO CODE · WAITS SHORTENED</span></span>
+      <button type="button" id="dfBtn">↺ RESET</button>
+    </div>
+    <div class="fast" id="fast"></div>
+  </div>
+</div>
+
+<script>
+/* ─────────────── scenario (synthetic) ─────────────── */
+const QUESTIONS = [
+  { key: 'theme', label: 'Theme', q: 'What should this lab be about?', hint: 'The domain, in one line. Lab Builder names the lab from it.', kind: 'input',
+    ph: 'e.g. Long-duration energy storage for rural grids', def: 'Long-duration energy storage for rural grids' },
+  { key: 'goals', label: 'Goals', q: 'What do you want the lab to help you do?', hint: 'Your goal or goals, in your own words. Rough is fine.', kind: 'textarea',
+    ph: 'e.g. Find storage that a co-op can afford…', def: 'Find storage that a co-op can afford instead of diesel backup, and work out what it takes to roll it out across a region.' },
+  { key: 'broken', label: 'What is broken', q: 'What is broken today?', hint: 'The problem behind your goals. If you are not sure, Lab Builder drafts one and marks it for you to check.', kind: 'textarea', skip: 'I’m not sure yet',
+    ph: 'e.g. Rural co-ops run diesel generators…', def: 'Rural co-ops run diesel generators when the grid drops, and the fuel costs more than the power.' },
+  { key: 'who', label: 'For whom', q: 'Who has this problem, and roughly how many?', hint: 'A group and a rough number.', kind: 'input', skip: 'I’m not sure yet',
+    ph: 'e.g. About 2,000 electricity co-operatives and their members', def: '' },
+  { key: 'where', label: 'Where', q: 'Where does this matter most?', hint: 'Optional. Pick as many places as you like, from any of the lists.', kind: 'regions', skip: 'Skip',
+    options: ['Sub-Saharan Africa', 'South Asia', 'Southeast Asia', 'Latin America', 'Europe'], def: ['Sub-Saharan Africa', 'South Asia'] },
+];
+const FOLLOW = { key: 'fu', q: 'For “roll it out across a region”, how far out should the plan look?', hint: 'Pick any that fit, add your own words, or both.',
+  options: ['By 2030', 'By 2035', 'By 2040'], def: ['By 2035'] };
+const RUNS = {
+  followup: ['Lab Builder', 'Reading your answers', 'Lab Builder may ask one or two more questions before the draft. A few seconds.'],
+  draft: ['Lab Builder', 'Drafting the lab', 'Name, description and goals, from what you wrote. Usually under a minute.'],
+  subjects: ['Lab Builder', 'Finding subjects', 'Searching the database for each goal, then judging what fits. One to two minutes.'],
+  'subjects-revise': ['Lab Builder', 'Revising the subject board', 'Applying your request. Anything you didn’t mention stays where it is. Under a minute, longer when it searches for new subjects.'],
+  categorize: ['Lab Builder', 'Sorting uncategorized subjects', 'Placing the uncategorized subjects. A few seconds.'],
+};
+const DRAFT = {
+  name: 'Long-duration storage for rural co-ops',
+  description: 'Which long-duration storage a rural electricity co-op can afford instead of diesel backup, and what it takes to roll it out across a region.',
+  goals: [
+    { name: 'Affordable storage to replace diesel backup', description: 'Co-ops keep the lights on through grid drops with storage that costs less per kWh than diesel. Success is a shortlist of options a co-op board can buy.', horizon: 2032, impact: 60, who: 'Rural co-op members · 500,000 people', whoPh: true, where: 'Sub-Saharan Africa, South Asia' },
+    { name: 'A regional rollout plan for co-op storage', description: 'Know what financing, skills and suppliers a region needs before co-ops install storage at scale.', horizon: 2035, impact: 70, who: 'Rural co-op members · 500,000 people', whoPh: true, where: 'Sub-Saharan Africa, South Asia' },
+  ],
+};
+const BOARD0 = [
+  { name: 'Battery chemistry', subs: ['Iron-air battery', 'Sodium-ion battery', 'Zinc-bromine flow battery', 'Vanadium redox flow battery'] },
+  { name: 'Mechanical & thermal storage', subs: ['Compressed air energy storage', 'Gravity energy storage', 'Thermal energy storage'] },
+  { name: 'Microgrids & control', subs: ['Microgrid controller', 'Demand response', 'Virtual power plant'] },
+  { name: 'Hydrogen', subs: ['Green hydrogen', 'Fuel cell backup power'] },
+  { name: 'Financing & rollout', subs: ['Pay-as-you-go energy', 'Energy cooperative', 'Rural electrification'] },
+];
+const UNC0 = ['Second-life EV batteries'];
+const PRESETS = [
+  { text: 'Drop the hydrogen category and find five more on storage.', apply(b) {
+      const h = b.find((c) => c.name === 'Hydrogen'); if (!h) return b;
+      const out = b.filter((c) => c !== h).map((c) => ({ ...c, subs: [...c.subs] }));
+      const bat = out.find((c) => c.name === 'Battery chemistry'), mech = out.find((c) => c.name === 'Mechanical & thermal storage');
+      if (bat) bat.subs.push('Lithium iron phosphate battery', 'Sand battery');
+      if (mech) mech.subs.push('Pumped hydro storage', 'Liquid air energy storage', 'Flywheel energy storage');
+      return out; } },
+  { text: 'Split Microgrids & control into hardware and software.', apply(b) {
+      const i = b.findIndex((c) => c.name === 'Microgrids & control'); if (i < 0) return b;
+      const out = b.map((c) => ({ ...c, subs: [...c.subs] }));
+      out.splice(i, 1, { name: 'Microgrid hardware', subs: ['Microgrid controller'] }, { name: 'Grid software', subs: ['Demand response', 'Virtual power plant'] });
+      return out; } },
+  { text: 'Rename Financing & rollout to Paying for it.', apply(b) {
+      return b.map((c) => c.name === 'Financing & rollout' ? { name: 'Paying for it', subs: [...c.subs] } : { ...c, subs: [...c.subs] }); } },
+];
+
+/* ─────────────── state ─────────────── */
+const fresh = () => ({
+  step: 1, at: 0, answered: [], answers: Object.fromEntries(QUESTIONS.map((q) => [q.key, Array.isArray(q.def) ? [...q.def] : q.def])),
+  skipped: {}, fuPicks: [...FOLLOW.def], fuText: '', fuKnown: false,
+  run: null, draft: null, board: null, unc: [], revision: null, reviseText: '', demoMsg: '', created: false, removedFsids: [],
+});
+let S = fresh();
+const SPLIT = () => dir === 'c' || dir === 'd', AUTO = () => dir === 'b' || dir === 'd';
+let dir = 'a', width = 'desk', timers = [], auto = null, curPos = null;
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const intakeKeys = () => QUESTIONS.map((q) => q.key).concat(S.fuKnown ? ['fu'] : []);
+const totalQ = () => QUESTIONS.length + (S.fuKnown ? 1 : 0);
+const countSubs = (b) => b.reduce((n, c) => n + c.subs.length, 0);
+const fuAnswer = () => [...S.fuPicks, S.fuText.trim()].filter(Boolean).join('; ');
+function rowValue(k) {
+  if (k === 'fu') return fuAnswer() || null;
+  if (S.skipped[k]) return null;
+  const v = S.answers[k];
+  return Array.isArray(v) ? (v.length ? v.join(', ') : null) : (v.trim() || null);
+}
+const skippedText = (k) => (k === 'broken' || k === 'who') ? 'Lab Builder drafts this' : k === 'where' ? 'Anywhere' : 'Skipped';
+const labelOf = (k) => k === 'fu' ? 'Follow-up' : QUESTIONS.find((q) => q.key === k).label;
+
+/* ─────────────── actions ─────────────── */
+function startRun(kind, then, ms = 1500) { S.run = kind; render(); later(() => { S.run = null; then(); render(); }, ms); }
+function nextQ() {
+  const keys = intakeKeys(), k = keys[S.at];
+  if (!S.answered.includes(k)) S.answered.push(k);
+  if (k === 'where' && !S.fuKnown) { startRun('followup', () => { S.fuKnown = true; S.at = keys.length; }); return; }
+  if (k === 'fu') { startRun('draft', () => { S.draft = JSON.parse(JSON.stringify(DRAFT)); S.step = 2; }, 1800); return; }
+  S.at = Math.min(S.at + 1, intakeKeys().length - 1); render();
+}
+function skipQ() { const k = intakeKeys()[S.at]; if (k === 'fu') { S.fuPicks = []; S.fuText = ''; } else S.skipped[k] = true; nextQ(); }
+function backQ() { if (S.at > 0) { S.at--; render(); } }
+function toSubjects() { startRun('subjects', () => { S.board = BOARD0.map((c) => ({ ...c, subs: [...c.subs] })); S.unc = [...UNC0]; S.step = 3; }, 1900); }
+function sortUnc() { startRun('categorize', () => { const b = S.board.find((c) => c.name === 'Battery chemistry') || S.board[0]; b.subs.push(...S.unc); S.unc = []; markEdited(); }, 1100); }
+function diff(before, after) {
+  const where = (b) => { const m = new Map(); b.forEach((c) => c.subs.forEach((s) => m.set(s, c.name))); return m; };
+  const was = where(before), now = where(after), addedTo = new Set(); let added = 0, moved = 0, removed = 0;
+  now.forEach((cat, s) => { const o = was.get(s); if (o === undefined) { added++; addedTo.add(cat); } else if (o !== cat) moved++; });
+  was.forEach((_, s) => { if (!now.has(s)) removed++; });
+  const bn = before.filter((c) => c.subs.length).map((c) => c.name), an = after.filter((c) => c.subs.length).map((c) => c.name);
+  return { added, addedTo: [...addedTo], removed, moved, newCategories: an.filter((n) => !bn.includes(n)), removedCategories: bn.filter((n) => !an.includes(n)) };
+}
+const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function describe(d) { /* revisionCopy.ts, subjects branch */
+  const p = [];
+  if (d.newCategories.length) p.push(`new ${d.newCategories.length === 1 ? 'category' : 'categories'}: ${d.newCategories.join(', ')}`);
+  if (d.removedCategories.length) p.push(`removed ${d.removedCategories.length === 1 ? 'category' : 'categories'}: ${d.removedCategories.join(', ')}`);
+  if (d.moved) p.push(`${pl(d.moved, 'subject', 'subjects')} moved`);
+  if (d.added) p.push(`${pl(d.added, 'subject', 'subjects')} added${d.addedTo.length ? ` to ${d.addedTo.join(', ')}` : ''}`);
+  if (d.removed) p.push(`${pl(d.removed, 'subject', 'subjects')} removed`);
+  if (!p.length) return { title: 'Lab Builder left the board as it was.', detail: 'Nothing changed for that request. Name the categories or subjects you mean and say what should happen to them.' };
+  const t = p.join(' · ');
+  return { title: 'The subject board has been revised.', detail: t.charAt(0).toUpperCase() + t.slice(1) + '.' };
+}
+function revise() {
+  const text = S.reviseText.trim(); if (!text) return;
+  const preset = PRESETS.find((p) => p.text.toLowerCase() === text.toLowerCase());
+  if (!preset) { S.demoMsg = 'This recreation only knows the three requests above. In FAST, Lab Builder takes any request in your own words.'; render(); return; }
+  S.demoMsg = '';
+  const before = S.board.map((c) => ({ ...c, subs: [...c.subs] }));
+  startRun('subjects-revise', () => {
+    S.board = preset.apply(S.board);
+    S.revision = { comment: text, previous: before, editedAfter: false, ...describe(diff(before, S.board)) };
+    S.reviseText = '';
+  }, 1700);
+}
+function markEdited() { if (S.revision) S.revision.editedAfter = true; }
+function undo() { if (!S.revision || S.revision.editedAfter) return; S.board = S.revision.previous; S.revision = null; render(); }
+function removeSub(name) {
+  S.board.forEach((c) => { c.subs = c.subs.filter((s) => s !== name); }); S.unc = S.unc.filter((s) => s !== name);
+  S.removedFsids.push(name); markEdited(); render();
+}
+function moveSub(name, to) {
+  S.board.forEach((c) => { c.subs = c.subs.filter((s) => s !== name); }); S.unc = S.unc.filter((s) => s !== name);
+  if (to === '__unc') S.unc.push(name); else S.board.find((c) => c.name === to).subs.push(name);
+  markEdited(); render();
+}
+
+/* ─────────────── views (FAST interior) ─────────────── */
+const RAIL = [[1, 'Describe'], [2, 'Lab and goals'], [3, 'Subjects'], [4, 'Review']];
+const head = () => `<div class="fhead"><span class="back">← Labs</span><h1>New lab</h1><span class="micro faint">LAB BUILDER</span>
+  <span class="team">in <b>Demo team</b></span><span class="micro faint ns">NOT SAVED UNTIL YOU CREATE</span></div>`;
+const rail = () => `<div class="rail">${RAIL.map(([n, t], i) => `${i ? '<span class="ln"></span>' : ''}<button type="button" class="${n < S.step ? 'done' : ''}" ${n === S.step ? 'aria-current="step"' : ''} data-act="rail" data-n="${n}"><span class="n">${n < S.step ? '✓' : '0' + n}</span><span class="tt">${t}</span></button>`).join('')}</div>`;
+function runView() { const [e, t, s] = RUNS[S.run]; return `<div class="run" role="status"><span class="micro">${e}</span><h2>${t}</h2><p>${s}</p><div class="bar-ind"></div></div>`; }
+
+function answeredRows() {
+  const keys = intakeKeys().filter((k, i) => i < S.at && S.answered.includes(k));
+  if (!keys.length) return '';
+  return `<div class="rows">${keys.map((k) => { const v = rowValue(k); return `<span class="k">${labelOf(k)}</span><span class="v ${v ? '' : 'sk'}">${esc(v || skippedText(k))}</span><button class="e" type="button" data-act="edit" data-k="${k}">Edit</button>`; }).join('')}</div>`;
+}
+function questionCard(compact) {
+  const keys = intakeKeys(), k = keys[S.at], pos = S.at + 1, total = totalQ();
+  const isFu = k === 'fu', meta = isFu ? FOLLOW : QUESTIONS.find((q) => q.key === k);
+  let control = '';
+  if (isFu) control = `<div class="chips">${FOLLOW.options.map((o) => `<button type="button" class="chip" aria-pressed="${S.fuPicks.includes(o)}" data-act="fupick" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+      <input class="field" data-in="fuText" value="${esc(S.fuText)}" placeholder="Or say it in your own words…">`;
+  else if (meta.kind === 'regions') control = `<div class="chips">${meta.options.map((o) => `<button type="button" class="chip" aria-pressed="${S.answers.where.includes(o)}" data-act="region" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  else if (meta.kind === 'textarea') control = `<textarea class="field" rows="${compact ? 3 : 4}" data-in="${k}" placeholder="${esc(meta.ph)}">${esc(S.answers[k])}</textarea>`;
+  else control = `<input class="field" data-in="${k}" value="${esc(S.answers[k])}" placeholder="${esc(meta.ph)}">`;
+  const valid = isFu || meta.kind === 'regions' || S.answers[k].trim() || k === 'who' || k === 'broken';
+  const last = isFu;
+  return `<div class="qcard"><span class="micro">${isFu ? 'Lab Builder asks' : 'Question'} ${pos} of ${total}</span>
+    <label class="q">${esc(meta.q)}</label><p class="hint">${esc(meta.hint)}</p><div>${control}</div>
+    <div class="acts">${S.at > 0 ? '<button type="button" class="btn" data-act="back">← Back</button>' : ''}
+      <button type="button" class="btn pri" data-act="next" ${valid ? '' : 'disabled'}>${last ? 'Done' : 'Next →'}</button>
+      ${!compact && k !== 'where' && !isFu ? `<span class="key">${meta.kind === 'textarea' ? '⌘ / CTRL + ENTER' : 'ENTER'}</span>` : ''}
+      ${meta.skip || isFu ? `<button type="button" class="btn ter" data-act="skip">${esc(meta.skip || 'Skip')}</button>` : ''}</div></div>`;
+}
+function draftView(compact) {
+  const d = S.draft;
+  return `<div class="sec"><div class="flabel">Lab name</div><input class="field" style="font-size:16px;font-weight:600" value="${esc(d.name)}" data-in="draftName"></div>
+    <div class="sec"><div class="flabel">What is this lab trying to learn?</div><textarea class="field" rows="${compact ? 3 : 2}" data-in="draftDesc">${esc(d.description)}</textarea></div>
+    <div class="flabel">Goals · ${d.goals.length}</div>
+    ${d.goals.map((g) => `<div class="goal"><h3>${esc(g.name)}</h3><p>${esc(g.description)}</p>
+      <dl><div><dt>Target horizon year</dt><dd>${g.horizon}</dd></div><div><dt>Impact level</dt><dd>${g.impact}%</dd></div>
+      <div><dt>Target demographics ${g.whoPh ? '<span class="pchip" title="Lab Builder guessed this. Edit or keep.">PLACEHOLDER</span>' : ''}</dt><dd>${esc(g.who)}</dd></div></dl></div>`).join('')}`;
+}
+function revisionNote() {
+  const r = S.revision; if (!r) return '';
+  return `<div class="note" role="status"><span class="i">i</span><div><div class="t">${esc(r.title)}</div><div class="d">${esc(r.detail)}</div>
+    <div class="y">You asked: “${esc(r.comment)}”</div><div class="a">
+    ${!r.editedAfter ? '<button type="button" class="btn" data-act="undo">Undo revision</button>' : '<span class="d" style="margin:0">You have edited since, so the previous version is not restored automatically.</span>'}
+    <button type="button" class="btn ter" data-act="dismiss">Dismiss</button></div></div></div>`;
+}
+function boardView(cols) {
+  const named = S.board.filter((c) => c.subs.length).length, n = countSubs(S.board) + S.unc.length;
+  const sub = (s) => `<div class="sub" draggable="true" data-sub="${esc(s)}"><span class="dot"></span>${esc(s)}<button class="x" type="button" title="Remove" data-act="rm" data-v="${esc(s)}">×</button></div>`;
+  return `${revisionNote()}
+    <div class="tools"><button type="button" class="btn ghost" data-act="search">⌕ Search the database</button>
+      <button type="button" class="btn ghost" data-act="sort" ${S.unc.length ? '' : 'disabled'}>Sort uncategorized subjects${S.unc.length ? ` (${S.unc.length})` : ''}</button>
+      <span class="sum">${n} subjects in ${named} categories${S.unc.length ? ` · ${S.unc.length} uncategorized` : ''} · drag between categories to organize</span></div>
+    <div class="board">
+      ${S.unc.length ? `<div class="unc" data-drop="__unc"><span class="h">Uncategorized</span><span class="micro faint">${S.unc.length}</span><span class="p">Drag into a category, or sort them.</span>${S.unc.map(sub).join('')}</div>` : ''}
+      <div class="cats">${S.board.filter((c) => c.subs.length).map((c) => `<div class="cat" data-drop="${esc(c.name)}"><div class="ch"><b>${esc(c.name)}</b><span class="micro faint">${c.subs.length}</span></div>${c.subs.map(sub).join('')}</div>`).join('')}</div>
+    </div>
+    <div class="revise"><div class="lab">Tell Lab Builder what to change</div>
+      <div class="hint">Ask for any change: add, remove or move subjects; split, merge, rename or delete categories. Anything you don’t mention stays as it is.</div>
+      <textarea class="field" rows="2" data-in="reviseText" placeholder="e.g. Split Other into two named categories. Add 5 subjects on battery chemistry to Grid storage.">${esc(S.reviseText)}</textarea>
+      <div class="try">${PRESETS.map((p, i) => `<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(p.text)}</button>`).join('')}<span class="demo-tag">DEMO REQUESTS</span></div>
+      ${S.demoMsg ? `<div class="demo-msg">${esc(S.demoMsg)}</div>` : ''}
+      <div class="acts"><button type="button" class="btn" data-act="revise" ${S.reviseText.trim() ? '' : 'disabled'}>Revise</button><span class="key">CTRL/⌘ + ENTER TO SEND</span></div></div>`;
+}
+function reviewView() {
+  if (S.created) return `<div class="run"><span class="micro">Recreation</span><h2>The lab would open now.</h2><p>Nothing was created: this is a recreation. In FAST the new lab opens on its Plan tab, with its goals saved.</p>
+    <div class="foot"><button type="button" class="btn" data-act="reset">Start over</button></div></div>`;
+  const cats = S.board.filter((c) => c.subs.length);
+  return `<div class="review"><span class="micro">Does everything look good?</span>
+    <div style="margin-top:8px">
+      <div class="rrow"><span class="k">Lab</span><span>${esc(S.draft.name)}</span><button class="btn ter e" data-act="rail" data-n="2">Edit</button></div>
+      <div class="rrow"><span class="k">Goals</span><span>${S.draft.goals.map((g) => esc(g.name)).join('<br>')}</span><button class="btn ter e" data-act="rail" data-n="2">Edit</button></div>
+      <div class="rrow"><span class="k">Subjects</span><span>${countSubs(S.board) + S.unc.length}</span><button class="btn ter e" data-act="rail" data-n="3">Edit</button></div>
+      <div class="rrow"><span class="k">Categories</span><span>${cats.map((c) => esc(c.name)).join(', ')}</span><button class="btn ter e" data-act="rail" data-n="3">Edit</button></div>
+    </div>
+    <div class="note" style="margin-top:16px"><span class="i">i</span><div class="d" style="margin:0"><b style="color:var(--ink)">What happens when you create:</b> the lab is assembled from existing database subjects (nothing new is built) and its ${S.draft.goals.length} goals are saved right after. It opens immediately.</div></div>
+    <div class="foot"><button type="button" class="btn" data-act="rail" data-n="3">← Back</button><button type="button" class="btn pri" data-act="create">Create lab in Demo team</button></div></div>`;
+}
+function stepBody() {
+  if (S.run) return runView();
+  if (S.step === 1) return answeredRows() + questionCard(false);
+  if (S.step === 2) return draftView(false) + `<div class="foot"><button type="button" class="btn pri" data-act="toSubjects">Find subjects →</button></div>`;
+  if (S.step === 3) return boardView() + `<div class="foot"><button type="button" class="btn pri" data-act="toReview">Review →</button></div>`;
+  return reviewView();
+}
+
+/* C: conversation on the left, what Lab Builder made on the right */
+function convView() {
+  const turns = intakeKeys().filter((k, i) => S.step > 1 || i < S.at).filter((k) => S.answered.includes(k))
+    .map((k) => { const q = k === 'fu' ? FOLLOW.q : QUESTIONS.find((x) => x.key === k).q, v = rowValue(k);
+      return `<div class="turn"><div class="q">${esc(q)}</div><div class="a ${v ? '' : 'sk'}">${esc(v || skippedText(k))}</div></div>`; }).join('');
+  let now = '';
+  if (S.run === 'followup') now = runView();
+  else if (S.run && S.step === 1) now = '';
+  else if (S.step === 1) now = questionCard(true);
+  else if (S.step === 2) now = `<div class="qcard"><span class="micro">Lab and goals</span><label class="q">Edit the draft on the right, then find subjects.</label><div class="acts"><button type="button" class="btn pri" data-act="toSubjects" ${S.run ? 'disabled' : ''}>Find subjects →</button></div></div>`;
+  else if (S.step === 3 && !S.created) now = `<div class="revise" style="margin-top:0;border:0;padding:0">${S.revision ? revisionNote() : ''}<div class="lab">Tell Lab Builder what to change</div>
+      <textarea class="field" rows="2" data-in="reviseText" placeholder="Ask for any change…">${esc(S.reviseText)}</textarea>
+      <div class="try">${PRESETS.map((p, i) => `<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(p.text)}</button>`).join('')}<span class="demo-tag">DEMO REQUESTS</span></div>
+      ${S.demoMsg ? `<div class="demo-msg">${esc(S.demoMsg)}</div>` : ''}
+      <div class="acts"><button type="button" class="btn" data-act="revise" ${S.reviseText.trim() ? '' : 'disabled'}>Revise</button></div>
+      <div class="qcard" style="margin-top:18px"><label class="q">Does everything look good?</label><div class="acts"><button type="button" class="btn pri" data-act="create">Create lab</button></div></div></div>`;
+  else if (S.created) now = `<div class="qcard"><label class="q">The lab would open now.</label><p class="hint">Nothing was created: this is a recreation.</p><div class="acts"><button type="button" class="btn" data-act="reset">Start over</button></div></div>`;
+  return turns + `<div id="now">${now}</div>`;
+}
+function resultView() {
+  if (S.run && S.run !== 'followup') return runView();
+  if (S.step === 1) return `<span class="micro">Your lab</span><div class="empty" style="margin-top:8px">The draft appears here once Lab Builder has your answers: a name, a description and goals, then the subjects sorted into categories.</div>`;
+  let h = `<span class="micro">Your lab</span><div style="margin-top:10px">${draftView(true)}</div>`;
+  if (S.board) {
+    const sub = (s) => `<div class="sub" draggable="true" data-sub="${esc(s)}"><span class="dot"></span>${esc(s)}<button class="x" type="button" data-act="rm" data-v="${esc(s)}">×</button></div>`;
+    h = `<span class="micro">Subjects · ${countSubs(S.board) + S.unc.length}</span><div class="board" style="margin:8px 0 18px">
+      ${S.unc.length ? `<div class="unc" data-drop="__unc"><span class="h">Uncategorized</span>${S.unc.map(sub).join('')}<button type="button" class="btn ghost" data-act="sort">Sort</button></div>` : ''}
+      <div class="cats">${S.board.filter((c) => c.subs.length).map((c) => `<div class="cat" data-drop="${esc(c.name)}"><div class="ch"><b>${esc(c.name)}</b><span class="micro faint">${c.subs.length}</span></div>${c.subs.map(sub).join('')}</div>`).join('')}</div></div>` + h;
+  }
+  return h;
+}
+
+/* ─────────────── render ─────────────── */
+function render() {
+  const el = document.getElementById('fast');
+  const keep = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.in;
+  if (SPLIT()) el.innerHTML = head() + `<div class="split"><div class="conv">${convView()}</div><div class="res">${resultView()}</div></div>`;
+  else el.innerHTML = head() + rail() + `<div class="body has-rail">${stepBody()}</div>`;
+  if (SPLIT()) { const cv = el.querySelector('.conv'), nw = el.querySelector('#now'); if (cv && nw) cv.scrollTop = nw.textContent.trim() ? nw.offsetTop - 14 : cv.scrollHeight; }
+  if (AUTO() && auto) { el.insertAdjacentHTML('beforeend', '<span class="take">Playing · click anywhere to take over</span><span class="cursor" id="cur"></span>');
+    if (curPos) { const c = document.getElementById('cur'); c.style.transition = 'none'; c.style.left = curPos[0] + 'px'; c.style.top = curPos[1] + 'px'; c.style.opacity = 1; c.offsetWidth; c.style.transition = ''; } }
+  if (keep && !auto) { const f = el.querySelector(`[data-in="${keep}"]`); if (f) { f.focus(); const v = f.value; f.value = ''; f.value = v; } }
+  document.getElementById('dfState').innerHTML = AUTO() ? (auto ? '<span class="live">● PLAYING</span>' : 'YOU’RE DRIVING') : '';
+  document.getElementById('dfBtn').textContent = AUTO() && !auto ? '▶ REPLAY' : '↺ RESET';
+}
+
+/* events (delegated) */
+const fastEl = document.getElementById('fast');
+fastEl.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const a = b.dataset.act;
+  if (a === 'next') nextQ(); else if (a === 'skip') skipQ(); else if (a === 'back') backQ();
+  else if (a === 'edit') { S.at = intakeKeys().indexOf(b.dataset.k); render(); }
+  else if (a === 'region') { const v = b.dataset.v, w = S.answers.where; S.answers.where = w.includes(v) ? w.filter((x) => x !== v) : [...w, v]; S.skipped.where = false; render(); }
+  else if (a === 'fupick') { const v = b.dataset.v; S.fuPicks = S.fuPicks.includes(v) ? S.fuPicks.filter((x) => x !== v) : [...S.fuPicks, v]; render(); }
+  else if (a === 'toSubjects') toSubjects();
+  else if (a === 'toReview') { S.step = 4; render(); }
+  else if (a === 'rail') { const n = +b.dataset.n; if (n < S.step || SPLIT()) { S.step = n; S.created = false; render(); } }
+  else if (a === 'rm') removeSub(b.dataset.v);
+  else if (a === 'sort') sortUnc();
+  else if (a === 'search') { S.demoMsg = 'Database search is not part of this recreation.'; render(); }
+  else if (a === 'preset') { S.reviseText = PRESETS[+b.dataset.i].text; S.demoMsg = ''; render(); }
+  else if (a === 'revise') revise();
+  else if (a === 'undo') undo(); else if (a === 'dismiss') { S.revision = null; render(); }
+  else if (a === 'create') { S.created = true; if (!SPLIT()) S.step = 4; render(); }
+  else if (a === 'reset') reset();
+});
+fastEl.addEventListener('input', (e) => {
+  const k = e.target.dataset.in; if (!k) return;
+  if (k === 'fuText') S.fuText = e.target.value;
+  else if (k === 'reviseText') { S.reviseText = e.target.value; S.demoMsg = ''; const btn = fastEl.querySelector('[data-act="revise"]'); if (btn) btn.disabled = !S.reviseText.trim(); return; }
+  else if (k === 'draftName') { S.draft.name = e.target.value; return; }
+  else if (k === 'draftDesc') { S.draft.description = e.target.value; return; }
+  else { S.answers[k] = e.target.value; S.skipped[k] = false; const btn = fastEl.querySelector('[data-act="next"]'); if (btn && (k === 'theme' || k === 'goals')) btn.disabled = !e.target.value.trim(); }
+});
+fastEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const k = e.target.dataset.in; if (!k) return;
+  const multi = e.target.tagName === 'TEXTAREA';
+  if (multi && !(e.metaKey || e.ctrlKey)) return;
+  e.preventDefault();
+  if (k === 'reviseText') revise(); else if (S.step === 1) nextQ();
+});
+/* drag between categories */
+let dragging = null;
+fastEl.addEventListener('dragstart', (e) => { const s = e.target.closest('[data-sub]'); if (s) { dragging = s.dataset.sub; e.dataTransfer.setData('text/plain', dragging); } });
+fastEl.addEventListener('dragover', (e) => { const d = e.target.closest('[data-drop]'); if (d && dragging) { e.preventDefault(); fastEl.querySelectorAll('.over').forEach((x) => x.classList.remove('over')); d.classList.add('over'); } });
+fastEl.addEventListener('drop', (e) => { const d = e.target.closest('[data-drop]'); if (d && dragging) { e.preventDefault(); moveSub(dragging, d.dataset.drop); dragging = null; } });
+fastEl.addEventListener('dragend', () => { dragging = null; fastEl.querySelectorAll('.over').forEach((x) => x.classList.remove('over')); });
+
+/* ─────────────── B: autoplay ─────────────── */
+function cursorTo(sel) {
+  const c = document.getElementById('cur'), t = fastEl.querySelector(sel); if (!c || !t) return;
+  const fr = fastEl.getBoundingClientRect(), r = t.getBoundingClientRect();
+  curPos = [r.left - fr.left + Math.min(r.width / 2, 40), r.top - fr.top + r.height / 2];
+  c.style.left = curPos[0] + 'px'; c.style.top = curPos[1] + 'px'; c.style.opacity = 1;
+}
+function typeInto(key, text, done) {
+  let i = 0; const step = () => { if (!auto) return;
+    i = Math.min(text.length, i + 2);
+    if (key === 'reviseText') S.reviseText = text.slice(0, i); else S.answers[key] = text.slice(0, i);
+    render(); const f = fastEl.querySelector(`[data-in="${key}"]`); if (f) cursorTo(`[data-in="${key}"]`);
+    if (i < text.length) later(step, 28); else later(done, 450); };
+  step();
+}
+function clickThen(sel, fn, wait = 650) { if (!auto) return; cursorTo(sel); later(() => { if (auto) fn(); }, wait); }
+const SCRIPT = [
+  (n) => { S.answers.theme = ''; typeInto('theme', QUESTIONS[0].def, n); },
+  (n) => clickThen('[data-act="next"]', () => { nextQ(); later(n, 300); }),
+  (n) => { S.answers.goals = ''; typeInto('goals', QUESTIONS[1].def, n); },
+  (n) => clickThen('[data-act="next"]', () => { nextQ(); later(n, 300); }),
+  (n) => { S.answers.broken = ''; typeInto('broken', QUESTIONS[2].def, n); },
+  (n) => clickThen('[data-act="next"]', () => { nextQ(); later(n, 500); }),
+  (n) => clickThen('[data-act="skip"]', () => { skipQ(); later(n, 500); }),
+  (n) => { S.answers.where = []; render(); clickThen('[data-v="Sub-Saharan Africa"]', () => { S.answers.where = ['Sub-Saharan Africa']; render(); clickThen('[data-v="South Asia"]', () => { S.answers.where = ['Sub-Saharan Africa', 'South Asia']; render(); later(n, 400); }); }); },
+  (n) => clickThen('[data-act="next"]', () => { nextQ(); later(n, 2000); }),
+  (n) => { S.fuPicks = []; render(); clickThen('[data-v="By 2035"]', () => { S.fuPicks = ['By 2035']; render(); later(n, 600); }); },
+  (n) => clickThen('[data-act="next"]', () => { nextQ(); later(n, 4300); }),
+  (n) => clickThen('[data-act="toSubjects"]', () => { toSubjects(); later(n, 4200); }, 900),
+  (n) => typeInto('reviseText', PRESETS[0].text, n),
+  (n) => clickThen('[data-act="revise"]', () => { revise(); later(n, 4500); }),
+  (n) => clickThen(SPLIT() ? '[data-act="create"]' : '[data-act="toReview"]', () => { if (SPLIT()) { S.created = true; render(); } else { S.step = 4; render(); } later(n, 3500); }, 900),
+  (n) => { reset(true); later(n, 600); },
+];
+function play() {
+  clearTimers(); S = fresh(); auto = { i: 0 }; curPos = null; render();
+  const run = () => { if (!auto) return; const f = SCRIPT[auto.i++ % SCRIPT.length]; f(run); };
+  later(run, 700);
+}
+function takeOver() { if (!auto) return; auto = null; clearTimers(); S.run && (S.run = null); render(); }
+fastEl.addEventListener('pointerdown', (e) => { if (AUTO() && auto) { e.preventDefault(); e.stopPropagation(); takeOver(); } }, true);
+
+/* ─────────────── chrome ─────────────── */
+function reset(keepAuto) { clearTimers(); S = fresh(); if (!keepAuto) auto = null; render(); }
+document.getElementById('dfBtn').onclick = () => { if (AUTO()) play(); else reset(); };
+
+const ABOUT = {
+  a: '<b>A · Clickable walkthrough.</b> The visitor drives every step. Answers are pre-filled with a scripted brief but editable; the follow-up and regions are real choices; the board drags and removes; the revise box offers three requests it knows and says so for anything else. Most faithful to the product: same rail, same steps, same copy. Risk: a visitor who doesn’t click sees only the first question, so the Try it card has to do its job.',
+  b: '<b>B · Self-playing, take over.</b> The same screens, run by a script with a cursor: it types the brief, skips “For whom”, picks a horizon, drafts, finds subjects, asks for a revision and shows the note. Any click inside stops it and hands the visitor that exact state. Shows the whole loop to people who never click. Costs: a long loop (about 45 s), autoplay must pause off screen, and typed text replaying can feel like a video.',
+  c: '<b>C · Conversation beside the board.</b> One screen, no rail. The left column is the conversation (answered questions stack up as a transcript, the current question at the bottom, then the revise box and “Does everything look good?”). The right column is what Lab Builder made: the draft, then the board above it. Easiest to read at a glance and closest to how you described it. Less faithful: the product is a four-step rail, and the board only exists after the draft. On a phone the two halves stack and both scroll.',
+  d: '<b>D · Conversation beside the board, self-playing (your pick).</b> C’s layout, run by B’s script. The left column plays the conversation: it types the brief, skips “For whom”, picks regions and a horizon, then asks for a revision; the right column shows each wait, then the draft, then the board building above it. Any click inside hands the visitor that exact state, and both columns keep working. Replay restarts it. Loop is about 45 s. On the site it should start only when on screen and pause off screen.',
+};
+function setDir(d) { dir = d; document.body.dataset.dir = d; clearTimers(); auto = null; S = fresh(); document.getElementById('about').innerHTML = ABOUT[d]; if (AUTO()) play(); else render(); sync(); }
+function jump(where) {
+  clearTimers(); auto = null; S = fresh();
+  const draft = () => { S.answered = intakeKeys(); S.fuKnown = true; S.answered = intakeKeys(); S.skipped.who = true; S.at = intakeKeys().length - 1; S.draft = JSON.parse(JSON.stringify(DRAFT)); S.step = 2; };
+  if (where === 'q1') {}
+  if (where === 'fu') { S.fuKnown = true; S.skipped.who = true; S.answered = intakeKeys().slice(0, 5); S.at = 5; }
+  if (where === 'draft') draft();
+  if (['board', 'revised', 'review'].includes(where)) { draft(); S.board = BOARD0.map((c) => ({ ...c, subs: [...c.subs] })); S.unc = [...UNC0]; S.step = 3; }
+  if (where === 'revised' || where === 'review') { const before = S.board.map((c) => ({ ...c, subs: [...c.subs] })); S.board = PRESETS[0].apply(S.board); S.revision = { comment: PRESETS[0].text, previous: before, editedAfter: false, ...describe(diff(before, S.board)) }; }
+  if (where === 'review') { S.revision = null; S.step = 4; }
+  render(); sync(where);
+}
+function sync(state) {
+  document.querySelectorAll('[data-set-dir]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setDir === dir));
+  document.querySelectorAll('[data-set-w]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setW === width));
+  try { history.replaceState(null, '', `#dir=${dir}&w=${width}${state ? '&state=' + state : ''}`); } catch (e) { /* sandboxed preview: no URL state */ }
+}
+document.querySelectorAll('[data-set-dir]').forEach((b) => b.onclick = () => setDir(b.dataset.setDir));
+document.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => jump(b.dataset.jump));
+document.querySelectorAll('[data-set-w]').forEach((b) => b.onclick = () => { width = b.dataset.setW; document.body.dataset.w = width; render(); sync(); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea,[contenteditable]')) return;
+  const o = ['a', 'b', 'c', 'd'], i = o.indexOf(dir);
+  if (e.key === 'ArrowRight') setDir(o[(i + 1) % 4]);
+  if (e.key === 'ArrowLeft') setDir(o[(i + 3) % 4]);
+});
+const h = new URLSearchParams(location.hash.slice(1));
+if (['desk', 'phone'].includes(h.get('w'))) { width = h.get('w'); document.body.dataset.w = width; }
+setDir(['a', 'b', 'c', 'd'].includes(h.get('dir')) ? h.get('dir') : 'd');
+if (h.get('state')) jump(h.get('state'));
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!-- Status: accepted · 2026-11-14 (rev 2) · FAST case study restructure. Picked: subtitle 2, section 02 heading 1. Built on feat/ai-case-studies; later changes on the page: a third Lab Builder decision for observability, the gather board stacked under the by-hand card, decision 01 renamed "Move through the network", AI FEATURES 100, section 03 (rules) and the Around it card removed. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAST case study restructure · prototype</title>
+<style>
+  :root {
+    --bg: #0a0a0a; --card: #121212; --line: #2a2a2a; --text: #e9e9e9; --muted: #9a9a9a; --dim: #666;
+    --signal: #3dff88; --amber: #ffb547; --gu: 26px;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.6 var(--sans); padding-top: 112px; }
+
+  /* ── comparison chrome (outside the design) ── */
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 10; background: #f4f1ea; color: #1a1a1a; border-bottom: 1px solid #cfc8b8; padding: 10px 18px; font: 12px/1.4 var(--sans); }
+  .bar .row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .bar b { font-weight: 650; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; }
+  .bar .grp span { color: #6b6457; margin-right: 4px; }
+  .bar button { font: inherit; padding: 4px 10px; border: 1px solid #b9b09c; background: #fff; border-radius: 4px; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .bar .rec { font-size: 10px; color: #8a5a00; margin-left: 2px; }
+  .bar p { color: #4d473c; margin-top: 6px; max-width: 120ch; }
+  .note { position: absolute; transform: translateY(-100%); font: 10px/1.3 var(--sans); color: #1a1a1a; background: #ffe9a8; padding: 2px 6px; border-radius: 3px; white-space: nowrap; top: -4px; left: 0; }
+  .note.new { background: #bff5d3; }
+  .note.cut { background: #ffc9c9; }
+  .legend { display: inline-flex; gap: 8px; }
+  .legend i { font-style: normal; padding: 1px 6px; border-radius: 3px; }
+
+  /* ── the page ── */
+  .page { max-width: 1240px; margin: 0 auto; padding: 24px 30px 120px; }
+  .rowp { display: flex; gap: var(--gu); margin-top: calc(var(--gu) * 2); align-items: flex-start; }
+  .rowp.center { justify-content: center; }
+  .rowp.between { justify-content: space-between; }
+  .rowp.wide-gap { gap: calc(var(--gu) * 8); }
+  .op { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 4px; flex: 0 0 auto; }
+  .op .hd { display: flex; gap: 8px; align-items: center; padding: 5px 10px; border-bottom: 1px solid var(--line); font: 9.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+  .op .hd .ty { color: var(--signal); }
+  .op .bd { padding: 12px 14px; }
+  .op.view .bd { padding: 0; }
+  .op.brk { background: none; border: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; padding: 14px 0; text-align: center; font: 11px/1 var(--mono); letter-spacing: .2em; color: var(--muted); }
+  .op.brk b { color: var(--signal); font-weight: 400; margin-right: 12px; }
+
+  body.read .page { max-width: 680px; }
+  body.read .rowp { flex-direction: column; align-items: stretch; gap: var(--gu); margin-top: var(--gu); }
+  body.read .op { width: auto !important; margin-top: 0 !important; }
+
+  .meta { font: 9.5px/1.5 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+  h1 { font-weight: 900; text-transform: uppercase; font-size: 34px; line-height: .98; max-width: 16ch; }
+  h2 { font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1; margin-bottom: 8px; }
+  h3 { font-weight: 800; font-size: 15px; margin-bottom: 6px; padding-right: 36px; }
+  .sig { color: var(--signal); }
+  .sub { font: 10.5px/1.7 var(--mono); color: var(--muted); margin-top: 10px; }
+  p.cs { font-size: 13px; line-height: 1.65; }
+  p.cs + p.cs { margin-top: 8px; }
+  .num { position: absolute; right: 12px; top: 30px; font: 900 30px/1 var(--sans); color: #262626; }
+  .wc { font: 9px/1 var(--mono); color: var(--dim); margin-top: 10px; letter-spacing: .08em; }
+  .flag { display: inline-block; font: 9px/1.3 var(--mono); color: #1a1a1a; background: var(--amber); padding: 1px 5px; border-radius: 2px; letter-spacing: .04em; }
+
+  .meter div { display: grid; grid-template-columns: 1fr 90px 28px; gap: 8px; align-items: center; font: 9.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); margin-bottom: 7px; }
+  .meter i { display: block; height: 4px; background: #262626; position: relative; }
+  .meter i::after { content: ""; position: absolute; inset: 0; width: var(--v); background: var(--signal); }
+  .meter i.q::after { background: var(--amber); }
+  .meter .n { font-size: 9px; color: var(--dim); line-height: 1.6; margin-top: 8px; display: block; }
+
+  .slot { display: grid; place-content: center; text-align: center; gap: 6px; border: 1px dashed #3a3a3a; margin: 10px; border-radius: 3px; font: 10px/1.6 var(--mono); letter-spacing: .1em; color: var(--dim); }
+  .slot b { color: var(--muted); font-weight: 400; }
+  .slot.new { border-color: var(--signal); color: #8fd9ad; }
+  .slot ol { text-align: left; margin: 8px auto 0; letter-spacing: .04em; color: #8fd9ad; padding-left: 18px; }
+
+  /* triangle echo chip */
+  .tri { display: inline-flex; align-items: center; gap: 6px; font: 9px/1 var(--mono); letter-spacing: .12em; color: var(--signal); border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px 3px 5px; margin-bottom: 8px; }
+  .tri svg { width: 13px; height: 12px; }
+  .tri svg path { fill: none; stroke: #4c6b58; stroke-width: 1.2; }
+  .tri svg circle { fill: #4c6b58; }
+  .tri svg circle.on { fill: var(--signal); }
+
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+  .facts dt { font: 9.5px/1 var(--mono); letter-spacing: .12em; color: var(--dim); margin-bottom: 3px; }
+  .facts dd { font-size: 12.5px; }
+
+  .hl-opt { display: none; }
+  body[data-hl="a"] .hl-opt[data-hl="a"], body[data-hl="b"] .hl-opt[data-hl="b"], body[data-hl="c"] .hl-opt[data-hl="c"] { display: block; }
+  .hd-opt { display: none; }
+  body[data-hd="a"] .hd-opt[data-hd="a"], body[data-hd="b"] .hd-opt[data-hd="b"], body[data-hd="c"] .hd-opt[data-hd="c"] { display: block; }
+  body:not(.notes) .note { display: none; }
+  @media (max-width: 700px) { body { padding-top: 0; } .bar { position: static; } }
+</style>
+</head>
+<body class="notes" data-hl="a" data-hd="a">
+
+<div class="bar" role="region" aria-label="Prototype controls">
+  <div class="row">
+    <b>FAST case study · restructure</b>
+    <div class="grp" role="group" aria-label="Headline">
+      <span>Subtitle</span>
+      <button data-set-hl="a">1<span class="rec">rec.</span></button>
+      <button data-set-hl="b">2</button>
+      <button data-set-hl="c">3</button>
+    </div>
+    <div class="grp" role="group" aria-label="Section 02 heading">
+      <span>02 heading</span>
+      <button data-set-hd="a">1<span class="rec">rec.</span></button>
+      <button data-set-hd="b">2</button>
+      <button data-set-hd="c">3</button>
+    </div>
+    <div class="grp" role="group" aria-label="Mode">
+      <span>Mode</span>
+      <button data-set-mode="patch">PATCH ≥1280</button>
+      <button data-set-mode="read">READ / phone</button>
+    </div>
+    <div class="grp"><span>Change notes</span><button data-toggle-notes>on</button></div>
+    <span class="legend"><i style="background:#bff5d3">new</i><i style="background:#ffe9a8">rewritten</i><i style="background:#ffc9c9">cut</i><span class="flag">CONFIRM</span> = fact to check</span>
+  </div>
+  <p>Rev 2. Headline B kept; subtitle and the section 02 heading have options. Decisions cut to two (traceability, steerability), with one question at a time as its own card. Lab Builder demo treatments: docs/prototypes/lab-builder-demo.html. ← → switch subtitles.</p>
+</div>
+
+<main class="page" id="page"></main>
+
+<script>
+/* ── triangle chip: o = observability (top), t = traceability (left), s = steerability (right) ── */
+const TRI = { o: 'OBSERVABILITY', t: 'TRACEABILITY', s: 'STEERABILITY' };
+const tri = (k) => `<span class="tri"><svg viewBox="0 0 13 12" aria-hidden="true"><path d="M6.5 1.5 L1.5 10.5 L11.5 10.5 Z"/><circle cx="6.5" cy="1.5" r="1.6" class="${k==='o'?'on':''}"/><circle cx="1.5" cy="10.5" r="1.6" class="${k==='t'?'on':''}"/><circle cx="11.5" cy="10.5" r="1.6" class="${k==='s'?'on':''}"/></svg>${TRI[k]}</span>`;
+const words = (h) => h.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+const W = (n) => `calc(${n} * (100% - 0px) / 12 - 13px)`;
+
+/* each row: { j: justify, gap, cards: [{ w, mt, type, name, note, html, view }] } */
+const rows = [
+  { j: 'between', cards: [
+    { w: 5, type: 'txt', name: 'input · the_problem', note: ['rewritten', 'Headline B kept · subtitle options in the bar'], html: `
+      <p class="meta">2025–2026 · Lead Frontend Engineer &amp; Lead UX/UI Designer · Futurity Systems</p>
+      <h1>A knowledge network you can <span class="sig">walk through</span></h1>
+      <p class="sub hl-opt" data-hl="a">// SUBJECTS, PAPERS, PATENTS AND PRESS IN ONE GRAPH. AI PLANS THE FIRST ROUTE THROUGH IT. YOU DECIDE WHERE TO GO.</p>
+      <p class="sub hl-opt" data-hl="b">// SUBJECTS, ORGANIZATIONS, PRESS, PATENTS, PAPERS, BOOKS. ONE GRAPH, AND AN AI THAT HELPS YOU FIND YOUR WAY THROUGH IT.</p>
+      <p class="sub hl-opt" data-hl="c">// ONE GRAPH OF SUBJECTS, PAPERS, PATENTS AND PRESS. AI SETS UP YOUR WORKSPACE AND SHOWS YOU WHERE TO START.</p>` },
+    { w: 3, type: 'data', name: 'ownership', note: ['rewritten', 'AI features row'], html: `
+      <div class="meter">
+        <div><span>UX/UI DESIGN</span><i style="--v:100%"></i><span>100</span></div>
+        <div><span>FRONTEND</span><i style="--v:100%"></i><span>100</span></div>
+        <div><span>AI FEATURES</span><i style="--v:80%"></i><span>80</span></div>
+        <span class="n">EVERY SCREEN DESIGNED AND BUILT BY ME. LAB BUILDER BUILT BY ME FROM A CLAUDE SKILL, ON AN ON-PREM MODEL A TEAMMATE SET UP.</span>
+      </div>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 10, view: true, type: 'view', name: 'subject_view · live_hero', note: ['', 'Kept: self-playing subject page'], html: `<div class="slot" style="height:300px"><b>FastHero</b>SELF-PLAYING SUBJECT PAGE · UNCHANGED</div>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 6, type: 'txt', name: 'txt · what_it_is', note: ['rewritten', 'Merges What it is + My role'], html: `
+      <p class="cs">FAST is Futurity Analysis &amp; Synthesis Tools, a research and foresight platform. Underneath is a knowledge network: subjects linked to the organizations, press, patents, papers and books that mention them. On top are labs, where a team sets goals, gathers subjects and runs analysis tools against them.</p>
+      <p class="cs">Every screen went through my hands twice, once as a design and once as a React build. Where the interface needed something the API didn't have yet, I added it.</p>` },
+    { w: 3, type: 'data', name: 'facts_data', note: ['', 'Kept'], html: `<dl class="facts"><div><dt>ROLE</dt><dd>Lead Frontend &amp; Lead UX/UI</dd></div><div><dt>YEAR</dt><dd>2025–2026</dd></div><div><dt>STACK</dt><dd>React, TypeScript, Chakra UI, Cosmograph, React Flow</dd></div><div><dt>CONTEXT</dt><dd>Futurity Systems</dd></div></dl>` },
+  ]},
+
+  /* ── 01 THE NETWORK ── */
+  { j: 'center', cards: [{ w: 8, brk: true, html: `<b>01</b>THE NETWORK` }]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 4, type: 'txt', name: 'process · the_hero_surface', note: ['', 'Kept'], html: `
+      <p class="meta">PROCESS · THE SUBJECT PAGE</p><h2>The subject page is a <span class="sig">portal</span></h2>
+      <p class="sub">The live graph underneath, identity above, analytics below.</p>` },
+    { w: 4, type: 'txt', name: 'txt · the_page_in_layers', note: ['rewritten', 'Two paragraphs + Source pages → one'], html: `
+      <p class="cs">Every subject has a page, built in layers. The ground is the network: a GPU graph of everything connected to the subject, one color per entity type. Glass cards on top carry its identity and three indices. Below sit trends, forecasts and related subjects, each section loading on its own.</p>
+      <p class="cs">Organizations, patents, press, papers and books get the same page, configured per type. Learn to read one and you can read them all.</p>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 10, view: true, type: 'view', name: 'subject_view · knowledge_graph', note: ['', 'Kept: click to traverse'], html: `<div class="slot" style="height:320px"><b>FastGraphDemo</b>CLICK A NODE · TRAVERSE TO ITS SUBJECT · UNCHANGED</div>` },
+  ]},
+  { j: 'between', inset: true, cards: [
+    { w: 3, type: 'txt', name: 'decision_01 · traversal', note: ['', 'Kept'], html: `<span class="num">01</span><h3>Traversal, not search</h3><p class="cs">Click a node and the camera glides to it. If it is a subject, one button walks you onto its page and into its own graph.</p><p><span class="flag">BANNED "X, NOT Y": RENAME</span></p>` },
+    { w: 3, mt: 1.5, type: 'txt', name: 'decision_02 · honest_waiting', note: ['', 'Kept'], html: `<span class="num">02</span><h3>Honest waiting</h3><p class="cs">Index math takes time. The page polls with backoff and says so in plain words, from Calculating to Attempt 9 of 10.</p>` },
+    { w: 3, mt: 3, type: 'txt', name: 'decision_03 · one_click_deep', note: ['', 'Kept'], html: `<span class="num">03</span><h3>Overview to detail in one click</h3><p class="cs">Click Patents on a stat card and the page scrolls to the forecast chart with the patent series already selected.</p>` },
+  ]},
+
+  /* ── 02 BUILDING A LAB WITH AI ── */
+  { j: 'center', cards: [{ w: 8, brk: true, note: ['new', ''], html: `<b>02</b>SETTING UP A WORKSPACE WITH AI` }]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 4, type: 'txt', name: 'process · lab_builder', note: ['new', 'Heading options in the bar'], html: `
+      <p class="meta">PROCESS · FROM A CLAUDE SKILL TO AN INTERFACE</p>
+      <h2 class="hd-opt" data-hd="a">Describe the work, get the <span class="sig">workspace</span></h2>
+      <h2 class="hd-opt" data-hd="b">Build your workspace <span class="sig">conversationally</span></h2>
+      <h2 class="hd-opt" data-hd="c">Set up a workspace by <span class="sig">talking it through</span></h2>
+      <p class="sub">Answer a few questions. Lab Builder drafts the goals, finds the subjects and sorts them. Then you change anything you want, in your own words.</p>` },
+    { w: 4, type: 'txt', name: 'txt · skill_to_interface', note: ['new', ''], html: `
+      <p class="cs">In FAST a workspace is called a lab: a name, goals, and subjects sorted into categories. By hand that means a lot of searching before any research starts.</p>
+      <p class="cs">A Claude skill already built labs from a brief, outside FAST. I turned it into Lab Builder, an interface inside FAST. It shows up in two places: as a choice when you create a lab, and as the first tool on a lab's Plan tab, where it reviews the goals and categories and suggests changes.</p>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 4, type: 'txt', name: 'txt · one_question', note: ['new', 'Separate from the decisions'], html: `<h3>One question at a time</h3><p class="cs">Five short questions, one per screen, answered in your own words. The problem questions take "I'm not sure yet": Lab Builder drafts those fields anyway and marks them for you to check. Then up to two follow-ups, only when the answer would change the draft, each with suggested answers as buttons.</p>` },
+  ]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 3, type: 'txt', name: 'decision_04 · show_where', note: ['new', 'Say what it is doing + every subject is real'], html: `<span class="num">04</span>${tri('t')}<h3>Show where it came from</h3><p class="cs">Each wait names the work and how long it takes: "Searching the database for each goal, then judging what fits." The model picks subjects from those search results and nothing else, so a pick that wasn't there is dropped before you see it. Every subject on the board has a page you can open.</p>` },
+    { w: 3, mt: 1.5, type: 'txt', name: 'decision_05 · revise', note: ['new', ''], html: `<span class="num">05</span>${tri('s')}<h3>Change it in your own words</h3><p class="cs">"Drop the hydrogen category and find five more on storage." Ask as often as you like. Each revision says what changed, quotes what you asked, and can be undone. Your own edits survive the next revision.</p>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 4, type: 'txt', name: 'txt · try_it', note: ['new', ''], html: `<h3>Try it</h3><p class="cs">A recreation of Lab Builder with a scripted model, so it answers the same way every time. Everything in it is clickable. Ask for a change at the end and watch the board move.</p>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 10, view: true, type: 'view', name: 'lab_view · lab_builder', note: ['new', 'Treatments proposed after this order is agreed'], html: `<div class="slot new" style="height:460px"><b style="color:var(--signal)">LabBuilderDemo · RECREATION</b>FIXED HEIGHT AT EVERY WIDTH · ALL STEPS IN ONE CELL
+      <ol><li>Questions, one at a time · "I'm not sure yet"</li><li>Follow-up with suggested answers</li><li>Draft: name, goals, a marked placeholder</li><li>"Finding subjects" run view</li><li>Board: categories + Uncategorized strip</li><li>Revise box → revision note, "You asked", Undo</li><li>Review: "Does everything look good?" → Create</li></ol></div>` },
+  ]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 4, type: 'txt', name: 'txt · by_hand', note: ['rewritten', 'Lab flow text + old "Optimistic, with an undo" merged'], html: `<h3>By hand still feels good</h3><p class="cs">Some people want to explore before they commit, so the manual path had to stand on its own. Walking the knowledge graph from subject to subject is one of the main ways people find related subjects to add. Both paths end on the same board, where every action applies at once, syncs in the background, and a removal comes with an eight second undo.</p>` },
+    { w: 5, view: true, type: 'view', name: 'lab_view · gather_board', note: ['', 'Kept, moved here'], html: `<div class="slot" style="height:240px"><b>FastGatherDemo</b>DRAG TO ORGANIZE · UNCHANGED</div>` },
+  ]},
+
+  /* ── 03 RULES FOR EVERY AI TOOL ── */
+  { j: 'center', cards: [{ w: 8, brk: true, note: ['new', 'Replaces THE SYSTEM AROUND IT'], html: `<b>03</b>RULES FOR EVERY AI TOOL` }]},
+  { j: 'center', cards: [
+    { w: 5, type: 'txt', name: 'process · shared_rules', note: ['new', ''], html: `<h2>Rules the AI tools <span class="sig">share</span></h2><p class="sub">Every lab tool that calls a model follows the same few rules.</p>` },
+  ]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 3, type: 'txt', name: 'rule · n_a', note: ['new', ''], html: `<h3>N/A over a made-up number</h3><p class="cs">When a value can't be computed, the screen says N/A. A plausible number from the model would be read as a fact.</p>` },
+    { w: 3, mt: 1.5, type: 'txt', name: 'rule · retry_what_failed', note: ['new', ''], html: `<h3>Try again means that step</h3><p class="cs">Every "Try again" comes with a button that reruns only what failed. Nothing you already have is lost, and the flow doesn't start over.</p>` },
+  ]},
+  { j: 'center', gap: 'wide', cards: [
+    { w: 3, type: 'txt', name: 'rule · evidence', note: ['new', ''], html: `<h3>Evidence before explanation</h3><p class="cs">A forecast explains each trigger event with the documents around it, and with series you pick to test your own guess. The model doesn't name world events: it doesn't have the context to do it consistently.</p><p><span class="flag">CONFIRM: SHIPPED?</span></p>` },
+    { w: 3, mt: 1.5, type: 'txt', name: 'rule · on_prem', note: ['new', ''], html: `<h3>Your words stay in-house</h3><p class="cs">Lab Builder runs on Futurity's own on-prem model by default. Briefs and goals can hold confidential plans, and the default keeps them in-house.</p>` },
+  ]},
+  { j: 'center', cards: [
+    { w: 6, type: 'sys', name: 'txt · around_it', note: ['rewritten', 'Design system + extension + deck → one card'], html: `<h3>Around it</h3><p class="cs">One Chakra token system under every screen: one source-type palette shared by the graph, the stat cards and the charts, dark and light throughout. A browser extension files the page you're reading into the knowledgebase in one action. And a public demo the pitch deck hands off to, already showing the visitor's industry.</p>` },
+  ]},
+  { j: 'between', cards: [
+    { w: 5, type: 'txt', name: 'out · outcome', note: ['rewritten', 'Production claim removed; points to Engine'], html: `<p class="cs">FAST is where the patterns I use everywhere now got their first real test: progressive disclosure for dense data, interfaces that act at once and can take it back, and AI that shows what it is doing, where its answer came from, and how to change it. The Engine case study goes further into that last one.</p>` },
+    { w: 4, type: 'txt', name: 'next · futurity_engine', note: ['', 'Kept: NextCase'], html: `<p class="meta">NEXT CASE</p><h3>Futurity Engine</h3><p class="cs" style="color:var(--muted)">watch the machine think</p>` },
+  ]},
+];
+
+const cut = [
+  'lab_view · process_tabs (the tab widget)',
+  'txt · my_role (folded into what_it_is)',
+  'decision_05 · wizards (the Goal Builder; Lab Builder replaces it as the story)',
+  'capture_ext + deck_to_demo + design_system as three cards (now one)',
+  'rule · opt_in ("Suggestions start unticked")',
+  'Outcome line "in production with client innovation teams"',
+];
+
+function render() {
+  const page = document.getElementById('page');
+  page.innerHTML = rows.map((r) => {
+    const cls = ['rowp', r.j].concat(r.gap === 'wide' ? ['wide-gap'] : []).join(' ');
+    const pad = r.inset ? 'padding:0 calc(100% / 12);' : '';
+    return `<div class="${cls}" style="${pad}">` + r.cards.map((c) => {
+      const width = `width:calc(${c.w} / 12 * 100% - 13px);`;
+      const mt = c.mt ? `margin-top:calc(var(--gu) * ${c.mt});` : '';
+      const note = c.note && (c.note[0] || c.note[1]) ? `<span class="note ${c.note[0] === 'new' ? 'new' : ''}">${[c.note[0], c.note[1]].filter(Boolean).join(' · ')}</span>` : '';
+      if (c.brk) return `<div class="op brk" style="${width}">${note}${c.html}</div>`;
+      const wc = c.view || c.type === 'data' || c.name.startsWith('input') ? '' : `<p class="wc">${words(c.html)} WORDS</p>`;
+      return `<div class="op ${c.view ? 'view' : ''}" style="${width}${mt}">${note}<div class="hd"><span class="ty">${c.type.toUpperCase()}</span>${c.name}</div><div class="bd">${c.html}${wc}</div></div>`;
+    }).join('') + `</div>`;
+  }).join('') + `<div class="rowp center"><div class="op" style="width:calc(6/12*100% - 13px);border-style:dashed"><span class="note cut">cut from the current page</span><div class="bd"><ul style="padding-left:16px;font-size:12px;color:var(--muted)">${cut.map((c) => `<li>${c}</li>`).join('')}</ul></div></div></div>`;
+}
+
+/* ── controls + hash state ── */
+const state = { hl: 'a', hd: 'a', mode: 'patch', notes: true };
+function apply() {
+  document.body.dataset.hl = state.hl;
+  document.body.dataset.hd = state.hd;
+  document.querySelectorAll('[data-set-hd]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setHd === state.hd));
+  document.body.classList.toggle('read', state.mode === 'read');
+  document.body.classList.toggle('notes', state.notes);
+  document.querySelectorAll('[data-set-hl]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setHl === state.hl));
+  document.querySelectorAll('[data-set-mode]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setMode === state.mode));
+  document.querySelector('[data-toggle-notes]').textContent = state.notes ? 'on' : 'off';
+  try { history.replaceState(null, '', `#hl=${state.hl}&hd=${state.hd}&mode=${state.mode}`); } catch (e) { /* sandboxed preview: no URL state */ }
+}
+const h = new URLSearchParams(location.hash.slice(1));
+if (['a', 'b', 'c'].includes(h.get('hl'))) state.hl = h.get('hl');
+if (['patch', 'read'].includes(h.get('mode'))) state.mode = h.get('mode');
+if (['a', 'b', 'c'].includes(h.get('hd'))) state.hd = h.get('hd');
+document.querySelectorAll('[data-set-hd]').forEach((b) => b.onclick = () => { state.hd = b.dataset.setHd; apply(); });
+document.querySelectorAll('[data-set-hl]').forEach((b) => b.onclick = () => { state.hl = b.dataset.setHl; apply(); });
+document.querySelectorAll('[data-set-mode]').forEach((b) => b.onclick = () => { state.mode = b.dataset.setMode; apply(); });
+document.querySelector('[data-toggle-notes]').onclick = () => { state.notes = !state.notes; apply(); };
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea,[contenteditable]')) return;
+  const o = ['a', 'b', 'c'], i = o.indexOf(state.hl);
+  if (e.key === 'ArrowRight') { state.hl = o[(i + 1) % 3]; apply(); }
+  if (e.key === 'ArrowLeft') { state.hl = o[(i + 2) % 3]; apply(); }
+});
+render(); apply();
+</script>
+</body>
+</html>

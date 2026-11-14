@@ -36,4 +36,5 @@ Replay logs: `<project>-<topic>.replay.jsonl` (one `{t, event, data}` per line,
 
 | File | Demo | Kind |
 |---|---|---|
+| `fast-lab-builder.js` | `demos/fast/FastLabBuilderDemo.jsx` | Hand-authored synthetic Lab Builder run: answers, draft, subject searches, board, three revision requests |
 | `futurescaper-ocean-plastics.json` | `demos/futurescaper/FuturescaperDemo.jsx` | Hand-authored synthetic futurescape (46 nodes incl. 3 actions, 5 orders, 1 DAG node) |

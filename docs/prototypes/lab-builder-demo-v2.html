@@ -1,0 +1,752 @@
+<!-- Status: accepted · 2026-11-14 · Lab Builder demo v2. Picked: A (brief above, lab below) with the trace on click. Built as src/components/react/demos/fast/FastLabBuilderDemo.jsx. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab Builder demo v2 · prototype</title>
+<style>
+  :root { --site-bg: #0a0a0a; --site-card: #121212; --site-line: #2a2a2a; --signal: #3dff88; --mono: ui-monospace, "SF Mono", Menlo, monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--site-bg); color: #e9e9e9; font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 132px 20px 80px; }
+  @media (max-width: 760px) { body { padding-top: 20px; } }
+
+  /* comparison chrome */
+  .bar { position: fixed; inset: 0 0 auto 0; z-index: 50; background: #f4f1ea; color: #1a1a1a; border-bottom: 1px solid #cfc8b8; padding: 10px 18px; font: 12px/1.4 system-ui, sans-serif; }
+  @media (max-width: 760px) { .bar { position: static; margin: -20px -20px 20px; } }
+  .bar .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .bar .row + .row { margin-top: 6px; }
+  .bar b { font-weight: 650; }
+  .bar .grp { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .bar .grp > span { color: #6b6457; margin-right: 4px; }
+  .bar button { font: inherit; padding: 4px 9px; border: 1px solid #b9b09c; background: #fff; border-radius: 4px; cursor: pointer; color: #1a1a1a; }
+  .bar button[aria-pressed="true"] { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .bar .rec { font-size: 10px; color: #8a5a00; margin-left: 3px; }
+  .bar button[aria-pressed="true"] .rec { color: #ffd27a; }
+  .bar p { color: #4d473c; max-width: 130ch; }
+
+  .host { display: flex; flex-direction: column; gap: 18px; align-items: center; }
+  .about { width: 100%; max-width: 900px; font-size: 12.5px; color: #9a9a9a; line-height: 1.6; }
+  .about b { color: #e9e9e9; font-weight: 600; }
+  .op { background: var(--site-card); border: 1px solid var(--site-line); border-radius: 4px; width: 900px; max-width: 100%; }
+  body[data-w="phone"] .op { width: 360px; }
+  .op .hd { display: flex; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--site-line); font: 9.5px/1 var(--mono); letter-spacing: .08em; color: #9a9a9a; text-transform: uppercase; }
+  .op .hd .ty { color: var(--signal); }
+  .df { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-bottom: 1px solid var(--site-line); font: 9.5px/1.3 var(--mono); letter-spacing: .1em; color: #8a8a8a; text-transform: uppercase; }
+  .df .t { color: #e9e9e9; }
+  .df .live { color: var(--signal); }
+  .df .lbl { margin-left: auto; }
+  .df button { font: inherit; letter-spacing: inherit; background: none; color: var(--signal); border: 1px solid #1f5a37; border-radius: 3px; padding: 3px 7px; cursor: pointer; }
+  body[data-w="phone"] .df .long { display: none; }
+
+  /* FAST interior: dark tokens from theme/tokens/colors.ts */
+  .fast {
+    --paper: #151514; --panel: #1d1d1c; --panel2: #252523; --card: #212120; --well: #1b1b1a;
+    --ink: #f2f2f0; --muted: #a5a49e; --faint: #63625d; --hair: #2c2c2a; --hair2: #3a3a37; --ok: #51cf66; --bad: #ff6b6b; --subject: #0005E9;
+    --sans: "TT Norms Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --fmono: "TT Norms Pro Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --hi: rgba(242, 242, 240, .07);
+    background: var(--paper); color: var(--ink); font-family: var(--sans); position: relative; overflow: hidden; height: 600px;
+  }
+  body[data-w="phone"] .fast { height: 660px; }
+  .fast button { font-family: var(--sans); }
+  .micro { font: 10px/1.25 var(--fmono); letter-spacing: .05em; color: var(--muted); text-transform: uppercase; }
+  .fhead { display: flex; align-items: center; gap: 14px; padding: 13px 18px 12px; border-bottom: 1px solid var(--hair); white-space: nowrap; }
+  .fhead .back { font-size: 12.5px; color: var(--faint); }
+  .fhead h1 { font-size: 16px; font-weight: 600; }
+  .fhead .team { font-size: 12.5px; color: var(--muted); }
+  .fhead .team b { color: var(--ink); font-weight: 600; }
+  .fhead .ns { margin-left: auto; color: var(--faint); }
+  body[data-w="phone"] .fhead .team, body[data-w="phone"] .fhead .ns, body[data-w="phone"] .fhead .back { display: none; }
+
+  .split { position: absolute; inset: 46px 0 0 0; display: grid; grid-template-columns: 300px 1fr; }
+  body[data-w="phone"] .split { grid-template-columns: 1fr; grid-template-rows: 44% 56%; }
+  .col { position: relative; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--hair2) transparent; }
+  .left { background: var(--well); border-right: 1px solid var(--hair); padding: 18px 18px 24px; }
+  body[data-w="phone"] .left { border-right: 0; border-bottom: 1px solid var(--hair); padding: 14px; }
+  .right { padding: 16px 18px 28px; }
+  body[data-w="phone"] .right { padding: 12px 14px 24px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 500; line-height: 1; padding: 7px 11px; border: 1px solid var(--hair2); border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--ink); }
+  .btn.pri { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.ter { border-color: transparent; padding: 7px 2px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hair2); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .field { width: 100%; background: var(--paper); border: 1px solid var(--hair2); border-radius: 3px; color: var(--ink); font: 14px/1.5 var(--sans); padding: 8px 10px; resize: none; }
+  .field:focus { outline: none; border-color: var(--ink); }
+  .field::placeholder { color: var(--faint); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--hair2); border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* left: question + narration */
+  .qcard { display: flex; flex-direction: column; gap: 10px; }
+  .qcard .q { font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+  .qcard .hint { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .qcard .acts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+  .narr h2 { font-size: 17px; font-weight: 600; margin: 6px 0 4px; }
+  .narr .nsub { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .narr ol { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .narr li { display: flex; gap: 9px; font-size: 12.5px; line-height: 1.45; color: var(--muted); animation: rise .35s ease both; }
+  .narr li .m { flex: none; width: 14px; height: 14px; margin-top: 1px; border-radius: 50%; border: 1.4px solid var(--hair2); position: relative; }
+  .narr li.now { color: var(--ink); }
+  .narr li.now .m { border-color: var(--hair2); border-top-color: var(--ink); animation: spin .8s linear infinite; }
+  .narr li.done .m { border-color: var(--ok); }
+  .narr li.done .m::after { content: ""; position: absolute; left: 3.5px; top: 1px; width: 3px; height: 6px; border: solid var(--ok); border-width: 0 1.4px 1.4px 0; transform: rotate(45deg); }
+  .narr li.warn .m { border-color: var(--bad); }
+  .narr li.warn .m::after { content: "×"; position: absolute; inset: -3px 0 0 0; text-align: center; font-size: 11px; color: var(--bad); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+  .note { display: flex; gap: 10px; background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 11px 12px; margin-bottom: 14px; }
+  .note .i { flex: none; width: 15px; height: 15px; border: 1.4px solid var(--muted); border-radius: 50%; display: grid; place-items: center; font: 700 9px var(--sans); color: var(--muted); margin-top: 2px; }
+  .note .t { font-size: 13px; font-weight: 650; }
+  .note .d { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 3px; }
+  .note .y { font-size: 12px; color: var(--faint); margin-top: 5px; }
+  .note .a { display: flex; gap: 10px; align-items: center; margin-top: 9px; }
+  .rev .lab { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+  .rev .try { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+  .rev .try .chip { font-size: 12px; }
+  .rev .msg { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .tag { font: 9px var(--fmono); letter-spacing: .08em; color: var(--faint); border: 1px dashed var(--hair2); border-radius: 3px; padding: 1px 5px; align-self: flex-start; }
+  .done-q { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--hair); }
+
+  /* right panel parts */
+  .sect { margin-bottom: 16px; }
+  .sect > .micro { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .empty { border: 1px dashed var(--hair2); border-radius: 3px; padding: 14px; color: var(--faint); font-size: 12.5px; line-height: 1.55; }
+  .brief { background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 4px 12px; }
+  .brow { display: grid; grid-template-columns: 104px 1fr; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--hair); font-size: 12.5px; transition: background .3s, box-shadow .3s; }
+  .brow:last-child { border-bottom: 0; }
+  .brow .k { color: var(--muted); }
+  .brow .v.sk { color: var(--faint); font-style: italic; }
+  .brow.hi { background: var(--hi); box-shadow: -12px 0 0 var(--hi), 12px 0 0 var(--hi); }
+  .brow.used .k::after { content: " ✓"; color: var(--ok); }
+  .stick { position: sticky; top: -16px; z-index: 2; background: var(--paper); margin: -16px -18px 12px; padding: 16px 18px 10px; border-bottom: 1px solid var(--hair); }
+  .stick .brow .v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stick .brow { padding: 5px 0; }
+  .briefline { font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 8px 12px; cursor: pointer; display: flex; gap: 8px; }
+  .briefline b { color: var(--ink); font-weight: 600; }
+
+  .lab { display: flex; flex-direction: column; gap: 10px; }
+  .fld { border-radius: 3px; position: relative; }
+  .fld .fl { display: flex; align-items: center; gap: 8px; }
+  .fld .fv { font-size: 13px; line-height: 1.5; margin-top: 2px; }
+  .fld .fv.big { font-size: 16px; font-weight: 600; }
+  .fld .fv.mut { color: var(--muted); }
+  .fld.tr { cursor: pointer; margin: -4px -6px; padding: 4px 6px; }
+  .fld.tr:hover { background: var(--hi); }
+  .fld.open { background: var(--hi); }
+  .pchip { font: 9.5px var(--fmono); letter-spacing: .05em; color: var(--ink); border: 1px solid var(--hair2); border-radius: 3px; padding: 1px 5px; }
+  .src { font-size: 11.5px; color: var(--faint); margin-top: 3px; line-height: 1.45; }
+  .src b { color: var(--muted); font-weight: 500; }
+  .quote { margin-top: 6px; border-left: 0; background: var(--panel); border-radius: 3px; padding: 7px 9px; font-size: 12px; color: var(--muted); line-height: 1.5; animation: rise .25s ease both; }
+  .quote q { color: var(--ink); }
+  .goal { background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 11px 12px; display: flex; flex-direction: column; gap: 9px; }
+  .goal .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 16px; }
+  body[data-w="phone"] .goal .grid { grid-template-columns: 1fr; }
+  .slot { border: 1px dashed var(--hair2); border-radius: 3px; padding: 6px 8px; }
+  .slot .fv { color: var(--faint); font-size: 12px; }
+  .slot .raw { color: var(--muted); font-size: 12px; font-style: italic; }
+
+  .arrive { animation: arrive .6s ease both; }
+  @keyframes arrive { 0% { opacity: 0; transform: translateY(6px); background: var(--hi); } 60% { opacity: 1; transform: none; background: var(--hi); } 100% { background: transparent; } }
+  .absorb { animation: absorb .7s ease forwards; overflow: hidden; }
+  @keyframes absorb { 0% { opacity: 1; max-height: 90px; } 100% { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; border-width: 0; } }
+  .morph .old { text-decoration: line-through; color: var(--faint); font-size: 11.5px; }
+  .mcard { background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 9px 12px; margin-bottom: 8px; font-size: 12.5px; transition: background .3s; }
+  .mcard.hi { background: var(--panel2); }
+  .mcard .mk { display: flex; gap: 8px; align-items: center; margin-bottom: 3px; }
+  .mcard .mk .arrow { color: var(--faint); }
+
+  /* header strip after draft */
+  .strip { background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 9px 12px; margin-bottom: 12px; }
+  .strip .ln { font-size: 14px; font-weight: 600; }
+  .strip .gs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+  .gchip { font-size: 12px; padding: 4px 8px; border: 1px solid var(--hair2); border-radius: 3px; background: transparent; color: var(--ink); cursor: default; transition: background .3s, border-color .3s; }
+  .gchip.tr { cursor: pointer; }
+  .gchip.hi, .gchip[aria-expanded="true"] { background: var(--panel2); border-color: var(--ink); }
+
+  /* subjects pipeline */
+  .pipe .terms { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+  .term { font: 11px var(--fmono); letter-spacing: .02em; color: var(--ink); background: var(--panel2); border-radius: 3px; padding: 3px 7px; animation: rise .3s ease both; }
+  .pool { display: flex; gap: 5px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 8px; border: 1px solid var(--hair); border-radius: 3px; color: var(--muted); background: var(--card); animation: rise .3s ease both; transition: opacity .5s, color .3s, border-color .3s, background .3s; }
+  .pill .dot, .sub .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--subject); box-shadow: 0 0 0 1px #4a4dff66; flex: none; }
+  .pill.pick { color: var(--ink); border-color: var(--ink); }
+  .pill.drop { opacity: .22; }
+  .pill.fake { border-style: dashed; border-color: var(--bad); color: var(--bad); background: transparent; }
+  .pill.fake .dot { background: transparent; box-shadow: 0 0 0 1px var(--bad); }
+  .more { font-size: 12px; color: var(--faint); align-self: center; }
+
+  /* board */
+  .board { background: var(--panel); border-radius: 3px; padding: 9px; }
+  .unc { border: 1px dashed var(--hair2); border-radius: 3px; padding: 7px 9px; margin-bottom: 9px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .unc .h { font-size: 12.5px; font-weight: 600; }
+  .cats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  body[data-w="phone"] .cats { grid-template-columns: 1fr; }
+  .cat { border-radius: 3px; padding: 5px; transition: opacity .6s; }
+  .cat.over { background: var(--panel2); }
+  .cat .ch { display: flex; gap: 6px; align-items: baseline; padding: 2px 3px 6px; }
+  .cat .ch b { font-size: 12.5px; font-weight: 600; transition: color .3s; }
+  .cat.leaving { opacity: .25; }
+  .cat.newcat .ch b { animation: arrive .9s ease both; }
+  .sub { display: flex; align-items: center; gap: 7px; background: var(--card); border: 1px solid var(--hair); border-radius: 3px; padding: 5px 8px; font-size: 12.5px; margin-bottom: 5px; cursor: grab; transition: opacity .6s, border-color .3s; }
+  .unc .sub { margin: 0; }
+  .sub .x { margin-left: auto; background: none; border: 0; color: var(--faint); cursor: pointer; font-size: 12px; }
+  .sub.leaving { opacity: .2; text-decoration: line-through; }
+  .sub.arriving { border-color: var(--ink); animation: arrive .7s ease both; }
+  .sub.moved { border-color: var(--muted); border-style: dashed; animation: arrive .7s ease both; }
+  .sub.landing { animation: rise .35s ease both; }
+
+  .take { position: absolute; right: 12px; bottom: 12px; z-index: 5; font: 10px var(--fmono); letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink); border-radius: 3px; padding: 6px 9px; pointer-events: none; opacity: .92; }
+  .cursor { position: absolute; z-index: 6; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid #fff; background: #ffffff33; pointer-events: none; transition: left .5s ease, top .5s ease; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body data-w="desk">
+
+<div class="bar" role="region" aria-label="Prototype controls">
+  <div class="row">
+    <b>Lab Builder demo v2</b>
+    <div class="grp" role="group" aria-label="Right panel"><span>Right panel</span>
+      <button data-set-dir="a">A Brief above, lab below<span class="rec">rec.</span></button>
+      <button data-set-dir="b">B Answers morph</button>
+      <button data-set-dir="c">C Lab skeleton</button>
+    </div>
+    <div class="grp" role="group" aria-label="Trace"><span>Trace after the draft</span>
+      <button data-set-tr="click">On click<span class="rec">rec.</span></button>
+      <button data-set-tr="once">Plays once</button>
+      <button data-set-tr="always">Always visible</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="grp" role="group" aria-label="Play from"><span>Play from</span>
+      <button data-from="start">Start</button>
+      <button data-from="draft">Draft</button>
+      <button data-from="subjects">Subjects</button>
+      <button data-from="revise">Revision</button>
+    </div>
+    <div class="grp" role="group" aria-label="Width"><span>Width</span>
+      <button data-set-w="desk">900</button>
+      <button data-set-w="phone">360</button>
+    </div>
+    <p>Self-plays a ~60 s loop; click inside to take over. Waits are scripted. ← → switch the right panel.</p>
+  </div>
+</div>
+
+<div class="host">
+  <div class="about" id="about"></div>
+  <div class="op">
+    <div class="hd"><span class="ty">VIEW</span>lab_view · lab_builder</div>
+    <div class="df"><span class="t">LAB BUILDER</span><span id="dfState"></span>
+      <span class="lbl">RECREATION<span class="long"> · REAL BEHAVIOR, PORTFOLIO CODE</span></span>
+      <button type="button" id="dfBtn">↺ REPLAY</button></div>
+    <div class="fast" id="fast">
+      <div class="fhead"><span class="back">← Labs</span><h1>New lab</h1><span class="micro">LAB BUILDER</span><span class="team">in <b>Demo team</b></span><span class="micro ns">NOT SAVED UNTIL YOU CREATE</span></div>
+      <div class="split"><div class="col left" id="L"></div><div class="col right" id="R"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════════════ scenario (synthetic) ═════════════ */
+const Q = [
+  { key: 'theme', label: 'Theme', q: 'What should this lab be about?', hint: 'The domain, in one line. Lab Builder names the lab from it.', kind: 'input', ph: 'e.g. Long-duration energy storage for rural grids', def: 'Long-duration energy storage for rural grids' },
+  { key: 'goals', label: 'Goals', q: 'What do you want the lab to help you do?', hint: 'Your goal or goals, in your own words. Rough is fine.', kind: 'textarea', ph: 'Your goals…', def: 'Find storage that a co-op can afford instead of diesel backup, and work out what it takes to roll it out across a region.' },
+  { key: 'broken', label: 'What is broken', q: 'What is broken today?', hint: 'The problem behind your goals. If you are not sure, Lab Builder drafts one and marks it for you to check.', kind: 'textarea', skip: 'I’m not sure yet', ph: 'The problem…', def: 'Rural co-ops run diesel generators when the grid drops, and the fuel costs more than the power.' },
+  { key: 'who', label: 'For whom', q: 'Who has this problem, and roughly how many?', hint: 'A group and a rough number.', kind: 'input', skip: 'I’m not sure yet', ph: 'e.g. About 2,000 electricity co-operatives', def: '' },
+  { key: 'where', label: 'Where', q: 'Where does this matter most?', hint: 'Optional. Pick as many places as you like.', kind: 'regions', skip: 'Skip', options: ['Sub-Saharan Africa', 'South Asia', 'Southeast Asia', 'Latin America'], def: ['Sub-Saharan Africa', 'South Asia'] },
+];
+const FU = { key: 'fu', label: 'Follow-up', q: 'For “roll it out across a region”, how far out should the plan look?', hint: 'Pick any that fit, add your own words, or both.', options: ['By 2030', 'By 2035', 'By 2040'], def: ['By 2035'] };
+const QTEXT = Object.fromEntries([...Q, FU].map((x) => [x.key, x.q]));
+const LABEL = Object.fromEntries([...Q, FU].map((x) => [x.key, x.label]));
+
+/* the draft, field by field, with where each part came from */
+const LAB = {
+  name: { t: 'Long-duration storage for rural co-ops', src: ['theme'] },
+  desc: { t: 'Which long-duration storage a rural co-op can afford instead of diesel backup, and what it takes to roll it out across a region.', src: ['theme', 'goals'] },
+  goals: [
+    { name: { t: 'Affordable storage to replace diesel backup', src: ['goals'] },
+      desc: { t: 'A shortlist of storage options a co-op board can buy, costing less per kWh than diesel.', src: ['goals'] },
+      problem: { t: 'Co-ops burn diesel when the grid drops, and the fuel costs more than the power.', src: ['broken'] },
+      who: { t: 'Rural co-op members · about 500,000 people', src: ['who'], guess: true },
+      where: { t: 'Sub-Saharan Africa, South Asia', src: ['where'] },
+      horizon: { t: '2035', src: ['fu'] } },
+    { name: { t: 'A regional rollout plan for co-op storage', src: ['goals'] },
+      desc: { t: 'Know what financing, skills and suppliers a region needs before co-ops install storage at scale.', src: ['goals'] },
+      problem: { t: 'No region has a plan for paying for and installing storage across many small co-ops.', src: ['broken'] },
+      who: { t: 'Rural co-op members · about 500,000 people', src: ['who'], guess: true },
+      where: { t: 'Sub-Saharan Africa, South Asia', src: ['where'] },
+      horizon: { t: '2035', src: ['fu'] } },
+  ],
+};
+/* draft steps: what is said, which answers light up, which fields appear */
+const DRAFT_STEPS = [
+  { line: 'Naming the lab from your theme', src: ['theme'], show: ['name', 'desc'] },
+  { line: 'Turning your goals into 2 goals', src: ['goals'], show: ['g.name', 'g.desc'] },
+  { line: 'Writing a problem for each goal from what is broken', src: ['broken'], show: ['g.problem'] },
+  { line: 'No group given: drafting one for you to check', src: ['who'], show: ['g.who'] },
+  { line: 'Placing the goals in Sub-Saharan Africa and South Asia', src: ['where'], show: ['g.where'] },
+  { line: 'Horizon from your follow-up: 2035', src: ['fu'], show: ['g.horizon'] },
+];
+const SUBJ = [
+  { terms: ['sodium-ion battery', 'flow battery', 'iron-air battery', 'compressed air storage', 'thermal storage', 'second-life batteries'], total: 38,
+    picks: ['Iron-air battery', 'Sodium-ion battery', 'Zinc-bromine flow battery', 'Vanadium redox flow battery', 'Compressed air energy storage', 'Gravity energy storage', 'Thermal energy storage', 'Green hydrogen', 'Second-life EV batteries'],
+    rest: ['Battery recycling', 'Battery management system', 'Molten salt storage', 'Solid-state battery', 'Supercapacitor', 'Grid inertia', 'Hydropower'], fake: 'Solid-state grid battery' },
+  { terms: ['microgrid', 'demand response', 'pay-as-you-go energy', 'energy cooperative', 'rural electrification'], total: 24,
+    picks: ['Microgrid controller', 'Demand response', 'Virtual power plant', 'Fuel cell backup power', 'Pay-as-you-go energy', 'Energy cooperative', 'Rural electrification'],
+    rest: ['Smart meter', 'Mobile money', 'Diesel generator', 'Off-grid solar', 'Community solar', 'Mini-grid tariff'] },
+];
+const BOARD0 = [
+  { name: 'Battery chemistry', subs: ['Iron-air battery', 'Sodium-ion battery', 'Zinc-bromine flow battery', 'Vanadium redox flow battery'] },
+  { name: 'Mechanical & thermal storage', subs: ['Compressed air energy storage', 'Gravity energy storage', 'Thermal energy storage'] },
+  { name: 'Microgrids & control', subs: ['Microgrid controller', 'Demand response', 'Virtual power plant'] },
+  { name: 'Hydrogen', subs: ['Green hydrogen', 'Fuel cell backup power'] },
+  { name: 'Financing & rollout', subs: ['Pay-as-you-go energy', 'Energy cooperative', 'Rural electrification'] },
+];
+const UNC0 = ['Second-life EV batteries'];
+const clone = (b) => b.map((c) => ({ name: c.name, subs: [...c.subs] }));
+const PRESETS = [
+  { text: 'Drop the hydrogen category and find five more on storage.',
+    lines: (b) => b.some((c) => c.name === 'Hydrogen') ? ['Reading your request', 'Removing Hydrogen and its 2 subjects', 'Searching for more on storage: 19 candidates, picked 5', 'Placing them in Battery chemistry and Mechanical & thermal storage'] : ['Reading your request', 'There is no Hydrogen category on the board'],
+    apply(b) { if (!b.some((c) => c.name === 'Hydrogen')) return clone(b);
+      const out = clone(b).filter((c) => c.name !== 'Hydrogen');
+      out.find((c) => c.name === 'Battery chemistry')?.subs.push('Lithium iron phosphate battery', 'Sand battery');
+      out.find((c) => c.name === 'Mechanical & thermal storage')?.subs.push('Pumped hydro storage', 'Liquid air energy storage', 'Flywheel energy storage');
+      return out; } },
+  { text: 'Split Microgrids & control into hardware and software.',
+    lines: (b) => b.some((c) => c.name === 'Microgrids & control') ? ['Reading your request', 'Splitting Microgrids & control into Microgrid hardware and Grid software'] : ['Reading your request', 'There is no Microgrids & control category on the board'],
+    apply(b) { const out = clone(b), i = out.findIndex((c) => c.name === 'Microgrids & control'); if (i < 0) return out;
+      out.splice(i, 1, { name: 'Microgrid hardware', subs: ['Microgrid controller'] }, { name: 'Grid software', subs: ['Demand response', 'Virtual power plant'] }); return out; } },
+  { text: 'Rename Financing & rollout to Paying for it.',
+    lines: (b) => b.some((c) => c.name === 'Financing & rollout') ? ['Reading your request', 'Renaming Financing & rollout to Paying for it'] : ['Reading your request', 'There is no Financing & rollout category on the board'],
+    apply(b) { return clone(b).map((c) => c.name === 'Financing & rollout' ? { name: 'Paying for it', subs: c.subs } : c); } },
+];
+
+/* ═════════════ state ═════════════ */
+const fresh = () => ({
+  at: 0, answers: Object.fromEntries(Q.map((q) => [q.key, Array.isArray(q.def) ? [...q.def] : q.def])), skipped: {}, answered: [],
+  fuKnown: false, fuPicks: [...FU.def], fuText: '',
+  phase: 'intake', run: null, drafted: 0, hiSrc: [], used: [], flash: [],
+  sub: null, board: null, unc: [], anim: { leaving: [], arriving: [], moved: [], catLeaving: [], catNew: [] },
+  revision: null, pending: null, reviseText: '', msg: '', created: false, open: null, briefOpen: false, hiGoal: null,
+});
+let S = fresh(), dir = 'a', trace = 'click', width = 'desk', timers = [], auto = null, curPos = null;
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+const keys = () => Q.map((q) => q.key).concat(S.fuKnown ? ['fu'] : []);
+const answerText = (k) => {
+  if (k === 'fu') return [...S.fuPicks, S.fuText.trim()].filter(Boolean).join('; ') || null;
+  if (S.skipped[k]) return null;
+  const v = S.answers[k]; return Array.isArray(v) ? (v.length ? v.join(', ') : null) : (v.trim() || null);
+};
+const skippedText = (k) => (k === 'broken' || k === 'who') ? 'I’m not sure yet' : k === 'where' ? 'Anywhere' : 'Skipped';
+const isShown = (f) => S.phase !== 'intake' && DRAFT_STEPS.slice(0, S.drafted).some((s) => s.show.includes(f));
+const countBoard = () => (S.board ? S.board.reduce((n, c) => n + c.subs.length, 0) : 0) + S.unc.length;
+
+/* ═════════════ the sequence runner (narration on the left) ═════════════ */
+function runSeq(kind, title, sub, steps, done, stepMs = 1700) {
+  S.run = { kind, title, sub, lines: [] }; renderAll();
+  let i = 0;
+  const next = () => {
+    if (i > 0) { const prev = S.run.lines[i - 1]; prev.state = prev.warn ? 'warn' : 'done'; }
+    if (i >= steps.length) { later(() => { S.run = null; S.hiSrc = []; done(); renderAll(); }, 500); return; }
+    const st = steps[i++];
+    S.run.lines.push({ text: st.line, state: 'now', warn: st.warn });
+    st.apply && st.apply();
+    renderAll();
+    later(next, st.ms || stepMs);
+  };
+  later(next, 450);
+}
+
+/* ═════════════ actions ═════════════ */
+function nextQ() {
+  const ks = keys(), k = ks[S.at];
+  if (!S.answered.includes(k)) S.answered.push(k);
+  S.flash = ['b.' + k];
+  if (k === 'where' && !S.fuKnown) {
+    runSeq('followup', 'Reading your answers', 'Lab Builder may ask one or two more questions before the draft. A few seconds.',
+      [{ line: 'Checking what the draft would have to guess', ms: 1300 }, { line: 'One question would change the draft', ms: 900 }],
+      () => { S.fuKnown = true; S.at = ks.length; });
+    return;
+  }
+  if (k === 'fu') { startDraft(); return; }
+  S.at = Math.min(S.at + 1, keys().length - 1); renderAll();
+}
+function skipQ() { const k = keys()[S.at]; if (k === 'fu') { S.fuPicks = []; S.fuText = ''; } else S.skipped[k] = true; nextQ(); }
+function backQ() { if (S.at > 0) { S.at--; renderAll(); } }
+function startDraft() {
+  S.phase = 'draft'; S.drafted = 0;
+  runSeq('draft', 'Drafting the lab', 'Name, description and goals, from what you wrote. Usually under a minute.',
+    DRAFT_STEPS.map((d, i) => ({ line: d.line, apply: () => { S.drafted = i + 1; S.hiSrc = d.src; S.used = [...new Set([...S.used, ...d.src])]; S.flash = d.show; } })),
+    () => { S.drafted = DRAFT_STEPS.length; }, 1600);
+}
+function startSubjects() {
+  S.phase = 'subjects'; S.briefOpen = false; S.open = null;
+  const steps = [];
+  SUBJ.forEach((g, gi) => {
+    const gname = LAB.goals[gi].name.t;
+    steps.push({ line: `Search terms for “${gname}”`, apply: () => { S.hiGoal = gi; S.sub = { gi, terms: g.terms.length, pool: false, picks: false }; }, ms: 1500 });
+    steps.push({ line: `${g.total} candidates from the database`, apply: () => { S.sub.pool = true; }, ms: 1500 });
+    steps.push({ line: `Picked ${g.picks.length} that fit the goal`, apply: () => { S.sub.picks = true; }, ms: g.fake ? 1300 : 1500 });
+    if (g.fake) steps.push({ line: `1 pick was not in the results, so it was dropped`, warn: true, apply: () => { S.sub.fakeGone = true; }, ms: 1500 });
+  });
+  steps.push({ line: 'Sorting 16 subjects into 5 categories', apply: () => { S.sub = null; S.hiGoal = null; S.board = clone(BOARD0); S.unc = [...UNC0]; S.anim.landing = true; }, ms: 1400 });
+  runSeq('subjects', 'Finding subjects', 'Searching the database for each goal, then judging what fits. One to two minutes.', steps, () => { S.phase = 'board'; S.anim.landing = false; });
+}
+function diff(before, after) {
+  const where = (b) => { const m = new Map(); b.forEach((c) => c.subs.forEach((s) => m.set(s, c.name))); return m; };
+  const was = where(before), now = where(after), addedTo = new Set(), add = [], mov = [], rem = [];
+  now.forEach((cat, s) => { const o = was.get(s); if (o === undefined) { add.push(s); addedTo.add(cat); } else if (o !== cat) mov.push(s); });
+  was.forEach((_, s) => { if (!now.has(s)) rem.push(s); });
+  const bn = before.filter((c) => c.subs.length).map((c) => c.name), an = after.filter((c) => c.subs.length).map((c) => c.name);
+  return { add, mov, rem, addedTo: [...addedTo], newCategories: an.filter((n) => !bn.includes(n)), removedCategories: bn.filter((n) => !an.includes(n)) };
+}
+const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function describe(d) {
+  const p = [];
+  if (d.newCategories.length) p.push(`new ${d.newCategories.length === 1 ? 'category' : 'categories'}: ${d.newCategories.join(', ')}`);
+  if (d.removedCategories.length) p.push(`removed ${d.removedCategories.length === 1 ? 'category' : 'categories'}: ${d.removedCategories.join(', ')}`);
+  if (d.mov.length) p.push(`${pl(d.mov.length, 'subject', 'subjects')} moved`);
+  if (d.add.length) p.push(`${pl(d.add.length, 'subject', 'subjects')} added to ${d.addedTo.join(', ')}`);
+  if (d.rem.length) p.push(`${pl(d.rem.length, 'subject', 'subjects')} removed`);
+  if (!p.length) return { title: 'Lab Builder left the board as it was.', detail: 'Nothing changed for that request. Name the categories or subjects you mean and say what should happen to them.' };
+  const t = p.join(' · '); return { title: 'The subject board has been revised.', detail: t[0].toUpperCase() + t.slice(1) + '.' };
+}
+function revise() {
+  const text = S.reviseText.trim(); if (!text || S.run) return;
+  const preset = PRESETS.find((p) => p.text.toLowerCase() === text.toLowerCase());
+  if (!preset) { S.msg = 'This recreation only knows the three requests above. In FAST, Lab Builder takes any request in your own words.'; renderAll(); return; }
+  S.msg = ''; S.revision = null;
+  const before = clone(S.board), after = preset.apply(S.board), d = diff(before, after), lines = preset.lines(before);
+  S.pending = { before, after, text, d };
+  const steps = lines.map((line, i) => ({ line, apply: () => {
+    S.anim = { leaving: [], arriving: [], moved: [], catLeaving: [], catNew: [] };
+    if (i === 1 && d.rem.length) { S.anim.leaving = d.rem; S.anim.catLeaving = d.removedCategories; }
+    if (i === 1 && !d.rem.length && lines.length === 2) { S.board = after; S.anim.moved = d.mov; S.anim.catNew = d.newCategories; }
+    if (i === 2) { S.board = S.board.filter((c) => !d.removedCategories.includes(c.name)).map((c) => ({ ...c, subs: c.subs.filter((s) => !d.rem.includes(s)) })); }
+    if (i === 3) { S.board = after; S.anim.arriving = d.add; }
+  } }));
+  runSeq('subjects-revise', 'Revising the subject board', 'Applying your request. Anything you didn’t mention stays where it is.', steps, () => {
+    S.board = after; S.reviseText = ''; S.pending = null; S.revision = { comment: text, previous: before, edited: false, ...describe(d) };
+  }, 1500);
+}
+function edited() { if (S.revision) S.revision.edited = true; S.anim = { leaving: [], arriving: [], moved: [], catLeaving: [], catNew: [] }; }
+function moveSub(name, to) { S.board.forEach((c) => { c.subs = c.subs.filter((s) => s !== name); }); S.unc = S.unc.filter((s) => s !== name);
+  if (to === '__unc') S.unc.push(name); else S.board.find((c) => c.name === to).subs.push(name); edited(); renderAll(); }
+function removeSub(name) { S.board.forEach((c) => { c.subs = c.subs.filter((s) => s !== name); }); S.unc = S.unc.filter((s) => s !== name); edited(); renderAll(); }
+
+/* ═════════════ left column ═════════════ */
+function questionCard() {
+  const ks = keys(), k = ks[S.at], isFu = k === 'fu', m = isFu ? FU : Q.find((q) => q.key === k);
+  let control;
+  if (isFu) control = `<div class="chips">${FU.options.map((o) => `<button type="button" class="chip" aria-pressed="${S.fuPicks.includes(o)}" data-act="fupick" data-v="${o}">${o}</button>`).join('')}</div>
+      <input class="field" style="margin-top:8px" data-in="fuText" value="${esc(S.fuText)}" placeholder="Or say it in your own words…">`;
+  else if (m.kind === 'regions') control = `<div class="chips">${m.options.map((o) => `<button type="button" class="chip" aria-pressed="${S.answers.where.includes(o)}" data-act="region" data-v="${o}">${o}</button>`).join('')}</div>`;
+  else if (m.kind === 'textarea') control = `<textarea class="field" rows="4" data-in="${k}" placeholder="${esc(m.ph)}">${esc(S.answers[k])}</textarea>`;
+  else control = `<input class="field" data-in="${k}" value="${esc(S.answers[k])}" placeholder="${esc(m.ph)}">`;
+  return `<div class="qcard"><span class="micro">${isFu ? 'Lab Builder asks' : 'Question'} ${S.at + 1} of ${Q.length + (S.fuKnown ? 1 : 0)}</span>
+    <label class="q">${esc(m.q)}</label><p class="hint">${esc(m.hint)}</p><div>${control}</div>
+    <div class="acts">${S.at ? '<button type="button" class="btn" data-act="back">← Back</button>' : ''}
+      <button type="button" class="btn pri" data-act="next">${isFu ? 'Done' : 'Next →'}</button>
+      ${m.skip || isFu ? `<button type="button" class="btn ter" data-act="skip">${esc(m.skip || 'Skip')}</button>` : ''}</div></div>`;
+}
+function narration() {
+  const r = S.run;
+  return `<div class="narr" role="status"><span class="micro">Lab Builder</span><h2>${esc(r.title)}</h2><p class="nsub">${esc(r.sub)}</p>
+    <ol>${r.lines.map((l) => `<li class="${l.state}"><span class="m"></span><span>${esc(l.text)}</span></li>`).join('')}</ol></div>`;
+}
+function revisionNote() {
+  const r = S.revision; if (!r) return '';
+  return `<div class="note" role="status"><span class="i">i</span><div><div class="t">${esc(r.title)}</div><div class="d">${esc(r.detail)}</div><div class="y">You asked: “${esc(r.comment)}”</div>
+    <div class="a">${r.edited ? '<span class="d" style="margin:0">You have edited since, so Undo is off.</span>' : '<button type="button" class="btn" data-act="undo">Undo revision</button>'}<button type="button" class="btn ter" data-act="dismiss">Dismiss</button></div></div></div>`;
+}
+function renderLeft() {
+  const L = document.getElementById('L'); let h = '';
+  if (S.run) h = narration();
+  else if (S.created) h = `<div class="qcard"><span class="micro">Recreation</span><label class="q">The lab would open now.</label><p class="hint">Nothing was created. In FAST the new lab opens on its Plan tab.</p><div class="acts"><button type="button" class="btn" data-act="replay">Watch again</button></div></div>`;
+  else if (S.phase === 'intake') h = questionCard();
+  else if (S.phase === 'draft') h = `<div class="qcard"><span class="micro">Lab and goals</span><label class="q">The draft is on the right.</label>
+      <p class="hint">${trace === 'click' ? 'Click any part of it to see which answer it came from.' : trace === 'always' ? 'Each part says which answer it came from.' : 'Edit anything before finding subjects.'}</p>
+      <div class="acts"><button type="button" class="btn pri" data-act="subjects">Find subjects →</button></div></div>`;
+  else h = `${revisionNote()}<div class="rev"><div class="lab">Tell Lab Builder what to change</div>
+      <textarea class="field" rows="2" data-in="reviseText" placeholder="Ask for any change…">${esc(S.reviseText)}</textarea>
+      <div class="try">${PRESETS.map((p, i) => `<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(p.text)}</button>`).join('')}<span class="tag">DEMO REQUESTS</span></div>
+      ${S.msg ? `<div class="msg">${esc(S.msg)}</div>` : ''}
+      <div class="qcard" style="margin-top:10px"><div class="acts"><button type="button" class="btn" data-act="revise" ${S.reviseText.trim() ? '' : 'disabled'}>Revise</button></div></div></div>
+      <div class="done-q qcard"><label class="q" style="font-size:15px">Does everything look good?</label><div class="acts"><button type="button" class="btn pri" data-act="create">Create lab</button></div></div>`;
+  L.innerHTML = h;
+  const nar = L.querySelector('.narr ol li:last-child'); if (nar) L.scrollTop = 0;
+}
+
+/* ═════════════ right column ═════════════ */
+const srcLine = (v) => v.guess
+  ? `<div class="src"><b>Drafted for you to check.</b> You said “I’m not sure yet” to “${esc(QTEXT[v.src[0]])}”</div>`
+  : `<div class="src">From <b>${v.src.map((s) => LABEL[s]).join(' + ')}</b></div>`;
+const quote = (v) => v.guess
+  ? `<div class="quote">Lab Builder drafted this because you answered “I’m not sure yet” to <q>${esc(QTEXT[v.src[0]])}</q> Edit it or keep it.</div>`
+  : `<div class="quote">${v.src.map((s) => `From your answer to “${esc(QTEXT[s])}”: <q>${esc(answerText(s) || skippedText(s))}</q>`).join('<br>')}</div>`;
+function field(id, label, v, opts = {}) {
+  const done = S.phase !== 'intake' && !S.run || S.phase !== 'draft';
+  const tr = trace === 'click' && !S.run && S.phase !== 'intake';
+  const fl = S.flash.includes(opts.key) ? ' arrive' : '';
+  const open = S.open === id;
+  return `<div class="fld${tr ? ' tr' : ''}${open ? ' open' : ''}${fl}" ${tr ? `data-act="trace" data-id="${id}" role="button" tabindex="0" aria-expanded="${open}"` : ''}>
+    <div class="fl"><span class="micro">${label}</span>${v.guess ? '<span class="pchip" title="Lab Builder guessed this. Edit or keep.">PLACEHOLDER</span>' : ''}</div>
+    <div class="fv ${opts.big ? 'big' : ''} ${opts.mut ? 'mut' : ''}">${esc(v.t)}</div>
+    ${trace === 'always' && !S.run ? srcLine(v) : ''}${open ? quote(v) : ''}</div>`;
+}
+function briefRows(compact) {
+  const ks = keys().filter((k) => S.answered.includes(k));
+  if (!ks.length) return `<div class="empty">Your answers collect here as you give them.</div>`;
+  return `<div class="brief">${ks.map((k) => { const v = answerText(k);
+    return `<div class="brow${S.hiSrc.includes(k) ? ' hi' : ''}${S.phase === 'draft' && S.used.includes(k) ? ' used' : ''}${S.flash.includes('b.' + k) ? ' arrive' : ''}"><span class="k">${LABEL[k]}</span><span class="v ${v ? '' : 'sk'}">${esc(v || skippedText(k))}</span></div>`; }).join('')}</div>`;
+}
+function labFields() {
+  const out = [];
+  if (isShown('name')) out.push(field('name', 'Lab name', LAB.name, { big: true, key: 'name' }));
+  if (isShown('desc')) out.push(field('desc', 'What is this lab trying to learn?', LAB.desc, { mut: true, key: 'desc' }));
+  if (isShown('g.name')) LAB.goals.forEach((g, gi) => {
+    const f = (k, label) => isShown('g.' + k) ? field(`g${gi}.${k}`, label, g[k], { key: 'g.' + k }) : '';
+    out.push(`<div class="goal${S.flash.includes('g.name') ? ' arrive' : ''}">${field(`g${gi}.name`, `Goal ${gi + 1}`, g.name, { key: 'g.name' })}${f('desc', 'What success means')}
+      <div class="grid">${f('problem', 'Problem')}${f('who', 'Target demographics')}${f('where', 'Regions')}${f('horizon', 'Target horizon year')}</div></div>`);
+  });
+  return out.join('');
+}
+/* A: brief above, lab below */
+function viewA() {
+  const draftDone = S.phase !== 'intake';
+  const briefCollapsed = S.phase === 'draft' && !S.run && trace !== 'always' && !S.briefOpen;
+  const sticky = S.phase === 'draft' && S.run;
+  return `<div class="${sticky ? 'stick' : 'sect'}"><span class="micro" style="display:block;margin-bottom:8px">Your brief</span>${briefCollapsed
+      ? `<div class="briefline" data-act="briefopen"><b>${S.answered.length} answers</b><span>Show</span></div>` : briefRows()}</div>
+    <div class="sect"><span class="micro">Your lab</span>${draftDone && S.drafted ? `<div class="lab">${labFields()}</div>` : `<div class="empty">Lab Builder drafts the lab from the brief above once you’ve answered.</div>`}</div>`;
+}
+/* B: answers morph into the lab */
+function viewB() {
+  if (S.phase === 'intake') { const ks = keys().filter((k) => S.answered.includes(k));
+    return `<div class="sect"><span class="micro">Your brief</span>${ks.length ? ks.map((k) => { const v = answerText(k);
+      return `<div class="mcard${S.flash.includes('b.' + k) ? ' arrive' : ''}"><div class="mk"><span class="micro">${LABEL[k]}</span></div><div class="${v ? '' : 'sk'}" style="${v ? '' : 'color:var(--faint);font-style:italic'}">${esc(v || skippedText(k))}</div></div>`; }).join('') : '<div class="empty">Your answers collect here as you give them.</div>'}</div>`; }
+  /* during and after the draft: each answer card either becomes a field or is absorbed into the goals */
+  const ks = keys().filter((k) => S.answered.includes(k));
+  const stepOf = (k) => DRAFT_STEPS.findIndex((d) => d.src.includes(k)) + 1;
+  const parts = [];
+  ks.forEach((k) => {
+    const st = stepOf(k), v = answerText(k), card = (inner, cls = '') => `<div class="mcard ${cls}${S.hiSrc.includes(k) ? ' hi' : ''}">${inner}</div>`;
+    const raw = `<div style="color:${v ? 'var(--ink)' : 'var(--faint)'};${v ? '' : 'font-style:italic'}">${esc(v || skippedText(k))}</div>`;
+    if (k === 'theme') { parts.push(S.drafted >= st ? `<div class="morph sect">${S.flash.includes('name') ? `<div class="old">Theme: ${esc(v)}</div>` : ''}${field('name', 'Lab name', LAB.name, { big: true, key: 'name' })}<div style="height:8px"></div>${field('desc', 'What is this lab trying to learn?', LAB.desc, { mut: true, key: 'desc' })}</div>`
+      : card(`<div class="mk"><span class="micro">Theme</span><span class="micro arrow">→ lab name</span></div>${raw}`)); return; }
+    if (k === 'goals') { parts.push(S.drafted >= st ? `<div class="morph">${S.flash.includes('g.name') ? `<div class="old" style="margin-bottom:6px">Goals: ${esc(v)}</div>` : ''}<div class="lab">${labFields().replace(/^[\s\S]*?(<div class="goal)/, '$1')}</div></div>`
+      : card(`<div class="mk"><span class="micro">Goals</span><span class="micro arrow">→ goals</span></div>${raw}`)); return; }
+    if (S.drafted > st) return;                         /* absorbed already */
+    const into = { broken: 'problems', who: 'target demographics', where: 'regions', fu: 'horizon year' }[k];
+    parts.push(card(`<div class="mk"><span class="micro">${LABEL[k]}</span><span class="micro arrow">→ ${into}</span></div>${raw}`, S.drafted === st ? 'absorb' : ''));
+  });
+  const goalsIdx = ks.indexOf('goals');
+  return `<div class="sect"><span class="micro">${S.drafted ? 'Your lab' : 'Your brief'}</span>${parts.join('')}</div>`;
+}
+/* C: the lab's skeleton from the start */
+function slot(id, label, src, v, opts = {}) {
+  const raw = src.map((s) => S.answered.includes(s) ? (answerText(s) || skippedText(s)) : null).filter(Boolean).join(' · ');
+  const key = opts.key, filled = S.phase !== 'intake' && isShown(key);
+  if (filled) return field(id, label, v, opts);
+  return `<div class="slot"><div class="fl"><span class="micro">${label}</span></div>${raw ? `<div class="raw">“${esc(raw)}”</div>` : `<div class="fv">From ${src.map((s) => LABEL[s]).join(' + ')}</div>`}</div>`;
+}
+function viewC() {
+  const g = LAB.goals;
+  const goals = isShown('g.name') ? g : [g[0]];
+  return `<div class="sect"><span class="micro">Your lab</span><div class="lab">
+    ${slot('name', 'Lab name', ['theme'], LAB.name, { big: true, key: 'name' })}
+    ${slot('desc', 'What is this lab trying to learn?', ['theme', 'goals'], LAB.desc, { mut: true, key: 'desc' })}
+    ${goals.map((gg, gi) => `<div class="goal${S.flash.includes('g.name') ? ' arrive' : ''}">
+      ${slot(`g${gi}.name`, isShown('g.name') ? `Goal ${gi + 1}` : 'Goals', ['goals'], gg.name, { key: 'g.name' })}
+      ${isShown('g.desc') ? field(`g${gi}.desc`, 'What success means', gg.desc, { key: 'g.desc' }) : ''}
+      <div class="grid">${slot(`g${gi}.problem`, 'Problem', ['broken'], gg.problem, { key: 'g.problem' })}${slot(`g${gi}.who`, 'Target demographics', ['who'], gg.who, { key: 'g.who' })}
+      ${slot(`g${gi}.where`, 'Regions', ['where'], gg.where, { key: 'g.where' })}${slot(`g${gi}.horizon`, 'Target horizon year', ['fu'], gg.horizon, { key: 'g.horizon' })}</div></div>`).join('')}
+  </div></div>`;
+}
+/* after the draft: header strip + pipeline or board */
+function strip() {
+  const tr = trace === 'click' && !S.run;
+  const opened = S.open && S.open.startsWith('strip.') ? +S.open.split('.')[1] : null;
+  const g = opened !== null ? LAB.goals[opened] : null;
+  return `<div class="strip"><div class="ln">${esc(LAB.name.t)}</div><div class="gs">${LAB.goals.map((gg, gi) =>
+      `<button type="button" class="gchip${tr ? ' tr' : ''}${S.hiGoal === gi ? ' hi' : ''}" ${tr ? `data-act="trace" data-id="strip.${gi}" aria-expanded="${opened === gi}"` : ''}>${esc(gg.name.t)}</button>`).join('')}</div>
+    ${trace === 'always' && !S.run ? `<div class="src">Goals from <b>Goals</b>, with <b>What is broken</b>, <b>Where</b> and the <b>Follow-up</b> · demographics drafted for you to check</div>` : ''}
+    ${g ? `<div class="quote">${['name', 'problem', 'where', 'horizon', 'who'].map((k) => `<div style="margin-bottom:4px"><span class="micro">${{ name: 'Goal', problem: 'Problem', where: 'Regions', horizon: 'Horizon', who: 'Demographics' }[k]}</span><br>${esc(g[k].t)} <span style="color:var(--faint)">· ${g[k].guess ? 'drafted for you to check' : 'from ' + g[k].src.map((s) => LABEL[s]).join(' + ')}</span></div>`).join('')}</div>` : ''}</div>`;
+}
+function pipeline() {
+  const s = S.sub, g = SUBJ[s.gi];
+  const pool = s.pool ? [...g.picks.slice(0, 4), g.rest[0], ...g.picks.slice(4, 7), g.rest[1], g.rest[2], ...g.picks.slice(7), ...g.rest.slice(3)] : [];
+  return `<div class="pipe"><div class="sect"><span class="micro">Search terms · goal ${s.gi + 1}</span><div class="terms">${g.terms.map((t) => `<span class="term">${esc(t)}</span>`).join('')}</div></div>
+    ${s.pool ? `<div class="sect"><span class="micro">Candidates from the database · ${g.total}</span><div class="pool">
+      ${pool.map((p) => `<span class="pill${s.picks ? (g.picks.includes(p) ? ' pick' : ' drop') : ''}"><span class="dot"></span>${esc(p)}</span>`).join('')}
+      ${s.picks && g.fake && !s.fakeGone ? `<span class="pill fake"><span class="dot"></span>${esc(g.fake)}</span>` : ''}
+      ${s.fakeGone ? `<span class="pill fake" style="opacity:.5;text-decoration:line-through"><span class="dot"></span>${esc(g.fake)} · not in the database</span>` : ''}
+      <span class="more">+${g.total - pool.length} more</span></div></div>` : ''}</div>`;
+}
+function boardView() {
+  const a = S.anim, cls = (s) => a.leaving.includes(s) ? ' leaving' : a.arriving.includes(s) ? ' arriving' : a.moved.includes(s) ? ' moved' : a.landing ? ' landing' : '';
+  const sub = (s) => `<div class="sub${cls(s)}" draggable="true" data-sub="${esc(s)}"><span class="dot"></span>${esc(s)}<button class="x" type="button" data-act="rm" data-v="${esc(s)}" title="Remove">×</button></div>`;
+  return `<div class="sect"><span class="micro">Subjects · ${countBoard()}</span><div class="board">
+    ${S.unc.length ? `<div class="unc" data-drop="__unc"><span class="h">Uncategorized</span>${S.unc.map(sub).join('')}</div>` : ''}
+    <div class="cats">${S.board.filter((c) => c.subs.length).map((c) => `<div class="cat${a.catLeaving.includes(c.name) ? ' leaving' : ''}${a.catNew.includes(c.name) ? ' newcat' : ''}" data-drop="${esc(c.name)}"><div class="ch"><b>${esc(c.name)}</b><span class="micro">${c.subs.length}</span></div>${c.subs.map(sub).join('')}</div>`).join('')}</div></div></div>`;
+}
+function renderRight() {
+  const R = document.getElementById('R'); let h;
+  if (S.phase === 'intake' || S.phase === 'draft') h = dir === 'a' ? viewA() : dir === 'b' ? viewB() : viewC();
+  else h = strip() + (S.sub ? pipeline() : S.board ? boardView() : '');
+  R.innerHTML = h;
+  /* keep the newest change in view */
+  const target = ['.arrive', '.sub.arriving', '.sub.leaving', '.sub.moved', '.pill.fake', '.pool', '.terms', '.mcard.hi', '.brow.hi', '.absorb'].map((q) => R.querySelector(q)).find(Boolean);
+  if (target && (S.run || S.phase === 'intake')) { let t = 0, n = target; while (n && n !== R) { t += n.offsetTop; n = n.offsetParent; } const stk = R.querySelector('.stick'); t -= 40 + (stk ? stk.offsetHeight : 0);
+    if (t > R.scrollTop + R.clientHeight - 140 || t < R.scrollTop) R.scrollTop = Math.max(0, t); }
+  S.flash = [];
+}
+function renderAll() {
+  renderLeft(); renderRight();
+  const F = document.getElementById('fast');
+  F.querySelectorAll('.take,.cursor').forEach((e) => e.remove());
+  if (auto) { F.insertAdjacentHTML('beforeend', '<span class="take">Playing · click anywhere to take over</span><span class="cursor" id="cur"></span>');
+    if (curPos) { const c = document.getElementById('cur'); c.style.transition = 'none'; c.style.left = curPos[0] + 'px'; c.style.top = curPos[1] + 'px'; c.offsetWidth; c.style.transition = ''; } else document.getElementById('cur').style.opacity = 0; }
+  document.getElementById('dfState').innerHTML = auto ? '<span class="live">● PLAYING</span>' : 'YOU’RE DRIVING';
+}
+
+/* ═════════════ events ═════════════ */
+const F = document.getElementById('fast');
+F.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const a = b.dataset.act;
+  if (a === 'next') nextQ(); else if (a === 'skip') skipQ(); else if (a === 'back') backQ();
+  else if (a === 'region') { const v = b.dataset.v, w = S.answers.where; S.answers.where = w.includes(v) ? w.filter((x) => x !== v) : [...w, v]; S.skipped.where = false; renderLeft(); }
+  else if (a === 'fupick') { const v = b.dataset.v; S.fuPicks = S.fuPicks.includes(v) ? S.fuPicks.filter((x) => x !== v) : [...S.fuPicks, v]; renderLeft(); }
+  else if (a === 'subjects') startSubjects();
+  else if (a === 'trace') { S.open = S.open === b.dataset.id ? null : b.dataset.id; renderRight(); }
+  else if (a === 'briefopen') { S.briefOpen = true; renderRight(); }
+  else if (a === 'preset') { S.reviseText = PRESETS[+b.dataset.i].text; S.msg = ''; renderLeft(); }
+  else if (a === 'revise') revise();
+  else if (a === 'undo') { if (S.revision && !S.revision.edited) { S.board = S.revision.previous; S.revision = null; edited(); renderAll(); } }
+  else if (a === 'dismiss') { S.revision = null; renderLeft(); }
+  else if (a === 'rm') removeSub(b.dataset.v);
+  else if (a === 'create') { S.created = true; renderAll(); }
+  else if (a === 'replay') play();
+});
+F.addEventListener('input', (e) => {
+  const k = e.target.dataset.in; if (!k) return;
+  if (k === 'fuText') S.fuText = e.target.value;
+  else if (k === 'reviseText') { S.reviseText = e.target.value; S.msg = ''; const r = F.querySelector('[data-act="revise"]'); if (r) r.disabled = !S.reviseText.trim(); }
+  else { S.answers[k] = e.target.value; S.skipped[k] = false; }
+});
+F.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.dataset.act === 'trace') { e.target.click(); return; }
+  const k = e.target.dataset.in; if (e.key !== 'Enter' || !k) return;
+  if (e.target.tagName === 'TEXTAREA' && !(e.metaKey || e.ctrlKey)) return;
+  e.preventDefault(); if (k === 'reviseText') revise(); else if (S.phase === 'intake' && !S.run) nextQ();
+});
+let dragging = null;
+F.addEventListener('dragstart', (e) => { const s = e.target.closest('[data-sub]'); if (s) { dragging = s.dataset.sub; e.dataTransfer.setData('text/plain', dragging); } });
+F.addEventListener('dragover', (e) => { const d = e.target.closest('[data-drop]'); if (d && dragging) { e.preventDefault(); F.querySelectorAll('.over').forEach((x) => x.classList.remove('over')); d.classList.add('over'); } });
+F.addEventListener('drop', (e) => { const d = e.target.closest('[data-drop]'); if (d && dragging) { e.preventDefault(); moveSub(dragging, d.dataset.drop); dragging = null; } });
+F.addEventListener('dragend', () => { dragging = null; F.querySelectorAll('.over').forEach((x) => x.classList.remove('over')); });
+
+/* ═════════════ autoplay ═════════════ */
+function cursorTo(sel) {
+  const c = document.getElementById('cur'), t = F.querySelector(sel); if (!c || !t) return;
+  const fr = F.getBoundingClientRect(), r = t.getBoundingClientRect();
+  curPos = [r.left - fr.left + Math.min(r.width / 2, 40), r.top - fr.top + r.height / 2];
+  c.style.opacity = 1; c.style.left = curPos[0] + 'px'; c.style.top = curPos[1] + 'px';
+}
+function typeInto(key, text, done) {
+  let i = 0; const step = () => { if (!auto) return; i = Math.min(text.length, i + 3);
+    if (key === 'reviseText') S.reviseText = text.slice(0, i); else S.answers[key] = text.slice(0, i);
+    const f = F.querySelector(`[data-in="${key}"]`); if (f) { f.value = text.slice(0, i); cursorTo(`[data-in="${key}"]`); }
+    if (i < text.length) later(step, 30); else { const r = F.querySelector('[data-act="revise"]'); if (r) r.disabled = false; later(done, 400); } };
+  step();
+}
+const click = (sel, fn, wait = 600) => { if (!auto) return; cursorTo(sel); later(() => { if (auto) fn(); }, wait); };
+const waitRun = (n) => { const w = () => { if (!auto) return; S.run ? later(w, 200) : later(n, 300); }; w(); };
+const SEG = { start: 0 };
+const SCRIPT = [
+  (n) => { S.answers.theme = ''; renderLeft(); typeInto('theme', Q[0].def, n); },
+  (n) => click('[data-act="next"]', () => { nextQ(); later(n, 400); }),
+  (n) => { S.answers.goals = ''; renderLeft(); typeInto('goals', Q[1].def, n); },
+  (n) => click('[data-act="next"]', () => { nextQ(); later(n, 400); }),
+  (n) => { S.answers.broken = ''; renderLeft(); typeInto('broken', Q[2].def, n); },
+  (n) => click('[data-act="next"]', () => { nextQ(); later(n, 500); }),
+  (n) => click('[data-act="skip"]', () => { skipQ(); later(n, 500); }),
+  (n) => { S.answers.where = []; renderLeft(); click('[data-v="Sub-Saharan Africa"]', () => { S.answers.where = ['Sub-Saharan Africa']; renderLeft(); click('[data-v="South Asia"]', () => { S.answers.where = ['Sub-Saharan Africa', 'South Asia']; renderLeft(); later(n, 300); }); }); },
+  (n) => click('[data-act="next"]', () => { nextQ(); waitRun(n); }),
+  (n) => { S.fuPicks = []; renderLeft(); click('[data-v="By 2035"]', () => { S.fuPicks = ['By 2035']; renderLeft(); later(n, 500); }); },
+  /* draft */ (n) => click('[data-act="next"]', () => { nextQ(); waitRun(n); }),
+  (n) => { if (trace === 'click') click('[data-id="g0.who"]', () => { S.open = 'g0.who'; renderRight(); later(n, 2600); }, 900); else later(n, 2400); },
+  /* subjects */ (n) => click('[data-act="subjects"]', () => { S.open = null; startSubjects(); waitRun(n); }),
+  (n) => later(n, 1600),
+  /* revise */ (n) => typeInto('reviseText', PRESETS[0].text, n),
+  (n) => click('[data-act="revise"]', () => { revise(); waitRun(n); }),
+  (n) => later(n, 3200),
+  (n) => click('[data-act="create"]', () => { S.created = true; renderAll(); later(n, 3000); }),
+  (n) => { restart(); n(); },
+];
+const SEGS = { start: 0, draft: 10, subjects: 12, revise: 14 };
+function presetUpTo(seg) {
+  S = fresh();
+  if (seg >= SEGS.draft) { S.answered = keys(); S.fuKnown = true; S.skipped.who = true; S.answered = keys(); S.at = keys().length - 1; }
+  if (seg >= SEGS.subjects) { S.phase = 'draft'; S.drafted = DRAFT_STEPS.length; }
+  if (seg >= SEGS.revise) { S.phase = 'board'; S.board = clone(BOARD0); S.unc = [...UNC0]; }
+}
+function play(from = 'start') {
+  clearTimers(); curPos = null; auto = { i: SEGS[from] }; presetUpTo(SEGS[from]); renderAll();
+  const go = () => { if (!auto) return; SCRIPT[auto.i++](go); };
+  later(go, 700);
+}
+function restart() { S = fresh(); auto.i = 0; curPos = null; renderAll(); }
+function takeOver() { if (!auto) return; auto = null; clearTimers(); if (S.run) { /* finish the step that was running, without the wait */ finishRunNow(); } renderAll(); }
+function finishRunNow() {
+  const k = S.run.kind; S.run = null; S.hiSrc = [];
+  if (k === 'followup') { S.fuKnown = true; S.at = keys().length - 1; }
+  if (k === 'draft') S.drafted = DRAFT_STEPS.length;
+  if (k === 'subjects') { S.sub = null; S.hiGoal = null; S.board = clone(BOARD0); S.unc = [...UNC0]; S.phase = 'board'; S.anim.landing = false; }
+  if (k === 'subjects-revise' && S.pending) { const { before, after, text, d } = S.pending; S.board = after; S.reviseText = ''; S.pending = null;
+    S.anim = { leaving: [], arriving: d.add, moved: d.mov, catLeaving: [], catNew: d.newCategories }; S.revision = { comment: text, previous: before, edited: false, ...describe(d) }; }
+}
+F.addEventListener('pointerdown', (e) => { if (auto) { e.preventDefault(); takeOver(); } }, true);
+
+/* ═════════════ chrome ═════════════ */
+document.getElementById('dfBtn').onclick = () => play('start');
+const ABOUT = {
+  a: '<b>A · Brief above, lab below (recommended).</b> Each answer drops into “Your brief” as you give it. While Lab Builder drafts, the answer it is using lights up and gets a check, and the lab parts made from it appear below. After the draft the brief folds to one line (open it to compare). Easiest mapping to read; the brief and the lab share the panel, so it scrolls more.',
+  b: '<b>B · Answers morph.</b> Answers stack as cards, each saying what it will become (“→ goals”). While drafting, Theme turns into the lab name with the old text struck through, Goals turns into the goal cards, and the other answers fold away into the goals at the moment they are used. Most dynamic; the answers are gone afterwards, so the trace setting carries the link back.',
+  c: '<b>C · Lab skeleton.</b> The lab’s shape is there from the start as dashed slots, each naming the answer that fills it. Your words drop into the slots as you answer, then the draft replaces them with Lab Builder’s version. Explains why each question is asked; less motion, and one goal slot becomes two only at the draft.',
+};
+const TRACE = {
+  click: 'Trace on click: after the draft, any field (and each goal in the header) opens the answer it came from. The autoplay opens one.',
+  once: 'Trace plays once: the link shows only while drafting.',
+  always: 'Trace always visible: every field carries a “From …” line, and the brief stays open in A.',
+};
+function sync() {
+  document.querySelectorAll('[data-set-dir]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setDir === dir));
+  document.querySelectorAll('[data-set-tr]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setTr === trace));
+  document.querySelectorAll('[data-set-w]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.setW === width));
+  document.getElementById('about').innerHTML = ABOUT[dir] + ' ' + TRACE[trace];
+  try { history.replaceState(null, '', `#dir=${dir}&trace=${trace}&w=${width}`); } catch (e) { /* sandboxed preview: no URL state */ }
+}
+document.querySelectorAll('[data-set-dir]').forEach((b) => b.onclick = () => { dir = b.dataset.setDir; sync(); play('start'); });
+document.querySelectorAll('[data-set-tr]').forEach((b) => b.onclick = () => { trace = b.dataset.setTr; sync(); renderAll(); });
+document.querySelectorAll('[data-set-w]').forEach((b) => b.onclick = () => { width = b.dataset.setW; document.body.dataset.w = width; sync(); renderAll(); });
+document.querySelectorAll('[data-from]').forEach((b) => b.onclick = () => play(b.dataset.from));
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea,[contenteditable]')) return;
+  const o = ['a', 'b', 'c'], i = o.indexOf(dir);
+  if (e.key === 'ArrowRight') { dir = o[(i + 1) % 3]; sync(); play('start'); }
+  if (e.key === 'ArrowLeft') { dir = o[(i + 2) % 3]; sync(); play('start'); }
+});
+const h = new URLSearchParams(location.hash.slice(1));
+if (['a', 'b', 'c'].includes(h.get('dir'))) dir = h.get('dir');
+if (['click', 'once', 'always'].includes(h.get('trace'))) trace = h.get('trace');
+if (['desk', 'phone'].includes(h.get('w'))) { width = h.get('w'); document.body.dataset.w = width; }
+sync(); play(h.get('from') && SEGS[h.get('from')] !== undefined ? h.get('from') : 'start');
+</script>
+</body>
+</html>
