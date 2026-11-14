@@ -460,7 +460,7 @@ function Empty({ level }) {
     <p>The whole pipeline from a made-up run, 70 steps, in three layers: <b>workstreams</b>, the <b>blocks</b> inside them, and the engine <b>steps</b> inside those.</p>
     <p>A workstream is a body of work with its own inputs. Groundwork gets the lab and researches the brief's question. Engineering, Science and Business are analyses, each with its own data, facts and analysts. Synthesis works across them.</p>
     <div className="sides"><span className="micro">Where the wires go</span><ul className="how"><li><b>Left: inputs.</b> Needed at the start: they feed work with nothing before it inside.</li><li><b>Right: outputs.</b> Made by the last work inside. Blue is what goes to the report.</li><li><b>Top and bottom: handoffs.</b> Work that passes between workstreams while both are running. Each wire leaves from the side that faces the other card. Open a workstream to see which items arrive late and which leave early.</li><li>A step starts as soon as its own inputs are ready, so a workstream is running as soon as any step inside it is. The same rule sorts the panes inside every workstream and block.</li></ul></div>
-    <div className="sides"><span className="micro">Knowledgebase filings</span><p>Each research job's pages and report go to a file node. A step that searches takes one wire per filing it needs and waits for them, like any input. The dot on each card says how its filings stand: gray, nothing filed yet; amber, some; green, all; red, one failed.</p><p>What happens when one fails is set at launch, under Run settings. The report and the knowledgebase have their own tabs, where you can watch them fill as the run plays.</p></div>{HOW}
+    <div className="sides"><span className="micro">Knowledgebase filings</span><p>Each research job's pages and report go to a file node. A step that searches takes one wire per filing it needs and waits for them, like any input. The dot on each card says how its filings stand: gray, nothing filed yet; amber, some; green, all; red, one failed.</p><p>What happens when one fails is set at launch; this run pauses what needs it and asks. The report and the knowledgebase have their own tabs, where you can watch them fill as the run plays.</p></div>{HOW}
     {showOrder ? (<div className="warnnote"><b>Write order is on.</b> The dotted wires show each of the 21 writers waiting for the one before it, across workstreams. Writing took 29 of the run's 38 minutes, all in single file.</div>) : (<p className="mut">The {RUN.writers} writers write one at a time, in a fixed order, so each one sees the report so far. Writing took {RUN.writeMin} of the run's {RUN.workMin} minutes.</p>)}
     <p className="mut">Workstream and block boundaries are a proposal. Every step, wire, check and number comes from a made-up run on small modular reactors.</p></div>);
   if (level === 'all') return (<div className="ins-empty"><span className="micro">How to read this</span><h3>Every step</h3>
@@ -532,6 +532,8 @@ function Inspector({ sel, level, open, reveal }) {
 /* ---------- board ---------- */
 // Room at the top of the board for the level's title and the up button (BoardNav).
 const FIT_PAD = { top: '76px', right: '24px', bottom: '24px', left: '24px' };
+// How the board frames what App asks it to (the crash, the hero's opening): close on the nodes, smoothly.
+const FOCUS_FIT = { padding: 0.35, maxZoom: 1.5, duration: 900 };
 const levelKind = id => WS[id] ? 'Workstream · ' + WS[id].kind : BLOCKS[id] ? 'Block · ' + BLOCKS[id].steps.length + ' steps' : id === 'all' ? 'Every step' : 'Pipeline · ' + Object.keys(WS).length + ' workstreams';
 const upName = st => st[st.length - 2] === 'report' ? 'All workstreams' : crumbTitle(st[st.length - 2]);
 function BoardNav({ stack, setStack, setSel }) {
@@ -575,6 +577,9 @@ function Board({ stack, setStack, sel, setSel, showRun, setShowRun, t, pol, act,
   const vn = base.map(n => ({ ...n, className: (rel && n.type !== 'lane' && !rel.has(n.id) ? 'dim' : '') + (n.id === sel ? ' picked' : '') + (n.type === 'lane' ? '' : stc(n.id) + steerCls(n.id)) }));
   const ve = shownEdges.map(e => { const f = showRun && /\bkbw\b/.test(e.className) ? fileOfEdge(e) : null; return { ...e, className: e.className + (f ? ' kb-' + fileState(f, t) : '') + (rel ? (e.id === sel || e.source === sel || e.target === sel ? ' hl' : ' dim') : '') }; });
   useEffect(() => { const t = setTimeout(() => { if (sel && level !== 'all' && nodes.some(n => n.id === sel)) rf.fitView({ nodes: [{ id: sel }], padding: 1.2, duration: 300, maxZoom: 1 }); else rf.fitView({ padding: FIT_PAD, duration: 250 }); }, 40); return () => clearTimeout(t); }, [level]);
+  // App can ask the board to frame particular nodes (the crash frames the question research).
+  const focus = outerCtx.focus;
+  useEffect(() => { if (!focus || focus.level !== level) return undefined; const t = setTimeout(() => rf.fitView({ nodes: focus.ids.map(id => ({ id })), padding: FOCUS_FIT.padding, duration: focus.duration ?? FOCUS_FIT.duration, maxZoom: FOCUS_FIT.maxZoom }), 160); return () => clearTimeout(t); }, [focus, level]);
   // a handoff node's other side: the block or workstream that makes it, or the ones that take it
   // a handoff node's other side: the block or workstream that makes it, or the ones that take it
   const has = (lv, id) => !!(LEVELS[lv] && (LEVELS[lv].nodes || []).some(n => n[0] === id));
@@ -605,11 +610,12 @@ function Board({ stack, setStack, sel, setSel, showRun, setShowRun, t, pol, act,
   };
   const view = stack[0];
   return (<Ctx.Provider value={{ ...outerCtx, open, showRun, showOrder, select: setSel, sel, t, pol, act, fileLook, nodeLook, sides, goSide }}>
-    <div className="tbar">
+    {outerCtx.outside ? null : (<div className="tbar">
       <div className="seg" role="group" aria-label="View">{[['report', 'Workstreams'], ['all', 'Every step']].map(([k, l]) => (<button type="button" key={k} aria-pressed={view === k} className={view === k ? 'on' : ''} onClick={() => { setStack([k]); setSel(null); }}>{l}</button>))}</div>
       <span className="grow" />
+      {outerCtx.toolbarSettings || null}
       <div className="key"><span><i className="kb" />Workstream, block</span><span><i className="ka" />AI step</span><span><i className="kc" />Code, data, output</span><span><i className="kp" />Plumbing</span><span><i className="kg" />File in knowledgebase</span></div>
-    </div>
+    </div>)}
     <div className={'board ns-' + nodeLook}>
       <div className={'canvas' + (sel ? '' : ' focus')}>
         <BoardNav stack={stack} setStack={setStack} setSel={setSel} />
@@ -626,8 +632,14 @@ const ALLSTEPS = LEVELS.all.nodes.map(n => n[0]).filter(id => !isFile(id));
 const WAITS = [[900, '15 min'], [1800, '30 min'], [3600, '1 hour'], [14400, '4 hours'], [Infinity, 'never, keep waiting']];
 const waitLabel = w => (WAITS.find(x => x[0] === w) || [0, ''])[1];
 const polLabel = p => p.policy === 'pause' ? 'Pause and ask · ' + (p.wait === Infinity ? 'no time limit' : waitLabel(p.wait)) : 'Go on and flag';
+// The Engine's own launch setting. In the demo it starts on the recorded run's answer (Retry).
+function RunSettingsButton({ pol, setPol, cls = '' }) {
+  const [open, setOpen] = useState(false);
+  return (<div className={'rsetwrap ' + cls}><button type="button" className="jbtn rsetb" aria-expanded={open} onClick={() => setOpen(!open)}>Run settings<em>{polLabel(pol)}</em></button>
+    {open ? (<RunSettings pol={pol} setPol={setPol} onClose={() => setOpen(false)} />) : null}</div>);
+}
 function RunSettings({ pol, setPol, onClose }) {
-  const pick = policy => setPol({ ...pol, policy, action: null });
+  const pick = policy => setPol({ ...pol, policy, action: policy === 'pause' ? STORY.policy.action : null });
   return (<div className="rset" role="dialog" aria-label="Run settings">
     <div className="rset-h"><b>Run settings</b><button type="button" className="x" aria-label="Close" onClick={onClose}>×</button></div>
     <div className="rset-row"><span>Model</span><span>The run's model</span></div>
@@ -644,7 +656,6 @@ function RunSettings({ pol, setPol, onClose }) {
   </div>);
 }
 function Timeline({ t, setT, playing, setPlaying, pol, setPol, hold, choose, onRestart, onScrub }) {
-  const [open, setOpen] = useState(false);
   const d = toD(t), pct = d / DTOT * 100;
   const done = ALLSTEPS.filter(id => ['done', 'skipped'].includes(stepState(id, t))).length;
   const run = ALLSTEPS.filter(id => stepState(id, t) === 'running').length;
@@ -668,8 +679,7 @@ function Timeline({ t, setT, playing, setPlaying, pol, setPol, hold, choose, onR
       </div>
     </div>
     <div className="tlr"><b>{label} · {fmtClock(t)} in</b><span>{done} of {ALLSTEPS.length} steps done{run ? ` · ${run} running` : ''}{paused ? (<> · <b className="pz">{paused} paused</b></>) : ''}</span><span className="tlnote">Made-up run, replayed</span></div>
-    <div className="rsetwrap"><button type="button" className="jbtn rsetb" aria-expanded={open} onClick={() => setOpen(!open)}>Run settings<em>{polLabel(pol)}</em></button>
-      {open ? (<RunSettings pol={pol} setPol={setPol} onClose={() => setOpen(false)} />) : null}</div>
+    <RunSettingsButton pol={pol} setPol={setPol} />
     <button type="button" className="jbtn" onClick={() => { setPlaying(false); setT(TEND); }} disabled={atEnd(t)}>End</button>
   </div>);
 }
@@ -681,37 +691,40 @@ const HOLD_MS = 10000; // playing into the crash stops playback; the recorded Re
 // A recorded or chosen action counts only once the replay reaches its time.
 const actNow = (pol, t) => !!(pol.action && t >= pol.action.at);
 const WRITERS = [...new Set(ORDER_CHAIN.flat())];
-function statusLine(t) {
-  if (t <= 0.01) return { key: 'idle', kind: 'none', title: 'Ready to replay', body: 'Press play to watch the run, or drag the timeline.' };
-  if (atEnd(t)) return { key: 'end', kind: 'none', title: 'Finished', body: 'The report is published. Every step can be opened; the Report and Knowledgebase tabs show what it made.' };
+function statusLine(t, narrate = true) {
+  if (t <= 0.01) return narrate ? { key: 'idle', kind: 'none', title: 'Ready to replay', body: 'Press play to watch the run, or drag the timeline.' } : { key: 'idle', kind: 'none', title: 'Not started', body: `${ALLSTEPS.length} steps, waiting to run.` };
+  if (atEnd(t)) return { key: 'end', kind: 'none', title: 'Finished', body: narrate ? 'The report is published. Every step can be opened; the Report and Knowledgebase tabs show what it made.' : 'The report is published.' };
   const w = WRITERS.findIndex(id => stepState(id, t) === 'running');
   if (w >= 0) return { key: 'writing', kind: 'none', title: `Writing ${w + 1} of ${WRITERS.length}`, body: info(WRITERS[w]).title };
   const rs = ALLSTEPS.filter(id => stepState(id, t) === 'running');
   return { key: 'running', kind: 'none', title: `${rs.length} ${rs.length === 1 ? 'step' : 'steps'} running`, body: rs.slice(0, 3).map(id => info(id).title).join(', ') + (rs.length > 3 ? ` and ${rs.length - 3} more` : '') };
 }
-function bannerFor({ t, pol, hold, act, choose, goReport, steer, setSteer }) {
+function bannerFor({ t, pol, hold, act, choose, goReport, steer, setSteer, narrate = true }) {
   const q = SIM.q;
   if (atEnd(t) && steer.rerun !== 'none' && steer.rerun !== 'editing' && steer.last === 'rerun') return steerBanner(steer, setSteer, goReport);
   if (atEnd(t) && steer.rewrite === 'done' && steer.last === 'rewrite') return { key: 'rewrite', kind: 'green', title: `“${info(STEER.rewrite.step).title}” rewritten with your instruction`, body: 'Nothing else used this section, so nothing else changed.', right: (goReport ? (<button type="button" className="btn sec" onClick={goReport}>Show the report</button>) : null) };
-  if (t < q.failAt) return statusLine(t);
+  if (t < q.failAt) return statusLine(t, narrate);
   const fs = fileState('kb_q', t);
   const ran = KBR.readers.filter(r => SIM.without[r[0]] && ['running', 'done'].includes(stepState(r[0], t))).length;
   const pausedNow = KBR.readers.filter(r => stepState(r[0], t) === 'paused').length;
-  const undo = actNow(pol, t) && pol.action !== STORY.policy.action ? (<button type="button" className="lnk" onClick={() => act(null)}>Undo choice</button>) : null;
-  const flags = goReport ? (<button type="button" className="btn sec" onClick={goReport}>Show flagged sections</button>) : null;
+  const undo = null; // no Undo choice: going back before the crash forgets it, and the run asks again (decided 2026-11-14)
+  const nflag = REPORT_OUTLINE.flatMap(([, it]) => it.map(x => x[0])).filter(id => isFlagged(id, t)).length;
+  // Opens the report at the first flagged section, not at its top (decided 2026-11-14).
+  const goFlags = () => { if (goReport) goReport(); setTimeout(() => { const f = document.querySelector('.rsec .flag'); if (f) f.closest('.rsec').scrollIntoView({ block: 'start' }); }, 80); };
+  const flags = goReport && nflag ? (<button type="button" className="btn sec" onClick={goFlags}>Show {nflag} flagged {nflag === 1 ? 'section' : 'sections'}</button>) : null;
   if (fs === 'filed') {
     if (ran) return { key: 'late', kind: 'amber', title: 'The question research was filed late', body: `${ran} steps had already searched without it. Their sections are flagged in the report.`, right: (<>{undo}{flags}</>) };
     const n = Object.keys(SIM.paused).length;
     if (t < q.filedAt + 3 * DTOT / 45) return { key: 'filed', kind: 'green', title: 'Question research filed', body: n ? `${n} waiting steps resumed.` : 'Steps that search for it can use it now.' };
-    return statusLine(t);
+    return statusLine(t, narrate);
   }
   if (fs === 'retry') return { key: 'retry', kind: 'blue', title: 'Retrying the question research', body: `${pol.action && pol.action.rec ? 'Retried as in the recorded run.' : 'You chose Retry.'} ${pausedNow ? `${pausedNow} steps that search for it are waiting.` : 'Steps that search for it will wait for it.'}`, right: undo };
   if (pol.policy === 'pause' && t < q.resolve && !actNow(pol, t)) return { key: 'failed', kind: 'red', title: 'Question research failed',
     body: (<><span>The research job crashed while reading a PDF, so there is nothing to file.</span><span className="mut">{pausedNow ? `${pausedNow} steps that search for it are paused.` : 'Steps that search for it will pause when they get there.'} Everything else keeps going.</span></>),
     right: (<div className="fbr-col"><div className="factions compact"><button type="button" className="btn sec" onClick={() => choose('continue')}>Go on without it</button><button type="button" className="btn pri" onClick={() => choose('retry')}>Retry research</button></div>
-      <span className="fbc">{hold != null ? (<>Retrying in <b>{Math.ceil(hold / 1000)} s</b>, as in the recorded run</>) : `In the recorded run, Retry was pressed at ${fmtClock(STORY.policy.action.at)}`}</span></div>) };
+      {narrate ? (<span className="fbc">{hold != null ? (<>Retrying in <b>{Math.ceil(hold / 1000)} s</b>, as in the recorded run</>) : `In the recorded run, Retry was pressed at ${fmtClock(STORY.policy.action.at)}`}</span>) : null}</div>) };
   const why = pol.policy === 'flag' ? 'This run was set to go on without it.' : pol.action && pol.action.kind === 'continue' ? 'You chose to go on without it.' : 'Nobody answered within the time limit, so the run went on without it.';
-  return { key: 'without', kind: 'amber', title: 'Going on without the question research', body: `${why} ${ran ? `${ran} steps have searched without it so far. Their sections are flagged in the report.` : 'Steps that search will run without it.'}`, right: (<>{undo}{flags}</>) };
+  return { key: 'without', kind: 'amber', title: 'Going on without the question research', body: `${why} ${ran ? `${ran} steps have searched without it so far. Their sections are flagged in the report.` : 'Steps that search will run without it; what they write is flagged in the report.'}`, right: (<>{undo}{flags}</>) };
 }
 const BICON = {
   red: (<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" /></svg>),
@@ -720,7 +733,7 @@ const BICON = {
   amber: (<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5" /></svg>),
 };
 function BannerBox({ b, cls }) {
-  if (b.kind === 'none') return (<div className={'bstatus ' + cls} role="status"><b>{b.title}</b><span>{b.body}</span></div>);
+  if (b.kind === 'none') return (<div className={'bstatus ' + cls + (b.right ? ' has-right' : '')} role="status"><div className="bst"><b>{b.title}</b><span>{b.body}</span></div>{b.right ? (<div className="bsr">{b.right}</div>) : null}</div>);
   return (<div className={'fbanner b-' + b.kind + ' ' + cls} role="status"><span className="fbi">{BICON[b.kind]}</span><div className="fbt"><b>{b.title}</b>{b.body}</div><div className="fbr">{b.right}</div></div>);
 }
 function BannerSlot({ b }) {
@@ -751,10 +764,14 @@ function Skel({ n }) { return (<div className="skel" aria-hidden="true">{Array.f
 // In the report a fact token shows the value Assemble put in; the token itself is on hover and focus.
 // A token that names no fact stays raw, as the engine would reject it (decided 2026-11-14).
 const factOf = key => { const [ns, k] = key.split('.'); return FACTS[ns] && FACTS[ns][k]; };
+// Where each namespace's facts are minted (the Mint facts step of each analysis workstream).
+const MINTED = { eng: 'Engineering facts, from the patent report', sci: 'Science facts, from the paper landscape', biz: 'Business facts, from the investment report' };
 const withTokens = txt => txt.split(/(\{\{fact:[^}]*\}\})/).map((x, k) => {
   if (!/^\{\{fact:/.test(x)) return x;
   const key = x.slice(7, -2), f = factOf(key);
-  return f ? (<span key={k} className="tokv" tabIndex={0} title={`${f[1]} · fact token ${key}`}><span className="tokv-v">{f[0]}</span><code className="tokv-k" aria-hidden="true">{key}</code></span>) : (<code key={k} className="tok" title="A fact token. Assemble puts the number in.">{key}</code>);
+  const src = MINTED[key.split('.')[0]];
+  return f ? (<span key={k} className="tokv" tabIndex={0} aria-label={`${f[0]}: ${f[1]}. Minted by ${src}.`}><span className="tokv-v">{f[0]}</span>
+    <span className="tokv-k" aria-hidden="true"><span><b>{f[0]}</b> · {f[1]}</span><em>Minted by {src}</em><code>{key}</code></span></span>) : (<code key={k} className="tok" title="A fact token. Assemble puts the number in.">{key}</code>);
 });
 const isFlagged = (id, t) => SIM.flagged.has(id) && ['writing', 'done', 'declined'].includes(secState(id, t));
 function RSection({ id, title, t, reveal }) {
@@ -861,7 +878,7 @@ const isRerunning = id => ST.rerun === 'running' && RALL.includes(id);
 const isNewRun = id => ST.rerun === 'done' && RALL.includes(id);
 const blockTitle = () => BLOCKS[RR.block].title;
 function steerInfo(id, i) {
-  if (ST.rerun === 'done' && RR.result[id]) return { ...i, ...RR.result[id], skipped: false, note: null, attempts: [] };
+  if (ST.rerun === 'done' && RR.result[id]) return { ...i, ...RR.result[id], skipped: false, note: null, attempts: [], ...(RR.result[id].parts ? { rich: true } : {}) };
   if (ST.rewrite === 'done' && id === STEER.rewrite.step) return { ...i, ...STEER.rewrite.result, declined: false, note: null };
   return i;
 }
@@ -924,12 +941,91 @@ function RewritePanel({ t }) {
   return (<div className="rwbox"><div><button type="button" className="btn sec" onClick={() => set({ rewrite: 'editing' })}>Rewrite with an instruction</button></div></div>);
 }
 
+// What the portfolio's replay controls show: time, progress, the run's marked moments, the hold.
+function runSnapshot(t, playing, hold) {
+  const q = SIM.q;
+  const marks = [[q.failAt, 'fail', 'Question research failed']];
+  if (SIM.q.byRetry) marks.push([q.run2[0], 'retry', 'Retried']);
+  Object.keys(FILES).forEach(f => { const at = f === 'kb_q' ? q.filedAt : SIM.fin[FILES[f].research]; if (isFinite(at)) marks.push([at, f === 'kb_q' ? 'filedq' : 'filed', FILES[f].title + ' filed']); });
+  if (q.resolve > q.failAt + 1 && q.resolve < q.filedAt - 1) marks.push([q.resolve, 'go', 'Went on without it']);
+  return { t, end: TEND, playing, hold, atEnd: atEnd(t), total: ALLSTEPS.length,
+    done: ALLSTEPS.filter(id => ['done', 'skipped'].includes(stepState(id, t))).length,
+    running: ALLSTEPS.filter(id => stepState(id, t) === 'running').length,
+    paused: ALLSTEPS.filter(id => stepState(id, t) === 'paused').length,
+    marks: marks.sort((a, b) => a[0] - b[0]), recordedRetry: STORY.policy.action.at };
+}
+/* ---------- tab badges (being prototyped, 2026-11-14) ----------
+   report: 'new' (finished since you last looked, clears on opening) | 'total' (written so far) | 'both'
+   kb: 'new' (filings since you last looked) | 'pages' (pages filed so far) | 'none'
+   emphasis: 'pulse' (a pulse when a badge changes) | 'hint' (pulse, plus a hint the first time)
+   Sections that went wrong (flagged, declined) get their own amber count; a failed filing shows red. */
+const REPORT_ITEMS = REPORT_OUTLINE.flatMap(([, it]) => it.map(x => x[0]));
+const written = (id, t) => ['done', 'declined'].includes(secState(id, t));
+const troubled = (id, t) => written(id, t) && (isFlagged(id, t) || secState(id, t) === 'declined');
+function useSeen(open, now, t) {
+  // ids seen while the tab was open; forgotten when the replay goes back to the start
+  const [seen, setSeen] = useState(() => new Set());
+  useEffect(() => { if (t <= 0.5) setSeen(new Set()); }, [t <= 0.5]);
+  useEffect(() => { if (open && now.some(x => !seen.has(x))) setSeen(new Set([...seen, ...now])); }, [open, now.join()]);
+  return seen;
+}
+function Badge({ n, kind, title }) {
+  if (!n) return null;
+  return (<b key={kind + n} className={'tbadge tb-' + kind} title={title}>{n}</b>);
+}
+function TabBar({ panel, setPanel, t, tabs }) {
+  const cfg = tabs || {};
+  const doneNow = REPORT_ITEMS.filter(id => written(id, t)), troubleNow = doneNow.filter(id => troubled(id, t));
+  const seenR = useSeen(panel === 'report', doneNow, t);
+  const filedNow = Object.keys(FILES).filter(f => fileState(f, t) === 'filed'), failedNow = Object.keys(FILES).filter(f => fileState(f, t) === 'failed');
+  const seenK = useSeen(panel === 'kb', filedNow.concat(failedNow.map(f => f + ':failed')), t);
+  const newR = doneNow.filter(id => !seenR.has(id)), newTrouble = newR.filter(id => troubleNow.includes(id));
+  const newK = filedNow.filter(f => !seenK.has(f)), newFail = failedNow.filter(f => !seenK.has(f + ':failed'));
+  const pages = SIM.deps.filter(d => d[0] <= t).length;
+  // the first-time hint, once per replay
+  const [hint, setHint] = useState(null);
+  const hinted = useRef({});
+  useEffect(() => {
+    if (cfg.emphasis !== 'hint') return undefined;
+    let h = null;
+    if (!hinted.current.report && panel !== 'report' && doneNow.length) { hinted.current.report = 1; h = 'report'; }
+    else if (!hinted.current.kb && panel !== 'kb' && filedNow.length && cfg.kb !== 'none') { hinted.current.kb = 1; h = 'kb'; }
+    if (!h) return undefined;
+    setHint(h); const tm = setTimeout(() => setHint(x => (x === h ? null : x)), 6000); return () => clearTimeout(tm);
+  }, [doneNow.length, filedNow.length, panel]);
+  useEffect(() => { if (t <= 0.5) { hinted.current = {}; setHint(null); } }, [t <= 0.5]);
+  useEffect(() => { if (hint && panel === hint) setHint(null); }, [panel]);
+  const reportBadges = () => {
+    const okNew = newR.length - newTrouble.length;
+    if (cfg.report === 'total') return (<><Badge n={doneNow.length ? `${doneNow.length}/${REPORT_ITEMS.length}` : 0} kind="total" title="Sections written so far" /><Badge n={troubleNow.length} kind="warn" title="Written without the question research, or declined" /></>);
+    if (cfg.report === 'both') return (<>{doneNow.length ? (<span className="tbtotal">{doneNow.length}/{REPORT_ITEMS.length}</span>) : null}<Badge n={okNew ? '+' + okNew : 0} kind="new" title="New since you last looked" /><Badge n={newTrouble.length} kind="warn" title="New, written without the question research or declined" /></>);
+    return (<><Badge n={okNew} kind="new" title="New since you last looked" /><Badge n={newTrouble.length} kind="warn" title="New, written without the question research or declined" /></>);
+  };
+  const kbBadges = () => {
+    if (cfg.kb === 'none') return null;
+    if (cfg.kb === 'pages') return (<><Badge n={pages} kind="total" title="Pages filed so far" /><Badge n={failedNow.length ? '!' : 0} kind="bad" title="A filing failed" /></>);
+    return (<><Badge n={newK.length} kind="new" title="Filings since you last looked" /><Badge n={newFail.length} kind="bad" title="A filing failed" /></>);
+  };
+  const HINT = { report: 'The report has started. Read it in Report.', kb: 'Research is filed. See it in Knowledgebase.' };
+  return (<div className={'ptabs' + (cfg.emphasis ? ' em-' + cfg.emphasis : '')} role="tablist" aria-label="Panels">
+    {[['flow', 'Workflow'], ['report', 'Report'], ['kb', 'Knowledgebase']].map(([k, l]) => (<button type="button" role="tab" key={k} aria-selected={panel === k} className={panel === k ? 'on' : ''} onClick={() => setPanel(k)}>{l}
+      {cfg.report && k === 'report' ? reportBadges() : null}{cfg.report && k === 'kb' ? kbBadges() : null}
+      {hint === k ? (<span className="thint" role="status">{HINT[k]}</span>) : null}</button>))}
+  </div>);
+}
+
 const POL0 = STORY.policy;
 /**
  * bar: the prototype's own top bar (label and theme switch). theme: 'auto', 'light' or 'dark'.
  * offScreen: true stops playback (the embed pauses every animation off screen).
  */
-export default function App({ bar = true, theme: theme0 = 'auto', offScreen = false }) {
+/**
+ * transport: 'inline' keeps the prototype's play bar inside the Engine UI; 'outside' leaves it out, and
+ * the portfolio drives the replay through `control` and reads it through `onRun` (decided 2026-11-14).
+ * settingsAt: Run settings in outside mode: 'none' (decided 2026-11-14), or 'header', 'toolbar', 'status'.
+ * tabs: badges on the Report and Knowledgebase tabs (being prototyped; see TabBar).
+ */
+export default function App({ bar = true, theme: theme0 = 'auto', offScreen = false, transport = 'inline', settingsAt = 'none', onRun, control, tabs = null }) {
   const [stack, setStack] = useState(['report']);
   const [sel, setSel] = useState(null);
   const [theme, setTheme] = useState(theme0);
@@ -968,13 +1064,33 @@ export default function App({ bar = true, theme: theme0 = 'auto', offScreen = fa
   const act = a => { setHold(null); setPol(p => ({ ...p, action: a || STORY.policy.action })); };
   const reveal = id => { setPanel('flow'); setShowRun(true); const p = pathTo(id); setStack(p.length ? p : ['report']); setSel(id); };
   const showTl = panel !== 'flow' || showRun;
-  return (<Ctx.Provider value={{ t, showRun: true, pol, act, fileLook, choose, hold, steer, setSteer, reveal, setPanel }}>{bar ? (<div className="proto"><b>Prototype</b> Engine workstreams, blocks and steps, on a made-up run<span className="sep" />Theme {['auto', 'light', 'dark'].map(k => (<button type="button" key={k} className={'jbtn' + (theme === k ? ' on' : '')} onClick={() => setTheme(k)}>{k}</button>))}</div>) : null}
-    <section className="instr" aria-label="Futurity Engine">
-      <div className="ihead"><h2>Futurity Engine</h2><p>SMR data-centre outlook · Insight with Deep Search · 70 steps · finished 12 Nov 2026</p></div>
+  const outside = transport === 'outside';
+  // Playing into the crash takes the board to where it happened: Groundwork, the question research
+  // block and its knowledgebase filing in view (decided 2026-11-14).
+  const [focus, setFocus] = useState(null);
+  // Going back before the crash forgets the choice made there, so playing through it asks again.
+  useEffect(() => { if (t < SIM.q.failAt && pol.action !== STORY.policy.action) setPol(p => ({ ...p, action: STORY.policy.action })); }, [t < SIM.q.failAt]);
+  useEffect(() => { if (hold !== HOLD_MS) return; setPanel('flow'); setStack(['report', 'c_ground']); setSel(null); setFocus({ level: 'c_ground', ids: ['g_q', 'kb_q'], at: Date.now() }); }, [hold]);
+  const toggle = () => { if (hold != null) { choose('retry', true); return; } if (!playing && atEnd(t)) { setPol(POL0); setSteer(ST0); setT(SEG[0][0]); } setPlaying(!playing); };
+  if (control) control.current = {
+    toggle, play: () => { if (!playing) toggle(); }, pause: () => setPlaying(false),
+    seek: sec => { setPlaying(false); setHold(null); setT(Math.max(0, Math.min(TEND, sec))); },
+    end: () => { setPlaying(false); setHold(null); setT(TEND); },
+    retry: () => { if (hold != null) choose('retry', true); },
+    // { panel, stack, sel, focus: [ids] }: jump there without clicking (the hero tour)
+    show: v => { if (v.panel) setPanel(v.panel); if (v.stack) setStack(v.stack); if ('sel' in v) setSel(v.sel); if (v.focus) setFocus({ level: (v.stack || stack)[(v.stack || stack).length - 1], ids: v.focus, at: Date.now(), duration: v.duration }); },
+  };
+  useEffect(() => { if (onRun) onRun(runSnapshot(t, playing, hold)); });
+  const settingsEl = outside && settingsAt !== 'none' ? (<RunSettingsButton pol={pol} setPol={setPol} cls={'at-' + settingsAt} />) : null;
+  const banner = bannerFor({ t, pol, hold, act, choose, goReport: panel === 'report' ? null : () => setPanel('report'), steer, setSteer, narrate: !outside });
+  const slotB = outside && settingsAt === 'status' && banner.kind === 'none' ? { ...banner, right: settingsEl } : banner;
+  return (<Ctx.Provider value={{ t, showRun: true, pol, act, fileLook, choose, hold, steer, setSteer, reveal, setPanel, toolbarSettings: outside && settingsAt === 'toolbar' ? settingsEl : null, outside, focus }}>{bar ? (<div className="proto"><b>Prototype</b> Engine workstreams, blocks and steps, on a made-up run<span className="sep" />Theme {['auto', 'light', 'dark'].map(k => (<button type="button" key={k} className={'jbtn' + (theme === k ? ' on' : '')} onClick={() => setTheme(k)}>{k}</button>))}</div>) : null}
+    <section className={'instr' + (outside ? ' bare' : '')} aria-label="Futurity Engine">
+      {outside ? null : (<div className="ihead"><h2>Futurity Engine</h2><p>SMR data-centre outlook · Insight with Deep Search · 70 steps · finished 12 Nov 2026</p></div>)}
       <div className="sheet">
-        <div className="ptabs" role="tablist" aria-label="Panels">{[['flow', 'Workflow'], ['report', 'Report'], ['kb', 'Knowledgebase']].map(([k, l]) => (<button type="button" role="tab" key={k} aria-selected={panel === k} className={panel === k ? 'on' : ''} onClick={() => setPanel(k)}>{l}</button>))}</div>
-        {showTl ? (<Timeline t={t} setT={setT} playing={playing} setPlaying={setPlaying} pol={pol} setPol={setPol} hold={hold} choose={choose} onRestart={() => { setPol(POL0); setSteer(ST0); }} onScrub={() => setHold(null)} />) : null}
-        {showTl ? (<BannerSlot b={bannerFor({ t, pol, hold, act, choose, goReport: panel === 'report' ? null : () => setPanel('report'), steer, setSteer })} />) : null}
+        <TabBar panel={panel} setPanel={setPanel} t={t} tabs={tabs} />
+        {showTl && !outside ? (<Timeline t={t} setT={setT} playing={playing} setPlaying={setPlaying} pol={pol} setPol={setPol} hold={hold} choose={choose} onRestart={() => { setPol(POL0); setSteer(ST0); }} onScrub={() => setHold(null)} />) : null}
+        {showTl ? (<BannerSlot b={slotB} />) : null}
         {panel === 'flow' ? (<ReactFlowProvider><Board stack={stack} setStack={setStack} sel={sel} setSel={setSel} showRun={showRun} setShowRun={setShowRun} t={t} pol={pol} act={act} fileLook={fileLook} setFileLook={setFileLook} nodeLook={nodeLook} setNodeLook={setNodeLook} /></ReactFlowProvider>)
           : panel === 'report' ? (<ReportPanel t={t} reveal={reveal} />) : (<KbPanel t={t} reveal={reveal} fileLook={fileLook} />)}
       </div>

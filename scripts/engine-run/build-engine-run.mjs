@@ -424,6 +424,13 @@ const STEER = {
   rerun: { ...STEER_SRC.rerun, steps: BLOCKS[STEER_SRC.rerun.block].steps, stale: staleAfter(BLOCKS[STEER_SRC.rerun.block].steps) },
   rewrite: { ...STEER_SRC.rewrite, part: ['Your instruction', STEER_SRC.rewrite.instruction.length + 14, 1, 'INSTRUCTION: ' + STEER_SRC.rewrite.instruction], stale: staleAfter([STEER_SRC.rewrite.step]) },
 };
+// Steps the first pass skipped send their prompts in the rerun: build those prompts' parts too.
+STEER.rerun.result = Object.fromEntries(Object.entries(STEER.rerun.result).map(([id, r]) => {
+  if (!isAI(id) || !S[id].skipped) return [id, r];
+  const [parts] = partsOf({ ...S[id], skipped: false });
+  const chars = parts.reduce((a, p) => a + p[1], 0);
+  return [id, { ...r, parts, settings: settingsOf(S[id]), tok: Math.round(chars / 3.7) * (r.calls || 1), sys: chars }];
+}));
 
 /* ---------- checks ---------- */
 const problems = [];

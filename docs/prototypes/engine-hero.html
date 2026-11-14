@@ -1,0 +1,198 @@
+<!-- Status: superseded by docs/prototypes/engine-hero-tour.html · 2026-11-14 · Engine case study hero, first round: A workstreams fill, B lanes over time, C the demo board shrunk. Carlton chose the real demo playing a tour instead. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Engine hero · prototype</title>
+<style>
+  :root { --bg:#0a0a0a; --card:#121212; --line:#262626; --text:#e9e9e9; --muted:#9a9a9a; --dim:#666; --signal:#3dff88; --bad:#ff6b6b; --warn:#e8a317; --mono:'Sometype Mono',ui-monospace,SFMono-Regular,Menlo,monospace; --sans:'Red Hat Display',Inter,system-ui,sans-serif; }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 var(--sans) }
+  #xbar { position:sticky; top:0; z-index:50; background:#fffbe6; color:#1a1a18; border-bottom:1px solid #d9c98a; padding:8px 16px; font:12px/1.45 system-ui,sans-serif; display:flex; flex-direction:column; gap:5px }
+  #xbar p { margin:0; max-width:1200px }
+  #xbar .xg { display:flex; flex-wrap:wrap; gap:4px; align-items:center }
+  #xbar .xg>span:first-child { width:84px; font-weight:600 }
+  #xbar button { font:inherit; border:1px solid #c9b978; background:#fff; border-radius:4px; padding:2px 8px; cursor:pointer; color:#1a1a18 }
+  #xbar button[aria-pressed="true"] { background:#1a1a18; color:#fff; border-color:#1a1a18 }
+  #xbar .rec { font-size:10px; margin-left:4px; opacity:.75 }
+  .page { max-width:1180px; margin:0 auto; padding:40px 16px 80px; display:flex; flex-direction:column; gap:52px; align-items:center }
+  .row { display:flex; justify-content:space-between; width:100% ; gap:24px }
+  .op { background:var(--card); border:1px solid var(--line); border-radius:4px }
+  .op .hd { display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid var(--line); font:10px/1 var(--mono); letter-spacing:.06em; color:var(--muted) }
+  .op .hd b { font-weight:400; color:var(--bg); background:var(--signal); padding:2px 5px; border-radius:2px }
+  .op .bd { padding:14px }
+  .meta { font:9.5px/1.5 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin:0 0 8px }
+  h1 { font:900 38px/0.98 var(--sans); text-transform:uppercase; margin:0; max-width:14ch } h1 span { color:var(--signal) }
+  .sub { font:10.5px/1.7 var(--mono); color:var(--muted); margin:10px 0 0; max-width:44ch }
+  .own { width:300px; font:9.5px/1.6 var(--mono); color:var(--muted) }
+  .view { width:900px; max-width:100% }
+  .view .bd { padding:0 }
+  .vstrip { display:flex; justify-content:space-between; padding:7px 12px; border-bottom:1px solid #2a2a2a; font:10px/1 var(--mono); letter-spacing:.05em; color:#9ca3ab; background:#111 }
+  .vstrip .lbl { font-size:8.5px; color:#7d858c; letter-spacing:.08em }
+  canvas { display:block; width:100%; height:auto; background:#111 }
+  .vfoot { display:flex; justify-content:space-between; gap:12px; padding:7px 12px; border-top:1px solid #2a2a2a; font:10px/1.3 var(--mono); color:#9ca3ab; background:#111; min-height:30px }
+  .vfoot b { color:#e9e9e9; font-weight:400 }
+  .vfoot .bad { color:var(--bad) } .vfoot .ok { color:var(--signal) }
+  .what { width:480px; max-width:100%; font-size:13px; line-height:1.68 }
+  .what p { margin:0 0 8px }
+  @media (max-width:760px) { .row { flex-direction:column } .own { width:auto } h1 { font-size:28px } }
+</style>
+</head>
+<body>
+<div id="xbar" role="region" aria-label="Prototype controls">
+  <p>The hero plays the same made-up run as the demo below it: 70 steps, 38 minutes, the question research failing at 3 min and retried. It loops every 22 s, pauses off screen, and shows its last frame under reduced motion. ← → cycle directions. Phone layout comes after the pick.</p>
+  <div class="xg"><span>Direction</span><span id="xdir"></span></div>
+  <div class="xg"><span>Motion</span><span id="xmo"></span></div>
+</div>
+<main class="page">
+  <div class="row">
+    <div class="op" style="width:560px"><div class="hd">input · the_problem<span>TXT</span></div><div class="bd">
+      <p class="meta">2026 — UI concept, frontend &amp; backend contributions · Futurity Systems</p>
+      <h1>Watch the machine <span>think</span></h1>
+      <p class="sub">// A MULTI-AGENT PIPELINE RUNS FOR MINUTES TO HOURS. THIS INTERFACE SHOWS WHAT IT IS DOING, WHERE EACH ANSWER CAME FROM, AND WHAT YOU CAN CHANGE.</p></div></div>
+    <div class="op own"><div class="hd">ownership_data<span>DATA</span></div><div class="bd">UI CONCEPT 100 · VISUAL SYSTEM 85 · WORKFLOW REDESIGN 100 · PIPELINE / BACKEND 15</div></div>
+  </div>
+  <div class="op view"><div class="hd">futurity_engine_view · the_workflow<b>VIEW</b></div><div class="bd">
+    <div class="vstrip"><span id="vtitle">SMR DATA-CENTRE OUTLOOK · MADE-UP RUN</span><span class="lbl">RECREATION · REAL BEHAVIOR, PORTFOLIO-OWNED CODE</span></div>
+    <canvas id="cv" width="1800" height="720" aria-label="A made-up Engine run building over time"></canvas>
+    <div class="vfoot"><span id="vstat">Ready</span><span id="vclock"></span></div>
+  </div></div>
+  <div class="op what"><div class="hd">txt · what_it_is<span>TXT</span></div><div class="bd"><p>The Futurity Engine turns a lab and a question into a research report. A run is a pipeline of about 160 steps: research jobs that read the web and file what they find, analysts that work from data and facts, a red team that argues with them, and writers that build the report one section at a time, citing every number.</p></div></div>
+</main>
+<script>
+const RUN = {"end":2282.7,"crash":[180.7,200,540],"paused":{"22":[352.7,540],"59":[371.7,540],"152":[352.7,540],"162":[371.7,540],"172":[418.7,540]},"chapters":[["c_ground","Groundwork"],["c_eng","Engineering"],["c_sci","Science"],["c_biz","Business"],["c_syn","Synthesis"]],"pos":{"in":[0,60],"c_ground":[340,-140],"c_eng":[900,-640],"c_sci":[900,-20],"c_biz":[900,640],"c_syn":[1420,-200],"report":[1900,-260]},"steps":[["2","Run knowledgebase","plumb","c_ground",0,0.1,0],["3","Lab bundle","data","c_ground",0,0.6,0],["4","Lab prep","code","c_ground",0.6,0.7,0],["10","Patent report","data","c_eng",0,38,0],["11","Patent aggregates","code","c_eng",38,38.2,0],["12","Engineering facts","code","c_eng",38.2,38.3,0],["13","Patent filings per year","out","c_eng",38.2,39,0],["14","Top assignees","out","c_eng",38.2,39.1,0],["16","Patent landscape analyst","ai","c_eng",540,559,0],["17","Lab Overview & Landscape","ai","c_eng",559,637,0],["18","Key Patent Observations","ai","c_eng",637,872,0],["19","Patent Analysis Dimensions","ai","c_eng",872,908,0],["22","Six-lens patent insights","ai","c_eng",540,554,0],["23","Engineering red team","ai","c_eng",554,672,0],["24","Six-Lens Patent Insights","ai","c_eng",959,1051,0],["26","Engineering recommendations","ai","c_eng",672,715,0],["27","Executive Recommendations (Engineering)","ai","c_eng",1051,1133,0],["31","Paper landscape","data","c_sci",0,52,0],["32","Paper aggregates","code","c_sci",52,52.2,0],["34","Citation impact","data","c_sci",52.2,73.2,0],["40","Link prediction","data","c_sci",52.2,70.2,0],["42","Trend forecast","data","c_sci",52.2,79.2,0],["46","Science facts: impact and forecast","code","c_sci",79.2,79.3,0],["51","Science analyst","ai","c_sci",540,562,0],["52","Paper Landscape Overview","ai","c_sci",1133,1205,0],["53","Key Science Observations","ai","c_sci",1205,1306,0],["59","Trend forecaster","ai","c_sci",540,556,0],["60","SciTrends: 6-Year Forecast","ai","c_sci",1352,1420,0],["61","Link-prediction analyst","ai","c_sci",-1,-1,1],["62","Link Prediction: Emerging Papers","ai","c_sci",-1,-1,1],["69","R&D recommendations","ai","c_sci",562,600,0],["70","Executive R&D Recommendations","ai","c_sci",1420,1496,0],["75","Investment report","data","c_biz",0,47,0],["76","Business aggregates","code","c_biz",47,47.1,0],["77","Business facts","code","c_biz",47.1,47.2,0],["82","Competitive strategist","ai","c_biz",672,703,0],["83","Competitive red team","ai","c_biz",703,807,0],["84","Competitive Arena & SWOT","ai","c_biz",1545,1666,0],["90","Business recommendations","ai","c_biz",807,842,0],["91","Executive Recommendations & Strategic Optionality","ai","c_biz",1666,1756,0],["95","Synthesis","ai","c_syn",842,889,0],["96","Synthesis red team","ai","c_syn",889,1015,0],["97","Executive Summary","ai","c_syn",2207,2279,0],["98","Where the Analyses Agree","ai","c_syn",1861,1947,0],["99","Key Findings","ai","c_syn",2038,2118,0],["100","Recommended Actions","ai","c_syn",2118,2207,0],["103","Tensions & Disagreements","ai","c_syn",1947,2038,0],["105","Assemble report","out","105",2279,2281.1,0],["106","Publish report","out","106",2281.1,2282.7,0],["110","Has emerging candidates?","plumb","c_sci",70.2,70.2,0],["114","Science facts","code","c_sci",52.2,52.3,0],["117","Has papers?","plumb","c_sci",52.2,52.2,0],["143","Publications and the 6-year forecast","out","c_sci",79.2,80.1,0],["147","Has patents?","plumb","c_eng",38.2,38.2,0],["151","Deep research: technology","ai","c_eng",0.7,352.7,0],["152","Engineering figures from sources","ai","c_eng",540,564,0],["153","Verify engineering figures","code","c_eng",564,564,0],["156","Engineering: Figures from Published Sources","ai","c_eng",908,959,0],["161","Deep research: science","ai","c_sci",0.7,371.7,0],["162","Science figures from sources","ai","c_sci",540,561,0],["163","Verify science figures","code","c_sci",561,561,0],["166","Science: Figures from Published Sources","ai","c_sci",1306,1352,0],["171","Deep research: market","ai","c_biz",0.7,418.7,0],["172","Business figures from sources","ai","c_biz",540,597,0],["173","Verify business figures","code","c_biz",597,597,0],["176","Business: Figures from Published Sources","ai","c_biz",1496,1545,0],["180","Brief research question","code","c_ground",0.6,0.7,0],["181","brief question","plumb","c_ground",0.7,0.7,0],["182","Deep research: the question","ai","c_ground",200,540,0],["188","The Question in Published Sources","ai","c_syn",1756,1861,0],["kb_q","Question research","kb","c_ground",540,540,0],["kb_eng","Engineering research","kb","c_eng",352.7,352.7,0],["kb_sci","Science research","kb","c_sci",371.7,371.7,0],["kb_biz","Business research","kb","c_biz",418.7,418.7,0]],"edges":[["3","4"],["3","180"],["180","181"],["181","182"],["10","11"],["4","11"],["11","147"],["147","12"],["147","13"],["147","14"],["4","151"],["151","152"],["152","153"],["152","156"],["153","156"],["11","16"],["3","16"],["182","16"],["151","16"],["12","16"],["16","17"],["12","17"],["16","18"],["12","18"],["11","18"],["16","19"],["12","19"],["11","22"],["12","22"],["22","23"],["23","24"],["12","24"],["16","26"],["23","26"],["12","26"],["26","27"],["31","32"],["4","32"],["11","32"],["32","117"],["117","114"],["32","34"],["32","42"],["32","40"],["34","46"],["42","46"],["4","161"],["161","162"],["162","163"],["162","166"],["163","166"],["32","51"],["182","51"],["161","51"],["114","51"],["46","51"],["51","52"],["114","52"],["51","53"],["114","53"],["46","53"],["42","59"],["46","59"],["42","143"],["59","60"],["46","60"],["40","110"],["110","61"],["61","62"],["51","69"],["59","69"],["61","69"],["69","70"],["75","76"],["4","76"],["76","77"],["4","171"],["171","172"],["172","173"],["172","176"],["173","176"],["76","82"],["182","82"],["171","82"],["3","82"],["77","82"],["46","82"],["23","82"],["82","83"],["83","84"],["77","84"],["83","90"],["77","90"],["90","91"],["77","91"],["182","188"],["26","95"],["69","95"],["90","95"],["23","95"],["95","96"],["182","96"],["96","98"],["96","103"],["96","99"],["96","100"],["96","97"],["105","106"],["182","kb_q"],["151","kb_eng"],["161","kb_sci"],["171","kb_biz"],["kb_q","152"],["kb_q","16"],["kb_eng","16"],["kb_q","22"],["kb_eng","22"],["kb_q","23"],["kb_eng","23"],["kb_q","162"],["kb_q","51"],["kb_sci","51"],["kb_q","59"],["kb_sci","59"],["kb_q","172"],["kb_q","82"],["kb_biz","82"],["kb_q","83"],["kb_biz","83"],["kb_q","96"],["kb_eng","96"],["kb_sci","96"],["kb_biz","96"]],"kbEdges":[["kb_q","16"],["kb_eng","16"],["kb_q","22"],["kb_eng","22"],["kb_q","23"],["kb_eng","23"],["kb_q","51"],["kb_sci","51"],["kb_q","59"],["kb_sci","59"],["kb_q","82"],["kb_biz","82"],["kb_q","83"],["kb_biz","83"],["kb_q","96"],["kb_eng","96"],["kb_sci","96"],["kb_biz","96"],["kb_q","152"],["kb_q","162"],["kb_q","172"]],"xw":[["c_ground","c_eng",0.7],["c_ground","c_eng",0.6],["c_ground","c_sci",0.7],["c_eng","c_sci",38.2],["c_ground","c_sci",540],["c_ground","c_biz",0.7],["c_ground","c_biz",0.6],["c_sci","c_biz",79.3],["c_eng","c_biz",672],["c_ground","c_syn",540],["c_eng","c_syn",715],["c_sci","c_syn",600],["c_biz","c_syn",842],["c_eng","c_syn",672],["c_ground","c_syn",540],["c_ground","c_syn",null],["c_sci","c_syn",null],["c_biz","c_syn",null]],"writers":["17","18","19","156","24","27","52","53","166","60","62","70","176","84","91","188","98","103","99","100","97"],"outline":[["Executive Summary",["97"]],["Knowledge Graph",[]],["Consensus & Disagreements",["98","103"]],["Key Findings",["99"]],["The Question in Published Sources",["188"]],["Engineering: Patent Analysis",["17","13","18","14","19","156","24","27"]],["Science: Paper Analysis",["52","53","166","60","143","62","70"]],["Business Analysis",["176","84","91"]],["Recommended Actions",["100"]],["Sources & Methods",[]],["Behind the Report",[]]]};
+/* ---------- the run, replayed ---------- */
+const S = Object.fromEntries(RUN.steps.map(s => [s[0], { id: s[0], title: s[1], cat: s[2], ws: s[3], start: s[4], fin: s[5], skip: !!s[6] }]));
+const [FAIL, RETRY, FILED] = RUN.crash, END = RUN.end;
+S['182'].start = 0.7;
+const state = (id, t) => {
+  const s = S[id];
+  if (id === '182') return t < 0.7 ? 'wait' : t < FAIL ? 'run' : t < RETRY ? 'fail' : t < FILED ? 'run' : 'done';
+  if (s.skip) return t >= Math.max(0, s.start) ? 'skip' : 'wait';
+  if (s.start < 0 || t < s.start) { const p = RUN.paused[id]; return p && t >= p[0] ? 'pause' : 'wait'; }
+  return t < s.fin ? 'run' : 'done';
+};
+const WS = RUN.chapters;                      // [id, title]
+const stepsOf = ws => RUN.steps.filter(s => s[3] === ws && s[2] !== 'kb').map(s => s[0]);
+const counts = (ws, t) => { const ids = stepsOf(ws); const st = ids.map(i => state(i, t)); return { n: ids.length, done: st.filter(x => x === 'done' || x === 'skip').length, run: st.filter(x => x === 'run').length }; };
+const ALL = RUN.steps.filter(s => s[2] !== 'kb').map(s => s[0]);
+const status = t => {
+  if (t <= 0.5) return ['Ready', ''];
+  if (t >= FAIL && t < RETRY) return ['<span class="bad">Question research failed.</span> Steps that search for it will wait; everything else keeps going.', ''];
+  if (t >= RETRY && t < FILED) return ['Retrying the question research', ''];
+  if (t >= FILED && t < FILED + 60) return ['<span class="ok">Question research filed.</span> 5 waiting steps resumed.', ''];
+  const w = RUN.writers.findIndex(id => state(id, t) === 'run');
+  if (w >= 0) return [`Writing ${w + 1} of ${RUN.writers.length} · <b>${S[RUN.writers[w]].title}</b>`, ''];
+  if (t >= END) return ['Finished. The report is published.', ''];
+  const r = ALL.filter(i => state(i, t) === 'run').length;
+  return [`${r} steps running`, ''];
+};
+const clock = t => { const m = Math.floor(t / 60), s = Math.floor(t % 60); return `${m} min ${String(s).padStart(2, '0')} s · ${ALL.filter(i => ['done', 'skip'].includes(state(i, t))).length} of 70 steps done`; };
+
+/* ---------- drawing ---------- */
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const W = 900, H = 360; cx.scale(2, 2);
+const C = { bg: '#111111', line: '#2a2a2a', dim: '#3a3a3a', text: '#e9e9e9', muted: '#8b8b8b', faint: '#5a5a5a', sig: '#3dff88', bad: '#ff6b6b', warn: '#e8a317', run: '#46acc8' };
+const FONT = s => `${s}px 'Sometype Mono', ui-monospace, Menlo, monospace`;
+const col = st => st === 'done' ? C.sig : st === 'run' ? C.run : st === 'fail' ? C.bad : st === 'pause' ? C.warn : null;
+function rrect(x, y, w, h, r) { cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
+const pulse = () => 0.55 + 0.45 * Math.sin(performance.now() / 180);
+
+/* A · workstreams fill */
+const BOX = { c_ground: [40, 140, 150, 96], c_eng: [250, 22, 190, 104], c_sci: [250, 140, 190, 112], c_biz: [250, 266, 190, 80], c_syn: [500, 140, 150, 96] };
+const REP = [710, 22, 160, 324];
+function drawA(t) {
+  // wires between workstreams, lit once data has passed
+  const seen = new Set();
+  RUN.xw.forEach(([a, b, at]) => { const k = a + b; const lit = at != null && t >= at; if (seen.has(k) && !lit) return; seen.add(k);
+    const A = BOX[a], B = BOX[b]; const x1 = A[0] + A[2], y1 = A[1] + A[3] / 2, x2 = B[0], y2 = B[1] + B[3] / 2;
+    cx.strokeStyle = lit ? 'rgba(61,255,136,.55)' : C.dim; cx.lineWidth = lit ? 1.3 : 1; cx.beginPath(); cx.moveTo(x1, y1); cx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2); cx.stroke(); });
+  // workstreams to the report
+  ['c_eng', 'c_sci', 'c_biz', 'c_syn'].forEach(ws => { const A = BOX[ws]; const writers = RUN.writers.filter(w => S[w].ws === ws); const lit = writers.some(w => state(w, t) === 'done');
+    const x1 = A[0] + A[2], y1 = A[1] + A[3] / 2; cx.strokeStyle = lit ? 'rgba(61,255,136,.55)' : C.dim; cx.lineWidth = lit ? 1.3 : 1; cx.beginPath(); cx.moveTo(x1, y1); cx.bezierCurveTo(x1 + 50, y1, REP[0] - 50, REP[1] + 160, REP[0], REP[1] + 160); cx.stroke(); });
+  // run inputs
+  cx.fillStyle = t > 0 ? C.sig : C.faint; cx.beginPath(); cx.arc(16, 188, 4, 0, 7); cx.fill();
+  cx.strokeStyle = t > 0 ? 'rgba(61,255,136,.55)' : C.dim; cx.beginPath(); cx.moveTo(20, 188); cx.lineTo(40, 188); cx.stroke();
+  WS.forEach(([ws, title]) => { const [x, y, w, h] = BOX[ws]; const c = counts(ws, t); const active = c.run > 0;
+    cx.fillStyle = '#161616'; rrect(x, y, w, h, 4); cx.fill(); cx.strokeStyle = active ? 'rgba(70,172,200,.8)' : c.done === c.n ? 'rgba(61,255,136,.5)' : C.line; cx.lineWidth = 1; cx.stroke();
+    cx.fillStyle = C.text; cx.font = FONT(10); cx.fillText(title.toUpperCase(), x + 10, y + 17);
+    cx.fillStyle = C.muted; cx.font = FONT(8.5); cx.textAlign = 'right'; cx.fillText(`${c.done}/${c.n}`, x + w - 10, y + 17); cx.textAlign = 'left';
+    const ids = stepsOf(ws), per = Math.floor((w - 20) / 11);
+    ids.forEach((id, k) => { const st = state(id, t), px = x + 14 + (k % per) * 11, py = y + 34 + Math.floor(k / per) * 11; const cc = col(st);
+      cx.globalAlpha = st === 'run' || st === 'fail' ? pulse() : 1;
+      if (st === 'skip') { cx.strokeStyle = C.faint; cx.setLineDash([2, 2]); cx.beginPath(); cx.arc(px, py, 3.2, 0, 7); cx.stroke(); cx.setLineDash([]); }
+      else if (cc) { cx.fillStyle = cc; cx.beginPath(); cx.arc(px, py, 3.4, 0, 7); cx.fill(); }
+      else { cx.strokeStyle = C.dim; cx.beginPath(); cx.arc(px, py, 3.2, 0, 7); cx.stroke(); }
+      cx.globalAlpha = 1; });
+  });
+  // the report fills, part by part
+  const [rx, ry, rw, rh] = REP; cx.fillStyle = '#161616'; rrect(rx, ry, rw, rh, 4); cx.fill(); cx.strokeStyle = C.line; cx.stroke();
+  cx.fillStyle = C.text; cx.font = FONT(10); cx.fillText('REPORT', rx + 10, ry + 17);
+  RUN.outline.forEach(([title, ids], k) => { const yy = ry + 36 + k * 26; const built = !ids.length; const done = built ? state('105', t) === 'done' : ids.every(i => ['done', 'skip'].includes(state(i, t)));
+    const writing = ids.some(i => state(i, t) === 'run'); const part = ids.filter(i => ['done', 'skip'].includes(state(i, t))).length / Math.max(1, ids.length);
+    cx.fillStyle = done ? C.text : writing ? C.run : C.faint; cx.font = FONT(8); cx.fillText(`${k + 1}. ${title.length > 26 ? title.slice(0, 25) + '…' : title}`, rx + 10, yy);
+    cx.fillStyle = '#222'; cx.fillRect(rx + 10, yy + 5, rw - 20, 3);
+    cx.fillStyle = writing ? C.run : C.sig; cx.globalAlpha = writing ? pulse() : 1; cx.fillRect(rx + 10, yy + 5, (rw - 20) * (built ? (done ? 1 : 0) : part), 3); cx.globalAlpha = 1; });
+}
+
+/* B · lanes over time */
+const LANES = (() => { const out = {}; WS.forEach(([ws]) => { const rows = []; stepsOf(ws).map(i => S[i]).filter(s => s.start >= 0 && !s.skip).sort((a, b) => a.start - b.start).forEach(s => { const st = s.id === '182' ? 0.7 : s.start; let r = rows.findIndex(end => end <= st); if (r < 0) { rows.push(0); r = rows.length - 1; } rows[r] = s.fin; s.row = r; }); out[ws] = rows.length; }); return out; })();
+function drawB(t) {
+  const x0 = 120, x1 = W - 20, tx = v => x0 + (x1 - x0) * v / END; let y = 18;
+  cx.fillStyle = C.faint; cx.font = FONT(8); [0, 600, 1200, 1800].forEach(v => { cx.fillText(`${v / 60} min`, tx(v) + 3, 12); cx.fillStyle = '#1c1c1c'; cx.fillRect(tx(v), 16, 1, H - 30); cx.fillStyle = C.faint; });
+  const totalRows = WS.reduce((a, [ws]) => a + LANES[ws], 0), rh = Math.min(14, (H - 44 - WS.length * 12) / totalRows);
+  WS.forEach(([ws, title]) => { const rows = LANES[ws], lh = rows * rh + 12;
+    cx.fillStyle = C.muted; cx.font = FONT(9); cx.fillText(title.toUpperCase(), 14, y + lh / 2 + 3);
+    cx.fillStyle = '#151515'; cx.fillRect(x0, y, x1 - x0, lh - 4);
+    stepsOf(ws).map(i => S[i]).filter(s => s.row != null).forEach(s => { const a = s.id === '182' ? 0.7 : s.start, b = Math.min(t, s.fin); if (t < a) return;
+      const yy = y + 4 + s.row * rh, isW = RUN.writers.includes(s.id);
+      if (s.id === '182') { cx.fillStyle = C.run; cx.fillRect(tx(a), yy, Math.max(1, tx(Math.min(t, FAIL)) - tx(a)), rh - 1.5); if (t > FAIL) { cx.fillStyle = C.bad; cx.fillRect(tx(FAIL), yy, Math.max(1, tx(Math.min(t, RETRY)) - tx(FAIL)), rh - 1.5); } if (t > RETRY) { cx.fillStyle = C.run; cx.fillRect(tx(RETRY), yy, tx(Math.min(t, FILED)) - tx(RETRY), rh - 1.5); } return; }
+      cx.fillStyle = t < s.fin ? C.run : isW ? C.sig : '#4f5a55'; cx.fillRect(tx(a), yy, Math.max(1.5, tx(b) - tx(a) - 1), rh - 1.5); });
+    y += lh; });
+  cx.fillStyle = C.faint; cx.font = FONT(8); cx.fillText('Green: the 21 writers, one after another', x0, H - 6);
+  cx.fillStyle = C.sig; cx.fillRect(tx(Math.min(t, END)), 16, 1.5, H - 30);
+}
+
+/* C · the demo's own board, shrunk */
+const BC = { in: [20, 168], c_ground: [120, 150], c_eng: [330, 20], c_sci: [330, 150], c_biz: [330, 280], c_syn: [540, 140], report: [740, 120] };
+function drawC(t) {
+  const card = (x, y, w, h, st, lines) => { cx.fillStyle = '#f4f3f0'; rrect(x, y, w, h, 3); cx.fill(); cx.strokeStyle = '#d3d2ce'; cx.stroke();
+    for (let k = 0; k < lines; k++) { cx.fillStyle = k ? '#c9c8c4' : '#6d6c67'; cx.fillRect(x + 6, y + 8 + k * 6, (k ? w - 18 : w * .5) * (k % 3 === 2 ? .6 : 1), 2.5); }
+    if (st) { cx.fillStyle = st === 'done' ? '#2f9e44' : st === 'run' ? '#2a78d6' : st === 'fail' ? '#e03131' : st === 'pause' ? '#b57700' : '#bbb'; cx.globalAlpha = st === 'run' ? pulse() : 1; cx.beginPath(); cx.arc(x + w - 2, y + 2, 4, 0, 7); cx.fill(); cx.globalAlpha = 1; } };
+  cx.strokeStyle = '#3a3a3a'; cx.lineWidth = 1;
+  [['in', 'c_ground'], ['c_ground', 'c_eng'], ['c_ground', 'c_sci'], ['c_ground', 'c_biz'], ['c_eng', 'c_syn'], ['c_sci', 'c_syn'], ['c_biz', 'c_syn'], ['c_eng', 'report'], ['c_sci', 'report'], ['c_biz', 'report'], ['c_syn', 'report']].forEach(([a, b]) => { const A = BC[a], B = BC[b]; cx.beginPath(); cx.moveTo(A[0] + 80, A[1] + 30); cx.bezierCurveTo(A[0] + 130, A[1] + 30, B[0] - 50, B[1] + 30, B[0], B[1] + 30); cx.stroke(); });
+  card(...BC.in, 70, 18, t > 0 ? 'done' : null, 1);
+  WS.forEach(([ws]) => { const c = counts(ws, t); const st = c.run ? 'run' : c.done === c.n ? 'done' : stepsOf(ws).some(i => state(i, t) === 'fail') ? 'fail' : c.done ? 'run' : null; card(BC[ws][0], BC[ws][1], 130, 80, st, 10); });
+  card(...BC.report, 120, 110, state('106', t) === 'done' ? 'done' : null, 15);
+}
+
+/* ---------- loop ---------- */
+const PLAY = 18, HOLD = 3, FADE = 0.8, LOOP = PLAY + HOLD + FADE;
+let raf = 0; const kick = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
+let dir = 'a', reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, forceStill = false, on = true, t0 = performance.now();
+function frame(now) {
+  const el = (now - t0) / 1000 % LOOP, still = reduced || forceStill;
+  const t = still ? END : Math.min(END, END * el / PLAY);
+  cx.clearRect(0, 0, W, H); cx.globalAlpha = 1;
+  ({ a: drawA, b: drawB, c: drawC })[dir](t);
+  if (!still && el > PLAY + HOLD) { cx.fillStyle = `rgba(17,17,17,${(el - PLAY - HOLD) / FADE})`; cx.fillRect(0, 0, W, H); }
+  const [s] = status(t); document.getElementById('vstat').innerHTML = s; document.getElementById('vclock').textContent = clock(t);
+  if (on && !still) raf = requestAnimationFrame(frame); else if (still) { cx.clearRect(0, 0, W, H); ({ a: drawA, b: drawB, c: drawC })[dir](END); }
+}
+new IntersectionObserver(es => { const v = es.some(e => e.isIntersecting); if (v && !on) { on = true; t0 = performance.now(); kick(); } on = v; }).observe(cv);
+
+/* ---------- comparison bar ---------- */
+const NAMES = { a: 'A · Workstreams fill', b: 'B · Lanes over time', c: "C · The demo's board, shrunk" }, REC = 'a';
+const read = () => { const h = new URLSearchParams(location.hash.slice(1)); return { dir: h.get('dir') || 'a', mo: h.get('mo') || 'play' }; };
+function apply() { const st = read(); dir = st.dir; forceStill = st.mo === 'still'; t0 = performance.now();
+  document.getElementById('xdir').innerHTML = ['a', 'b', 'c'].map(d => `<button type="button" data-k="dir" data-v="${d}" aria-pressed="${st.dir === d}">${NAMES[d]}${REC === d ? '<span class="rec">recommended</span>' : ''}</button>`).join('');
+  document.getElementById('xmo').innerHTML = [['play', 'Playing'], ['still', 'Reduced motion (last frame)']].map(([k, l]) => `<button type="button" data-k="mo" data-v="${k}" aria-pressed="${st.mo === k}">${l}</button>`).join('');
+  kick(); }
+const set = (k, v) => { const st = read(); st[k] = v; history.replaceState(null, '', `#dir=${st.dir}&mo=${st.mo}`); apply(); };
+document.addEventListener('click', e => { const b = e.target.closest('#xbar button'); if (b) set(b.dataset.k, b.dataset.v); });
+document.addEventListener('keydown', e => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; const o = ['a', 'b', 'c'], i = o.indexOf(read().dir); set('dir', o[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3]); });
+apply();
+</script>
+</body>
+</html>
