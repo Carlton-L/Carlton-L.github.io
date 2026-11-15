@@ -33,7 +33,7 @@ I designed and built the site on my own.
 
 | Part | What it uses |
 |---|---|
-| Site | Astro 6, static output |
+| Site | Astro 7, static output |
 | Styling | Tailwind 4, with design tokens in `src/styles/tokens.css` |
 | Patch runtime, layout, cables | Vanilla JavaScript, served as one cached file |
 | Background | Canvas 2D |

@@ -1,6 +1,6 @@
 # Carlton-L.github.io (carlton.dev) — Claude Guidelines
 
-Portfolio site for carlton.dev. Astro 6 + React islands + Tailwind 4, static output. **This repo is the canonical source**; branch `astro`; deploys via GitHub Actions → Pages (`.github/workflows/deploy.yml`). The `chatbot/` directory is a separate project (RAG digital twin) — leave it alone unless asked.
+Portfolio site for carlton.dev. Astro 7 + React islands + Tailwind 4, static output. **This repo is the canonical source**; branch `astro`; deploys via GitHub Actions → Pages (`.github/workflows/deploy.yml`). The `chatbot/` directory is a separate project (RAG digital twin) — leave it alone unless asked.
 
 This file holds the rules. The detail behind them lives in `docs/` (listed at the end).
 

@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from '../lib/vercel';
 import { Resend } from 'resend';
 import { readToken } from '../lib/unsub.js';
 import { page, esc } from '../lib/page.js';
