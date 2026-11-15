@@ -7,6 +7,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { ReactFlow, ReactFlowProvider, Background, Controls, Handle, useReactFlow, useStore, applyNodeChanges, BaseEdge, EdgeLabelRenderer } from '@xyflow/react';
 import { RUN, STORY, STEER, FACTS, CATP, KIND, P, D, G, LEVELS, BLOCKS, CHAPTERS, REPORT_OUTLINE, PARENT, ORDER_CHAIN, LINKS_ALL, PARAMS, PRODUCTS, XW, KBR, TL } from '../../../../data/demos/engine/smr-run.js';
 import { simulate } from './sim.js';
+import scrollWithin from './scroll-within.js';
 
 const Ctx = createContext({});
 
@@ -710,7 +711,7 @@ function bannerFor({ t, pol, hold, act, choose, goReport, steer, setSteer, narra
   const undo = null; // no Undo choice: going back before the crash forgets it, and the run asks again (decided 2026-11-14)
   const nflag = REPORT_OUTLINE.flatMap(([, it]) => it.map(x => x[0])).filter(id => isFlagged(id, t)).length;
   // Opens the report at the first flagged section, not at its top (decided 2026-11-14).
-  const goFlags = () => { if (goReport) goReport(); setTimeout(() => { const f = document.querySelector('.rsec .flag'); if (f) f.closest('.rsec').scrollIntoView({ block: 'start' }); }, 80); };
+  const goFlags = () => { if (goReport) goReport(); setTimeout(() => { const f = document.querySelector('.rsec .flag'); if (f) scrollWithin(f.closest('.rsec')); }, 80); };
   const flags = goReport && nflag ? (<button type="button" className="btn sec" onClick={goFlags}>Show {nflag} flagged {nflag === 1 ? 'section' : 'sections'}</button>) : null;
   if (fs === 'filed') {
     if (ran) return { key: 'late', kind: 'amber', title: 'The question research was filed late', body: `${ran} steps had already searched without it. Their sections are flagged in the report.`, right: (<>{undo}{flags}</>) };
@@ -797,7 +798,7 @@ function ReportPanel({ t, reveal }) {
   const cnt = s => items.filter(id => secState(id, t) === s).length;
   const nflag = items.filter(id => isFlagged(id, t)).length;
   const asm = stepState('105', t), pub = stepState('106', t);
-  const go = k => { const el = document.getElementById('rp-' + k); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const go = k => { const el = document.getElementById('rp-' + k); if (el) scrollWithin(el, { behavior: 'smooth' }); };
   return (<div className="rp">
     <aside className="rrail">
       <span className="micro">Report so far</span>

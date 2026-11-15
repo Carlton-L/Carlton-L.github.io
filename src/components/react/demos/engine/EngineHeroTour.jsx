@@ -19,6 +19,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import TourCaption from '../_shared/TourCaption.jsx';
+import scrollWithin from './scroll-within.js';
 import './hero.css';
 
 const NW = 1100, NH = 780, PHONE_BELOW = 720, PHONE_H = 960;
@@ -74,8 +75,9 @@ export default function EngineHeroTour() {
       const l = Math.min(...rs.map((r) => r.left)), t = Math.min(...rs.map((r) => r.top)), r = Math.max(...rs.map((x) => x.right)), b = Math.max(...rs.map((x) => x.bottom));
       return { left: l, top: t, width: r - l, height: b - t };
     };
-    const frame = (rect, maxS = 1.35, pad = 22) => {
-      unscroll();
+    // keep: leave the frame's document scrolled (the report on phones scrolls the whole document)
+    const frame = (rect, maxS = 1.35, pad = 22, keep = false) => {
+      if (!keep) unscroll();
       const VW = cam.clientWidth, VH = cam.clientHeight, W = nw(), H = nh();
       const whole = narrow() ? VW / W : Math.min(VW / W, VH / H);
       let s = rect ? Math.min(VW / (rect.width + 2 * pad), VH / (rect.height + 2 * pad), narrow() ? 1 : maxS) : whole;
@@ -116,10 +118,10 @@ export default function EngineHeroTour() {
       for (let t = 560; t <= 1720; t += 40) { cmd('seek', { t }); await wait(55, id); }
       await wait(700, id);
       setMoment(3); cmd('end');
-      const sec = await waitFor(() => $('#rs-84'), id); await wait(200, id); sec.scrollIntoView({ block: 'center' }); unscroll(); await wait(200, id);
+      const sec = await waitFor(() => $('#rs-84'), id); await wait(200, id); scrollWithin(sec, { block: 'center' }); await wait(200, id);
       const tok = [...sec.querySelectorAll('.tokv')].find((t) => t.textContent.includes('$4.1B')) || sec.querySelector('.tokv');
-      frame(union([sec]), 1.4); await wait(900, id);
-      if (tok) { await press(tok, id, 500); tok.focus(); const k = tok.querySelector('.tokv-k'); if (k) k.style.opacity = '1'; }
+      frame(union([sec]), 1.4, 22, true); await wait(900, id);
+      if (tok) { await press(tok, id, 500); tok.focus({ preventScroll: true }); const k = tok.querySelector('.tokv-k'); if (k) k.style.opacity = '1'; }
       await wait(3200, id); pointerOff();
       // The board: the top level, then Science and Emerging papers; rerun there; read its analyst's prompt.
       setMoment(4); show({ panel: 'flow', stack: ['report'], sel: null }); await wait(500, id);
