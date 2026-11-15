@@ -13,12 +13,12 @@
     "check:docs": "node scripts/check-docs.mjs"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.4",
-    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/react": "^7.1.9",
+    "@astrojs/sitemap": "^3.7.5",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@xyflow/react": "^12.10.2",
-    "astro": "^6.2.1",
+    "astro": "^7.4.12",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "gsap": "^3.15.0",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.4",
-    "esbuild": "^0.27.7",
+    "esbuild": "^0.28.2",
     "playwright": "^1.56.0",
     "tailwindcss": "^4.2.4"
   }

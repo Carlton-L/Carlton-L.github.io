@@ -26,6 +26,10 @@ export default defineConfig({
   // Pages are fetched early by src/lib/warm.js, which also fetches their stylesheets.
   prefetch: false,
 
+  // Astro 7 changed the default to 'jsx', which drops spaces between inline elements and moved
+  // a few cards by 2px. Keep Astro 6's whitespace so the pages render as before.
+  compressHTML: true,
+
   integrations: [
     settled,
     react(),

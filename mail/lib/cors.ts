@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './vercel';
 
 const allowed = (process.env.ALLOWED_ORIGINS ?? 'https://carlton.dev')
   .split(',')

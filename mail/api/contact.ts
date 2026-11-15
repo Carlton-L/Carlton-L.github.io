@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from '../lib/vercel';
 import { Resend } from 'resend';
 import { cors } from '../lib/cors.js';
 import { validateContact } from '../lib/validate.js';
